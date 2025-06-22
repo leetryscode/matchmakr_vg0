@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import React from 'react';
+import InviteSingle from '@/components/dashboard/InviteSingle';
+import InviteOtherMatchMakrs from '@/components/dashboard/InviteOtherMatchMakrs';
 
 // Placeholder components for the UI sections
 const SinglesPondButton = () => (
@@ -65,8 +67,8 @@ export default async function MatchMakrDashboardPage() {
     return (
         <DashboardLayout firstName={firstName} userId={user.id}>
             <SinglesPondButton />
-            <MatchMakrChatList />
-            <ManageSinglesList />
+            <InviteOtherMatchMakrs />
+            <InviteSingle />
         </DashboardLayout>
     );
 } 
