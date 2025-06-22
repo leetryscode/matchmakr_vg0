@@ -26,15 +26,25 @@ export default async function SingleDashboardPage() {
         redirect('/login');
     }
 
+    // Fetch the user's full profile including sponsored_by_id
     const { data: profile } = await supabase
         .from('profiles')
-        .select('name, user_type')
+        .select('*')
         .eq('id', user.id)
         .single();
 
     if (!profile || profile.user_type !== 'SINGLE') {
-        // Redirect if not a single, or no profile found
         redirect('/');
+    }
+
+    let sponsor = null;
+    if (profile.sponsored_by_id) {
+        const { data: sponsorProfile } = await supabase
+            .from('profiles')
+            .select('id, name, profile_pic_url')
+            .eq('id', profile.sponsored_by_id)
+            .single();
+        sponsor = sponsorProfile;
     }
     
     const firstName = profile.name?.split(' ')[0] || null;
@@ -42,7 +52,26 @@ export default async function SingleDashboardPage() {
     return (
         <DashboardLayout firstName={firstName} userId={user.id}>
             <SinglesChat />
-            <InviteMatchMakr />
+            {sponsor ? (
+                <div className="bg-white p-6 rounded-lg shadow-md mt-8 text-center">
+                    <h2 className="text-2xl font-bold mb-4">Your MatchMakr</h2>
+                    <div className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-pink-300 flex items-center justify-center bg-gray-200">
+                        {sponsor.profile_pic_url ? (
+                            <img src={sponsor.profile_pic_url} alt={sponsor.name || 'Sponsor'} className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                            <span className="text-3xl font-bold text-gray-500">
+                                {sponsor.name?.charAt(0).toUpperCase() || '?'}
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-xl font-semibold text-gray-800">{sponsor.name}</p>
+                    <button className="mt-4 w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 font-semibold">
+                        Chat with your MatchMakr
+                    </button>
+                </div>
+            ) : (
+                <InviteMatchMakr />
+            )}
         </DashboardLayout>
     );
 } 
