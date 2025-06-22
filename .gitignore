@@ -1,0 +1,22 @@
+# Dependencies
+/node_modules
+
+# Next.js build output
+/.next/
+
+# Local environment variables
+.env.local
+
+# Vercel
+.vercel
+
+# VSCode settings
+.vscode/
+
+# Supabase
+/supabase/.temp/
+/supabase/generated/
+!/supabase/generated/.gitkeep
+
+# Mac
+.DS_Store 
