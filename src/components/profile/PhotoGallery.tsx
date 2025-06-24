@@ -243,6 +243,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos }: PhotoGal
                         src={currentItem}
                         alt={`Profile photo ${currentIndex + 1}`}
                         fill
+                        sizes="100vw"
                         objectFit="cover"
                         priority
                     />

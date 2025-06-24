@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import Link from 'next/link';
 
 interface SponsorDisplayProps {
     sponsor: {
@@ -57,17 +58,19 @@ export default function SponsorDisplay({ sponsor }: SponsorDisplayProps) {
     return (
         <>
             <div className="bg-white p-6 rounded-lg shadow-md mt-8 text-center">
-                <h2 className="text-2xl font-bold mb-4">Your MatchMakr</h2>
-                <div className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-pink-300 flex items-center justify-center bg-gray-200">
-                    {sponsor.profile_pic_url ? (
-                        <img src={sponsor.profile_pic_url} alt={sponsor.name || 'Sponsor'} className="w-full h-full rounded-full object-cover" />
-                    ) : (
-                        <span className="text-3xl font-bold text-gray-500">
-                            {sponsor.name?.charAt(0).toUpperCase() || '?'}
-                        </span>
-                    )}
-                </div>
-                <p className="text-xl font-semibold text-gray-800">{sponsor.name}</p>
+                <Link href={`/profile/${sponsor.id}`} className="group">
+                    <h2 className="text-2xl font-bold mb-4 group-hover:text-pink-600 transition-colors">Your MatchMakr</h2>
+                    <div className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-pink-300 group-hover:border-pink-500 transition-colors flex items-center justify-center bg-gray-200">
+                        {sponsor.profile_pic_url ? (
+                            <img src={sponsor.profile_pic_url} alt={sponsor.name || 'Sponsor'} className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                            <span className="text-3xl font-bold text-gray-500">
+                                {sponsor.name?.charAt(0).toUpperCase() || '?'}
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-xl font-semibold text-gray-800 group-hover:text-pink-600 transition-colors">{sponsor.name}</p>
+                </Link>
                 <button className="mt-4 w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 font-semibold">
                     Chat with your MatchMakr
                 </button>

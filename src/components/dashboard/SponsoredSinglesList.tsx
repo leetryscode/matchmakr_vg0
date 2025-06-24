@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import InviteSingle from './InviteSingle';
+import Link from 'next/link';
 
 interface SponsoredSingle {
     id: string;
@@ -83,7 +84,9 @@ function SponsoredSinglesList({ sponsoredSingles }: SponsoredSinglesListProps) {
                                     <span className="font-semibold text-gray-800">{single.name}</span>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button className="px-3 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600">View</button>
+                                    <Link href={`/profile/${single.id}`} className="px-3 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600">
+                                        View
+                                    </Link>
                                     <button 
                                         onClick={() => setReleasingSingle(single)}
                                         className="px-3 py-1 bg-gray-500 text-white text-sm rounded-md hover:bg-gray-600"
