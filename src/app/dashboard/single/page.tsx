@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import React from 'react';
 import InviteMatchMakr from '@/components/dashboard/InviteMatchMakr';
+import SponsorDisplay from '@/components/dashboard/SponsorDisplay';
 
 // Placeholder components for the UI sections
 const SinglesChat = () => (
@@ -17,7 +18,6 @@ const SinglesChat = () => (
 );
 
 export default async function SingleDashboardPage() {
-    const cookieStore = cookies();
     const supabase = createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -53,22 +53,7 @@ export default async function SingleDashboardPage() {
         <DashboardLayout firstName={firstName} userId={user.id}>
             <SinglesChat />
             {sponsor ? (
-                <div className="bg-white p-6 rounded-lg shadow-md mt-8 text-center">
-                    <h2 className="text-2xl font-bold mb-4">Your MatchMakr</h2>
-                    <div className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-pink-300 flex items-center justify-center bg-gray-200">
-                        {sponsor.profile_pic_url ? (
-                            <img src={sponsor.profile_pic_url} alt={sponsor.name || 'Sponsor'} className="w-full h-full rounded-full object-cover" />
-                        ) : (
-                            <span className="text-3xl font-bold text-gray-500">
-                                {sponsor.name?.charAt(0).toUpperCase() || '?'}
-                            </span>
-                        )}
-                    </div>
-                    <p className="text-xl font-semibold text-gray-800">{sponsor.name}</p>
-                    <button className="mt-4 w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 font-semibold">
-                        Chat with your MatchMakr
-                    </button>
-                </div>
+                <SponsorDisplay sponsor={sponsor} />
             ) : (
                 <InviteMatchMakr />
             )}

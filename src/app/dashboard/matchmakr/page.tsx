@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import React from 'react';
 import InviteSingle from '@/components/dashboard/InviteSingle';
 import InviteOtherMatchMakrs from '@/components/dashboard/InviteOtherMatchMakrs';
+import SponsoredSinglesList from '@/components/dashboard/SponsoredSinglesList';
 
 // Placeholder components for the UI sections
 const SinglesPondButton = () => (
@@ -75,33 +76,7 @@ export default async function MatchMakrDashboardPage() {
         <DashboardLayout firstName={firstName} userId={user.id}>
             <SinglesPondButton />
             <InviteOtherMatchMakrs />
-            <div className="bg-white p-6 rounded-lg shadow-md mt-8">
-                <h2 className="text-2xl font-bold mb-4">Manage Your Singles</h2>
-                <div className="space-y-4">
-                    {sponsoredSingles && sponsoredSingles.length > 0 ? (
-                        sponsoredSingles.map(single => (
-                            <div key={single.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-200">
-                                        {single.profile_pic_url ? (
-                                            <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full rounded-full object-cover" />
-                                        ) : (
-                                            <span className="text-xl font-bold text-gray-500">
-                                                {single.name?.charAt(0).toUpperCase() || '?'}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <span className="font-semibold text-gray-800">{single.name}</span>
-                                </div>
-                                <button className="px-4 py-2 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600">View Profile</button>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-center text-gray-500">You are not sponsoring any singles yet.</p>
-                    )}
-                </div>
-                <InviteSingle />
-            </div>
+            <SponsoredSinglesList sponsoredSingles={sponsoredSingles} />
         </DashboardLayout>
     );
 } 
