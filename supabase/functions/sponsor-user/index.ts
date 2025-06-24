@@ -42,20 +42,23 @@ Deno.serve(async (req) => {
     );
 
     // 1. Find the matchmaker's user by their email using the admin API
-    const { data: { users: matchmakrUsers }, error: listError } = await supabaseAdmin.auth.admin.listUsers({
-      email: matchmakr_email,
-    });
+    const { data: { users: allUsers }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
 
-    if (listError) throw listError;
+    if (listError) {
+      console.error('Error listing users:', listError);
+      throw listError;
+    }
+
+    // Workaround for local dev where listUsers doesn't filter by email.
+    const matchmakrUser = allUsers.find(u => u.email === matchmakr_email);
     
-    if (!matchmakrUsers || matchmakrUsers.length === 0) {
+    if (!matchmakrUser) {
       return new Response(JSON.stringify({ error: 'MatchMakr not found with that email.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 404,
       });
     }
 
-    const matchmakrUser = matchmakrUsers[0];
     const matchmakrId = matchmakrUser.id;
 
     // 2. Check if the found user is actually a 'MATCHMAKR'

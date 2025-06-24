@@ -21,7 +21,16 @@ const InviteMatchmakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                 body: { matchmakr_email: email },
             });
 
-            if (error) throw error;
+            if (error) {
+                // Try to show the most informative error message
+                let errorMsg = error.message;
+                if (error?.data?.error) {
+                    errorMsg = error.data.error;
+                } else if (typeof error === 'string') {
+                    errorMsg = error;
+                }
+                throw new Error(errorMsg || 'An error occurred.');
+            }
             
             setMessage(data.message || 'Invite sent successfully!');
             setTimeout(() => {
