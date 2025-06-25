@@ -32,7 +32,7 @@ function ReleaseSingleModal({ single, onClose, onConfirm }: { single: SponsoredS
                     </button>
                     <button 
                         onClick={() => onConfirm(single.id, single.name)} 
-                        className="px-6 py-3 bg-gradient-coral text-white rounded-full font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1"
+                        className="px-6 py-3 bg-gradient-primary text-white rounded-full font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1"
                     >
                         Yes, Release Single
                     </button>
@@ -72,7 +72,7 @@ function SponsoredSinglesList({ sponsoredSingles }: SponsoredSinglesListProps) {
                         sponsoredSingles.map(single => (
                             <div key={single.id} className="flex items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-full flex items-center justify-center bg-gradient-coral text-white font-bold text-xl shadow-avatar hover:shadow-avatar-hover transition-all duration-300 hover:-translate-y-1">
+                                    <div className="w-14 h-14 rounded-full flex items-center justify-center bg-gradient-primary text-white font-bold text-xl shadow-avatar hover:shadow-avatar-hover transition-all duration-300 hover:-translate-y-1">
                                         {single.profile_pic_url ? (
                                             <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full rounded-full object-cover" />
                                         ) : (
@@ -84,12 +84,12 @@ function SponsoredSinglesList({ sponsoredSingles }: SponsoredSinglesListProps) {
                                     <span className="font-semibold text-gray-800 text-lg">{single.name}</span>
                                 </div>
                                 <div className="flex gap-3">
-                                    <Link href={`/profile/${single.id}`} className="px-4 py-2 bg-primary-blue text-white text-sm rounded-full font-semibold hover:bg-primary-blue-light transition-all duration-300 hover:-translate-y-1 shadow-button hover:shadow-button-hover">
+                                    <Link href={`/profile/${single.id}`} className="px-4 py-2 bg-gradient-primary text-white text-sm rounded-full font-semibold hover:bg-gradient-light transition-all duration-300 hover:-translate-y-1 shadow-button hover:shadow-button-hover">
                                         View
                                     </Link>
                                     <button 
                                         onClick={() => setReleasingSingle(single)}
-                                        className="px-4 py-2 bg-accent-coral text-white text-sm rounded-full font-semibold hover:bg-red-600 transition-all duration-300 hover:-translate-y-1 shadow-button hover:shadow-button-hover"
+                                        className="px-4 py-2 bg-gradient-light text-white text-sm rounded-full font-semibold hover:bg-gradient-primary transition-all duration-300 hover:-translate-y-1 shadow-button hover:shadow-button-hover"
                                     >
                                         Manage
                                     </button>

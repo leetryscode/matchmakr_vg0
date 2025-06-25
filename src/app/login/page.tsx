@@ -56,7 +56,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
       <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 text-center">
-        <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem] text-primary-blue">
+        <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] gradient-text leading-[1.1]">
           Login
         </h1>
         <form
@@ -69,7 +69,7 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full rounded-md border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+            className="w-full rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
           />
           <input
             type="password"
@@ -77,18 +77,18 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full rounded-md border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+            className="w-full rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
           />
-          {error && <p className="text-red-500">{error}</p>}
+          {error && <p className="text-red-500 font-light">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="rounded-full bg-primary-blue px-10 py-3 font-semibold text-white no-underline transition hover:bg-primary-blue-light disabled:opacity-50"
+            className="rounded-full bg-gradient-primary px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-light hover:-translate-y-1 shadow-button hover:shadow-button-hover disabled:opacity-50"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-        <a href="/" className="text-primary-blue underline mt-4 hover:text-primary-blue-light transition-colors">
+        <a href="/" className="text-primary-blue underline mt-4 hover:text-primary-blue-light transition-colors font-light">
           Back to Home
         </a>
       </div>

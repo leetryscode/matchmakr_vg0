@@ -10,18 +10,24 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          blue: '#00A3FF',
-          'blue-light': '#40C4FF',
+          blue: '#0066FF',
+          'blue-light': '#00C9A7',
         },
         accent: {
-          yellow: '#FFD700',
-          'yellow-light': '#FFE082',
-          coral: '#FF8A80',
+          'blue-light': '#4D9CFF',
+          'teal-light': '#4DDDCC',
         },
         background: {
           main: '#F5F5F5',
           card: '#FFFFFF',
-        }
+        },
+        text: {
+          dark: '#1E293B',
+          light: '#64748B',
+        },
+        border: {
+          light: '#E2E8F0',
+        },
       },
       fontFamily: {
         'inter': ['Inter', 'sans-serif'],
@@ -29,19 +35,18 @@ const config: Config = {
         'raleway': ['Raleway', 'sans-serif'],
       },
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #00A3FF 0%, #40C4FF 100%)',
-        'gradient-accent': 'linear-gradient(135deg, #FFD700 0%, #FFE082 100%)',
-        'gradient-coral': 'linear-gradient(135deg, #FF8A80 0%, #FFB2B2 100%)',
+        'gradient-primary': 'linear-gradient(135deg, #0066FF, #00C9A7)',
+        'gradient-light': 'linear-gradient(135deg, #4D9CFF, #4DDDCC)',
         'gradient-card': 'linear-gradient(135deg, #F5F5F5 0%, #FFFFFF 100%)',
       },
       boxShadow: {
         'card': '0 8px 32px rgba(0,0,0,0.08)',
         'card-hover': '0 20px 40px rgba(0,0,0,0.12)',
-        'primary': '0 6px 20px rgba(0,163,255,0.3)',
-        'primary-hover': '0 12px 30px rgba(0,163,255,0.4)',
-        'accent': '0 6px 20px rgba(255,215,0,0.3)',
-        'accent-hover': '0 12px 30px rgba(255,215,0,0.4)',
-        'header': '0 20px 40px rgba(0,163,255,0.2)',
+        'primary': '0 6px 20px rgba(0,102,255,0.3)',
+        'primary-hover': '0 12px 30px rgba(0,102,255,0.4)',
+        'accent': '0 6px 20px rgba(77,156,255,0.3)',
+        'accent-hover': '0 12px 30px rgba(77,156,255,0.4)',
+        'header': '0 20px 40px rgba(0,102,255,0.2)',
         'button': '0 4px 15px rgba(0,0,0,0.15)',
         'button-hover': '0 8px 25px rgba(0,0,0,0.25)',
         'avatar': '0 4px 12px rgba(0,0,0,0.15)',

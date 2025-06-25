@@ -33,16 +33,16 @@ export default function VendorOnboardingPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-900 text-white">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
        <div className="absolute top-4 left-4">
-        <button onClick={handleBack} className="text-pink-400 underline">
+        <button onClick={handleBack} className="text-primary-blue underline hover:text-primary-blue-light transition-colors font-light">
           Back
         </button>
       </div>
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 text-center">
         {step === 1 && (
           <div className="flex flex-col items-center justify-center gap-8">
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-[4rem]">
+            <h1 className="text-4xl font-light gradient-text leading-[1.1] tracking-tight sm:text-[4rem]">
               Tell us about your business
             </h1>
             <input
@@ -50,26 +50,26 @@ export default function VendorOnboardingPage() {
               value={vendorData.businessName}
               onChange={(e) => setVendorData({ ...vendorData, businessName: e.target.value })}
               placeholder="Business Name"
-              className="w-full max-w-md rounded-md border border-gray-600 bg-gray-800 px-4 py-3 text-white placeholder-gray-500 focus:border-pink-400 focus:outline-none focus:ring-pink-400"
+              className="w-full max-w-md rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
             />
             <input
               type="text"
               value={vendorData.industry}
               onChange={(e) => setVendorData({ ...vendorData, industry: e.target.value })}
               placeholder="Industry (e.g., Restaurant, Bar, Cafe)"
-              className="w-full max-w-md rounded-md border border-gray-600 bg-gray-800 px-4 py-3 text-white placeholder-gray-500 focus:border-pink-400 focus:outline-none focus:ring-pink-400"
+              className="w-full max-w-md rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
             />
             <input
               type="text"
               value={vendorData.location}
               onChange={(e) => setVendorData({ ...vendorData, location: e.target.value })}
               placeholder="Location (e.g., Address or City)"
-              className="w-full max-w-md rounded-md border border-gray-600 bg-gray-800 px-4 py-3 text-white placeholder-gray-500 focus:border-pink-400 focus:outline-none focus:ring-pink-400"
+              className="w-full max-w-md rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
             />
             <button
               onClick={handleNext}
               disabled={!vendorData.businessName || !vendorData.industry || !vendorData.location}
-              className="rounded-full bg-pink-500 px-10 py-3 font-semibold text-white no-underline transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-full bg-gradient-primary px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-light hover:-translate-y-1 shadow-button hover:shadow-button-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:transform-none"
             >
               Next
             </button>
@@ -77,13 +77,13 @@ export default function VendorOnboardingPage() {
         )}
         {step === 2 && (
             <div className="flex flex-col items-center justify-center gap-8">
-                <h1 className="text-4xl font-extrabold tracking-tight sm:text-[4rem]">Upload Images</h1>
-                <div className="flex h-48 w-full max-w-md items-center justify-center rounded-lg border-2 border-dashed border-gray-600 bg-gray-800">
-                    <p className="text-gray-400">Placeholder for image upload</p>
+                <h1 className="text-4xl font-light gradient-text leading-[1.1] tracking-tight sm:text-[4rem]">Upload Images</h1>
+                <div className="flex h-48 w-full max-w-md items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-100 shadow-card">
+                    <p className="text-gray-500 font-light">Placeholder for image upload</p>
                 </div>
                  <button
                     onClick={handleNext}
-                    className="rounded-full bg-pink-500 px-10 py-3 font-semibold text-white no-underline transition hover:bg-pink-600"
+                    className="rounded-full bg-gradient-primary px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-light hover:-translate-y-1 shadow-button hover:shadow-button-hover"
                 >
                     Next (Skip for now)
                 </button>
@@ -91,18 +91,18 @@ export default function VendorOnboardingPage() {
         )}
          {step === 3 && (
             <div className="flex flex-col items-center justify-center gap-8">
-                <h1 className="text-4xl font-extrabold tracking-tight sm:text-[4rem]">Create an Offer</h1>
+                <h1 className="text-4xl font-light gradient-text leading-[1.1] tracking-tight sm:text-[4rem]">Create an Offer</h1>
                 <textarea
                     value={vendorData.offer}
                     onChange={(e) => setVendorData({ ...vendorData, offer: e.target.value })}
                     placeholder="e.g., 20% off drinks, free appetizer"
-                    className="w-full max-w-md rounded-md border border-gray-600 bg-gray-800 px-4 py-3 text-white placeholder-gray-500 focus:border-pink-400 focus:outline-none focus:ring-pink-400"
+                    className="w-full max-w-md rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
                     rows={4}
                 />
                  <button
                     onClick={handleComplete}
                     disabled={!vendorData.offer}
-                    className="rounded-full bg-green-500 px-10 py-3 font-semibold text-white no-underline transition hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-full bg-gradient-primary px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-light hover:-translate-y-1 shadow-button hover:shadow-button-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:transform-none"
                 >
                     Complete Onboarding
                 </button>

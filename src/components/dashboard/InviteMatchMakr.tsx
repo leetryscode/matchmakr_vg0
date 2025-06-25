@@ -65,7 +65,7 @@ const InviteMatchmakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                     <button onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors" disabled={isLoading}>
                         Cancel
                     </button>
-                    <button onClick={handleSendInvite} className="px-4 py-2 bg-primary-blue text-white rounded-md hover:bg-primary-blue-light transition-colors" disabled={isLoading}>
+                    <button onClick={handleSendInvite} className="px-4 py-2 bg-gradient-primary text-white rounded-md hover:bg-gradient-light transition-all duration-300 shadow-button hover:shadow-button-hover" disabled={isLoading}>
                         {isLoading ? 'Sending...' : 'Send Invite'}
                     </button>
                 </div>
@@ -87,17 +87,17 @@ export default function InviteMatchMakr() {
 
     return (
         <>
-            <div className="bg-background-card p-6 rounded-lg shadow-md mt-8 border border-gray-200">
+            <div className="bg-background-card p-6 rounded-lg shadow-card mt-8 border border-gray-200">
                 <h2 className="text-2xl font-bold mb-4 text-primary-blue">Chat With my MatchMakr</h2>
                 <div className="mt-4 p-4 border border-gray-200 rounded-lg flex items-center justify-between bg-gray-50">
                     <span className="text-gray-700">Chat with the user who manages your profile!</span>
-                    <button className="bg-primary-blue text-white px-4 py-2 rounded-lg hover:bg-primary-blue-light transition-colors">
+                    <button className="bg-gradient-primary text-white px-4 py-2 rounded-lg hover:bg-gradient-light transition-all duration-300 shadow-button hover:shadow-button-hover">
                         View Profile
                     </button>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="mt-4 w-full bg-accent-yellow text-gray-800 py-3 rounded-lg hover:bg-accent-yellow-light font-semibold transition-colors"
+                    className="mt-4 w-full bg-gradient-light text-white py-3 rounded-lg hover:bg-gradient-primary font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover"
                 >
                     Invite someone to be my MatchMakr!
                 </button>

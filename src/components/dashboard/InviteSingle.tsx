@@ -75,7 +75,7 @@ export default function InviteSingle() {
         <>
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="mt-6 w-full bg-gradient-accent text-gray-800 py-4 px-8 rounded-full font-semibold text-lg shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2"
+                className="mt-6 w-full bg-gradient-light text-white py-4 px-8 rounded-full font-semibold text-lg shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2"
             >
                 Invite a Single User
             </button>

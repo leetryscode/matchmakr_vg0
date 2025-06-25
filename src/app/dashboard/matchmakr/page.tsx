@@ -10,7 +10,7 @@ import SponsoredSinglesList from '@/components/dashboard/SponsoredSinglesList';
 // Prominent Singles Pond Button
 const SinglesPondButton = () => (
     <div className="mb-8">
-        <div className="bg-gradient-accent p-8 rounded-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-accent-yellow">
+        <div className="bg-gradient-light p-8 rounded-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-accent-teal-light">
             <div className="text-center">
                 <h2 className="font-inter font-bold text-3xl text-gray-800 mb-3">Singles Pond</h2>
                 <p className="text-gray-700 text-lg mb-6 leading-relaxed">
@@ -41,12 +41,12 @@ const MatchMakrChatList = () => (
 );
 
 const ManageSinglesList = () => (
-     <div className="bg-background-card p-6 rounded-lg shadow-md mt-8 border border-gray-200">
+     <div className="bg-background-card p-6 rounded-lg shadow-card mt-8 border border-gray-200">
         <h2 className="text-2xl font-bold mb-4 text-primary-blue">Manage Singles</h2>
         <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
              <p className="text-center text-gray-500">Chats with the singles you manage.</p>
         </div>
-        <button className="mt-4 w-full bg-accent-yellow text-gray-800 py-3 rounded-lg hover:bg-accent-yellow-light font-semibold transition-colors">
+        <button className="mt-4 w-full bg-gradient-light text-white py-3 rounded-lg hover:bg-gradient-primary font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
             Invite a Single!
         </button>
     </div>

@@ -1,25 +1,21 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
+import type { Metadata } from 'next'
+import './globals.css'
 
 export const metadata: Metadata = {
-  title: "MatchMakr",
-  description: "A new way to find a match.",
-};
+  title: 'MatchMakr',
+  description: 'A new way to find a match.',
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en">
-      <head>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:wght@400;600&family=Raleway:wght@500;600&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-source-sans bg-background-main text-gray-800 leading-relaxed text-lg">{children}</body>
+      <body className="font-source-sans bg-background-main text-gray-800 leading-relaxed text-lg">
+        {children}
+      </body>
     </html>
-  );
+  )
 }

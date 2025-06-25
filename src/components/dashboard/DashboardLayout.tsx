@@ -24,7 +24,7 @@ export default function DashboardLayout({ children, firstName, userId }: Dashboa
             {/* Modern Gradient Header */}
             <header className="bg-gradient-primary text-white text-center py-10 px-4 rounded-b-2xl shadow-header">
                 <h1 className="font-inter font-bold text-3xl mb-2">
-                    Hello, <span className="text-accent-yellow font-semibold">{firstName || 'User'}</span>, welcome to MatchMakr
+                    Hello, <span className="text-accent-teal-light font-semibold">{firstName || 'User'}</span>, welcome to MatchMakr
                 </h1>
             </header>
 
@@ -47,7 +47,7 @@ export default function DashboardLayout({ children, firstName, userId }: Dashboa
                     </button>
                     <button 
                         onClick={() => router.push('/dates')}
-                        className="bg-gradient-accent text-gray-800 p-6 rounded-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-accent-yellow"
+                        className="bg-gradient-light text-white p-6 rounded-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-accent-blue-light"
                     >
                         <div className="font-inter font-bold text-2xl mb-2">Discover Dates</div>
                         <div className="font-raleway text-sm opacity-90">Find perfect matches nearby</div>
@@ -55,7 +55,7 @@ export default function DashboardLayout({ children, firstName, userId }: Dashboa
                 </div>
                 <div className="mt-6 flex justify-around text-sm text-gray-500">
                     <button onClick={() => router.push('/settings')} className="hover:text-primary-blue hover:underline transition-colors">Account Setting</button>
-                    <button onClick={handleSignOut} className="hover:text-accent-coral hover:underline transition-colors">Log out</button>
+                    <button onClick={handleSignOut} className="hover:text-primary-blue-light hover:underline transition-colors">Log out</button>
                 </div>
             </footer>
         </div>

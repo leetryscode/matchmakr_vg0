@@ -24,7 +24,7 @@ export default function AgeStep({ onNext, onTooYoung }: AgeStepProps) {
 
   return (
     <div className="flex flex-col items-center justify-center gap-8">
-      <h1 className="text-4xl font-extrabold tracking-tight sm:text-[4rem] text-primary-blue">
+      <h1 className="text-4xl font-light gradient-text leading-[1.1] tracking-tight sm:text-[4rem]">
         What's your birth year?
       </h1>
       <input
@@ -33,12 +33,12 @@ export default function AgeStep({ onNext, onTooYoung }: AgeStepProps) {
         onChange={(e) => setBirthYear(e.target.value)}
         placeholder="YYYY"
         maxLength={4}
-        className="w-full max-w-md rounded-md border border-gray-300 bg-background-card px-4 py-3 text-center text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+        className="w-full max-w-md rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-center text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
       />
       <button
         onClick={handleNext}
         disabled={!/^\d{4}$/.test(birthYear)}
-        className="rounded-full bg-primary-blue px-10 py-3 font-semibold text-white no-underline transition hover:bg-primary-blue-light disabled:cursor-not-allowed disabled:opacity-50"
+        className="rounded-full bg-gradient-primary px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-light hover:-translate-y-1 shadow-button hover:shadow-button-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:transform-none"
       >
         Next
       </button>

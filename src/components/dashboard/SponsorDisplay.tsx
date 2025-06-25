@@ -27,7 +27,7 @@ function EndSponsorshipModal({ isOpen, onClose, onConfirm, sponsorName }: { isOp
                     <button onClick={onClose} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors">
                         Cancel
                     </button>
-                    <button onClick={onConfirm} className="px-6 py-2 bg-accent-coral text-white rounded-md hover:bg-red-600 font-semibold transition-colors">
+                    <button onClick={onConfirm} className="px-6 py-2 bg-gradient-primary text-white rounded-md hover:bg-gradient-light font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
                         Yes, End Sponsorship
                     </button>
                 </div>
@@ -57,7 +57,7 @@ export default function SponsorDisplay({ sponsor }: SponsorDisplayProps) {
 
     return (
         <>
-            <div className="bg-background-card p-6 rounded-lg shadow-md mt-8 text-center border border-gray-200">
+            <div className="bg-background-card p-6 rounded-lg shadow-card mt-8 text-center border border-gray-200">
                 <Link href={`/profile/${sponsor.id}`} className="group">
                     <h2 className="text-2xl font-bold mb-4 group-hover:text-primary-blue transition-colors">Your MatchMakr</h2>
                     <div className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-primary-blue group-hover:border-primary-blue-light transition-colors flex items-center justify-center bg-gray-200">
@@ -71,12 +71,12 @@ export default function SponsorDisplay({ sponsor }: SponsorDisplayProps) {
                     </div>
                     <p className="text-xl font-semibold text-gray-800 group-hover:text-primary-blue transition-colors">{sponsor.name}</p>
                 </Link>
-                <button className="mt-4 w-full bg-primary-blue text-white py-3 rounded-lg hover:bg-primary-blue-light font-semibold transition-colors">
+                <button className="mt-4 w-full bg-gradient-primary text-white py-3 rounded-lg hover:bg-gradient-light font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
                     Chat with your MatchMakr
                 </button>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="mt-4 text-sm text-gray-500 hover:text-accent-coral hover:underline transition-colors"
+                    className="mt-4 text-sm text-gray-500 hover:text-primary-blue hover:underline transition-colors"
                 >
                     End sponsorship
                 </button>

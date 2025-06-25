@@ -53,8 +53,8 @@ export default async function ProfilePage({ params }: { params: { id: string } }
 
     return (
         <>
-            <div className="min-h-screen bg-background-main p-4 sm:p-6 md:p-8">
-                <div className="max-w-sm mx-auto bg-background-card rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+            <div className="min-h-screen bg-gradient-main p-4 sm:p-6 md:p-8">
+                <div className="max-w-sm mx-auto bg-background-card rounded-2xl shadow-deep overflow-hidden border border-border-light">
                     <PhotoGallery 
                         userId={profile.id} 
                         photos={profile.photos}
@@ -63,33 +63,33 @@ export default async function ProfilePage({ params }: { params: { id: string } }
 
                     <div className="p-6">
                         <div className="flex justify-between items-start">
-                            <h1 className="text-3xl font-bold text-gray-900">{profile.name}{age ? `, ${age}` : ''}</h1>
+                            <h1 className="text-3xl font-bold text-text-dark">{profile.name}{age ? `, ${age}` : ''}</h1>
                             {isOwnProfile && (
                                 <EditProfileButton profile={profile} />
                             )}
                         </div>
-                        <p className="text-gray-600 mt-1">{profile.occupation || 'No occupation listed'}</p>
+                        <p className="text-text-light mt-1">{profile.occupation || 'No occupation listed'}</p>
                         
-                        <div className="mt-6 border-t border-gray-200 pt-4">
+                        <div className="mt-6 border-t border-border-light pt-4">
                              <h2 className="text-lg font-semibold text-primary-blue">About {firstName}</h2>
-                             <p className="mt-2 text-sm text-gray-700">{profile.bio || 'No bio yet.'}</p>
+                             <p className="mt-2 text-sm text-text-dark">{profile.bio || 'No bio yet.'}</p>
                         </div>
 
                         {profile.user_type === 'SINGLE' && (
-                            <div className="mt-6 border-t border-accent-coral border-opacity-30 pt-4">
+                            <div className="mt-6 border-t border-primary-teal border-opacity-30 pt-4">
                                 <div className="flex justify-between items-center">
-                                    <h2 className="text-lg font-semibold text-accent-coral">What their MatchMakr says</h2>
+                                    <h2 className="text-lg font-semibold text-primary-teal">What their MatchMakr says</h2>
                                     {isSponsorViewing && (
                                         <EditProfileButton profile={profile} canEditEndorsementOnly={true} />
                                     )}
                                 </div>
-                                <p className="mt-2 text-sm text-gray-700">{profile.matchmakr_endorsement || 'This is where your matchmakr writes about you...'}</p>
+                                <p className="mt-2 text-sm text-text-dark">{profile.matchmakr_endorsement || 'This is where your matchmakr writes about you...'}</p>
                             </div>
                         )}
 
                         {profile.user_type === 'MATCHMAKR' && (
-                            <div className="mt-6 border-t border-accent-coral border-opacity-30 pt-4">
-                                <h2 className="text-lg font-semibold text-accent-coral">Sponsored Singles</h2>
+                            <div className="mt-6 border-t border-primary-teal border-opacity-30 pt-4">
+                                <h2 className="text-lg font-semibold text-primary-teal">Sponsored Singles</h2>
                                 {sponsoredSingles && sponsoredSingles.length > 0 ? (
                                     <div className="mt-4 grid grid-cols-3 gap-4">
                                         {sponsoredSingles.map(single => (
@@ -98,19 +98,19 @@ export default async function ProfilePage({ params }: { params: { id: string } }
                                                     {single.profile_pic_url ? (
                                                         <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                                            <span className="text-2xl font-bold text-gray-500">
+                                                        <div className="w-full h-full bg-background-main flex items-center justify-center">
+                                                            <span className="text-2xl font-bold text-text-light">
                                                                 {single.name?.charAt(0).toUpperCase() || '?'}
                                                             </span>
                                                         </div>
                                                     )}
                                                 </div>
-                                                <p className="mt-2 text-sm font-semibold text-gray-700 truncate group-hover:text-primary-blue">{single.name}</p>
+                                                <p className="mt-2 text-sm font-semibold text-text-dark truncate group-hover:text-primary-blue">{single.name}</p>
                                             </Link>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="mt-2 text-sm text-gray-700">Not currently sponsoring any singles.</p>
+                                    <p className="mt-2 text-sm text-text-light">Not currently sponsoring any singles.</p>
                                 )}
                             </div>
                         )}

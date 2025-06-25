@@ -5,15 +5,15 @@ export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-        <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-          Welcome to <span className="text-primary-blue">MatchMakr</span>
+        <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] gradient-text leading-[1.1]">
+          Welcome to <span className="gradient-text">MatchMakr</span>
         </h1>
-        <p className="text-2xl">Find your match today.</p>
+        <p className="text-2xl font-light text-gray-700">Find your match today.</p>
         <div className="flex gap-4">
-          <Link href="/onboarding" className="text-primary-blue underline hover:text-primary-blue-light transition-colors">
+          <Link href="/onboarding" className="rounded-full bg-gradient-primary px-8 py-3 font-light text-white shadow-button hover:shadow-button-hover hover:-translate-y-1 transition-all duration-300">
             Get Started
           </Link>
-          <Link href="/login" className="text-accent-coral underline hover:text-primary-blue transition-colors">
+          <Link href="/login" className="rounded-full bg-gradient-light px-8 py-3 font-light text-white shadow-button hover:shadow-button-hover hover:-translate-y-1 transition-all duration-300">
             Login
           </Link>
         </div>
