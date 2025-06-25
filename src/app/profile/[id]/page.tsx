@@ -53,6 +53,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
                     <PhotoGallery 
                         userId={profile.id} 
                         photos={profile.photos}
+                        userType={profile.user_type}
                     />
 
                     <div className="p-6">

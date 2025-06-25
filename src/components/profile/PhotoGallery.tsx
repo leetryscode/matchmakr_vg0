@@ -63,12 +63,14 @@ async function getCroppedImg(
 interface PhotoGalleryProps {
     userId: string;
     photos: (string | null)[] | null;
+    userType?: 'SINGLE' | 'MATCHMAKR' | 'VENDOR';
 }
 
-const MAX_PHOTOS = 6;
+const MAX_PHOTOS_SINGLE = 6;
+const MAX_PHOTOS_MATCHMAKR = 1;
 const ADD_PHOTO_SLOT = 'ADD_PHOTO_SLOT';
 
-export default function PhotoGallery({ userId, photos: initialPhotos }: PhotoGalleryProps) {
+export default function PhotoGallery({ userId, photos: initialPhotos, userType = 'SINGLE' }: PhotoGalleryProps) {
     const supabase = createClient();
     const router = useRouter();
     const [photos, setPhotos] = useState(initialPhotos?.filter((p): p is string => typeof p === 'string' && p.trim() !== '') || []);
@@ -79,6 +81,10 @@ export default function PhotoGallery({ userId, photos: initialPhotos }: PhotoGal
     const [editingPhotoUrl, setEditingPhotoUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
+
+    // Determine max photos based on user type
+    const maxPhotos = userType === 'MATCHMAKR' ? MAX_PHOTOS_MATCHMAKR : MAX_PHOTOS_SINGLE;
+    const isMatchMakr = userType === 'MATCHMAKR';
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -94,11 +100,11 @@ export default function PhotoGallery({ userId, photos: initialPhotos }: PhotoGal
 
     const displayItems = useMemo(() => {
         const items = [...photos];
-        if (photos.length < MAX_PHOTOS) {
+        if (photos.length < maxPhotos) {
             items.push(ADD_PHOTO_SLOT);
         }
         return items;
-    }, [photos]);
+    }, [photos, maxPhotos]);
 
     const handleNavigation = (direction: 'next' | 'prev') => {
         const newIndex = direction === 'next'
@@ -110,6 +116,11 @@ export default function PhotoGallery({ userId, photos: initialPhotos }: PhotoGal
     const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
+
+        // For MatchMakrs, if they already have a photo, replace it instead of adding
+        if (isMatchMakr && photos.length > 0) {
+            setEditingPhotoUrl(photos[0]);
+        }
 
         const reader = new FileReader();
         reader.onload = () => {
@@ -233,7 +244,12 @@ export default function PhotoGallery({ userId, photos: initialPhotos }: PhotoGal
                         ) : (
                             <>
                                 <PlusIcon className="h-16 w-16 text-gray-400" />
-                                <span className="mt-2 text-sm font-semibold text-gray-600">Add Photo</span>
+                                <span className="mt-2 text-sm font-semibold text-gray-600">
+                                    {isMatchMakr ? 'Add Profile Photo' : 'Add Photo'}
+                                </span>
+                                {isMatchMakr && (
+                                    <span className="mt-1 text-xs text-gray-500">MatchMakrs can have 1 photo</span>
+                                )}
                             </>
                         )}
                     </button>
@@ -314,14 +330,16 @@ export default function PhotoGallery({ userId, photos: initialPhotos }: PhotoGal
                 />
             )}
 
-            {/* Dots Indicator */}
-            <div className="flex justify-center gap-2 mt-4">
-                {displayItems.map((_, index) => (
-                    <button key={index} onClick={() => setCurrentIndex(index)} className="p-1">
-                        <div className={`h-2 w-2 rounded-full ${currentIndex === index ? 'bg-pink-500' : 'bg-gray-300'}`} />
-                    </button>
-                ))}
-            </div>
+            {/* Dots Indicator - Only show for singles with multiple photos */}
+            {!isMatchMakr && displayItems.length > 1 && (
+                <div className="flex justify-center gap-2 mt-4">
+                    {displayItems.map((_, index) => (
+                        <button key={index} onClick={() => setCurrentIndex(index)} className="p-1">
+                            <div className={`h-2 w-2 rounded-full ${currentIndex === index ? 'bg-pink-500' : 'bg-gray-300'}`} />
+                        </button>
+                    ))}
+                </div>
+            )}
 
             <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} className="hidden" accept="image/*" />
         </div>
