@@ -9,9 +9,9 @@ const InviteOtherMatchMakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClo
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white rounded-lg p-8 w-full max-w-md text-center">
-                <h2 className="text-2xl font-bold mb-4 text-gray-900">Invite a Fellow MatchMakr</h2>
-                <p className="text-gray-600 mb-6">
+            <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-gray-200">
+                <h2 className="font-inter font-bold text-2xl mb-4 text-primary-blue">Invite a Fellow MatchMakr</h2>
+                <p className="text-gray-600 mb-6 leading-relaxed">
                     Invite a friend to join our community helping friends find love.
                 </p>
                 <input
@@ -19,13 +19,13 @@ const InviteOtherMatchMakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClo
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Their email address"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 text-gray-900"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
                 />
                 <div className="flex justify-end gap-4">
-                    <button onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                    <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-full font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
                         Cancel
                     </button>
-                    <button onClick={() => alert(`(Not implemented) Invite would be sent to ${email}`)} className="px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-500">
+                    <button onClick={() => alert(`(Not implemented) Invite would be sent to ${email}`)} className="px-6 py-3 bg-gradient-primary text-white rounded-full font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1">
                         Send Invite
                     </button>
                 </div>
@@ -39,15 +39,15 @@ export default function InviteOtherMatchMakrs() {
 
     return (
         <>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold mb-4">MatchMakr Chat</h2>
-                <p className="text-gray-600">Chat windows with other MatchMakrs like you, on behalf of their sponsored singles =)</p>
-                <div className="mt-4 p-4 border rounded-lg">
-                    <p className="text-center text-gray-500">You have no more chats with MatchMakrs.</p>
+            <div className="bg-background-card p-8 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-primary-blue/10 mb-8">
+                <h2 className="font-inter font-bold text-3xl text-gray-800 mb-3">MatchMakr Chat</h2>
+                <p className="text-gray-600 text-lg leading-relaxed mb-6">Chat windows with other MatchMakrs like you, on behalf of their sponsored singles =)</p>
+                <div className="text-center p-12 bg-gradient-card rounded-2xl border-2 border-dashed border-gray-300 mb-6">
+                    <p className="text-gray-500 text-lg">You have no more chats with MatchMakrs.</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="mt-4 w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 font-semibold"
+                    className="w-full bg-gradient-primary text-white py-4 px-8 rounded-full font-semibold text-lg shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2"
                 >
                     Invite a MatchMakr!
                 </button>

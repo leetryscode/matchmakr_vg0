@@ -16,7 +16,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:wght@400;600&family=Raleway:wght@500;600&display=swap" rel="stylesheet" />
+      </head>
+      <body className="font-source-sans bg-background-main text-gray-800 leading-relaxed text-lg">{children}</body>
     </html>
   );
 }

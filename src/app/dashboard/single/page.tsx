@@ -8,10 +8,10 @@ import SponsorDisplay from '@/components/dashboard/SponsorDisplay';
 
 // Placeholder components for the UI sections
 const SinglesChat = () => (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4">Singles Chat</h2>
+    <div className="bg-background-card p-6 rounded-lg shadow-md border border-gray-200">
+        <h2 className="text-2xl font-bold mb-4 text-primary-blue">Singles Chat</h2>
         <p className="text-gray-600">On MatchMakr, you don't get to choose your matches...</p>
-        <div className="mt-4 p-4 border rounded-lg">
+        <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
              <p className="text-center text-gray-500">You have no more chats with matches at this time. Remember, the goal is not to get a lot of matches... it's to get the right match!</p>
         </div>
     </div>

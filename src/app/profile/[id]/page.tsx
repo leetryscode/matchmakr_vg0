@@ -48,8 +48,8 @@ export default async function ProfilePage({ params }: { params: { id: string } }
 
     return (
         <>
-            <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8">
-                <div className="max-w-sm mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="min-h-screen bg-background-main p-4 sm:p-6 md:p-8">
+                <div className="max-w-sm mx-auto bg-background-card rounded-2xl shadow-lg overflow-hidden border border-gray-200">
                     <PhotoGallery 
                         userId={profile.id} 
                         photos={profile.photos}
@@ -65,14 +65,14 @@ export default async function ProfilePage({ params }: { params: { id: string } }
                         <p className="text-gray-600 mt-1">{profile.occupation || 'No occupation listed'}</p>
                         
                         <div className="mt-6 border-t border-gray-200 pt-4">
-                             <h2 className="text-lg font-semibold text-gray-800">About {firstName}</h2>
+                             <h2 className="text-lg font-semibold text-primary-blue">About {firstName}</h2>
                              <p className="mt-2 text-sm text-gray-700">{profile.bio || 'No bio yet.'}</p>
                         </div>
 
                         {profile.user_type === 'SINGLE' && (
-                            <div className="mt-6 border-t border-pink-200 pt-4">
+                            <div className="mt-6 border-t border-accent-coral border-opacity-30 pt-4">
                                 <div className="flex justify-between items-center">
-                                    <h2 className="text-lg font-semibold text-pink-600">What their MatchMakr says</h2>
+                                    <h2 className="text-lg font-semibold text-accent-coral">What their MatchMakr says</h2>
                                     {isSponsorViewing && (
                                         <EditProfileButton profile={profile} canEditEndorsementOnly={true} />
                                     )}
@@ -82,13 +82,13 @@ export default async function ProfilePage({ params }: { params: { id: string } }
                         )}
 
                         {profile.user_type === 'MATCHMAKR' && (
-                            <div className="mt-6 border-t border-pink-200 pt-4">
-                                <h2 className="text-lg font-semibold text-pink-600">Sponsored Singles</h2>
+                            <div className="mt-6 border-t border-accent-coral border-opacity-30 pt-4">
+                                <h2 className="text-lg font-semibold text-accent-coral">Sponsored Singles</h2>
                                 {sponsoredSingles && sponsoredSingles.length > 0 ? (
                                     <div className="mt-4 grid grid-cols-3 gap-4">
                                         {sponsoredSingles.map(single => (
                                             <Link href={`/profile/${single.id}`} key={single.id} className="text-center group">
-                                                <div className="w-20 h-20 rounded-full mx-auto overflow-hidden border-2 border-transparent group-hover:border-pink-400 transition-all duration-300">
+                                                <div className="w-20 h-20 rounded-full mx-auto overflow-hidden border-2 border-transparent group-hover:border-primary-blue transition-all duration-300">
                                                     {single.profile_pic_url ? (
                                                         <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full object-cover" />
                                                     ) : (
@@ -99,7 +99,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
                                                         </div>
                                                     )}
                                                 </div>
-                                                <p className="mt-2 text-sm font-semibold text-gray-700 truncate group-hover:text-pink-600">{single.name}</p>
+                                                <p className="mt-2 text-sm font-semibold text-gray-700 truncate group-hover:text-primary-blue">{single.name}</p>
                                             </Link>
                                         ))}
                                     </div>

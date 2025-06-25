@@ -59,8 +59,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-            <div className="bg-white rounded-lg p-8 w-full max-w-md text-center shadow-xl">
-                <h2 className="text-2xl font-bold mb-4 text-gray-900">
+            <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
+                <h2 className="text-2xl font-bold mb-4 text-primary-blue">
                     {canEditEndorsementOnly ? 'Edit Your Endorsement' : 'Edit Profile'}
                 </h2>
                 {canEditEndorsementOnly ? (
@@ -68,7 +68,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
                         <textarea
                             value={endorsement}
                             onChange={e => setEndorsement(e.target.value)}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 text-gray-900"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
                             rows={5}
                             placeholder="Write your endorsement..."
                         />
@@ -83,7 +83,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
                                     id="name"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-background-card text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
                                 />
                             </div>
                             <div>
@@ -93,7 +93,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
                                     id="occupation"
                                     value={occupation}
                                     onChange={(e) => setOccupation(e.target.value)}
-                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-background-card text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
                                 />
                             </div>
                             <div>
@@ -103,17 +103,17 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
                                     rows={4}
                                     value={bio}
                                     onChange={(e) => setBio(e.target.value)}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-background-card text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
                                 />
                             </div>
                         </div>
                     </>
                 )}
                 <div className="flex justify-center gap-4 mt-4">
-                    <button onClick={onClose} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold">
+                    <button onClick={onClose} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors">
                         Cancel
                     </button>
-                    <button onClick={handleSave} className="px-6 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700 font-semibold">
+                    <button onClick={handleSave} className="px-6 py-2 bg-primary-blue text-white rounded-md hover:bg-primary-blue-light font-semibold transition-colors">
                         Save
                     </button>
                 </div>

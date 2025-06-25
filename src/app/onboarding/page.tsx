@@ -40,33 +40,33 @@ export default function OnboardingPage() {
       case 1:
         return (
           <>
-            <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
+            <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem] text-primary-blue">
               Select User Type
             </h1>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-8">
               <button
                 onClick={() => handleUserTypeSelect('Single')}
-                className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
+                className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-gray-800 hover:bg-gray-50 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
               >
-                <h3 className="text-2xl font-bold">Single →</h3>
+                <h3 className="text-2xl font-bold text-primary-blue">Single →</h3>
                 <div className="text-lg">
                   I'm a single looking for a match.
                 </div>
               </button>
               <button
                 onClick={() => handleUserTypeSelect('MatchMakr')}
-                className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
+                className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-gray-800 hover:bg-gray-50 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
               >
-                <h3 className="text-2xl font-bold">MatchMakr →</h3>
+                <h3 className="text-2xl font-bold text-primary-blue">MatchMakr →</h3>
                 <div className="text-lg">
                   I want to find matches for my friends.
                 </div>
               </button>
               <button
                 onClick={() => handleUserTypeSelect('Vendor')}
-                className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
+                className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-gray-800 hover:bg-gray-50 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
               >
-                <h3 className="text-2xl font-bold">Vendor →</h3>
+                <h3 className="text-2xl font-bold text-primary-blue">Vendor →</h3>
                 <div className="text-lg">
                   I want to promote my business for dates.
                 </div>
@@ -98,9 +98,9 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-900 text-white">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
        <div className="absolute top-4 left-4">
-        <button onClick={goBack} className="text-pink-400 underline">
+        <button onClick={goBack} className="text-primary-blue underline hover:text-primary-blue-light transition-colors">
           {step > 1 ? 'Back' : 'Home'}
         </button>
       </div>

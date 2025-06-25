@@ -18,16 +18,16 @@ function EndSponsorshipModal({ isOpen, onClose, onConfirm, sponsorName }: { isOp
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-            <div className="bg-white rounded-lg p-8 w-full max-w-md text-center shadow-xl">
-                <h2 className="text-2xl font-bold mb-4 text-gray-900">End Sponsorship with {sponsorName || 'your MatchMakr'}?</h2>
+            <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
+                <h2 className="text-2xl font-bold mb-4 text-primary-blue">End Sponsorship with {sponsorName || 'your MatchMakr'}?</h2>
                 <p className="text-gray-600 mb-6">
                     They will no longer be able to manage your profile or find matches on your behalf. This action cannot be undone, and you would need to invite them again to reconnect.
                 </p>
                 <div className="flex justify-center gap-4">
-                    <button onClick={onClose} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold">
+                    <button onClick={onClose} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors">
                         Cancel
                     </button>
-                    <button onClick={onConfirm} className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-semibold">
+                    <button onClick={onConfirm} className="px-6 py-2 bg-accent-coral text-white rounded-md hover:bg-red-600 font-semibold transition-colors">
                         Yes, End Sponsorship
                     </button>
                 </div>
@@ -57,10 +57,10 @@ export default function SponsorDisplay({ sponsor }: SponsorDisplayProps) {
 
     return (
         <>
-            <div className="bg-white p-6 rounded-lg shadow-md mt-8 text-center">
+            <div className="bg-background-card p-6 rounded-lg shadow-md mt-8 text-center border border-gray-200">
                 <Link href={`/profile/${sponsor.id}`} className="group">
-                    <h2 className="text-2xl font-bold mb-4 group-hover:text-pink-600 transition-colors">Your MatchMakr</h2>
-                    <div className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-pink-300 group-hover:border-pink-500 transition-colors flex items-center justify-center bg-gray-200">
+                    <h2 className="text-2xl font-bold mb-4 group-hover:text-primary-blue transition-colors">Your MatchMakr</h2>
+                    <div className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-primary-blue group-hover:border-primary-blue-light transition-colors flex items-center justify-center bg-gray-200">
                         {sponsor.profile_pic_url ? (
                             <img src={sponsor.profile_pic_url} alt={sponsor.name || 'Sponsor'} className="w-full h-full rounded-full object-cover" />
                         ) : (
@@ -69,14 +69,14 @@ export default function SponsorDisplay({ sponsor }: SponsorDisplayProps) {
                             </span>
                         )}
                     </div>
-                    <p className="text-xl font-semibold text-gray-800 group-hover:text-pink-600 transition-colors">{sponsor.name}</p>
+                    <p className="text-xl font-semibold text-gray-800 group-hover:text-primary-blue transition-colors">{sponsor.name}</p>
                 </Link>
-                <button className="mt-4 w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 font-semibold">
+                <button className="mt-4 w-full bg-primary-blue text-white py-3 rounded-lg hover:bg-primary-blue-light font-semibold transition-colors">
                     Chat with your MatchMakr
                 </button>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="mt-4 text-sm text-gray-500 hover:text-red-600 hover:underline"
+                    className="mt-4 text-sm text-gray-500 hover:text-accent-coral hover:underline transition-colors"
                 >
                     End sponsorship
                 </button>

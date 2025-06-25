@@ -20,7 +20,7 @@ export default function EditProfileButton({ profile, canEditEndorsementOnly = fa
         <>
             <button
                 onClick={() => setIsEditModalOpen(true)}
-                className="bg-pink-600 text-white px-3 py-1 text-sm font-semibold rounded-md hover:bg-pink-500 transition-colors"
+                className="bg-primary-blue text-white px-3 py-1 text-sm font-semibold rounded-md hover:bg-primary-blue-light transition-colors"
             >
                 Edit
             </button>

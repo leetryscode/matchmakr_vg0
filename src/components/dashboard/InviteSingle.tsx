@@ -41,9 +41,9 @@ const InviteSingleModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white rounded-lg p-8 w-full max-w-md text-center">
-                <h2 className="text-2xl font-bold mb-4 text-gray-900">Invite a Single User</h2>
-                <p className="text-gray-600 mb-6">
+            <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-gray-200">
+                <h2 className="font-inter font-bold text-2xl mb-4 text-primary-blue">Invite a Single User</h2>
+                <p className="text-gray-600 mb-6 leading-relaxed">
                     Invite a single user to find matches for.
                 </p>
                 <input
@@ -51,15 +51,15 @@ const InviteSingleModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Single user's email address"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 text-gray-900"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
                     disabled={isLoading}
                 />
                 {message && <p className="text-gray-800 my-2">{message}</p>}
                 <div className="flex justify-end gap-4">
-                    <button onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300" disabled={isLoading}>
+                    <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-full font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover" disabled={isLoading}>
                         Cancel
                     </button>
-                    <button onClick={handleSendInvite} className="px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-500" disabled={isLoading}>
+                    <button onClick={handleSendInvite} className="px-6 py-3 bg-gradient-primary text-white rounded-full font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1" disabled={isLoading}>
                         {isLoading ? 'Sending...' : 'Send Invite'}
                     </button>
                 </div>
@@ -73,19 +73,12 @@ export default function InviteSingle() {
 
     return (
         <>
-            <div className="bg-white p-6 rounded-lg shadow-md mt-8">
-                <h2 className="text-2xl font-bold mb-4">Manage Your Singles</h2>
-                {/* This will eventually be a list of sponsored singles */}
-                <div className="mt-4 p-4 border rounded-lg">
-                    <p className="text-center text-gray-500">You are not sponsoring any singles yet.</p>
-                </div>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="mt-4 w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 font-semibold"
-                >
-                    Invite a Single User
-                </button>
-            </div>
+            <button
+                onClick={() => setIsModalOpen(true)}
+                className="mt-6 w-full bg-gradient-accent text-gray-800 py-4 px-8 rounded-full font-semibold text-lg shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2"
+            >
+                Invite a Single User
+            </button>
             <InviteSingleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </>
     );
