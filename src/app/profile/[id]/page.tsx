@@ -68,7 +68,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
     return (
         <>
             <div className="min-h-screen bg-gradient-main p-4 sm:p-6 md:p-8">
-                <div className="max-w-sm mx-auto bg-background-card rounded-2xl shadow-deep overflow-hidden border border-border-light">
+                <div className="max-w-sm mx-auto gradient-border rounded-2xl shadow-deep overflow-hidden border border-accent-teal-light" style={{ background: 'linear-gradient(180deg, #FFFFFF 0%, #E6F7FA 100%)' }}>
                     <PhotoGallery 
                         userId={profile.id} 
                         photos={profile.photos}
@@ -77,12 +77,14 @@ export default async function ProfilePage({ params }: { params: { id: string } }
 
                     <div className="p-6">
                         <div className="flex justify-between items-start">
-                            <h1 className="text-3xl font-bold text-text-dark">{profile.name}{age ? `, ${age}` : ''}</h1>
+                            <div>
+                                <h1 className="text-3xl font-bold gradient-text">{profile.name}</h1>
+                                <p className="text-lg text-text-light">{[profile.occupation, age ? age : null].filter(Boolean).join(', ')}</p>
+                            </div>
                             {isOwnProfile && (
                                 <EditProfileButton profile={profile} />
                             )}
                         </div>
-                        <p className="text-text-light mt-1">{profile.occupation || 'No occupation listed'}</p>
                         {profile.user_type === 'SINGLE' && (profile.city || profile.state || profile.zip_code) && (
                             <p className="text-text-light mt-1">
                                 📍 {[profile.city, profile.state].filter(Boolean).join(', ')}

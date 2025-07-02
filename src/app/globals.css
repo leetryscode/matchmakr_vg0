@@ -15,7 +15,8 @@
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(135deg, #F5F5F5 0%, #FFFFFF 100%);
-  font-family: 'Source Sans Pro', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.5;
 }
 
 /* Gradient text utility */

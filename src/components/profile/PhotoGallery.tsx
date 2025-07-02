@@ -241,7 +241,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
     const currentItem = displayItems[currentIndex];
 
     return (
-        <div className="w-full">
+        <div className="relative mb-6">
             <div className="relative w-full aspect-square bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
                 {currentItem === ADD_PHOTO_SLOT ? (
                     <button
@@ -340,13 +340,14 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                 />
             )}
 
-            {/* Dots Indicator - Only show for singles with multiple photos */}
-            {!isMatchMakr && displayItems.length > 1 && (
-                <div className="flex justify-center gap-2 mt-4">
-                    {displayItems.map((_, index) => (
-                        <button key={index} onClick={() => setCurrentIndex(index)} className="p-1">
-                            <div className={`h-2 w-2 rounded-full ${currentIndex === index ? 'bg-pink-500' : 'bg-gray-300'}`} />
-                        </button>
+            {/* Photo indicator dots */}
+            {photos.length > 1 && (
+                <div className="flex justify-center mt-2 gap-2">
+                    {photos.map((_, idx) => (
+                        <span
+                            key={idx}
+                            className={`inline-block w-2 h-2 rounded-full ${idx === currentIndex ? 'bg-accent-teal-light' : 'bg-gray-300'} transition-all`}
+                        />
                     ))}
                 </div>
             )}
