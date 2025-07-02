@@ -23,7 +23,6 @@ export type Database = {
           matchmakr_endorsement: string | null
           offer: string | null
           photos: string[] | null
-          profile_pic_url: string | null
           sex: string | null
           sponsored_by_id: string | null
           user_type: Database["public"]["Enums"]["user_role"]
@@ -41,7 +40,6 @@ export type Database = {
           matchmakr_endorsement?: string | null
           offer?: string | null
           photos?: string[] | null
-          profile_pic_url?: string | null
           sex?: string | null
           sponsored_by_id?: string | null
           user_type: Database["public"]["Enums"]["user_role"]
@@ -59,7 +57,6 @@ export type Database = {
           matchmakr_endorsement?: string | null
           offer?: string | null
           photos?: string[] | null
-          profile_pic_url?: string | null
           sex?: string | null
           sponsored_by_id?: string | null
           user_type?: Database["public"]["Enums"]["user_role"]

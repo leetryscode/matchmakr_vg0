@@ -76,14 +76,14 @@ export default async function MatchMakrDashboardPage() {
     // Fetch the list of singles sponsored by this MatchMakr
     const { data: sponsoredSingles } = await supabase
         .from('profiles')
-        .select('id, name, profile_pic_url, photos')
+        .select('id, name, photos')
         .eq('sponsored_by_id', user.id)
         .eq('user_type', 'SINGLE');
 
-    // Use the first photo from photos array if profile_pic_url is not available
+    // Use the first photo from photos array as profile picture
     const processedSponsoredSingles = sponsoredSingles?.map(single => ({
         ...single,
-        profile_pic_url: single.profile_pic_url || (single.photos && single.photos.length > 0 ? single.photos[0] : null)
+        profile_pic_url: single.photos && single.photos.length > 0 ? single.photos[0] : null
     })) || null;
 
     const firstName = profile.name?.split(' ')[0] || null;

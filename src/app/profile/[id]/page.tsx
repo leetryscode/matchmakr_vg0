@@ -34,14 +34,14 @@ export default async function ProfilePage({ params }: { params: { id: string } }
     if (profile.user_type === 'MATCHMAKR') {
         const { data } = await supabase
             .from('profiles')
-            .select('id, name, profile_pic_url, photos')
+            .select('id, name, photos')
             .eq('sponsored_by_id', profile.id)
             .eq('user_type', 'SINGLE');
         
-        // Use the first photo from photos array if profile_pic_url is not available
+        // Always use the first photo from photos array as the profile picture
         sponsoredSingles = data?.map(single => ({
             ...single,
-            profile_pic_url: single.profile_pic_url || (single.photos && single.photos.length > 0 ? single.photos[0] : null)
+            profile_pic_url: single.photos && single.photos.length > 0 ? single.photos[0] : null
         })) || null;
     }
 

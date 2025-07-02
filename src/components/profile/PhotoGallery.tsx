@@ -183,7 +183,12 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
             }
             
             const { error: dbError } = await supabase.from('profiles').update({ photos: updatedPhotos }).eq('id', userId);
-            if (dbError) throw dbError;
+            if (dbError) {
+                console.error('Database update error:', dbError);
+                console.error('Attempting to update profile ID:', userId);
+                console.error('Current user context:', await supabase.auth.getUser());
+                throw dbError;
+            }
 
             setPhotos(updatedPhotos);
             setEditingPhotoUrl(null);
@@ -204,7 +209,12 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
             
             // Update database first
             const { error: dbError } = await supabase.from('profiles').update({ photos: updatedPhotos }).eq('id', userId);
-            if (dbError) throw dbError;
+            if (dbError) {
+                console.error('Database delete error:', dbError);
+                console.error('Attempting to update profile ID:', userId);
+                console.error('Current user context:', await supabase.auth.getUser());
+                throw dbError;
+            }
 
             // Delete from storage
             const fileName = photoUrlToDelete.split('/').pop();

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import NameStep from '@/components/onboarding/NameStep';
 import SexStep from '@/components/onboarding/SexStep';
 import AgeStep from '@/components/onboarding/AgeStep';
-import ProfilePicStep from '@/components/onboarding/ProfilePicStep';
 import AccountCreationStep from '@/components/onboarding/AccountCreationStep';
 
 export default function OnboardingPage() {
@@ -81,8 +80,6 @@ export default function OnboardingPage() {
       case 4:
         return <AgeStep onNext={(birthYear) => { setOnboardingData({ ...onboardingData, birthYear }); setStep(5); }} onTooYoung={handleTooYoung} />;
       case 5:
-        return <ProfilePicStep onNext={(profilePicUrl) => { setOnboardingData({ ...onboardingData, profilePicUrl }); setStep(6); }} />;
-      case 6:
         return <AccountCreationStep onboardingData={onboardingData} />;
       default:
         return <div>Unknown step</div>;

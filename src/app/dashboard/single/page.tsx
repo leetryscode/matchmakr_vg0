@@ -41,15 +41,15 @@ export default async function SingleDashboardPage() {
     if (profile.sponsored_by_id) {
         const { data: sponsorProfile } = await supabase
             .from('profiles')
-            .select('id, name, profile_pic_url, photos')
+            .select('id, name, photos')
             .eq('id', profile.sponsored_by_id)
             .single();
         
-        // Use the first photo from photos array if profile_pic_url is not available
+        // Use the first photo from photos array as profile picture
         if (sponsorProfile) {
             sponsor = {
                 ...sponsorProfile,
-                profile_pic_url: sponsorProfile.profile_pic_url || (sponsorProfile.photos && sponsorProfile.photos.length > 0 ? sponsorProfile.photos[0] : null)
+                profile_pic_url: sponsorProfile.photos && sponsorProfile.photos.length > 0 ? sponsorProfile.photos[0] : null
             };
         }
     }
