@@ -31,18 +31,32 @@ export default async function ProfilePage({ params }: { params: { id: string } }
 
     // Fetch sponsored singles if the profile is a MatchMakr
     let sponsoredSingles: { id: string; name: string | null; profile_pic_url: string | null }[] | null = null;
+    let matchmakrProfile: { id: string; name: string | null; profile_pic_url: string | null } | null = null;
     if (profile.user_type === 'MATCHMAKR') {
         const { data } = await supabase
             .from('profiles')
             .select('id, name, photos')
             .eq('sponsored_by_id', profile.id)
             .eq('user_type', 'SINGLE');
-        
-        // Always use the first photo from photos array as the profile picture
         sponsoredSingles = data?.map(single => ({
             ...single,
             profile_pic_url: single.photos && single.photos.length > 0 ? single.photos[0] : null
         })) || null;
+    }
+    if (profile.user_type === 'SINGLE' && profile.sponsored_by_id) {
+        const { data } = await supabase
+            .from('profiles')
+            .select('id, name, photos')
+            .eq('id', profile.sponsored_by_id)
+            .eq('user_type', 'MATCHMAKR')
+            .single();
+        if (data) {
+            matchmakrProfile = {
+                id: data.id,
+                name: data.name,
+                profile_pic_url: data.photos && data.photos.length > 0 ? data.photos[0] : null
+            };
+        }
     }
 
     const isOwnProfile = currentUser?.id === profile.id;
@@ -118,6 +132,29 @@ export default async function ProfilePage({ params }: { params: { id: string } }
                                 ) : (
                                     <p className="mt-2 text-sm text-text-light">Not currently sponsoring any singles.</p>
                                 )}
+                            </div>
+                        )}
+
+                        {profile.user_type === 'SINGLE' && matchmakrProfile && (
+                            <div className="mt-6 border-t border-primary-blue border-opacity-30 pt-4">
+                                <h2 className="text-lg font-semibold text-primary-blue mb-2">Their MatchMakr</h2>
+                                <Link href={`/profile/${matchmakrProfile.id}`} className="flex items-center gap-4 p-3 rounded-lg bg-background-main shadow-card hover:shadow-card-hover border border-primary-blue/10 hover:border-primary-blue transition-all duration-300">
+                                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light">
+                                        {matchmakrProfile.profile_pic_url ? (
+                                            <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'MatchMakr'} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full bg-background-main flex items-center justify-center">
+                                                <span className="text-2xl font-bold text-text-light">
+                                                    {matchmakrProfile.name?.charAt(0).toUpperCase() || '?'}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-base font-semibold text-text-dark group-hover:text-primary-blue">{matchmakrProfile.name}</p>
+                                        <p className="text-xs text-text-light">View MatchMakr Profile</p>
+                                    </div>
+                                </Link>
                             </div>
                         )}
                     </div>
