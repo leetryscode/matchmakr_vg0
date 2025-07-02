@@ -14,6 +14,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
     const [name, setName] = useState('');
     const [occupation, setOccupation] = useState('');
     const [bio, setBio] = useState('');
+    const [city, setCity] = useState('');
+    const [state, setState] = useState('');
+    const [zipCode, setZipCode] = useState('');
     const [endorsement, setEndorsement] = useState(profile.matchmakr_endorsement || '');
     const [isSaving, setIsSaving] = useState(false);
 
@@ -22,6 +25,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
             setName(profile.name || '');
             setOccupation(profile.occupation || '');
             setBio(profile.bio || '');
+            setCity(profile.city || '');
+            setState(profile.state || '');
+            setZipCode(profile.zip_code || '');
         }
     }, [profile]);
 
@@ -39,7 +45,16 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
             error = result.error;
             console.log('Supabase result:', result);
         } else {
-            const payload = { name, occupation, bio };
+            // Convert empty fields to null
+            const cleanCity = city.trim() === '' ? null : city;
+            const cleanState = state.trim() === '' ? null : state;
+            const cleanZip = zipCode.trim() === '' ? null : zipCode;
+            const payload = { 
+                name, 
+                occupation, 
+                bio,
+                ...(profile.user_type === 'SINGLE' && { city: cleanCity, state: cleanState, zip_code: cleanZip })
+            };
             console.log('Attempting to update profile:', profile);
             console.log('Payload:', payload);
             const result = await supabase
@@ -106,6 +121,45 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-background-card text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
                                 />
                             </div>
+                            {profile.user_type === 'SINGLE' && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
+                                            <input
+                                                type="text"
+                                                id="city"
+                                                value={city}
+                                                onChange={(e) => setCity(e.target.value)}
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-background-card text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
+                                                placeholder="e.g., New York"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="state" className="block text-sm font-medium text-gray-700">State</label>
+                                            <input
+                                                type="text"
+                                                id="state"
+                                                value={state}
+                                                onChange={(e) => setState(e.target.value)}
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-background-card text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
+                                                placeholder="e.g., NY"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">ZIP Code (optional)</label>
+                                        <input
+                                            type="text"
+                                            id="zipCode"
+                                            value={zipCode}
+                                            onChange={(e) => setZipCode(e.target.value)}
+                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-background-card text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
+                                            placeholder="e.g., 10001"
+                                        />
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </>
                 )}

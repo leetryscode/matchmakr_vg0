@@ -57,7 +57,7 @@ export default async function SingleDashboardPage() {
     const firstName = profile.name?.split(' ')[0] || null;
 
     return (
-        <DashboardLayout firstName={firstName} userId={user.id}>
+        <DashboardLayout firstName={firstName} userId={user.id} userType="SINGLE">
             <SinglesChat />
             {sponsor ? (
                 <SponsorDisplay sponsor={sponsor} />

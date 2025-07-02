@@ -8,6 +8,9 @@ export interface Profile {
     bio: string | null;
     occupation: string | null;
     location: string | null;
+    city: string | null;
+    state: string | null;
+    zip_code: string | null;
     photos: (string | null)[] | null;
     business_name: string | null;
     industry: string | null;

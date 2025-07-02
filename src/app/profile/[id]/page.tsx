@@ -69,6 +69,12 @@ export default async function ProfilePage({ params }: { params: { id: string } }
                             )}
                         </div>
                         <p className="text-text-light mt-1">{profile.occupation || 'No occupation listed'}</p>
+                        {profile.user_type === 'SINGLE' && (profile.city || profile.state || profile.zip_code) && (
+                            <p className="text-text-light mt-1">
+                                📍 {[profile.city, profile.state].filter(Boolean).join(', ')}
+                                {profile.zip_code && ` ${profile.zip_code}`}
+                            </p>
+                        )}
                         
                         <div className="mt-6 border-t border-border-light pt-4">
                              <h2 className="text-lg font-semibold text-primary-blue">About {firstName}</h2>

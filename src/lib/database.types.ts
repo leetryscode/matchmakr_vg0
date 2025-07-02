@@ -14,6 +14,7 @@ export type Database = {
           bio: string | null
           birth_year: number | null
           business_name: string | null
+          city: string | null
           created_at: string
           id: string
           industry: string | null
@@ -25,12 +26,15 @@ export type Database = {
           photos: string[] | null
           sex: string | null
           sponsored_by_id: string | null
+          state: string | null
           user_type: Database["public"]["Enums"]["user_role"]
+          zip_code: string | null
         }
         Insert: {
           bio?: string | null
           birth_year?: number | null
           business_name?: string | null
+          city?: string | null
           created_at?: string
           id: string
           industry?: string | null
@@ -42,12 +46,15 @@ export type Database = {
           photos?: string[] | null
           sex?: string | null
           sponsored_by_id?: string | null
+          state?: string | null
           user_type: Database["public"]["Enums"]["user_role"]
+          zip_code?: string | null
         }
         Update: {
           bio?: string | null
           birth_year?: number | null
           business_name?: string | null
+          city?: string | null
           created_at?: string
           id?: string
           industry?: string | null
@@ -59,7 +66,9 @@ export type Database = {
           photos?: string[] | null
           sex?: string | null
           sponsored_by_id?: string | null
+          state?: string | null
           user_type?: Database["public"]["Enums"]["user_role"]
+          zip_code?: string | null
         }
         Relationships: [
           {

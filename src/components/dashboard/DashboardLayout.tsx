@@ -8,9 +8,10 @@ interface DashboardLayoutProps {
     children: React.ReactNode;
     firstName: string | null;
     userId: string;
+    userType?: 'SINGLE' | 'MATCHMAKR' | 'VENDOR';
 }
 
-export default function DashboardLayout({ children, firstName, userId }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, firstName, userId, userType }: DashboardLayoutProps) {
     const router = useRouter();
     const supabase = createClient();
 
@@ -46,11 +47,15 @@ export default function DashboardLayout({ children, firstName, userId }: Dashboa
                         <div className="font-raleway text-sm opacity-90">Edit your matchmaking profile</div>
                     </button>
                     <button 
-                        onClick={() => router.push('/dates')}
+                        onClick={() => router.push(userType === 'MATCHMAKR' ? '/pond' : '/dates')}
                         className="bg-gradient-light text-white p-6 rounded-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-accent-blue-light"
                     >
-                        <div className="font-inter font-bold text-2xl mb-2">Discover Dates</div>
-                        <div className="font-raleway text-sm opacity-90">Find perfect matches nearby</div>
+                        <div className="font-inter font-bold text-2xl mb-2">
+                            {userType === 'MATCHMAKR' ? 'The Pond' : 'Discover Dates'}
+                        </div>
+                        <div className="font-raleway text-sm opacity-90">
+                            {userType === 'MATCHMAKR' ? 'Browse singles in your area' : 'Find perfect matches nearby'}
+                        </div>
                     </button>
                 </div>
                 <div className="mt-6 flex justify-around text-sm text-gray-500">

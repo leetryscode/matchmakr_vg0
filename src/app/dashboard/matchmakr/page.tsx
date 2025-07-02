@@ -16,9 +16,11 @@ const SinglesPondButton = () => (
                 <p className="text-gray-700 text-lg mb-6 leading-relaxed">
                     Discover and connect with singles looking for matches. Your matchmaking superpower awaits!
                 </p>
-                <button className="bg-gradient-primary text-white px-12 py-4 rounded-full font-semibold text-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-white">
-                    Dive into the Pond
-                </button>
+                <a href="/pond" className="inline-block">
+                    <button className="bg-gradient-primary text-white px-12 py-4 rounded-full font-semibold text-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-white">
+                        Dive into the Pond
+                    </button>
+                </a>
             </div>
         </div>
     </div>
@@ -89,7 +91,7 @@ export default async function MatchMakrDashboardPage() {
     const firstName = profile.name?.split(' ')[0] || null;
 
     return (
-        <DashboardLayout firstName={firstName} userId={user.id}>
+        <DashboardLayout firstName={firstName} userId={user.id} userType="MATCHMAKR">
             <SinglesPondButton />
             <InviteOtherMatchMakrs />
             <SponsoredSinglesList sponsoredSingles={processedSponsoredSingles} />
