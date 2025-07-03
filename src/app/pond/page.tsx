@@ -17,6 +17,9 @@ export default function PondPage() {
     const [searchState, setSearchState] = useState('');
     const [searchZip, setSearchZip] = useState('');
     const [currentUser, setCurrentUser] = useState<any>(null);
+    const [openChatProfileId, setOpenChatProfileId] = useState<string | null>(null);
+    const [openChatMatchmakr, setOpenChatMatchmakr] = useState<{id: string, name: string | null, profile_pic_url: string | null} | null>(null);
+    const [chatLoading, setChatLoading] = useState(false);
 
     useEffect(() => {
         checkUserAndLoadProfiles();
@@ -124,6 +127,37 @@ export default function PondPage() {
         return currentYear - birthYear;
     };
 
+    // Handler to open chat modal and fetch matchmakr info
+    const handleOpenChat = async (profile: PondProfile) => {
+        setChatLoading(true);
+        setOpenChatProfileId(profile.id);
+        if (profile.sponsored_by_id) {
+            const { data } = await supabase
+                .from('profiles')
+                .select('id, name, photos')
+                .eq('id', profile.sponsored_by_id)
+                .eq('user_type', 'MATCHMAKR')
+                .single();
+            if (data) {
+                setOpenChatMatchmakr({
+                    id: data.id,
+                    name: data.name,
+                    profile_pic_url: data.photos && data.photos.length > 0 ? data.photos[0] : null
+                });
+            } else {
+                setOpenChatMatchmakr(null);
+            }
+        } else {
+            setOpenChatMatchmakr(null);
+        }
+        setChatLoading(false);
+    };
+
+    const handleCloseChat = () => {
+        setOpenChatProfileId(null);
+        setOpenChatMatchmakr(null);
+    };
+
     return (
         <div className="min-h-screen bg-gradient-main p-4 sm:p-6 md:p-8">
             <div className="max-w-6xl mx-auto">
@@ -210,14 +244,10 @@ export default function PondPage() {
                             {profiles.map((profile) => {
                                 const age = calculateAge(profile.birth_year);
                                 return (
-                                    <Link 
-                                        href={`/profile/${profile.id}`} 
-                                        key={profile.id}
-                                        className="group block"
-                                    >
+                                    <div key={profile.id} className="group block">
                                         <div className="bg-background-main rounded-lg p-4 shadow-card hover:shadow-card-hover transition-all duration-300 border border-border-light group-hover:border-primary-blue">
                                             {/* Profile Picture */}
-                                            <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden border-2 border-accent-teal-light group-hover:border-primary-blue transition-all duration-300">
+                                            <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden border border-accent-teal-light group-hover:border-primary-blue transition-all duration-300">
                                                 {profile.profile_pic_url ? (
                                                     <img 
                                                         src={profile.profile_pic_url} 
@@ -232,10 +262,9 @@ export default function PondPage() {
                                                     </div>
                                                 )}
                                             </div>
-
                                             {/* Profile Info */}
                                             <div className="text-center">
-                                                <h3 className="font-semibold text-text-dark group-hover:text-primary-blue transition-colors">
+                                                <h3 className="font-medium text-text-dark group-hover:text-primary-blue transition-colors">
                                                     {profile.name}{age ? `, ${age}` : ''}
                                                 </h3>
                                                 {profile.occupation && (
@@ -247,20 +276,53 @@ export default function PondPage() {
                                                         {profile.zip_code && ` ${profile.zip_code}`}
                                                     </p>
                                                 )}
-                                                {profile.bio && (
-                                                    <p className="text-sm text-text-light mt-2 line-clamp-2">
-                                                        {profile.bio}
-                                                    </p>
+                                                {/* Message MatchMakr Button */}
+                                                {profile.sponsored_by_id && (
+                                                    <button
+                                                        className="mt-4 px-4 py-2 rounded-md border border-accent-teal-light bg-transparent text-primary-blue-light hover:text-white hover:bg-gradient-primary font-medium transition-colors"
+                                                        onClick={e => { e.preventDefault(); handleOpenChat(profile); }}
+                                                        disabled={chatLoading && openChatProfileId === profile.id}
+                                                    >
+                                                        {chatLoading && openChatProfileId === profile.id ? 'Loading...' : 'Message MatchMakr'}
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
-                                    </Link>
+                                    </div>
                                 );
                             })}
                         </div>
                     )}
                 </div>
             </div>
+            {/* Chat Modal (global, not per card) */}
+            {openChatProfileId && openChatMatchmakr && (
+                <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-8 shadow-xl max-w-md w-full text-center">
+                        <div className="flex flex-col items-center mb-4">
+                            <div className="w-16 h-16 rounded-full overflow-hidden border border-accent-teal-light mb-2">
+                                {openChatMatchmakr.profile_pic_url ? (
+                                    <img src={openChatMatchmakr.profile_pic_url} alt={openChatMatchmakr.name || 'MatchMakr'} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full bg-background-main flex items-center justify-center">
+                                        <span className="text-2xl font-bold text-text-light">
+                                            {openChatMatchmakr.name?.charAt(0).toUpperCase() || '?'}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                            <h3 className="text-lg font-medium text-primary-blue-light">Chat with {openChatMatchmakr.name}</h3>
+                        </div>
+                        <p className="mb-6 text-gray-600">(Chat UI coming soon!)</p>
+                        <button
+                            className="px-6 py-2 bg-primary-blue-light text-white rounded-md font-medium hover:bg-primary-blue"
+                            onClick={handleCloseChat}
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
