@@ -312,7 +312,7 @@ export default function PondPage() {
                             {profiles.map((profile) => {
                                 const age = calculateAge(profile.birth_year);
                                 return (
-                                    <div key={profile.id} className="group block">
+                                    <Link href={`/profile/${profile.id}`} key={profile.id} className="group block">
                                         <div className="bg-background-main rounded-lg p-4 shadow-card hover:shadow-card-hover transition-all duration-300 border border-border-light group-hover:border-primary-blue">
                                             {/* Profile Picture */}
                                             <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden border border-accent-teal-light group-hover:border-primary-blue transition-all duration-300">
@@ -356,7 +356,7 @@ export default function PondPage() {
                                                 )}
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 );
                             })}
                         </div>

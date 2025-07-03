@@ -113,6 +113,15 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     prevMsgCount.current = chatMessages.length;
   }, [chatMessages.length, openChat]);
 
+  // Always scroll to bottom when modal is opened
+  useEffect(() => {
+    if (!openChat) return;
+    const container = chatContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [openChat]);
+
   // Optimistically append sent message
   const handleSendMessage = async () => {
     if (!userId || !openChat?.id || !messageText.trim()) return;
