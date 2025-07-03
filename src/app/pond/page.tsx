@@ -20,6 +20,10 @@ export default function PondPage() {
     const [openChatProfileId, setOpenChatProfileId] = useState<string | null>(null);
     const [openChatMatchmakr, setOpenChatMatchmakr] = useState<{id: string, name: string | null, profile_pic_url: string | null} | null>(null);
     const [chatLoading, setChatLoading] = useState(false);
+    const [messageText, setMessageText] = useState('');
+    const [sending, setSending] = useState(false);
+    const [chatMessages, setChatMessages] = useState<any[]>([]);
+    const [chatLoadingHistory, setChatLoadingHistory] = useState(false);
 
     useEffect(() => {
         checkUserAndLoadProfiles();
@@ -157,6 +161,70 @@ export default function PondPage() {
         setOpenChatProfileId(null);
         setOpenChatMatchmakr(null);
     };
+
+    const handleSendMessage = async () => {
+        if (!currentUser?.id || !openChatMatchmakr?.id || !messageText.trim()) return;
+        setSending(true);
+        try {
+            const res = await fetch('/api/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sender_id: currentUser.id,
+                    recipient_id: openChatMatchmakr.id,
+                    content: messageText.trim(),
+                }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                setMessageText('');
+            } else {
+                alert(data.error || 'Failed to send message');
+            }
+        } catch (err) {
+            alert('Failed to send message');
+        }
+        setSending(false);
+    };
+
+    // Fetch chat history when modal opens
+    useEffect(() => {
+        const fetchChatHistory = async () => {
+            if (!openChatProfileId || !openChatMatchmakr || !currentUser?.id) return;
+            setChatLoadingHistory(true);
+            const { data, error } = await supabase
+                .from('messages')
+                .select('*')
+                .or(`and(sender_id.eq.${currentUser.id},recipient_id.eq.${openChatMatchmakr.id}),and(sender_id.eq.${openChatMatchmakr.id},recipient_id.eq.${currentUser.id})`)
+                .order('created_at', { ascending: true });
+            if (!error && data) {
+                setChatMessages(data);
+            } else {
+                setChatMessages([]);
+            }
+            setChatLoadingHistory(false);
+        };
+        if (openChatProfileId && openChatMatchmakr && currentUser?.id) {
+            fetchChatHistory();
+        }
+    }, [openChatProfileId, openChatMatchmakr, currentUser?.id]);
+
+    // After sending a message, append to chat
+    useEffect(() => {
+        if (!sending && messageText === '' && openChatProfileId && openChatMatchmakr && currentUser?.id) {
+            // Refetch chat history after sending
+            (async () => {
+                const { data, error } = await supabase
+                    .from('messages')
+                    .select('*')
+                    .or(`and(sender_id.eq.${currentUser.id},recipient_id.eq.${openChatMatchmakr.id}),and(sender_id.eq.${openChatMatchmakr.id},recipient_id.eq.${currentUser.id})`)
+                    .order('created_at', { ascending: true });
+                if (!error && data) {
+                    setChatMessages(data);
+                }
+            })();
+        }
+    }, [sending, messageText, openChatProfileId, openChatMatchmakr, currentUser?.id]);
 
     return (
         <div className="min-h-screen bg-gradient-main p-4 sm:p-6 md:p-8">
@@ -313,10 +381,45 @@ export default function PondPage() {
                             </div>
                             <h3 className="text-lg font-medium text-primary-blue-light">Chat with {openChatMatchmakr.name}</h3>
                         </div>
-                        <p className="mb-6 text-gray-600">(Chat UI coming soon!)</p>
+                        {/* Chat history */}
+                        <div className="mb-4 max-h-64 overflow-y-auto bg-background-main rounded p-2 border border-border-light text-left">
+                            {chatLoadingHistory ? (
+                                <div className="text-center text-gray-400 py-4">Loading chat...</div>
+                            ) : chatMessages.length === 0 ? (
+                                <div className="text-center text-gray-400 py-4">No messages yet.</div>
+                            ) : (
+                                chatMessages.map(msg => (
+                                    <div key={msg.id} className={`my-2 flex ${msg.sender_id === currentUser.id ? 'justify-end' : 'justify-start'}`} >
+                                        <div className={`px-3 py-2 rounded-lg ${msg.sender_id === currentUser.id ? 'bg-primary-blue-light text-white' : 'bg-gray-200 text-gray-800'}`} style={{maxWidth:'75%'}}>
+                                            {msg.content}
+                                            <div className="text-xs text-gray-400 mt-1 text-right">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        <div className="mb-6">
+                            <input
+                                type="text"
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 mb-2 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                                placeholder="Type your message..."
+                                value={messageText}
+                                onChange={e => setMessageText(e.target.value)}
+                                disabled={sending}
+                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(); } }}
+                            />
+                            <button
+                                className="w-full px-6 py-2 bg-primary-blue-light text-white rounded-md font-medium hover:bg-primary-blue disabled:opacity-60 disabled:cursor-not-allowed"
+                                onClick={handleSendMessage}
+                                disabled={sending || !messageText.trim()}
+                            >
+                                {sending ? 'Sending...' : 'Send'}
+                            </button>
+                        </div>
                         <button
-                            className="px-6 py-2 bg-primary-blue-light text-white rounded-md font-medium hover:bg-primary-blue"
+                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md font-medium hover:bg-gray-300"
                             onClick={handleCloseChat}
+                            disabled={sending}
                         >
                             Close
                         </button>
