@@ -6,6 +6,7 @@ import React from 'react';
 import InviteSingle from '@/components/dashboard/InviteSingle';
 import InviteOtherMatchMakrs from '@/components/dashboard/InviteOtherMatchMakrs';
 import SponsoredSinglesList from '@/components/dashboard/SponsoredSinglesList';
+import MatchMakrChatList from '@/components/dashboard/MatchMakrChatList';
 
 // Prominent Singles Pond Button
 const SinglesPondButton = () => (
@@ -23,22 +24,6 @@ const SinglesPondButton = () => (
                 </a>
             </div>
         </div>
-    </div>
-);
-
-// Modern Chat Section
-const MatchMakrChatList = () => (
-    <div className="bg-background-card p-8 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-primary-blue/10 mb-8">
-        <h2 className="font-inter font-bold text-3xl text-gray-800 mb-3">MatchMakr Chat</h2>
-        <p className="text-gray-600 text-lg leading-relaxed mb-6">Chat windows with other MatchMakrs like you, on behalf of their sponsored singles =)</p>
-        
-        <div className="text-center p-12 bg-gradient-card rounded-2xl border-2 border-dashed border-gray-300 mb-6">
-            <p className="text-gray-500 text-lg">You have no more chats with MatchMakrs.</p>
-        </div>
-        
-        <button className="w-full bg-gradient-primary text-white py-4 px-8 rounded-full font-semibold text-lg shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2">
-            Invite a MatchMakr!
-        </button>
     </div>
 );
 
@@ -93,7 +78,7 @@ export default async function MatchMakrDashboardPage() {
     return (
         <DashboardLayout firstName={firstName} userId={user.id} userType="MATCHMAKR">
             <SinglesPondButton />
-            <InviteOtherMatchMakrs />
+            <MatchMakrChatList userId={user.id} />
             <SponsoredSinglesList sponsoredSingles={processedSponsoredSingles} />
         </DashboardLayout>
     );
