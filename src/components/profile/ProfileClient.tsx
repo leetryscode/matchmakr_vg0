@@ -5,6 +5,7 @@ import EditProfileModal from './EditProfileModal';
 import EditProfileButton from './EditProfileButton';
 import Link from 'next/link';
 import { Profile } from './types';
+import ChatModal from '../chat/ChatModal';
 
 // Types for sponsored singles and matchmakr
 interface SponsoredSingle {
@@ -142,20 +143,16 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                     </button>
                   )}
                 </Link>
-                {/* Placeholder Chat Modal */}
-                {isChatOpen && (
-                  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-8 shadow-xl max-w-md w-full text-center">
-                      <h3 className="text-xl font-bold mb-4 text-primary-blue">Chat with {matchmakrProfile.name}</h3>
-                      <p className="mb-6 text-gray-600">(Chat UI coming soon!)</p>
-                      <button
-                        className="px-6 py-2 bg-primary-blue text-white rounded-md font-semibold hover:bg-primary-blue-light"
-                        onClick={() => setIsChatOpen(false)}
-                      >
-                        Close
-                      </button>
-                    </div>
-                  </div>
+                {/* Unified Chat Modal */}
+                {isChatOpen && currentUserProfile?.user_type === 'MATCHMAKR' && (
+                  <ChatModal
+                    open={isChatOpen}
+                    onClose={() => setIsChatOpen(false)}
+                    currentUserId={profile.sponsored_by_id || ''}
+                    otherUserId={matchmakrProfile.id}
+                    otherUserName={matchmakrProfile.name || ''}
+                    otherUserProfilePic={matchmakrProfile.profile_pic_url}
+                  />
                 )}
               </div>
             )}
