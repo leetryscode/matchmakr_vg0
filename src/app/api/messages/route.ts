@@ -15,14 +15,42 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Sender mismatch' }, { status: 403 });
   }
 
-  // Check sender is a matchmakr
+  // Check sender and recipient user types
   const { data: senderProfile } = await supabase
     .from('profiles')
-    .select('user_type')
+    .select('user_type, sponsored_by_id')
     .eq('id', sender_id)
     .single();
-  if (!senderProfile || senderProfile.user_type !== 'MATCHMAKR') {
-    return NextResponse.json({ error: 'Only matchmakrs can send messages' }, { status: 403 });
+  const { data: recipientProfile } = await supabase
+    .from('profiles')
+    .select('user_type, sponsored_by_id')
+    .eq('id', recipient_id)
+    .single();
+  if (!senderProfile || !recipientProfile) {
+    return NextResponse.json({ error: 'Sender or recipient not found' }, { status: 404 });
+  }
+
+  // Allow matchmakr-to-matchmakr
+  if (senderProfile.user_type === 'MATCHMAKR' && recipientProfile.user_type === 'MATCHMAKR') {
+    // ok
+  }
+  // Allow matchmakr-to-their-sponsored-single
+  else if (
+    senderProfile.user_type === 'MATCHMAKR' &&
+    recipientProfile.user_type === 'SINGLE' &&
+    recipientProfile.sponsored_by_id === sender_id
+  ) {
+    // ok
+  }
+  // Allow single-to-their-sponsoring-matchmakr
+  else if (
+    senderProfile.user_type === 'SINGLE' &&
+    recipientProfile.user_type === 'MATCHMAKR' &&
+    senderProfile.sponsored_by_id === recipient_id
+  ) {
+    // ok
+  } else {
+    return NextResponse.json({ error: 'Not allowed: can only message your sponsor or sponsored single, or other matchmakrs.' }, { status: 403 });
   }
 
   // Insert message

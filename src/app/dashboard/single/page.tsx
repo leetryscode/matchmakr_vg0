@@ -2,20 +2,10 @@ import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
-import React from 'react';
+import React, { useState } from 'react';
 import InviteMatchMakr from '@/components/dashboard/InviteMatchMakr';
-import SponsorDisplay from '@/components/dashboard/SponsorDisplay';
-
-// Placeholder components for the UI sections
-const SinglesChat = () => (
-    <div className="bg-background-card p-6 rounded-lg shadow-card border border-border-light">
-        <h2 className="text-2xl font-bold mb-4 text-primary-blue">Singles Chat</h2>
-        <p className="text-text-light">On MatchMakr, you don't get to choose your matches...</p>
-        <div className="mt-4 p-4 border border-border-light rounded-lg bg-background-main">
-             <p className="text-center text-text-light">You have no more chats with matches at this time. Remember, the goal is not to get a lot of matches... it's to get the right match!</p>
-        </div>
-    </div>
-);
+import ChatModal from '@/components/chat/ChatModal';
+import SingleDashboardClient from '@/components/dashboard/SingleDashboardClient';
 
 export default async function SingleDashboardPage() {
     const supabase = createClient();
@@ -58,12 +48,13 @@ export default async function SingleDashboardPage() {
 
     return (
         <DashboardLayout firstName={firstName} userId={user.id} userType="SINGLE">
-            <SinglesChat />
-            {sponsor ? (
-                <SponsorDisplay sponsor={sponsor} />
-            ) : (
-                <InviteMatchMakr />
-            )}
+            <SingleDashboardClient
+                userId={user.id}
+                userName={profile.name}
+                userProfilePic={profile.photos && profile.photos.length > 0 ? profile.photos[0] : null}
+                sponsor={sponsor}
+                userPhotos={profile.photos || []}
+            />
         </DashboardLayout>
     );
 } 

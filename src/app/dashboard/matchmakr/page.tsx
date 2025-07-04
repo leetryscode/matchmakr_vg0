@@ -71,7 +71,7 @@ export default async function MatchMakrDashboardPage() {
     const processedSponsoredSingles = sponsoredSingles?.map(single => ({
         ...single,
         profile_pic_url: single.photos && single.photos.length > 0 ? single.photos[0] : null
-    })) || null;
+    })) || [];
 
     const firstName = profile.name?.split(' ')[0] || null;
 
@@ -84,11 +84,36 @@ export default async function MatchMakrDashboardPage() {
     const currentUserName = userProfile?.name || '';
     const currentUserProfilePic = userProfile?.photos && userProfile.photos.length > 0 ? userProfile.photos[0] : null;
 
+    // Fetch all messages where user is sender or recipient (for singles)
+    const { data: singleMessages } = processedSponsoredSingles.length > 0 ? await supabase
+        .from('messages')
+        .select('*')
+        .or(`sender_id.in.(${processedSponsoredSingles.map(s => s.id).join(',')}),recipient_id.in.(${processedSponsoredSingles.map(s => s.id).join(',')})`)
+        .order('created_at', { ascending: false }) : { data: [] };
+
+    // Map: singleId -> latest message
+    const singleChats: Record<string, { content: string; created_at: string }> = {};
+    if (singleMessages) {
+        for (const msg of singleMessages) {
+            // Find the single in this message
+            const singleId = processedSponsoredSingles.find(s => s.id === msg.sender_id || s.id === msg.recipient_id)?.id;
+            if (singleId && !singleChats[singleId]) {
+                singleChats[singleId] = { content: msg.content, created_at: msg.created_at };
+            }
+        }
+    }
+
     return (
         <DashboardLayout firstName={firstName} userId={user.id} userType="MATCHMAKR">
             <SinglesPondButton />
             <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
-            <SponsoredSinglesList sponsoredSingles={processedSponsoredSingles} />
+            <SponsoredSinglesList 
+                sponsoredSingles={processedSponsoredSingles} 
+                singleChats={singleChats} 
+                userId={user.id}
+                userName={currentUserName}
+                userProfilePic={currentUserProfilePic}
+            />
         </DashboardLayout>
     );
 } 

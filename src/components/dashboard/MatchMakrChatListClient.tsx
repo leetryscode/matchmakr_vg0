@@ -197,68 +197,74 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
         </div>
       ) : (
         <div className="divide-y divide-gray-200 mb-6">
-          {localConversations.map((msg: any) => {
-            const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
-            const profile = otherProfiles[otherId];
-            return (
-              <div
-                key={msg.id}
-                className="flex items-center gap-4 py-4 w-full hover:bg-gray-50 rounded-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                role="button"
-                tabIndex={0}
-                onClick={e => {
-                  // Prevent opening if clicking the menu button
-                  if ((e.target as HTMLElement).closest('button')) return;
-                  handleOpenChat(profile);
-                }}
-                onKeyDown={e => {
-                  if ((e.target as HTMLElement).closest('button')) return;
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
+          {localConversations
+            .filter((msg: any) => {
+              const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+              // Exclude singles (those in sponsoredSingles)
+              return !sponsoredSingles.some(s => s.id === otherId);
+            })
+            .map((msg: any) => {
+              const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+              const profile = otherProfiles[otherId];
+              return (
+                <div
+                  key={msg.id}
+                  className="flex items-center gap-4 py-4 w-full hover:bg-gray-50 rounded-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  role="button"
+                  tabIndex={0}
+                  onClick={e => {
+                    // Prevent opening if clicking the menu button
+                    if ((e.target as HTMLElement).closest('button')) return;
                     handleOpenChat(profile);
-                  }
-                }}
-              >
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-accent-teal-light bg-gray-100 flex-shrink-0">
-                  {profile?.profile_pic_url ? (
-                    <img src={profile.profile_pic_url} alt={profile.name || 'MatchMakr'} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-gray-400">
-                      {profile?.name?.charAt(0).toUpperCase() || '?'}
-                    </div>
-                  )}
+                  }}
+                  onKeyDown={e => {
+                    if ((e.target as HTMLElement).closest('button')) return;
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleOpenChat(profile);
+                    }
+                  }}
+                >
+                  <div className="w-12 h-12 rounded-full overflow-hidden border border-accent-teal-light bg-gray-100 flex-shrink-0">
+                    {profile?.profile_pic_url ? (
+                      <img src={profile.profile_pic_url} alt={profile.name || 'MatchMakr'} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-gray-400">
+                        {profile?.name?.charAt(0).toUpperCase() || '?'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900 truncate">{profile?.name || 'Unknown MatchMakr'}</div>
+                    <div className="text-sm text-gray-500 truncate">{msg.content}</div>
+                  </div>
+                  <div className="text-xs text-gray-400 ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  {/* Three dots menu */}
+                  <div className="relative">
+                    <button
+                      className="p-2 hover:bg-gray-200 rounded-full"
+                      onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === otherId ? null : otherId); }}
+                    >
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
+                        <circle cx="12" cy="5" r="2" fill="#6B7280"/>
+                        <circle cx="12" cy="12" r="2" fill="#6B7280"/>
+                        <circle cx="12" cy="19" r="2" fill="#6B7280"/>
+                      </svg>
+                    </button>
+                    {menuOpen === otherId && (
+                      <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                        <button
+                          className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-t-lg"
+                          onClick={e => { e.stopPropagation(); setConfirmDelete({otherId, profileName: profile?.name || 'this matchmakr'}); setMenuOpen(null); }}
+                        >
+                          Delete Chat
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 truncate">{profile?.name || 'Unknown MatchMakr'}</div>
-                  <div className="text-sm text-gray-500 truncate">{msg.content}</div>
-                </div>
-                <div className="text-xs text-gray-400 ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                {/* Three dots menu */}
-                <div className="relative">
-                  <button
-                    className="p-2 hover:bg-gray-200 rounded-full"
-                    onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === otherId ? null : otherId); }}
-                  >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
-                      <circle cx="12" cy="5" r="2" fill="#6B7280"/>
-                      <circle cx="12" cy="12" r="2" fill="#6B7280"/>
-                      <circle cx="12" cy="19" r="2" fill="#6B7280"/>
-                    </svg>
-                  </button>
-                  {menuOpen === otherId && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                      <button
-                        className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-t-lg"
-                        onClick={e => { e.stopPropagation(); setConfirmDelete({otherId, profileName: profile?.name || 'this matchmakr'}); setMenuOpen(null); }}
-                      >
-                        Delete Chat
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       )}
       <button className="w-full bg-gradient-primary text-white py-4 px-8 rounded-full font-semibold text-lg shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2">
@@ -284,7 +290,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
           <div className="bg-white rounded-2xl p-8 shadow-xl max-w-sm w-full text-center">
             <h3 className="text-xl font-bold mb-4 text-primary-blue">Delete Chat?</h3>
-            <p className="mb-6 text-gray-600">This removes this chat from your dashboard. Chats can be re-initiated by finding the single user again in the pond and messaging.</p>
+            <p className="mb-6 text-gray-600">Delete chat for both parties? You can restart the conversation by finding them in the pond</p>
             <div className="flex gap-4 justify-center">
               <button
                 className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300"
