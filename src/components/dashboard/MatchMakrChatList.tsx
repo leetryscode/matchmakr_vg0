@@ -4,6 +4,8 @@ import MatchMakrChatListClient from './MatchMakrChatListClient';
 interface MatchMakrChatListProps {
   userId: string;
   sponsoredSingles?: { id: string; name: string; profile_pic_url: string | null }[];
+  currentUserName?: string;
+  currentUserProfilePic?: string | null;
 }
 
 // Helper to get the other matchmakr's id from a message
@@ -11,7 +13,7 @@ function getOtherMatchmakrId(message: any, userId: string) {
   return message.sender_id === userId ? message.recipient_id : message.sender_id;
 }
 
-const MatchMakrChatList = async ({ userId, sponsoredSingles }: MatchMakrChatListProps) => {
+const MatchMakrChatList = async ({ userId, sponsoredSingles, currentUserName, currentUserProfilePic }: MatchMakrChatListProps) => {
   const supabase = createClient();
 
   // Fetch all messages where user is sender or recipient
@@ -52,7 +54,7 @@ const MatchMakrChatList = async ({ userId, sponsoredSingles }: MatchMakrChatList
     }
   }
 
-  return <MatchMakrChatListClient userId={userId} conversations={conversations} otherProfiles={otherProfiles} sponsoredSingles={sponsoredSingles || []} />;
+  return <MatchMakrChatListClient userId={userId} conversations={conversations} otherProfiles={otherProfiles} sponsoredSingles={sponsoredSingles || []} currentUserName={currentUserName || ''} currentUserProfilePic={currentUserProfilePic || null} />;
 };
 
 export default MatchMakrChatList; 

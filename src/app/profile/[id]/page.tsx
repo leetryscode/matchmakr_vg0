@@ -84,6 +84,21 @@ export default async function ProfilePage({ params }: { params: { id: string } }
         }
     }
 
+    // Fetch current user's name and profile picture
+    let currentUserName = '';
+    let currentUserProfilePic = null;
+    if (currentUser?.id) {
+        const { data } = await supabase
+            .from('profiles')
+            .select('name, photos')
+            .eq('id', currentUser.id)
+            .single();
+        if (data) {
+            currentUserName = data.name || '';
+            currentUserProfilePic = data.photos && data.photos.length > 0 ? data.photos[0] : null;
+        }
+    }
+
     return (
         <ProfileClient
             profile={profile as Profile}
@@ -93,6 +108,9 @@ export default async function ProfilePage({ params }: { params: { id: string } }
             isSponsorViewing={isSponsorViewing}
             currentUserProfile={currentUserProfile}
             currentSponsoredSingle={currentSponsoredSingle}
+            currentUserName={currentUserName}
+            currentUserProfilePic={currentUserProfilePic}
+            currentUserId={currentUser?.id || ''}
         />
     );
 } 

@@ -75,10 +75,19 @@ export default async function MatchMakrDashboardPage() {
 
     const firstName = profile.name?.split(' ')[0] || null;
 
+    // Fetch the current user's name and profile picture
+    const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('name, photos')
+        .eq('id', user.id)
+        .single();
+    const currentUserName = userProfile?.name || '';
+    const currentUserProfilePic = userProfile?.photos && userProfile.photos.length > 0 ? userProfile.photos[0] : null;
+
     return (
         <DashboardLayout firstName={firstName} userId={user.id} userType="MATCHMAKR">
             <SinglesPondButton />
-            <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} />
+            <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
             <SponsoredSinglesList sponsoredSingles={processedSponsoredSingles} />
         </DashboardLayout>
     );

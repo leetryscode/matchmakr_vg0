@@ -27,6 +27,9 @@ interface ProfileClientProps {
   isSponsorViewing: boolean;
   currentUserProfile: { user_type: string } | null;
   currentSponsoredSingle?: { id: string; name: string | null; photo: string | null } | null;
+  currentUserName?: string;
+  currentUserProfilePic?: string | null;
+  currentUserId?: string;
 }
 
 function calculateAge(birthYear: number | null): number | null {
@@ -43,6 +46,9 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   isSponsorViewing,
   currentUserProfile,
   currentSponsoredSingle,
+  currentUserName,
+  currentUserProfilePic,
+  currentUserId,
 }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const age = calculateAge(profile.birth_year);
@@ -164,7 +170,9 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                   <ChatModal
                     open={isChatOpen}
                     onClose={() => setIsChatOpen(false)}
-                    currentUserId={profile.sponsored_by_id || ''}
+                    currentUserId={currentUserId || ''}
+                    currentUserName={currentUserName || ''}
+                    currentUserProfilePic={currentUserProfilePic || null}
                     otherUserId={matchmakrProfile.id}
                     otherUserName={matchmakrProfile.name || ''}
                     otherUserProfilePic={matchmakrProfile.profile_pic_url}

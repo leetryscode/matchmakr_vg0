@@ -26,6 +26,8 @@ export default function PondPage() {
     const [chatMessages, setChatMessages] = useState<any[]>([]);
     const [chatLoadingHistory, setChatLoadingHistory] = useState(false);
     const [currentSponsoredSingle, setCurrentSponsoredSingle] = useState<{ id: string, name: string, photo: string | null } | null>(null);
+    const [currentUserName, setCurrentUserName] = useState('');
+    const [currentUserProfilePic, setCurrentUserProfilePic] = useState<string | null>(null);
 
     useEffect(() => {
         checkUserAndLoadProfiles();
@@ -37,6 +39,15 @@ export default function PondPage() {
             window.location.href = '/login';
             return;
         }
+
+        // Fetch current user's name and profile picture
+        const { data: userProfile } = await supabase
+            .from('profiles')
+            .select('name, photos')
+            .eq('id', user.id)
+            .single();
+        setCurrentUserName(userProfile?.name || '');
+        setCurrentUserProfilePic(userProfile?.photos && userProfile.photos.length > 0 ? userProfile.photos[0] : null);
 
         // Check if user is a matchmakr
         const { data: profile } = await supabase
@@ -402,6 +413,8 @@ export default function PondPage() {
                     open={!!openChatProfileId && !!openChatMatchmakr}
                     onClose={handleCloseChat}
                     currentUserId={currentUser?.id || ''}
+                    currentUserName={currentUserName}
+                    currentUserProfilePic={currentUserProfilePic}
                     otherUserId={openChatMatchmakr.id}
                     otherUserName={openChatMatchmakr.name || ''}
                     otherUserProfilePic={openChatMatchmakr.profile_pic_url}

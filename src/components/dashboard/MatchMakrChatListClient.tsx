@@ -9,6 +9,8 @@ interface MatchMakrChatListClientProps {
   conversations: any[];
   otherProfiles: Record<string, any>;
   sponsoredSingles: { id: string; name: string; profile_pic_url: string | null }[];
+  currentUserName: string;
+  currentUserProfilePic: string | null;
 }
 
 function areMessagesEqual(a: any[], b: any[]) {
@@ -28,7 +30,7 @@ function removeDuplicateOptimisticMessages(serverMessages: any[], optimisticMess
   });
 }
 
-const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userId, conversations, otherProfiles, sponsoredSingles }) => {
+const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userId, conversations, otherProfiles, sponsoredSingles, currentUserName, currentUserProfilePic }) => {
   const [openChat, setOpenChat] = useState<null | { id: string; name: string; profile_pic_url: string }>(null);
   const [otherSponsoredSingle, setOtherSponsoredSingle] = useState<{ id: string; name: string; photo: string | null } | null>(null);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
@@ -228,6 +230,8 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           open={!!openChat}
           onClose={() => setOpenChat(null)}
           currentUserId={userId}
+          currentUserName={currentUserName}
+          currentUserProfilePic={currentUserProfilePic}
           otherUserId={openChat.id}
           otherUserName={openChat.name || ''}
           otherUserProfilePic={openChat.profile_pic_url}

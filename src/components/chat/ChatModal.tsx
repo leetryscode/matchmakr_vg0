@@ -6,6 +6,8 @@ interface ChatModalProps {
   open: boolean;
   onClose: () => void;
   currentUserId: string;
+  currentUserName: string;
+  currentUserProfilePic?: string | null;
   otherUserId: string;
   otherUserName: string;
   otherUserProfilePic?: string | null;
@@ -13,7 +15,7 @@ interface ChatModalProps {
   aboutSingleB: { id: string; name: string; photo?: string | null };
 }
 
-const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, otherUserId, otherUserName, otherUserProfilePic, aboutSingleA, aboutSingleB }) => {
+const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, currentUserName, currentUserProfilePic, otherUserId, otherUserName, otherUserProfilePic, aboutSingleA, aboutSingleB }) => {
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
   const [messageText, setMessageText] = useState('');
@@ -156,8 +158,8 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, oth
           ) : (
             chatMessages.map(msg => {
               const isCurrentUser = msg.sender_id === currentUserId;
-              const senderName = isCurrentUser ? otherUserName : otherUserName; // TODO: Replace with actual sender name logic if needed
-              const senderPic = isCurrentUser ? otherUserProfilePic : otherUserProfilePic; // TODO: Replace with actual sender pic logic if needed
+              const senderName = isCurrentUser ? currentUserName : otherUserName;
+              const senderPic = isCurrentUser ? currentUserProfilePic : otherUserProfilePic;
               return (
                 <div key={msg.id} className={`my-6 flex ${isCurrentUser ? 'justify-end' : 'justify-start'} items-center`} >
                   {/* Left avatar for other user, right avatar for current user */}
@@ -223,8 +225,8 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, oth
               disabled={sending}
               style={{ border: '2px solid', borderImage: 'linear-gradient(45deg, #3B82F6, #2DD4BF) 1' }}
             >
-              {/* SVG Arrow Icon, up and right */}
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* SVG Arrow Icon, up and right, rotated 45deg */}
+              <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(-45deg)' }}>
                 <path d="M8 24L24 16L8 8V14L20 16L8 18V24Z" fill="white"/>
               </svg>
             </button>
