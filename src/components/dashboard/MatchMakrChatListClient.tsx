@@ -2,11 +2,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import ChatModal from '../chat/ChatModal';
+import { createClient } from '@/lib/supabase/client';
 
 interface MatchMakrChatListClientProps {
   userId: string;
   conversations: any[];
   otherProfiles: Record<string, any>;
+  sponsoredSingles: { id: string; name: string; profile_pic_url: string | null }[];
 }
 
 function areMessagesEqual(a: any[], b: any[]) {
@@ -26,8 +28,9 @@ function removeDuplicateOptimisticMessages(serverMessages: any[], optimisticMess
   });
 }
 
-const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userId, conversations, otherProfiles }) => {
+const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userId, conversations, otherProfiles, sponsoredSingles }) => {
   const [openChat, setOpenChat] = useState<null | { id: string; name: string; profile_pic_url: string }>(null);
+  const [otherSponsoredSingle, setOtherSponsoredSingle] = useState<{ id: string; name: string; photo: string | null } | null>(null);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatLoadingHistory, setChatLoadingHistory] = useState(false);
   const [messageText, setMessageText] = useState('');
@@ -157,6 +160,27 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     setSending(false);
   };
 
+  // When opening a chat, fetch the other matchmakr's sponsored single
+  const handleOpenChat = async (profile: { id: string; name: string; profile_pic_url: string | null }) => {
+    setOpenChat({ id: profile.id, name: profile.name, profile_pic_url: profile.profile_pic_url || '' });
+    setOtherSponsoredSingle(null);
+    const supabase = createClient();
+    const { data: singles } = await supabase
+      .from('profiles')
+      .select('id, name, photos')
+      .eq('sponsored_by_id', profile.id)
+      .eq('user_type', 'SINGLE');
+    if (singles && singles.length > 0) {
+      setOtherSponsoredSingle({
+        id: singles[0].id,
+        name: singles[0].name || '',
+        photo: singles[0].photos && singles[0].photos.length > 0 ? singles[0].photos[0] : null
+      });
+    } else {
+      setOtherSponsoredSingle(null);
+    }
+  };
+
   return (
     <div className="bg-background-card p-8 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-primary-blue/10 mb-8">
       <h2 className="font-inter font-bold text-3xl text-gray-800 mb-3">MatchMakr Chat</h2>
@@ -174,7 +198,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
               <button
                 key={msg.id}
                 className="flex items-center gap-4 py-4 w-full text-left hover:bg-gray-50 rounded-lg transition"
-                onClick={() => setOpenChat(profile)}
+                onClick={() => handleOpenChat(profile)}
               >
                 <div className="w-12 h-12 rounded-full overflow-hidden border border-accent-teal-light bg-gray-100 flex-shrink-0">
                   {profile?.profile_pic_url ? (
@@ -207,8 +231,8 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           otherUserId={openChat.id}
           otherUserName={openChat.name || ''}
           otherUserProfilePic={openChat.profile_pic_url}
-          aboutSingleA={{ id: '', name: '', photo: null }} // TODO: Pass the current user's sponsored single if available
-          aboutSingleB={{ id: '', name: '', photo: null }} // TODO: Pass the other matchmakr's sponsored single if available
+          aboutSingleA={sponsoredSingles && sponsoredSingles.length > 0 ? { id: sponsoredSingles[0].id, name: sponsoredSingles[0].name, photo: sponsoredSingles[0].profile_pic_url } : { id: '', name: '', photo: null }}
+          aboutSingleB={otherSponsoredSingle ? { id: otherSponsoredSingle.id, name: otherSponsoredSingle.name, photo: otherSponsoredSingle.photo } : { id: '', name: '', photo: null }}
         />
       )}
     </div>

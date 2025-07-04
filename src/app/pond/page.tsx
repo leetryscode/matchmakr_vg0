@@ -25,6 +25,7 @@ export default function PondPage() {
     const [sending, setSending] = useState(false);
     const [chatMessages, setChatMessages] = useState<any[]>([]);
     const [chatLoadingHistory, setChatLoadingHistory] = useState(false);
+    const [currentSponsoredSingle, setCurrentSponsoredSingle] = useState<{ id: string, name: string, photo: string | null } | null>(null);
 
     useEffect(() => {
         checkUserAndLoadProfiles();
@@ -50,6 +51,23 @@ export default function PondPage() {
         }
 
         setCurrentUser(user);
+
+        // Fetch the current user's sponsored single (first one if multiple)
+        const { data: singles } = await supabase
+            .from('profiles')
+            .select('id, name, photos')
+            .eq('sponsored_by_id', user.id)
+            .eq('user_type', 'SINGLE');
+        if (singles && singles.length > 0) {
+            setCurrentSponsoredSingle({
+                id: singles[0].id,
+                name: singles[0].name || '',
+                photo: singles[0].photos && singles[0].photos.length > 0 ? singles[0].photos[0] : null
+            });
+        } else {
+            setCurrentSponsoredSingle(null);
+        }
+
         await loadProfiles();
     };
 
@@ -377,10 +395,7 @@ export default function PondPage() {
                         const single = profiles.find(p => p.id === openChatProfileId);
                         return single ? { id: single.id, name: single.name || '', photo: single.profile_pic_url || null } : { id: '', name: '', photo: null };
                     })()}
-                    aboutSingleB={(() => {
-                        // TODO: Replace with actual sponsored single if available
-                        return { id: '', name: '', photo: null };
-                    })()}
+                    aboutSingleB={currentSponsoredSingle ? { id: currentSponsoredSingle.id, name: currentSponsoredSingle.name, photo: currentSponsoredSingle.photo } : { id: '', name: '', photo: null }}
                 />
             )}
         </div>

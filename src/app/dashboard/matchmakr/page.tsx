@@ -78,7 +78,7 @@ export default async function MatchMakrDashboardPage() {
     return (
         <DashboardLayout firstName={firstName} userId={user.id} userType="MATCHMAKR">
             <SinglesPondButton />
-            <MatchMakrChatList userId={user.id} />
+            <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} />
             <SponsoredSinglesList sponsoredSingles={processedSponsoredSingles} />
         </DashboardLayout>
     );
