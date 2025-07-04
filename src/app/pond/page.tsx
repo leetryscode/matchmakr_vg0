@@ -355,11 +355,25 @@ export default function PondPage() {
                                                     {profile.name}{age ? `, ${age}` : ''}
                                                 </h3>
                                                 {profile.occupation && (
-                                                    <p className="text-sm text-text-light mt-1">{profile.occupation}</p>
+                                                    <p className="text-sm text-text-light mt-1 flex items-center">
+                                                        <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
+                                                            <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
+                                                                <path d="M6.5 1h3a1 1 0 0 1 1 1v1h2.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.5V2a1 1 0 0 1 1-1z" fill="#6B7280"/>
+                                                                <path d="M6.5 3h3v1h-3V3z" fill="white"/>
+                                                            </svg>
+                                                        </span>
+                                                        {profile.occupation}
+                                                    </p>
                                                 )}
                                                 {(profile.city || profile.state || profile.zip_code) && (
-                                                    <p className="text-sm text-text-light mt-1">
-                                                        📍 {[profile.city, profile.state].filter(Boolean).join(', ')}
+                                                    <p className="text-sm text-text-light mt-1 flex items-center">
+                                                        <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
+                                                            <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
+                                                                <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="#6B7280" stroke="none"/>
+                                                                <circle cx="8" cy="6" r="2" fill="white"/>
+                                                            </svg>
+                                                        </span>
+                                                        {[profile.city, profile.state].filter(Boolean).join(', ')}
                                                         {profile.zip_code && ` ${profile.zip_code}`}
                                                     </p>
                                                 )}
