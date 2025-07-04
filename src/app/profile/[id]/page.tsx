@@ -66,6 +66,24 @@ export default async function ProfilePage({ params }: { params: { id: string } }
         }
     }
 
+    // Fetch current user's sponsored single (if matchmakr)
+    let currentSponsoredSingle: { id: string; name: string | null; photo: string | null } | null = null;
+    if (currentUser?.id) {
+        const { data } = await supabase
+            .from('profiles')
+            .select('id, name, photos')
+            .eq('sponsored_by_id', currentUser.id)
+            .eq('user_type', 'SINGLE')
+            .single();
+        if (data) {
+            currentSponsoredSingle = {
+                id: data.id,
+                name: data.name,
+                photo: data.photos && data.photos.length > 0 ? data.photos[0] : null
+            };
+        }
+    }
+
     return (
         <ProfileClient
             profile={profile as Profile}
@@ -74,6 +92,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
             isOwnProfile={isOwnProfile}
             isSponsorViewing={isSponsorViewing}
             currentUserProfile={currentUserProfile}
+            currentSponsoredSingle={currentSponsoredSingle}
         />
     );
 } 

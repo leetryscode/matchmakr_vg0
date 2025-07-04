@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Profile } from '@/components/profile/types';
 import Link from 'next/link';
+import ChatModal from '@/components/chat/ChatModal';
 
 interface PondProfile extends Profile {
     profile_pic_url: string | null;
@@ -365,66 +366,22 @@ export default function PondPage() {
             </div>
             {/* Chat Modal (global, not per card) */}
             {openChatProfileId && openChatMatchmakr && (
-                <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-8 shadow-xl max-w-md w-full text-center">
-                        <div className="flex flex-col items-center mb-4">
-                            <div className="w-16 h-16 rounded-full overflow-hidden border border-accent-teal-light mb-2">
-                                {openChatMatchmakr.profile_pic_url ? (
-                                    <img src={openChatMatchmakr.profile_pic_url} alt={openChatMatchmakr.name || 'MatchMakr'} className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full bg-background-main flex items-center justify-center">
-                                        <span className="text-2xl font-bold text-text-light">
-                                            {openChatMatchmakr.name?.charAt(0).toUpperCase() || '?'}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                            <h3 className="text-lg font-medium text-primary-blue-light">Chat with {openChatMatchmakr.name}</h3>
-                        </div>
-                        {/* Chat history */}
-                        <div className="mb-4 max-h-64 overflow-y-auto bg-background-main rounded p-2 border border-border-light text-left">
-                            {chatLoadingHistory ? (
-                                <div className="text-center text-gray-400 py-4">Loading chat...</div>
-                            ) : chatMessages.length === 0 ? (
-                                <div className="text-center text-gray-400 py-4">No messages yet.</div>
-                            ) : (
-                                chatMessages.map(msg => (
-                                    <div key={msg.id} className={`my-2 flex ${msg.sender_id === currentUser.id ? 'justify-end' : 'justify-start'}`} >
-                                        <div className={`px-3 py-2 rounded-lg ${msg.sender_id === currentUser.id ? 'bg-primary-blue-light text-white' : 'bg-gray-200 text-gray-800'}`} style={{maxWidth:'75%'}}>
-                                            {msg.content}
-                                            <div className="text-xs text-gray-400 mt-1 text-right">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                        <div className="mb-6">
-                            <input
-                                type="text"
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 mb-2 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
-                                placeholder="Type your message..."
-                                value={messageText}
-                                onChange={e => setMessageText(e.target.value)}
-                                disabled={sending}
-                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(); } }}
-                            />
-                            <button
-                                className="w-full px-6 py-2 bg-primary-blue-light text-white rounded-md font-medium hover:bg-primary-blue disabled:opacity-60 disabled:cursor-not-allowed"
-                                onClick={handleSendMessage}
-                                disabled={sending || !messageText.trim()}
-                            >
-                                {sending ? 'Sending...' : 'Send'}
-                            </button>
-                        </div>
-                        <button
-                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md font-medium hover:bg-gray-300"
-                            onClick={handleCloseChat}
-                            disabled={sending}
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
+                <ChatModal
+                    open={!!openChatProfileId && !!openChatMatchmakr}
+                    onClose={handleCloseChat}
+                    currentUserId={currentUser?.id || ''}
+                    otherUserId={openChatMatchmakr.id}
+                    otherUserName={openChatMatchmakr.name || ''}
+                    otherUserProfilePic={openChatMatchmakr.profile_pic_url}
+                    aboutSingleA={(() => {
+                        const single = profiles.find(p => p.id === openChatProfileId);
+                        return single ? { id: single.id, name: single.name || '', photo: single.profile_pic_url || null } : { id: '', name: '', photo: null };
+                    })()}
+                    aboutSingleB={(() => {
+                        // TODO: Replace with actual sponsored single if available
+                        return { id: '', name: '', photo: null };
+                    })()}
+                />
             )}
         </div>
     );
