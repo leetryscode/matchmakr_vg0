@@ -79,6 +79,7 @@ export async function POST(req: NextRequest) {
       }
       match = updated;
     }
-    return NextResponse.json({ success: true, match });
   }
+  // Always return the same structure
+  return NextResponse.json({ success: true, match });
 } 

@@ -151,19 +151,23 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
                 <div className="text-sm text-gray-500 truncate">Click to chat with your match</div>
               </div>
               {/* Three-dot menu */}
-              <div className="relative menu-btn" ref={el => { menuRefs.current[idx] = el; }}>
+              <div className="relative menu-btn flex items-center justify-end ml-auto" ref={el => { menuRefs.current[idx] = el; }}>
                 <button
-                  className="p-2 rounded-full hover:bg-gray-200 focus:outline-none"
+                  className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 focus:outline-none transition-colors"
                   onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); }}
                   tabIndex={-1}
                   aria-label="Open menu"
                 >
-                  <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="5" r="1.5" fill="#6B7280"/>
+                    <circle cx="12" cy="12" r="1.5" fill="#6B7280"/>
+                    <circle cx="12" cy="19" r="1.5" fill="#6B7280"/>
+                  </svg>
                 </button>
                 {menuOpenIdx === idx && (
-                  <div className="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
                     <button
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded-t-lg"
+                      className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
                       onClick={e => { e.stopPropagation(); setShowUnmatchModal(true); setUnmatchTarget(row); setMenuOpenIdx(null); }}
                     >
                       Unmatch
