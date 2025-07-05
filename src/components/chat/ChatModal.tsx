@@ -90,9 +90,11 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
 
   // Fetch match status for the two singles in aboutSingleA and aboutSingleB
   useEffect(() => {
-    fetchMatchStatus();
+    if (isSingleToSingle) {
+      fetchMatchStatus();
+    }
     // eslint-disable-next-line
-  }, [aboutSingleA.id, aboutSingleB.id, currentUserId]);
+  }, [aboutSingleA.id, aboutSingleB.id, currentUserId, isSingleToSingle]);
 
   // Check if singles can chat (for single-to-single chats)
   useEffect(() => {
@@ -221,14 +223,18 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     markAsRead();
   }, [open, currentUserId, otherUserId]);
 
-  // Guard: if either single is missing, show a message and disable match approval UI
-  if (!aboutSingleA.id || !aboutSingleB.id) {
+  // If the modal is open but the required data is not yet loaded, show a loading spinner
+  if (open && (!aboutSingleA || !aboutSingleB)) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
         <div className="bg-white rounded-2xl p-8 shadow-xl w-[400px] text-center">
-          <div className="text-xl font-semibold mb-4">Cannot approve match</div>
-          <div className="text-gray-600 mb-6">Both singles must be present to approve a match. Please select two singles to start a matchmakr chat.</div>
-          <button className="mt-4 px-6 py-2 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300" onClick={onClose}>Close</button>
+          <div className="text-xl font-semibold mb-4">Loading...</div>
+          <div className="flex justify-center items-center mt-4">
+            <svg className="animate-spin h-8 w-8 text-primary-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+          </div>
         </div>
       </div>
     );
