@@ -63,9 +63,23 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
 
     if (signUpData.user) {
       console.log('User created successfully:', signUpData.user.id);
-      // Since we have email confirmations enabled, Supabase sends a confirmation link.
-      // The user's profile is created via a trigger when they are added to auth.users.
-      // We just need to inform them to check their email.
+      // Update the user's profile with onboarding data
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          user_type: userTypeUpper,
+          name: onboardingData.name,
+          sex: onboardingData.sex,
+          birth_year: onboardingData.birthYear,
+          // Add other fields as needed
+        })
+        .eq('id', signUpData.user.id);
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+        setError('Error saving profile data. Please try again.');
+        setLoading(false);
+        return;
+      }
       alert('Sign up successful! Please check your email to confirm your account.');
       router.push('/login'); // Redirect to a login page after signup
     }
