@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ChatModal from '@/components/chat/ChatModal';
 import InviteMatchMakr from '@/components/dashboard/InviteMatchMakr';
 import { createClient } from '@/lib/supabase/client';
+import FlameUnreadIcon from './FlameUnreadIcon';
 
 interface SingleDashboardClientProps {
   userId: string;
@@ -23,42 +24,68 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
   const supabase = createClient();
   const menuRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  // Refactor fetchMatches to be callable
+  const fetchMatches = async () => {
+    const { data: matches } = await supabase
+      .from('matches')
+      .select('*')
+      .or(`single_a_id.eq.${userId},single_b_id.eq.${userId}`)
+      .eq('matchmakr_a_approved', true)
+      .eq('matchmakr_b_approved', true);
+    if (!matches) return;
+    // Find the other single's id for each match
+    const otherSingleIds = matches.map((m: any) => m.single_a_id === userId ? m.single_b_id : m.single_a_id);
+    if (otherSingleIds.length === 0) return setSingleChats([]);
+    // Fetch profiles for all other singles
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, name, photos')
+      .in('id', otherSingleIds);
+    // Fetch last message and unread count for each match
+    const lastMessages: Record<string, { content: string; created_at: string }> = {};
+    const unreadCounts: Record<string, number> = {};
+    for (const otherId of otherSingleIds) {
+      // Last message
+      const { data: messages } = await supabase
+        .from('messages')
+        .select('content, created_at')
+        .or(`and(sender_id.eq.${userId},recipient_id.eq.${otherId}),and(sender_id.eq.${otherId},recipient_id.eq.${userId})`)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (messages && messages.length > 0) {
+        lastMessages[otherId] = messages[0];
+      }
+      // Unread count (where recipient is current user and read is false)
+      const { count } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('sender_id', otherId)
+        .eq('recipient_id', userId)
+        .eq('read', false);
+      unreadCounts[otherId] = count || 0;
+    }
+    // Map: id -> profile
+    const profileMap: Record<string, any> = {};
+    if (profiles) profiles.forEach((p: any) => { profileMap[p.id] = p; });
+    // Compose chat rows
+    const chatRows = matches.map((m: any) => {
+      const otherId = m.single_a_id === userId ? m.single_b_id : m.single_a_id;
+      const otherProfile = profileMap[otherId];
+      return {
+        match: m,
+        otherSingle: otherProfile ? {
+          id: otherProfile.id,
+          name: otherProfile.name,
+          photo: otherProfile.photos && otherProfile.photos.length > 0 ? otherProfile.photos[0] : null
+        } : null,
+        lastMessage: lastMessages[otherId] || null,
+        unreadCount: unreadCounts[otherId] || 0
+      };
+    }).filter(row => row.otherSingle);
+    setSingleChats(chatRows);
+  };
+
   useEffect(() => {
-    // Fetch all approved matches for this single
-    const fetchMatches = async () => {
-      const { data: matches } = await supabase
-        .from('matches')
-        .select('*')
-        .or(`single_a_id.eq.${userId},single_b_id.eq.${userId}`)
-        .eq('matchmakr_a_approved', true)
-        .eq('matchmakr_b_approved', true);
-      if (!matches) return;
-      // Find the other single's id for each match
-      const otherSingleIds = matches.map((m: any) => m.single_a_id === userId ? m.single_b_id : m.single_a_id);
-      if (otherSingleIds.length === 0) return setSingleChats([]);
-      // Fetch profiles for all other singles
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, name, photos')
-        .in('id', otherSingleIds);
-      // Map: id -> profile
-      const profileMap: Record<string, any> = {};
-      if (profiles) profiles.forEach((p: any) => { profileMap[p.id] = p; });
-      // Compose chat rows
-      const chatRows = matches.map((m: any) => {
-        const otherId = m.single_a_id === userId ? m.single_b_id : m.single_a_id;
-        const otherProfile = profileMap[otherId];
-        return {
-          match: m,
-          otherSingle: otherProfile ? {
-            id: otherProfile.id,
-            name: otherProfile.name,
-            photo: otherProfile.photos && otherProfile.photos.length > 0 ? otherProfile.photos[0] : null
-          } : null
-        };
-      }).filter(row => row.otherSingle);
-      setSingleChats(chatRows);
-    };
     fetchMatches();
   }, [userId]);
 
@@ -123,67 +150,82 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
   return (
     <div className="bg-background-card p-8 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-primary-blue/10 mb-8">
       {/* Single-to-Single Chats Section */}
-      <h2 className="font-inter font-bold text-2xl text-primary-blue mb-4">Chats with Your Matches</h2>
-      {singleChats.length === 0 ? (
-        <div className="text-gray-500 mb-6">No matches yet. Once your matchmakrs approve a match, you can chat here!</div>
-      ) : (
-        <div className="mb-6">
-          {singleChats.map((row, idx) => (
-            <div
-              key={row.otherSingle.id}
-              className="flex items-center gap-4 py-3 w-full hover:bg-gray-50 rounded-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              role="button"
-              tabIndex={0}
-              onClick={e => { if ((e.target as HTMLElement).closest('.menu-btn')) return; handleOpenSingleChat(row); }}
-              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleOpenSingleChat(row); } }}
-            >
-              <div className="w-12 h-12 rounded-full overflow-hidden border border-accent-teal-light bg-gray-100 flex-shrink-0">
-                {row.otherSingle.photo ? (
-                  <img src={row.otherSingle.photo} alt={row.otherSingle.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-gray-400">
-                    {row.otherSingle.name?.charAt(0).toUpperCase() || '?'}
+      <div className="bg-gradient-to-br from-primary-blue to-primary-blue-light p-6 rounded-2xl shadow-deep mb-10 border-2 border-primary-blue/30">
+        <h2 className="font-inter font-bold text-2xl text-white mb-4 drop-shadow">Chats with Your Matches</h2>
+        {singleChats.length === 0 ? (
+          <div className="text-blue-100 mb-6">No matches yet. Once your matchmakrs approve a match, you can chat here!</div>
+        ) : (
+          <div className="mb-6">
+            {singleChats.map((row, idx) => (
+              <div
+                key={row.otherSingle.id}
+                className="flex items-center gap-4 py-3 w-full bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 shadow-md transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-3"
+                role="button"
+                tabIndex={0}
+                onClick={e => { if ((e.target as HTMLElement).closest('.menu-btn')) return; handleOpenSingleChat(row); }}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleOpenSingleChat(row); } }}
+              >
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white bg-gray-100 flex-shrink-0">
+                  {row.otherSingle.photo ? (
+                    <img src={row.otherSingle.photo} alt={row.otherSingle.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-200">
+                      {row.otherSingle.name?.charAt(0).toUpperCase() || '?'}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-white truncate drop-shadow">{row.otherSingle.name}</div>
+                  <div className="text-sm text-blue-100 truncate">
+                    {row.lastMessage ? row.lastMessage.content : 'Click to chat with your match'}
+                  </div>
+                </div>
+                {row.lastMessage && (
+                  <div className="text-xs text-blue-100 ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>
+                    {new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-gray-900 truncate">{row.otherSingle.name}</div>
-                <div className="text-sm text-gray-500 truncate">Click to chat with your match</div>
-              </div>
-              {/* Three-dot menu */}
-              <div className="relative menu-btn flex items-center justify-end ml-auto" ref={el => { menuRefs.current[idx] = el; }}>
-                <button
-                  className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 focus:outline-none transition-colors"
-                  onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); }}
-                  tabIndex={-1}
-                  aria-label="Open menu"
-                >
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <circle cx="12" cy="5" r="1.5" fill="#6B7280"/>
-                    <circle cx="12" cy="12" r="1.5" fill="#6B7280"/>
-                    <circle cx="12" cy="19" r="1.5" fill="#6B7280"/>
-                  </svg>
-                </button>
-                {menuOpenIdx === idx && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
-                    <button
-                      className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
-                      onClick={e => { e.stopPropagation(); setShowUnmatchModal(true); setUnmatchTarget(row); setMenuOpenIdx(null); }}
-                    >
-                      Unmatch
-                    </button>
+                {/* Unread icon, only show if unreadCount > 0 */}
+                {row.unreadCount > 0 && (
+                  <div className="ml-2 flex items-center">
+                    <FlameUnreadIcon count={row.unreadCount} />
                   </div>
                 )}
+                {/* Three-dot menu */}
+                <div className="relative menu-btn flex items-center justify-end ml-auto" ref={el => { menuRefs.current[idx] = el; }}>
+                  <button
+                    className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
+                    onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); }}
+                    tabIndex={-1}
+                    aria-label="Open menu"
+                  >
+                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                      <circle cx="12" cy="5" r="1.5" fill="#fff"/>
+                      <circle cx="12" cy="12" r="1.5" fill="#fff"/>
+                      <circle cx="12" cy="19" r="1.5" fill="#fff"/>
+                    </svg>
+                  </button>
+                  {menuOpenIdx === idx && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
+                      <button
+                        className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
+                        onClick={e => { e.stopPropagation(); setShowUnmatchModal(true); setUnmatchTarget(row); setMenuOpenIdx(null); }}
+                      >
+                        Unmatch
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
       {/* Single-to-Single Chat Modal */}
       {openChat && selectedSingle && (
         <ChatModal
           open={openChat}
-          onClose={() => { setOpenChat(false); setSelectedSingle(null); }}
+          onClose={() => { setOpenChat(false); setSelectedSingle(null); fetchMatches(); }}
           currentUserId={userId}
           currentUserName={userName}
           currentUserProfilePic={userProfilePic}

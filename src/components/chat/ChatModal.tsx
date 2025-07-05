@@ -205,6 +205,22 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     prevMatchStatus.current = matchStatus;
   }, [matchStatus, triggerConfetti]);
 
+  // Mark messages as read when modal opens
+  useEffect(() => {
+    if (!open) return;
+    const markAsRead = async () => {
+      await fetch('/api/messages/mark-read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: currentUserId,
+          otherId: otherUserId,
+        }),
+      });
+    };
+    markAsRead();
+  }, [open, currentUserId, otherUserId]);
+
   // Guard: if either single is missing, show a message and disable match approval UI
   if (!aboutSingleA.id || !aboutSingleB.id) {
     return (
