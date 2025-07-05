@@ -373,14 +373,14 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
             placeholder={`Send a message to ${otherUserName}`}
             value={messageText}
             onChange={e => setMessageText(e.target.value)}
-            disabled={sending || (isSingleToSingle ? !canChat : matchStatus !== 'matched')}
+            disabled={sending || (isSingleToSingle && !canChat)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(); } }}
           />
           {messageText.trim() && (
             <button
               className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-primary-blue-light to-accent-teal-light shadow-md hover:scale-105 transition-transform"
               onClick={handleSendMessage}
-              disabled={sending || (isSingleToSingle ? !canChat : matchStatus !== 'matched')}
+              disabled={sending || (isSingleToSingle && !canChat)}
               style={{ border: '2px solid', borderImage: 'linear-gradient(45deg, #3B82F6, #2DD4BF) 1' }}
             >
               {/* SVG Arrow Icon, up and right, rotated 45deg */}
