@@ -77,6 +77,61 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
 
+  // --- Notification logic for matchmakr-to-matchmakr chat ---
+  if (senderProfile.user_type === 'MATCHMAKR' && recipientProfile.user_type === 'MATCHMAKR') {
+    // Find singles sponsored by each matchmakr
+    const { data: singlesA } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('sponsored_by_id', sender_id)
+      .eq('user_type', 'SINGLE');
+    const { data: singlesB } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('sponsored_by_id', recipient_id)
+      .eq('user_type', 'SINGLE');
+    const mySingleId = singlesA && singlesA.length > 0 ? singlesA[0].id : null;
+    const otherSingleId = singlesB && singlesB.length > 0 ? singlesB[0].id : null;
+    // For each single, insert notification if not already present
+    if (mySingleId) {
+      const { data: existingA } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', mySingleId)
+        .eq('type', 'matchmakr_chat')
+        .eq('data->>matchmakr_id', sender_id)
+        .eq('data->>other_matchmakr_id', recipient_id)
+        .eq('data->>single_id', mySingleId)
+        .maybeSingle();
+      if (!existingA) {
+        await supabase.from('notifications').insert([{
+          user_id: mySingleId,
+          type: 'matchmakr_chat',
+          data: { matchmakr_id: sender_id, other_matchmakr_id: recipient_id, single_id: mySingleId }
+        }]);
+      }
+    }
+    if (otherSingleId) {
+      const { data: existingB } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', otherSingleId)
+        .eq('type', 'matchmakr_chat')
+        .eq('data->>matchmakr_id', recipient_id)
+        .eq('data->>other_matchmakr_id', sender_id)
+        .eq('data->>single_id', otherSingleId)
+        .maybeSingle();
+      if (!existingB) {
+        await supabase.from('notifications').insert([{
+          user_id: otherSingleId,
+          type: 'matchmakr_chat',
+          data: { matchmakr_id: recipient_id, other_matchmakr_id: sender_id, single_id: otherSingleId }
+        }]);
+      }
+    }
+  }
+  // --- End notification logic ---
+
   return NextResponse.json({ success: true });
 }
 

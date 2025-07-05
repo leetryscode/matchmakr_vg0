@@ -202,20 +202,25 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       body: JSON.stringify({ userId, otherId: profile.id }),
     });
     const supabase = createClient();
+    // Fetch the other matchmakr's sponsored single
     const { data: singles } = await supabase
       .from('profiles')
       .select('id, name, photos')
       .eq('sponsored_by_id', profile.id)
       .eq('user_type', 'SINGLE');
+    let otherSingleId = null;
     if (singles && singles.length > 0) {
       setOtherSponsoredSingle({
         id: singles[0].id,
         name: singles[0].name || '',
         photo: singles[0].photos && singles[0].photos.length > 0 ? singles[0].photos[0] : null
       });
+      otherSingleId = singles[0].id;
     } else {
       setOtherSponsoredSingle(null);
     }
+    // Get the current user's sponsored single (if any)
+    const mySingleId = sponsoredSingles && sponsoredSingles.length > 0 ? sponsoredSingles[0].id : null;
     // Refresh unread counts after opening chat
     const counts: Record<string, number> = { ...unreadCounts };
     counts[profile.id] = 0;
