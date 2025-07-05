@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
+import ConfettiBlast from '../ConfettiBlast';
 
 interface ChatModalProps {
   open: boolean;
@@ -30,6 +31,8 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   const [matchError, setMatchError] = useState<string | null>(null);
   const [canChat, setCanChat] = useState(false);
   const [canChatLoading, setCanChatLoading] = useState(false);
+  const [showMatchAnimation, setShowMatchAnimation] = useState(false);
+  const prevMatchStatus = useRef<string>('');
 
   // Fetch chat history
   useEffect(() => {
@@ -194,6 +197,14 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     setMatchLoading(false);
   };
 
+  // Animation trigger when matchStatus transitions to 'matched'
+  useEffect(() => {
+    if (matchStatus === 'matched' && prevMatchStatus.current !== 'matched') {
+      setShowMatchAnimation(true);
+    }
+    prevMatchStatus.current = matchStatus;
+  }, [matchStatus]);
+
   // Guard: if either single is missing, show a message and disable match approval UI
   if (!aboutSingleA.id || !aboutSingleB.id) {
     return (
@@ -211,7 +222,13 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
-      <div className="bg-white rounded-2xl p-0 shadow-xl w-[600px] h-[800px] flex flex-col text-center">
+      <div className="bg-white rounded-2xl p-0 shadow-xl w-[600px] h-[800px] flex flex-col text-center relative">
+        {/* Confetti Blast Animation */}
+        <ConfettiBlast
+          isActive={showMatchAnimation}
+          onComplete={() => setShowMatchAnimation(false)}
+          style={{ pointerEvents: 'none' }}
+        />
         {/* Header/About Section */}
         <div className="p-8 border-b border-border-light">
           {isSingleToSingle ? (

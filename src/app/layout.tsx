@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import GlobalConfettiBlast from '../components/GlobalConfettiBlast';
 
 export const metadata: Metadata = {
   title: 'MatchMakr',
-  description: 'A new way to find a match.',
+  description: 'Find your perfect match',
 }
 
 export default function RootLayout({
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-source-sans bg-background-main text-gray-800 leading-relaxed text-lg">
-        {children}
+        <GlobalConfettiBlast>
+          {children}
+        </GlobalConfettiBlast>
       </body>
     </html>
   )
