@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import ChatModal from '../chat/ChatModal';
 import { createClient } from '@/lib/supabase/client';
+import FlameUnreadIcon from './FlameUnreadIcon';
 
 interface MatchMakrChatListClientProps {
   userId: string;
@@ -46,6 +47,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const [confirmDelete, setConfirmDelete] = useState<{otherId: string, profileName: string} | null>(null);
   const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
   const [localConversations, setLocalConversations] = useState(conversations);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
   // Fetch chat history when modal opens
   useEffect(() => {
@@ -132,6 +134,29 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     }
   }, [openChat]);
 
+  // Fetch unread counts for all conversations
+  useEffect(() => {
+    const fetchUnreadCounts = async () => {
+      const supabase = createClient();
+      const counts: Record<string, number> = {};
+      for (const msg of conversations) {
+        const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+        // Only for matchmakr chats (not singles)
+        if (sponsoredSingles.some(s => s.id === otherId)) continue;
+        const { count } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('sender_id', otherId)
+          .eq('recipient_id', userId)
+          .eq('read', false);
+        counts[otherId] = count || 0;
+      }
+      setUnreadCounts(counts);
+    };
+    fetchUnreadCounts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversations, userId]);
+
   // Optimistically append sent message
   const handleSendMessage = async () => {
     if (!userId || !openChat?.id || !messageText.trim()) return;
@@ -170,6 +195,12 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const handleOpenChat = async (profile: { id: string; name: string; profile_pic_url: string | null }) => {
     setOpenChat({ id: profile.id, name: profile.name, profile_pic_url: profile.profile_pic_url || '' });
     setOtherSponsoredSingle(null);
+    // Mark messages as read
+    await fetch('/api/messages/mark-read', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, otherId: profile.id }),
+    });
     const supabase = createClient();
     const { data: singles } = await supabase
       .from('profiles')
@@ -185,88 +216,126 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     } else {
       setOtherSponsoredSingle(null);
     }
+    // Refresh unread counts after opening chat
+    const counts: Record<string, number> = { ...unreadCounts };
+    counts[profile.id] = 0;
+    setUnreadCounts(counts);
   };
+
+  // After closing chat modal, refresh unread counts
+  useEffect(() => {
+    if (!openChat) {
+      // Refetch unread counts
+      const fetchUnreadCounts = async () => {
+        const supabase = createClient();
+        const counts: Record<string, number> = {};
+        for (const msg of conversations) {
+          const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+          if (sponsoredSingles.some(s => s.id === otherId)) continue;
+          const { count } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('sender_id', otherId)
+            .eq('recipient_id', userId)
+            .eq('read', false);
+          counts[otherId] = count || 0;
+        }
+        setUnreadCounts(counts);
+      };
+      fetchUnreadCounts();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openChat]);
 
   return (
     <div className="bg-background-card p-8 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-primary-blue/10 mb-8">
-      <h2 className="font-inter font-bold text-3xl text-gray-800 mb-3">MatchMakr Chat</h2>
-      <p className="text-gray-600 text-lg leading-relaxed mb-6">Chat windows with other MatchMakrs like you, on behalf of their sponsored singles =)</p>
-      {localConversations.length === 0 ? (
-        <div className="text-center p-12 bg-gradient-card rounded-2xl border-2 border-dashed border-gray-300 mb-6">
-          <p className="text-gray-500 text-lg">You have no more chats with MatchMakrs.</p>
-        </div>
-      ) : (
-        <div className="divide-y divide-gray-200 mb-6">
-          {localConversations
-            .filter((msg: any) => {
-              const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
-              // Exclude singles (those in sponsoredSingles)
-              return !sponsoredSingles.some(s => s.id === otherId);
-            })
-            .map((msg: any) => {
-              const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
-              const profile = otherProfiles[otherId];
-              return (
-                <div
-                  key={msg.id}
-                  className="flex items-center gap-4 py-4 w-full hover:bg-gray-50 rounded-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  role="button"
-                  tabIndex={0}
-                  onClick={e => {
-                    // Prevent opening if clicking the menu button
-                    if ((e.target as HTMLElement).closest('button')) return;
-                    handleOpenChat(profile);
-                  }}
-                  onKeyDown={e => {
-                    if ((e.target as HTMLElement).closest('button')) return;
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
+      {/* MatchMakr Chat Section with blue gradient card */}
+      <div className="bg-gradient-to-br from-primary-blue to-primary-blue-light p-6 rounded-2xl shadow-deep mb-10 border-2 border-primary-blue/30">
+        <h2 className="font-inter font-bold text-2xl text-white mb-4 drop-shadow">MatchMakr Chat</h2>
+        <p className="text-blue-100 text-lg leading-relaxed mb-6">Chat windows with other MatchMakrs like you, on behalf of their sponsored singles =)</p>
+        {localConversations.length === 0 ? (
+          <div className="text-blue-100 mb-6">You have no more chats with MatchMakrs.</div>
+        ) : (
+          <div className="mb-6">
+            {localConversations
+              .filter((msg: any) => {
+                const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+                // Exclude singles (those in sponsoredSingles)
+                return !sponsoredSingles.some(s => s.id === otherId);
+              })
+              .map((msg: any) => {
+                const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+                const profile = otherProfiles[otherId];
+                return (
+                  <div
+                    key={msg.id}
+                    className="flex items-center gap-4 py-3 w-full bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 shadow-md transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-3"
+                    role="button"
+                    tabIndex={0}
+                    onClick={e => {
+                      // Prevent opening if clicking the menu button
+                      if ((e.target as HTMLElement).closest('button')) return;
                       handleOpenChat(profile);
-                    }
-                  }}
-                >
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-accent-teal-light bg-gray-100 flex-shrink-0">
-                    {profile?.profile_pic_url ? (
-                      <img src={profile.profile_pic_url} alt={profile.name || 'MatchMakr'} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-gray-400">
-                        {profile?.name?.charAt(0).toUpperCase() || '?'}
+                    }}
+                    onKeyDown={e => {
+                      if ((e.target as HTMLElement).closest('button')) return;
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleOpenChat(profile);
+                      }
+                    }}
+                  >
+                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white bg-gray-100 flex-shrink-0">
+                      {profile?.profile_pic_url ? (
+                        <img src={profile.profile_pic_url} alt={profile.name || 'MatchMakr'} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-200">
+                          {profile?.name?.charAt(0).toUpperCase() || '?'}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-white truncate drop-shadow">{profile?.name || 'Unknown MatchMakr'}</div>
+                      <div className="text-sm text-blue-100 truncate">{msg.content}</div>
+                    </div>
+                    <div className="text-xs text-blue-100 ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                    {/* Unread icon, only show if unreadCount > 0 */}
+                    {unreadCounts[otherId] > 0 && (
+                      <div className="ml-2 flex items-center">
+                        <FlameUnreadIcon count={unreadCounts[otherId]} />
                       </div>
                     )}
+                    {/* Three dots menu */}
+                    <div className="relative menu-btn flex items-center justify-end ml-auto">
+                      <button
+                        className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
+                        onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === otherId ? null : otherId); }}
+                        tabIndex={-1}
+                        aria-label="Open menu"
+                      >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
+                          <circle cx="12" cy="5" r="2" fill="#fff"/>
+                          <circle cx="12" cy="12" r="2" fill="#fff"/>
+                          <circle cx="12" cy="19" r="2" fill="#fff"/>
+                        </svg>
+                      </button>
+                      {menuOpen === otherId && (
+                        <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                          <button
+                            className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-t-lg"
+                            onClick={e => { e.stopPropagation(); setConfirmDelete({otherId, profileName: profile?.name || 'this matchmakr'}); setMenuOpen(null); }}
+                          >
+                            Delete Chat
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 truncate">{profile?.name || 'Unknown MatchMakr'}</div>
-                    <div className="text-sm text-gray-500 truncate">{msg.content}</div>
-                  </div>
-                  <div className="text-xs text-gray-400 ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                  {/* Three dots menu */}
-                  <div className="relative">
-                    <button
-                      className="p-2 hover:bg-gray-200 rounded-full"
-                      onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === otherId ? null : otherId); }}
-                    >
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
-                        <circle cx="12" cy="5" r="2" fill="#6B7280"/>
-                        <circle cx="12" cy="12" r="2" fill="#6B7280"/>
-                        <circle cx="12" cy="19" r="2" fill="#6B7280"/>
-                      </svg>
-                    </button>
-                    {menuOpen === otherId && (
-                      <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                        <button
-                          className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-t-lg"
-                          onClick={e => { e.stopPropagation(); setConfirmDelete({otherId, profileName: profile?.name || 'this matchmakr'}); setMenuOpen(null); }}
-                        >
-                          Delete Chat
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-        </div>
-      )}
+                );
+              })}
+          </div>
+        )}
+      </div>
       <button className="w-full bg-gradient-primary text-white py-4 px-8 rounded-full font-semibold text-lg shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2">
         Invite a MatchMakr!
       </button>
