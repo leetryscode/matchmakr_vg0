@@ -24,6 +24,9 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const prevMsgCount = useRef<number>(0);
   const loadingTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [matchStatus, setMatchStatus] = useState<'none' | 'pending' | 'matched' | 'can-approve'>('none');
+  const [matchLoading, setMatchLoading] = useState(false);
+  const [matchError, setMatchError] = useState<string | null>(null);
 
   // Fetch chat history
   useEffect(() => {
@@ -79,6 +82,12 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     }
   }, [open]);
 
+  // Fetch match status for the two singles in aboutSingleA and aboutSingleB
+  useEffect(() => {
+    fetchMatchStatus();
+    // eslint-disable-next-line
+  }, [aboutSingleA.id, aboutSingleB.id, currentUserId]);
+
   // Send message
   const handleSendMessage = async () => {
     if (!currentUserId || !otherUserId || !messageText.trim()) return;
@@ -112,6 +121,64 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     }
     setSending(false);
   };
+
+  // Approve match handler
+  const handleApproveMatch = async () => {
+    setMatchLoading(true);
+    setMatchError(null);
+    try {
+      const res = await fetch('/api/matches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          single_a_id: aboutSingleA.id,
+          single_b_id: aboutSingleB.id,
+          matchmakr_id: currentUserId
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Immediately re-fetch match status to update UI
+        await fetchMatchStatus();
+      } else {
+        setMatchError(data.error || 'Failed to approve match');
+      }
+    } catch (e) {
+      setMatchError('Failed to approve match');
+    }
+    setMatchLoading(false);
+  };
+
+  // Helper to fetch match status
+  const fetchMatchStatus = async () => {
+    setMatchLoading(true);
+    setMatchError(null);
+    try {
+      const res = await fetch(`/api/matches/status?single_a_id=${aboutSingleA.id}&single_b_id=${aboutSingleB.id}&matchmakr_id=${currentUserId}`);
+      const data = await res.json();
+      if (data.success) {
+        setMatchStatus(data.status); // 'can-approve', 'pending', 'matched'
+      } else {
+        setMatchStatus('can-approve');
+      }
+    } catch (e) {
+      setMatchError('Failed to fetch match status');
+    }
+    setMatchLoading(false);
+  };
+
+  // Guard: if either single is missing, show a message and disable match approval UI
+  if (!aboutSingleA.id || !aboutSingleB.id) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
+        <div className="bg-white rounded-2xl p-8 shadow-xl w-[400px] text-center">
+          <div className="text-xl font-semibold mb-4">Cannot approve match</div>
+          <div className="text-gray-600 mb-6">Both singles must be present to approve a match. Please select two singles to start a matchmakr chat.</div>
+          <button className="mt-4 px-6 py-2 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    );
+  }
 
   if (!open) return null;
 
@@ -147,6 +214,25 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
               </div>
               <div className="mt-2 text-sm font-medium text-text-dark">{aboutSingleB.name}</div>
             </div>
+          </div>
+          {/* Approve Match UI for matchmakrs in chats about two singles */}
+          <div className="mt-6">
+            {matchLoading ? (
+              <div className="text-gray-500">Checking match status...</div>
+            ) : matchStatus === 'matched' ? (
+              <div className="text-green-600 font-bold">It's a Match! Both matchmakrs have approved.</div>
+            ) : matchStatus === 'pending' ? (
+              <div className="text-yellow-600 font-semibold">Pending approval from the other matchmakr...</div>
+            ) : matchStatus === 'can-approve' ? (
+              <button
+                className="px-6 py-2 bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300"
+                onClick={handleApproveMatch}
+                disabled={matchLoading}
+              >
+                Approve Match
+              </button>
+            ) : null}
+            {matchError && <div className="text-red-500 mt-2">{matchError}</div>}
           </div>
         </div>
         {/* Chat History Section */}
@@ -215,14 +301,14 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
             placeholder={`Send a message to ${otherUserName}`}
             value={messageText}
             onChange={e => setMessageText(e.target.value)}
-            disabled={sending}
+            disabled={sending || (matchStatus !== 'matched')}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(); } }}
           />
           {messageText.trim() && (
             <button
               className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-primary-blue-light to-accent-teal-light shadow-md hover:scale-105 transition-transform"
               onClick={handleSendMessage}
-              disabled={sending}
+              disabled={sending || (matchStatus !== 'matched')}
               style={{ border: '2px solid', borderImage: 'linear-gradient(45deg, #3B82F6, #2DD4BF) 1' }}
             >
               {/* SVG Arrow Icon, up and right, rotated 45deg */}
