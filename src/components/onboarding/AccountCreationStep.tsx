@@ -22,6 +22,10 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Debug: Log Supabase env variables in the browser
+  console.log('SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log('SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
   const handleSignUp = async () => {
     setLoading(true);
     setError(null);

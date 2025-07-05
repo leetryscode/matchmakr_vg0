@@ -328,13 +328,17 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                   <div className="text-yellow-600 font-semibold">Pending approval from the other matchmakr...</div>
                 ) : matchStatus === 'can-approve' ? (
                   <button
-                    className="px-6 py-2 bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300"
+                    className="px-6 py-2 bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleApproveMatch}
-                    disabled={matchLoading}
+                    disabled={!aboutSingleA.id || !aboutSingleB.id || matchLoading}
+                    title={!aboutSingleA.id || !aboutSingleB.id ? 'Both singles must be present to approve a match.' : ''}
                   >
                     Approve Match
                   </button>
                 ) : null}
+                {(!aboutSingleA.id || !aboutSingleB.id) && !isSingleToSingle && (
+                  <div className="text-gray-400 text-xs mt-2">Both singles must be present to approve a match.</div>
+                )}
                 {matchError && <div className="text-red-500 mt-2">{matchError}</div>}
               </div>
             </>
