@@ -49,8 +49,24 @@ export async function POST(req: NextRequest) {
     senderProfile.sponsored_by_id === recipient_id
   ) {
     // ok
+  }
+  // Allow single-to-single if they have an approved match
+  else if (
+    senderProfile.user_type === 'SINGLE' &&
+    recipientProfile.user_type === 'SINGLE'
+  ) {
+    // Check if they have an approved match
+    const { data: match, error: matchError } = await supabase
+      .from('matches')
+      .select('*')
+      .or(`and(single_a_id.eq.${sender_id},single_b_id.eq.${recipient_id}),and(single_a_id.eq.${recipient_id},single_b_id.eq.${sender_id})`)
+      .single();
+    
+    if (matchError || !match || !match.matchmakr_a_approved || !match.matchmakr_b_approved) {
+      return NextResponse.json({ error: 'Not allowed: singles can only chat if both matchmakrs have approved the match.' }, { status: 403 });
+    }
   } else {
-    return NextResponse.json({ error: 'Not allowed: can only message your sponsor or sponsored single, or other matchmakrs.' }, { status: 403 });
+    return NextResponse.json({ error: 'Not allowed: can only message your sponsor or sponsored single, other matchmakrs, or approved singles.' }, { status: 403 });
   }
 
   // Insert message

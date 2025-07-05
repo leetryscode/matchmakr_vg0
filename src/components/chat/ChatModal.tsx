@@ -13,9 +13,10 @@ interface ChatModalProps {
   otherUserProfilePic?: string | null;
   aboutSingleA: { id: string; name: string; photo?: string | null };
   aboutSingleB: { id: string; name: string; photo?: string | null };
+  isSingleToSingle?: boolean;
 }
 
-const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, currentUserName, currentUserProfilePic, otherUserId, otherUserName, otherUserProfilePic, aboutSingleA, aboutSingleB }) => {
+const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, currentUserName, currentUserProfilePic, otherUserId, otherUserName, otherUserProfilePic, aboutSingleA, aboutSingleB, isSingleToSingle = false }) => {
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
   const [messageText, setMessageText] = useState('');
@@ -27,6 +28,8 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   const [matchStatus, setMatchStatus] = useState<'none' | 'pending' | 'matched' | 'can-approve'>('none');
   const [matchLoading, setMatchLoading] = useState(false);
   const [matchError, setMatchError] = useState<string | null>(null);
+  const [canChat, setCanChat] = useState(false);
+  const [canChatLoading, setCanChatLoading] = useState(false);
 
   // Fetch chat history
   useEffect(() => {
@@ -87,6 +90,30 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     fetchMatchStatus();
     // eslint-disable-next-line
   }, [aboutSingleA.id, aboutSingleB.id, currentUserId]);
+
+  // Check if singles can chat (for single-to-single chats)
+  useEffect(() => {
+    if (isSingleToSingle && aboutSingleA.id && aboutSingleB.id) {
+      checkCanChat();
+    }
+  }, [isSingleToSingle, aboutSingleA.id, aboutSingleB.id]);
+
+  // Helper to check if singles can chat
+  const checkCanChat = async () => {
+    setCanChatLoading(true);
+    try {
+      const res = await fetch(`/api/matches/can-chat?single_a_id=${aboutSingleA.id}&single_b_id=${aboutSingleB.id}`);
+      const data = await res.json();
+      if (data.success) {
+        setCanChat(data.canChat);
+      } else {
+        setCanChat(false);
+      }
+    } catch (e) {
+      setCanChat(false);
+    }
+    setCanChatLoading(false);
+  };
 
   // Send message
   const handleSendMessage = async () => {
@@ -187,53 +214,98 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
       <div className="bg-white rounded-2xl p-0 shadow-xl w-[600px] h-[800px] flex flex-col text-center">
         {/* Header/About Section */}
         <div className="p-8 border-b border-border-light">
-          <div className="text-xl font-semibold mb-4">Your conversation with <span className="italic text-primary-blue-light">{otherUserName}</span></div>
-          <div className="flex items-center justify-center gap-8">
-            <div className="flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
-                {aboutSingleA.photo ? (
-                  <img src={aboutSingleA.photo} alt={aboutSingleA.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-background-main flex items-center justify-center">
-                    <span className="text-2xl font-bold text-text-light">{aboutSingleA.name?.charAt(0).toUpperCase() || '?'}</span>
+          {isSingleToSingle ? (
+            <>
+              <div className="text-xl font-semibold mb-4">Your conversation with <span className="italic text-primary-blue-light">{otherUserName}</span></div>
+              <div className="flex items-center justify-center gap-8">
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
+                    {aboutSingleA.photo ? (
+                      <img src={aboutSingleA.photo} alt={aboutSingleA.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-background-main flex items-center justify-center">
+                        <span className="text-2xl font-bold text-text-light">{aboutSingleA.name?.charAt(0).toUpperCase() || '?'}</span>
+                      </div>
+                    )}
                   </div>
+                  <div className="mt-2 text-sm font-medium text-text-dark">{aboutSingleA.name}</div>
+                </div>
+                <div className="text-lg font-medium text-text-light">and</div>
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
+                    {aboutSingleB.photo ? (
+                      <img src={aboutSingleB.photo} alt={aboutSingleB.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-background-main flex items-center justify-center">
+                        <span className="text-2xl font-bold text-text-light">{aboutSingleB.name?.charAt(0).toUpperCase() || '?'}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-2 text-sm font-medium text-text-dark">{aboutSingleB.name}</div>
+                </div>
+              </div>
+              {/* Single-to-Single Chat Status */}
+              <div className="mt-6">
+                {canChatLoading ? (
+                  <div className="text-gray-500">Checking if you can chat...</div>
+                ) : canChat ? (
+                  <div className="text-green-600 font-bold">✨ You can chat! Both matchmakrs have approved your match.</div>
+                ) : (
+                  <div className="text-yellow-600 font-semibold">⏳ Waiting for both matchmakrs to approve your match...</div>
                 )}
               </div>
-              <div className="mt-2 text-sm font-medium text-text-dark">{aboutSingleA.name}</div>
-            </div>
-            <div className="text-lg font-medium text-text-light">and</div>
-            <div className="flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
-                {aboutSingleB.photo ? (
-                  <img src={aboutSingleB.photo} alt={aboutSingleB.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-background-main flex items-center justify-center">
-                    <span className="text-2xl font-bold text-text-light">{aboutSingleB.name?.charAt(0).toUpperCase() || '?'}</span>
+            </>
+          ) : (
+            <>
+              <div className="text-xl font-semibold mb-4">Your conversation with <span className="italic text-primary-blue-light">{otherUserName}</span></div>
+              <div className="flex items-center justify-center gap-8">
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
+                    {aboutSingleA.photo ? (
+                      <img src={aboutSingleA.photo} alt={aboutSingleA.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-background-main flex items-center justify-center">
+                        <span className="text-2xl font-bold text-text-light">{aboutSingleA.name?.charAt(0).toUpperCase() || '?'}</span>
+                      </div>
+                    )}
                   </div>
-                )}
+                  <div className="mt-2 text-sm font-medium text-text-dark">{aboutSingleA.name}</div>
+                </div>
+                <div className="text-lg font-medium text-text-light">and</div>
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
+                    {aboutSingleB.photo ? (
+                      <img src={aboutSingleB.photo} alt={aboutSingleB.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-background-main flex items-center justify-center">
+                        <span className="text-2xl font-bold text-text-light">{aboutSingleB.name?.charAt(0).toUpperCase() || '?'}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-2 text-sm font-medium text-text-dark">{aboutSingleB.name}</div>
+                </div>
               </div>
-              <div className="mt-2 text-sm font-medium text-text-dark">{aboutSingleB.name}</div>
-            </div>
-          </div>
-          {/* Approve Match UI for matchmakrs in chats about two singles */}
-          <div className="mt-6">
-            {matchLoading ? (
-              <div className="text-gray-500">Checking match status...</div>
-            ) : matchStatus === 'matched' ? (
-              <div className="text-green-600 font-bold">It's a Match! Both matchmakrs have approved.</div>
-            ) : matchStatus === 'pending' ? (
-              <div className="text-yellow-600 font-semibold">Pending approval from the other matchmakr...</div>
-            ) : matchStatus === 'can-approve' ? (
-              <button
-                className="px-6 py-2 bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300"
-                onClick={handleApproveMatch}
-                disabled={matchLoading}
-              >
-                Approve Match
-              </button>
-            ) : null}
-            {matchError && <div className="text-red-500 mt-2">{matchError}</div>}
-          </div>
+              {/* Approve Match UI for matchmakrs in chats about two singles */}
+              <div className="mt-6">
+                {matchLoading ? (
+                  <div className="text-gray-500">Checking match status...</div>
+                ) : matchStatus === 'matched' ? (
+                  <div className="text-green-600 font-bold">It's a Match! Both matchmakrs have approved.</div>
+                ) : matchStatus === 'pending' ? (
+                  <div className="text-yellow-600 font-semibold">Pending approval from the other matchmakr...</div>
+                ) : matchStatus === 'can-approve' ? (
+                  <button
+                    className="px-6 py-2 bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300"
+                    onClick={handleApproveMatch}
+                    disabled={matchLoading}
+                  >
+                    Approve Match
+                  </button>
+                ) : null}
+                {matchError && <div className="text-red-500 mt-2">{matchError}</div>}
+              </div>
+            </>
+          )}
         </div>
         {/* Chat History Section */}
         <div ref={chatContainerRef} className="flex-1 overflow-y-auto bg-background-main px-6 py-4 text-left">
@@ -301,14 +373,14 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
             placeholder={`Send a message to ${otherUserName}`}
             value={messageText}
             onChange={e => setMessageText(e.target.value)}
-            disabled={sending || (matchStatus !== 'matched')}
+            disabled={sending || (isSingleToSingle ? !canChat : matchStatus !== 'matched')}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(); } }}
           />
           {messageText.trim() && (
             <button
               className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-primary-blue-light to-accent-teal-light shadow-md hover:scale-105 transition-transform"
               onClick={handleSendMessage}
-              disabled={sending || (matchStatus !== 'matched')}
+              disabled={sending || (isSingleToSingle ? !canChat : matchStatus !== 'matched')}
               style={{ border: '2px solid', borderImage: 'linear-gradient(45deg, #3B82F6, #2DD4BF) 1' }}
             >
               {/* SVG Arrow Icon, up and right, rotated 45deg */}
