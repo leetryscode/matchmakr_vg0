@@ -100,7 +100,7 @@ export default function DashboardLayout({ children, firstName, userId, userType 
                 </div>
             </main>
             {/* Bottom Navigation Bar remains unchanged */}
-            <nav className="fixed bottom-0 left-0 w-full bg-background-card shadow-card z-50 border-t border-gray-200">
+            <nav className="fixed bottom-0 left-0 w-full bg-white/60 backdrop-blur-md shadow-card z-50 border-t border-white/30">
                 <div className="flex justify-around items-center py-3">
                     {/* Logout */}
                     <button onClick={handleSignOut} className="flex flex-col items-center text-gray-500 hover:text-primary-blue-light text-xs focus:outline-none">

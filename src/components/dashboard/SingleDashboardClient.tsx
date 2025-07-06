@@ -234,7 +234,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
   // Helper: Render a chat row (used for both singles and matchmakr)
   const ChatRow = ({ photo, name, lastMessage, unreadCount, onClick, menu, timestamp, menuButton }: any) => (
     <div
-      className="flex items-center gap-4 py-3 w-full bg-gradient-to-r from-primary-blue to-primary-blue-light rounded-xl border border-white/20 shadow-md transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-1 pl-3"
+      className="flex items-center gap-4 py-3 w-full bg-white/10 rounded-xl border border-white/20 shadow-card transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-1 pl-3"
       role="button"
       tabIndex={0}
       onClick={e => { if ((e.target as HTMLElement).closest('.menu-btn')) return; onClick && onClick(e); }}
