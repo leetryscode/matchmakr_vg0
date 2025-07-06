@@ -39,11 +39,11 @@ export default function InviteOtherMatchMakrs() {
 
     return (
         <>
-            <div className="bg-background-card p-8 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-primary-blue/10 mb-8">
-                <h2 className="font-inter font-bold text-3xl text-gray-800 mb-3">MatchMakr Chat</h2>
-                <p className="text-gray-600 text-lg leading-relaxed mb-6">Chat windows with other MatchMakrs like you, on behalf of their sponsored singles =)</p>
-                <div className="text-center p-12 bg-gradient-card rounded-2xl border-2 border-dashed border-gray-300 mb-6">
-                    <p className="text-gray-500 text-lg">You have no more chats with MatchMakrs.</p>
+            <div className="bg-white/10 p-8 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-white/20 mb-8">
+                <h2 className="font-inter font-bold text-3xl text-white mb-3">MatchMakr Chat</h2>
+                <p className="text-white/80 text-lg leading-relaxed mb-6">Chat windows with other MatchMakrs like you, on behalf of their sponsored singles =)</p>
+                <div className="text-center p-12 bg-white/10 rounded-2xl border-2 border-dashed border-white/20 mb-6">
+                    <p className="text-white/70 text-lg">You have no more chats with MatchMakrs.</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}

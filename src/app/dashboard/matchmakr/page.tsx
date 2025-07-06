@@ -11,10 +11,10 @@ import MatchMakrChatList from '@/components/dashboard/MatchMakrChatList';
 // Prominent Singles Pond Button
 const SinglesPondButton = () => (
     <div className="mb-8">
-        <div className="bg-gradient-light p-8 rounded-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-accent-teal-light">
+        <div className="bg-white/10 p-8 rounded-xl shadow-card border border-white/20">
             <div className="text-center">
-                <h2 className="font-inter font-bold text-3xl text-gray-800 mb-3">Singles Pond</h2>
-                <p className="text-gray-700 text-lg mb-6 leading-relaxed">
+                <h2 className="font-inter font-bold text-3xl text-white mb-3">Singles Pond</h2>
+                <p className="text-white/80 text-lg mb-6 leading-relaxed">
                     Discover and connect with singles looking for matches. Your matchmaking superpower awaits!
                 </p>
                 <a href="/pond" className="inline-block">

@@ -71,64 +71,45 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
 
     return (
         <>
-            <div className="bg-background-card p-8 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-primary-blue/10">
-                <h2 className="font-inter font-bold text-3xl text-gray-800 mb-6">Manage Your Singles</h2>
-                <div className="space-y-4">
-                    {sponsoredSingles && sponsoredSingles.length > 0 ? (
-                        sponsoredSingles.map(single => {
-                            const lastMsg = singleChats && singleChats[single.id];
-                            return (
-                                <div key={single.id} className="flex items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 rounded-full flex items-center justify-center bg-gradient-primary text-white font-bold text-xl shadow-avatar hover:shadow-avatar-hover transition-all duration-300 hover:-translate-y-1">
-                                            {single.profile_pic_url ? (
-                                                <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full rounded-full object-cover" />
-                                            ) : (
-                                                <span>
-                                                    {single.name?.charAt(0).toUpperCase() || '?'}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <span className="font-semibold text-gray-800 text-lg block">{single.name}</span>
-                                            {lastMsg && (
-                                                <span className="text-gray-500 text-sm block truncate max-w-xs">{lastMsg.content}</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-3 items-center">
-                                        {lastMsg && (
-                                            <span className="text-xs text-gray-400 whitespace-nowrap mr-2">{new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                        )}
-                                        <button
-                                            onClick={() => setOpenChatSingle(single)}
-                                            className="px-4 py-2 bg-gradient-primary text-white text-sm rounded-full font-semibold hover:bg-gradient-light transition-all duration-300 hover:-translate-y-1 shadow-button hover:shadow-button-hover"
-                                        >
-                                            Chat
-                                        </button>
-                                        <Link href={`/profile/${single.id}`} className="px-4 py-2 bg-gradient-primary text-white text-sm rounded-full font-semibold hover:bg-gradient-light transition-all duration-300 hover:-translate-y-1 shadow-button hover:shadow-button-hover">
-                                            View
-                                        </Link>
-                                        <button 
-                                            onClick={() => setReleasingSingle(single)}
-                                            className="px-4 py-2 bg-gradient-light text-white text-sm rounded-full font-semibold hover:bg-gradient-primary transition-all duration-300 hover:-translate-y-1 shadow-button hover:shadow-button-hover"
-                                        >
-                                            Manage
-                                        </button>
-                                    </div>
+            {/* Section header, no container */}
+            <h2 className="font-inter font-bold text-xl text-white mb-2 border-b border-white/20 pb-1">Chat with your singles</h2>
+            <div className="flex flex-col gap-3 mb-4">
+                {sponsoredSingles && sponsoredSingles.length > 0 ? (
+                    sponsoredSingles.map(single => {
+                        const lastMsg = singleChats && singleChats[single.id];
+                        return (
+                            <div
+                                key={single.id}
+                                className="flex items-center gap-4 py-3 pl-3 w-full bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 shadow-md transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => setOpenChatSingle(single)}
+                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenChatSingle(single); } }}
+                            >
+                                <div className="w-14 h-14 rounded-full flex items-center justify-center bg-gradient-primary text-white font-bold text-xl shadow-avatar overflow-hidden">
+                                    {single.profile_pic_url ? (
+                                        <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full rounded-full object-cover" />
+                                    ) : (
+                                        <span>{single.name?.charAt(0).toUpperCase() || '?'}</span>
+                                    )}
                                 </div>
-                            );
-                        })
-                    ) : (
-                        <div className="text-center p-12 bg-gradient-card rounded-2xl border-2 border-dashed border-gray-300">
-                            <p className="text-gray-500 text-lg mb-4">You are not sponsoring any singles yet.</p>
-                            <p className="text-sm text-gray-400">Invite singles to start managing their profiles and finding matches for them!</p>
-                        </div>
-                    )}
-                </div>
-                <InviteSingle />
+                                <div className="flex-1 min-w-0">
+                                    <span className="font-semibold text-white text-lg block">{single.name}</span>
+                                    {lastMsg && (
+                                        <span className="text-white/80 text-sm block truncate max-w-xs">{lastMsg.content}</span>
+                                    )}
+                                </div>
+                                {lastMsg && (
+                                    <span className="text-xs text-white/60 whitespace-nowrap mr-2">{new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                )}
+                            </div>
+                        );
+                    })
+                ) : (
+                    <div className="text-blue-100 mb-6 w-full text-center">You are not sponsoring any singles yet.</div>
+                )}
             </div>
-
+            <InviteSingle />
             <ReleaseSingleModal
                 single={releasingSingle}
                 onClose={() => setReleasingSingle(null)}
