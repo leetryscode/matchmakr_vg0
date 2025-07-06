@@ -339,7 +339,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             })}
         </div>
       )}
-      <button className="w-full bg-white/10 text-white py-4 px-8 rounded-full font-semibold text-lg border border-white/30 shadow-deep hover:bg-white/20 transition-all duration-300 hover:-translate-y-2">
+      <button className="w-full bg-white/10 hover:bg-white/20 text-white py-3 px-6 rounded-full font-semibold text-lg border border-white/30 shadow-deep transition-all duration-300 hover:-translate-y-2">
         Invite a MatchMakr!
       </button>
       {/* Chat Modal */}

@@ -114,6 +114,43 @@ export default async function MatchMakrDashboardPage() {
                 userName={currentUserName}
                 userProfilePic={currentUserProfilePic}
             />
+            {/* Manage my Singles Section */}
+            <div className="mt-10 flex flex-col items-center mb-32">
+                <h2 className="font-inter font-bold text-xl text-white mb-4 border-b border-white/20 pb-1 w-full text-center">Manage my Singles</h2>
+                <a href={`/profile/${user.id}`} className="block mb-2">
+                    <div className="w-28 h-28 rounded-full border-4 border-white bg-gray-200 overflow-hidden flex items-center justify-center mx-auto shadow-lg hover:scale-105 transition">
+                        {currentUserProfilePic ? (
+                            <img src={currentUserProfilePic} alt={currentUserName} className="object-cover w-full h-full" />
+                        ) : (
+                            <span className="text-4xl font-bold text-primary-blue">{currentUserName?.charAt(0).toUpperCase() || '?'}</span>
+                        )}
+                    </div>
+                </a>
+                <a href={`/profile/${user.id}`} className="text-base underline text-white hover:text-accent-teal-light focus:outline-none mb-6 block text-center">My Profile</a>
+                <div className="flex flex-wrap justify-center gap-x-8 gap-y-6 w-full max-w-xs">
+                    {processedSponsoredSingles && processedSponsoredSingles.length > 0 ? (
+                        processedSponsoredSingles.map(single => (
+                            <a key={single.id} href={`/profile/${single.id}`} className="flex flex-col items-center group w-20">
+                                <div className="w-16 h-16 rounded-full border-2 border-white bg-gray-200 overflow-hidden flex items-center justify-center shadow-md group-hover:scale-105 transition">
+                                    {single.profile_pic_url ? (
+                                        <img src={single.profile_pic_url} alt={single.name || 'Single'} className="object-cover w-full h-full" />
+                                    ) : (
+                                        <span className="text-2xl font-bold text-primary-blue">{single.name?.charAt(0).toUpperCase() || '?'}</span>
+                                    )}
+                                </div>
+                                <span className="mt-2 text-sm font-semibold text-white truncate group-hover:text-accent-teal-light text-center w-full">{single.name}</span>
+                            </a>
+                        ))
+                    ) : (
+                        <button onClick={() => document.getElementById('invite-single-modal')?.click()} className="flex flex-col items-center group w-20 focus:outline-none">
+                            <div className="w-14 h-14 rounded-full border-2 border-white bg-white/10 hover:bg-white/20 flex items-center justify-center shadow-md group-hover:scale-105 transition">
+                                <svg className="w-6 h-6 text-primary-blue" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                            </div>
+                            <span className="mt-2 text-sm font-semibold text-white group-hover:text-accent-teal-light text-center w-full">Add Single</span>
+                        </button>
+                    )}
+                </div>
+            </div>
         </DashboardLayout>
     );
 } 
