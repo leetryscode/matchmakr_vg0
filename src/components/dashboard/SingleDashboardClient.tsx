@@ -1,9 +1,11 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import ChatModal from '@/components/chat/ChatModal';
-import InviteMatchMakr from '@/components/dashboard/InviteMatchMakr';
 import { createClient } from '@/lib/supabase/client';
 import FlameUnreadIcon from './FlameUnreadIcon';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import InviteMatchMakrModal from '@/components/dashboard/InviteMatchMakrModal';
 
 interface SingleDashboardClientProps {
   userId: string;
@@ -21,8 +23,14 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
   const [menuOpenIdx, setMenuOpenIdx] = useState<number | null>(null);
   const [showUnmatchModal, setShowUnmatchModal] = useState(false);
   const [unmatchTarget, setUnmatchTarget] = useState<any | null>(null);
+  const [sponsorLastMessage, setSponsorLastMessage] = useState<string>('');
+  const [sponsorTimestamp, setSponsorTimestamp] = useState<string>('');
+  const [sponsorUnreadCount, setSponsorUnreadCount] = useState<number>(0);
+  const [sponsorMenuOpen, setSponsorMenuOpen] = useState(false);
   const supabase = createClient();
   const menuRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const sponsorMenuRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
 
   // Refactor fetchMatches to be callable
   const fetchMatches = async () => {
@@ -89,6 +97,63 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
     fetchMatches();
   }, [userId]);
 
+  // Fetch sponsor chat info
+  useEffect(() => {
+    if (!sponsor) return;
+    const fetchSponsorChat = async () => {
+      // Last message
+      const { data: messages } = await supabase
+        .from('messages')
+        .select('content, created_at')
+        .or(`and(sender_id.eq.${userId},recipient_id.eq.${sponsor.id}),and(sender_id.eq.${sponsor.id},recipient_id.eq.${userId})`)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (messages && messages.length > 0) {
+        setSponsorLastMessage(messages[0].content);
+        setSponsorTimestamp(new Date(messages[0].created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      } else {
+        setSponsorLastMessage('Click to chat with your MatchMakr');
+        setSponsorTimestamp('');
+      }
+      // Unread count (where sponsor is sender and user is recipient and read is false)
+      const { count } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('sender_id', sponsor.id)
+        .eq('recipient_id', userId)
+        .eq('read', false);
+      setSponsorUnreadCount(count || 0);
+    };
+    fetchSponsorChat();
+  }, [userId, sponsor]);
+
+  // Close menus on outside click/touch
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      // For singles
+      if (menuOpenIdx !== null) {
+        const menuEl = menuRefs.current[menuOpenIdx];
+        if (menuEl && !menuEl.contains(event.target as Node)) {
+          setMenuOpenIdx(null);
+        }
+      }
+      // For sponsor
+      if (sponsorMenuOpen) {
+        if (sponsorMenuRef.current && !sponsorMenuRef.current.contains(event.target as Node)) {
+          setSponsorMenuOpen(false);
+        }
+      }
+    }
+    if (menuOpenIdx !== null || sponsorMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [menuOpenIdx, sponsorMenuOpen]);
+
   const handleOpenSingleChat = (row: any) => {
     setSelectedSingle(row);
     setOpenChat(true);
@@ -143,59 +208,151 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
     }
   };
 
+  // Profile section at the top (matches schematic)
+  const ProfileSection = () => (
+    <div className="flex flex-col items-center mb-4">
+      <button
+        onClick={() => router.push(`/profile/${userId}`)}
+        className="w-24 h-24 rounded-full border-4 border-white bg-gray-200 overflow-hidden mb-2 focus:outline-none focus:ring-2 focus:ring-accent-teal-light"
+        aria-label="Go to My Profile"
+      >
+        {userProfilePic ? (
+          <Image src={userProfilePic} alt={userName} width={96} height={96} className="object-cover w-full h-full" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-primary-blue">{userName?.charAt(0).toUpperCase() || '?'}</div>
+        )}
+      </button>
+      <button
+        onClick={() => router.push(`/profile/${userId}`)}
+        className="text-base underline text-white hover:text-accent-teal-light focus:outline-none"
+      >
+        My Profile
+      </button>
+    </div>
+  );
+
+  // Helper: Render a chat row (used for both singles and matchmakr)
+  const ChatRow = ({ photo, name, lastMessage, unreadCount, onClick, menu, timestamp, menuButton }: any) => (
+    <div
+      className="flex items-center gap-4 py-3 w-full bg-gradient-to-r from-primary-blue to-primary-blue-light rounded-xl border border-white/20 shadow-md transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-1"
+      role="button"
+      tabIndex={0}
+      onClick={e => { if ((e.target as HTMLElement).closest('.menu-btn')) return; onClick && onClick(e); }}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick && onClick(e); } }}
+    >
+      <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white bg-gray-100 flex-shrink-0">
+        {photo ? (
+          <Image src={photo} alt={name} width={48} height={48} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-200">
+            {name?.charAt(0).toUpperCase() || '?'}
+          </div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-white truncate drop-shadow">{name}</div>
+        <div className="text-sm text-blue-100 truncate">
+          {lastMessage || 'Click to chat'}
+        </div>
+      </div>
+      {timestamp && (
+        <div className="text-xs text-blue-100 ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>
+          {timestamp}
+        </div>
+      )}
+      {unreadCount > 0 && (
+        <div className="ml-2 flex items-center">
+          <FlameUnreadIcon count={unreadCount} />
+        </div>
+      )}
+      {/* Three-dot menu button */}
+      <div className="relative menu-btn flex items-center justify-end ml-auto">
+        {menuButton}
+        {menu}
+      </div>
+    </div>
+  );
+
   if (!sponsor) {
-    return <InviteMatchMakr />;
+    // Only show a single invite button, centered, with modal
+    const [isInviteOpen, setIsInviteOpen] = useState(false);
+    return (
+      <>
+        <ProfileSection />
+        <div className="flex flex-col gap-4 w-full items-center">
+          <button
+            onClick={() => setIsInviteOpen(true)}
+            className="bg-gradient-primary text-white px-6 py-3 rounded-full font-semibold text-lg shadow-button hover:shadow-button-hover transition-all duration-300 hover:-translate-y-1 mt-4"
+          >
+            Invite someone to be my MatchMakr!
+          </button>
+          <InviteMatchMakrModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
+          <h2 className="text-xl font-bold text-white mt-8 mb-2 border-b border-white/20 pb-1 w-full">My Matches</h2>
+          <div className="text-blue-100 mb-6 w-full text-center">No matches yet. Once your matchmakrs approve a match, you can chat here!</div>
+          <h2 className="text-xl font-bold text-white mt-6 mb-2 border-b border-white/20 pb-1 w-full">My Sneak Peaks</h2>
+          <div className="h-16" />
+        </div>
+      </>
+    );
   }
 
   return (
-    <div className="bg-background-card p-8 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-primary-blue/10 mb-8">
-      {/* Single-to-Single Chats Section */}
-      <div className="bg-gradient-to-br from-primary-blue to-primary-blue-light p-6 rounded-2xl shadow-deep mb-10 border-2 border-primary-blue/30">
-        <h2 className="font-inter font-bold text-2xl text-white mb-4 drop-shadow">Chats with Your Matches</h2>
+    <>
+      <ProfileSection />
+      <div className="flex flex-col gap-4 w-full">
+        {/* My MatchMakrs Section */}
+        <h2 className="text-xl font-bold text-white mb-2 border-b border-white/20 pb-1">My MatchMakrs</h2>
+        <ChatRow
+          photo={sponsor.profile_pic_url}
+          name={sponsor.name}
+          lastMessage={sponsorLastMessage}
+          unreadCount={sponsorUnreadCount}
+          onClick={() => { setOpenChat(true); setSelectedSingle(null); }}
+          timestamp={sponsorTimestamp}
+          menuButton={
+            <button
+              className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
+              onClick={e => { e.stopPropagation(); setSponsorMenuOpen(!sponsorMenuOpen); setMenuOpenIdx(null); }}
+              tabIndex={-1}
+              aria-label="Open menu"
+            >
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <circle cx="12" cy="5" r="1.5" fill="#fff"/>
+                <circle cx="12" cy="12" r="1.5" fill="#fff"/>
+                <circle cx="12" cy="19" r="1.5" fill="#fff"/>
+              </svg>
+            </button>
+          }
+          menu={sponsorMenuOpen && (
+            <div ref={sponsorMenuRef} className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
+              <button
+                className="block w-full text-left px-5 py-3 text-base text-primary-blue hover:bg-gray-50 rounded-xl font-semibold transition-colors"
+                onClick={e => { e.stopPropagation(); router.push(`/profile/${sponsor.id}`); setSponsorMenuOpen(false); }}
+              >
+                View MatchMakr
+              </button>
+            </div>
+          )}
+        />
+        {/* My Matches Section */}
+        <h2 className="text-xl font-bold text-white mt-6 mb-2 border-b border-white/20 pb-1">My Matches</h2>
         {singleChats.length === 0 ? (
           <div className="text-blue-100 mb-6">No matches yet. Once your matchmakrs approve a match, you can chat here!</div>
         ) : (
-          <div className="mb-6">
+          <div className="flex flex-col gap-2">
             {singleChats.map((row, idx) => (
-              <div
+              <ChatRow
                 key={row.otherSingle.id}
-                className="flex items-center gap-4 py-3 w-full bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 shadow-md transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-3"
-                role="button"
-                tabIndex={0}
-                onClick={e => { if ((e.target as HTMLElement).closest('.menu-btn')) return; handleOpenSingleChat(row); }}
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleOpenSingleChat(row); } }}
-              >
-                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white bg-gray-100 flex-shrink-0">
-                  {row.otherSingle.photo ? (
-                    <img src={row.otherSingle.photo} alt={row.otherSingle.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-200">
-                      {row.otherSingle.name?.charAt(0).toUpperCase() || '?'}
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-white truncate drop-shadow">{row.otherSingle.name}</div>
-                  <div className="text-sm text-blue-100 truncate">
-                    {row.lastMessage ? row.lastMessage.content : 'Click to chat with your match'}
-                  </div>
-                </div>
-                {row.lastMessage && (
-                  <div className="text-xs text-blue-100 ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>
-                    {new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                )}
-                {/* Unread icon, only show if unreadCount > 0 */}
-                {row.unreadCount > 0 && (
-                  <div className="ml-2 flex items-center">
-                    <FlameUnreadIcon count={row.unreadCount} />
-                  </div>
-                )}
-                {/* Three-dot menu */}
-                <div className="relative menu-btn flex items-center justify-end ml-auto" ref={el => { menuRefs.current[idx] = el; }}>
+                photo={row.otherSingle.photo}
+                name={row.otherSingle.name}
+                lastMessage={row.lastMessage ? row.lastMessage.content : 'Click to chat with your match'}
+                unreadCount={row.unreadCount}
+                onClick={() => handleOpenSingleChat(row)}
+                timestamp={row.lastMessage ? new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                menuButton={
                   <button
                     className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
-                    onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); }}
+                    onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); setSponsorMenuOpen(false); }}
                     tabIndex={-1}
                     aria-label="Open menu"
                   >
@@ -205,123 +362,97 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
                       <circle cx="12" cy="19" r="1.5" fill="#fff"/>
                     </svg>
                   </button>
-                  {menuOpenIdx === idx && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
-                      <button
-                        className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
-                        onClick={e => { e.stopPropagation(); setShowUnmatchModal(true); setUnmatchTarget(row); setMenuOpenIdx(null); }}
-                      >
-                        Unmatch
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
+                }
+                menu={menuOpenIdx === idx && (
+                  <div ref={el => { menuRefs.current[idx] = el; }} className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
+                    <button
+                      className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
+                      onClick={e => { e.stopPropagation(); setShowUnmatchModal(true); setUnmatchTarget(row); setMenuOpenIdx(null); }}
+                    >
+                      Unmatch
+                    </button>
+                  </div>
+                )}
+              />
             ))}
           </div>
         )}
-      </div>
-      {/* Single-to-Single Chat Modal */}
-      {openChat && selectedSingle && (
-        <ChatModal
-          open={openChat}
-          onClose={() => { setOpenChat(false); setSelectedSingle(null); fetchMatches(); }}
-          currentUserId={userId}
-          currentUserName={userName}
-          currentUserProfilePic={userProfilePic}
-          otherUserId={selectedSingle.otherSingle.id}
-          otherUserName={selectedSingle.otherSingle.name}
-          otherUserProfilePic={selectedSingle.otherSingle.photo}
-          aboutSingleA={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
-          aboutSingleB={{ id: selectedSingle.otherSingle.id, name: selectedSingle.otherSingle.name, photo: selectedSingle.otherSingle.photo }}
-          isSingleToSingle={true}
-        />
-      )}
-      {/* Existing MatchMakr Chat Section */}
-      <h2 className="font-inter font-bold text-3xl text-gray-800 mb-3 mt-8">Your MatchMakr</h2>
-      <div className="divide-y divide-gray-200 mb-6">
-        <div
-          className="flex items-center gap-4 py-4 w-full hover:bg-gray-50 rounded-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue"
-          role="button"
-          tabIndex={0}
-          onClick={() => setOpenChat(true)}
-          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenChat(true); } }}
-        >
-          <div className="w-12 h-12 rounded-full overflow-hidden border border-accent-teal-light bg-gray-100 flex-shrink-0">
-            {sponsor.profile_pic_url ? (
-              <img src={sponsor.profile_pic_url} alt={sponsor.name || 'MatchMakr'} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-gray-400">
-                {sponsor.name?.charAt(0).toUpperCase() || '?'}
+        {/* My Sneak Peaks Section */}
+        <h2 className="text-xl font-bold text-white mt-6 mb-2 border-b border-white/20 pb-1">My Sneak Peaks</h2>
+        <div className="h-16" />
+        {/* Chat Modal and other logic remain unchanged */}
+        {/* Single-to-Single Chat Modal */}
+        {openChat && selectedSingle && (
+          <ChatModal
+            open={openChat}
+            onClose={() => { setOpenChat(false); setSelectedSingle(null); fetchMatches(); }}
+            currentUserId={userId}
+            currentUserName={userName}
+            currentUserProfilePic={userProfilePic}
+            otherUserId={selectedSingle.otherSingle.id}
+            otherUserName={selectedSingle.otherSingle.name}
+            otherUserProfilePic={selectedSingle.otherSingle.photo}
+            aboutSingleA={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
+            aboutSingleB={{ id: selectedSingle.otherSingle.id, name: selectedSingle.otherSingle.name, photo: selectedSingle.otherSingle.photo }}
+            isSingleToSingle={true}
+          />
+        )}
+
+        {/* Chat Modal for MatchMakr */}
+        {openChat && !selectedSingle && (
+          <ChatModal
+            open={openChat}
+            onClose={() => setOpenChat(false)}
+            currentUserId={userId}
+            currentUserName={userName}
+            currentUserProfilePic={userProfilePic}
+            otherUserId={sponsor.id}
+            otherUserName={sponsor.name || ''}
+            otherUserProfilePic={sponsor.profile_pic_url}
+            aboutSingleA={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
+            aboutSingleB={{ id: sponsor.id, name: sponsor.name || '', photo: sponsor.profile_pic_url }}
+          />
+        )}
+        {/* End Sponsorship Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+            <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
+              <h2 className="text-2xl font-bold mb-4 text-primary-blue">End Sponsorship with {sponsor.name || 'your MatchMakr'}?</h2>
+              <p className="text-gray-600 mb-6">
+                They will no longer be able to manage your profile or find matches on your behalf. This action cannot be undone, and you would need to invite them again to reconnect. This will also permanently delete your chat history.
+              </p>
+              <div className="flex justify-center gap-4">
+                <button onClick={() => setIsModalOpen(false)} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors">
+                  Cancel
+                </button>
+                <button onClick={handleRemoveSponsor} className="px-6 py-2 bg-gradient-primary text-white rounded-md hover:bg-gradient-light font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
+                  Yes, End Sponsorship
+                </button>
               </div>
-            )}
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="font-medium text-gray-900 truncate">{sponsor.name || 'Unknown MatchMakr'}</div>
-            <div className="text-sm text-gray-500 truncate">Click to chat with your MatchMakr</div>
+        )}
+        {/* Unmatch Confirmation Modal */}
+        {showUnmatchModal && unmatchTarget && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+            <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
+              <h2 className="text-2xl font-bold mb-4 text-primary-blue">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
+              <p className="text-gray-600 mb-6">
+                This will permanently remove your match and chat history. You would need to be matched again to chat in the future.
+              </p>
+              <div className="flex justify-center gap-4">
+                <button onClick={() => { setShowUnmatchModal(false); setUnmatchTarget(null); }} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors">
+                  Cancel
+                </button>
+                <button onClick={handleUnmatch} className="px-6 py-2 bg-gradient-primary text-white rounded-md hover:bg-gradient-light font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
+                  Yes, Unmatch
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="mt-2 text-sm text-gray-500 hover:text-primary-blue hover:underline transition-colors"
-      >
-        End sponsorship
-      </button>
-      {/* Chat Modal for MatchMakr */}
-      {openChat && !selectedSingle && (
-        <ChatModal
-          open={openChat}
-          onClose={() => setOpenChat(false)}
-          currentUserId={userId}
-          currentUserName={userName}
-          currentUserProfilePic={userProfilePic}
-          otherUserId={sponsor.id}
-          otherUserName={sponsor.name || ''}
-          otherUserProfilePic={sponsor.profile_pic_url}
-          aboutSingleA={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
-          aboutSingleB={{ id: sponsor.id, name: sponsor.name || '', photo: sponsor.profile_pic_url }}
-        />
-      )}
-      {/* End Sponsorship Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-          <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
-            <h2 className="text-2xl font-bold mb-4 text-primary-blue">End Sponsorship with {sponsor.name || 'your MatchMakr'}?</h2>
-            <p className="text-gray-600 mb-6">
-              They will no longer be able to manage your profile or find matches on your behalf. This action cannot be undone, and you would need to invite them again to reconnect. This will also permanently delete your chat history.
-            </p>
-            <div className="flex justify-center gap-4">
-              <button onClick={() => setIsModalOpen(false)} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors">
-                Cancel
-              </button>
-              <button onClick={handleRemoveSponsor} className="px-6 py-2 bg-gradient-primary text-white rounded-md hover:bg-gradient-light font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
-                Yes, End Sponsorship
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Unmatch Confirmation Modal */}
-      {showUnmatchModal && unmatchTarget && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-          <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
-            <h2 className="text-2xl font-bold mb-4 text-primary-blue">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
-            <p className="text-gray-600 mb-6">
-              This will permanently remove your match and chat history. You would need to be matched again to chat in the future.
-            </p>
-            <div className="flex justify-center gap-4">
-              <button onClick={() => { setShowUnmatchModal(false); setUnmatchTarget(null); }} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors">
-                Cancel
-              </button>
-              <button onClick={handleUnmatch} className="px-6 py-2 bg-gradient-primary text-white rounded-md hover:bg-gradient-light font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
-                Yes, Unmatch
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 

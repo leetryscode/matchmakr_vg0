@@ -22,10 +22,6 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Debug: Log Supabase env variables in the browser
-  console.log('SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-  console.log('SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-
   const handleSignUp = async () => {
     setLoading(true);
     setError(null);
@@ -33,14 +29,6 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
     // Convert userType to uppercase to match database enum
     const userTypeUpper = onboardingData.userType?.toUpperCase();
     
-    console.log('Signing up with data:', {
-      email,
-      userType: userTypeUpper,
-      name: onboardingData.name,
-      sex: onboardingData.sex,
-      birthYear: onboardingData.birthYear,
-    });
-
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -55,14 +43,12 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
     });
 
     if (signUpError) {
-      console.error('Sign up error:', signUpError);
       setError(signUpError.message);
       setLoading(false);
       return;
     }
 
     if (signUpData.user) {
-      console.log('User created successfully:', signUpData.user.id);
       // Update the user's profile with onboarding data
       const { error: profileError } = await supabase
         .from('profiles')
@@ -75,7 +61,6 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
         })
         .eq('id', signUpData.user.id);
       if (profileError) {
-        console.error('Profile update error:', profileError);
         setError('Error saving profile data. Please try again.');
         setLoading(false);
         return;

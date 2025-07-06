@@ -88,88 +88,89 @@ export default function DashboardLayout({ children, firstName, userId, userType 
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-background-main text-gray-800">
-            {/* Modern Gradient Header */}
-            <header className="bg-gradient-primary text-white text-center py-10 px-4 rounded-b-2xl shadow-header relative">
-                {/* Notification Bell Icon */}
-                <button
-                    className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 focus:outline-none"
-                    aria-label="Notifications"
-                    onClick={() => setShowDropdown(v => !v)}
-                >
-                    {/* Simple SVG Bell */}
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                    </svg>
-                    {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow-lg border-2 border-white animate-pulse">
-                            {unreadCount}
-                        </span>
-                    )}
-                </button>
-                {/* Notification Dropdown */}
-                {showDropdown && (
-                    <div ref={dropdownRef} className="absolute right-6 top-16 w-80 bg-white text-gray-900 rounded-xl shadow-lg border border-gray-200 z-50 animate-fade-in">
-                        <div className="p-4 border-b font-bold text-lg text-primary-blue">Notifications</div>
-                        {loading ? (
-                            <div className="p-4 text-center text-gray-500">Loading...</div>
-                        ) : notifications.length === 0 ? (
-                            <div className="p-4 text-center text-gray-500">No notifications</div>
-                        ) : (
-                            <ul className="max-h-80 overflow-y-auto divide-y divide-gray-100">
-                                {notifications.map((n) => (
-                                    <li key={n.id} className={`p-4 ${!n.read ? 'bg-blue-50' : ''}`}>
-                                        <div className="font-medium text-sm mb-1">
-                                            {n.type === 'matchmakr_chat' ? 'Your matchmakr messaged another matchmakr about you!' : n.type}
-                                        </div>
-                                        <div className="text-xs text-gray-500 mb-1">{new Date(n.created_at).toLocaleString()}</div>
-                                        {/* Optionally show more info from n.data */}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-                )}
-                <h1 className="font-inter font-bold text-3xl mb-2">
-                    Hello, <span className="text-accent-teal-light font-semibold">{firstName || 'User'}</span>, welcome to MatchMakr
-                </h1>
-            </header>
-
+        <div className="flex flex-col min-h-screen w-full bg-gradient-to-b from-primary-blue to-accent-teal-light text-white">
+            {/* Brand Header Only */}
+            <div className="flex flex-col items-center pt-8 pb-4">
+                <div className="text-2xl font-bold mb-2">MatchMakr</div>
+            </div>
             {/* Main Content */}
             <main className="flex-grow p-4 md:p-8">
                 <div className="max-w-4xl mx-auto">
                     {children}
                 </div>
             </main>
-
-            {/* Modern Bottom Navigation */}
-            <footer className="bg-background-card shadow-card p-6 mt-auto">
-                <div className="max-w-4xl mx-auto grid grid-cols-2 gap-6 text-center">
-                    <button 
-                        onClick={() => router.push(`/profile/${userId}`)}
-                        className="bg-gradient-primary text-white p-6 rounded-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-primary-blue"
-                    >
-                        <div className="font-inter font-bold text-2xl mb-2">My Profile</div>
-                        <div className="font-raleway text-sm opacity-90">Edit your matchmaking profile</div>
+            {/* Bottom Navigation Bar remains unchanged */}
+            <nav className="fixed bottom-0 left-0 w-full bg-background-card shadow-card z-50 border-t border-gray-200">
+                <div className="flex justify-around items-center py-3">
+                    {/* Logout */}
+                    <button onClick={handleSignOut} className="flex flex-col items-center text-gray-500 hover:text-primary-blue-light text-xs focus:outline-none">
+                        <span>Logout</span>
                     </button>
-                    <button 
-                        onClick={() => router.push(userType === 'MATCHMAKR' ? '/pond' : '/dates')}
-                        className="bg-gradient-light text-white p-6 rounded-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-accent-blue-light"
-                    >
-                        <div className="font-inter font-bold text-2xl mb-2">
-                            {userType === 'MATCHMAKR' ? 'The Pond' : 'Discover Dates'}
-                        </div>
-                        <div className="font-raleway text-sm opacity-90">
-                            {userType === 'MATCHMAKR' ? 'Browse singles in your area' : 'Find perfect matches nearby'}
-                        </div>
+                    {/* Settings Icon Placeholder */}
+                    <button onClick={() => router.push('/dashboard/settings')} className="flex flex-col items-center text-gray-500 hover:text-primary-blue text-xs focus:outline-none">
+                        {/* Simple Gear SVG */}
+                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="3" />
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09c0 .66.39 1.26 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09c0 .66.39 1.26 1 1.51a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09c-.66 0-1.26.39-1.51 1z" />
+                        </svg>
+                        <span>Settings</span>
                     </button>
+                    {/* Coffee/Date Ideas Icon Placeholder */}
+                    <button className="flex flex-col items-center text-gray-500 hover:text-primary-blue text-xs focus:outline-none">
+                        {/* Simple Coffee SVG */}
+                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                            <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+                            <rect x="2" y="8" width="16" height="8" rx="4" />
+                            <line x1="6" y1="1" x2="6" y2="4" />
+                            <line x1="10" y1="1" x2="10" y2="4" />
+                            <line x1="14" y1="1" x2="14" y2="4" />
+                        </svg>
+                        <span>Date Ideas</span>
+                    </button>
+                    {/* Bell Notification Icon (functional, with unread count) */}
+                    <div className="relative flex flex-col items-center">
+                        <button
+                            className="flex flex-col items-center text-gray-500 hover:text-primary-blue text-xs focus:outline-none"
+                            aria-label="Notifications"
+                            onClick={() => setShowDropdown(v => !v)}
+                        >
+                            {/* Bell SVG */}
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                            </svg>
+                            <span>Alerts</span>
+                            {unreadCount > 0 && (
+                                <span className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow-lg border-2 border-white animate-pulse" style={{transform: 'translate(50%,-50%)'}}>
+                                    {unreadCount}
+                                </span>
+                            )}
+                        </button>
+                        {/* Notification Dropdown (moved from header) */}
+                        {showDropdown && (
+                            <div ref={dropdownRef} className="absolute bottom-12 right-0 w-80 bg-white text-gray-900 rounded-xl shadow-lg border border-gray-200 z-50 animate-fade-in">
+                                <div className="p-4 border-b font-bold text-lg text-primary-blue">Notifications</div>
+                                {loading ? (
+                                    <div className="p-4 text-center text-gray-500">Loading...</div>
+                                ) : notifications.length === 0 ? (
+                                    <div className="p-4 text-center text-gray-500">No notifications</div>
+                                ) : (
+                                    <ul className="max-h-80 overflow-y-auto divide-y divide-gray-100">
+                                        {notifications.map((n) => (
+                                            <li key={n.id} className={`p-4 ${!n.read ? 'bg-blue-50' : ''}`}>
+                                                <div className="font-medium text-sm mb-1">
+                                                    {n.type === 'matchmakr_chat' ? 'Your matchmakr messaged another matchmakr about you!' : n.type}
+                                                </div>
+                                                <div className="text-xs text-gray-500 mb-1">{new Date(n.created_at).toLocaleString()}</div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
-                <div className="mt-6 flex justify-around text-sm text-gray-500">
-                    <button onClick={() => router.push('/settings')} className="hover:text-primary-blue hover:underline transition-colors">Account Setting</button>
-                    <button onClick={handleSignOut} className="hover:text-primary-blue-light hover:underline transition-colors">Log out</button>
-                </div>
-            </footer>
+            </nav>
         </div>
     );
 } 
