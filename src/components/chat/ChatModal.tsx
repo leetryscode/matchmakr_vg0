@@ -79,14 +79,14 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     prevMsgCount.current = chatMessages.length;
   }, [chatMessages.length, open]);
 
-  // Always scroll to bottom when modal is opened
+  // Always scroll to bottom when chatMessages or modal open changes
   useEffect(() => {
     if (!open) return;
     const container = chatContainerRef.current;
     if (container) {
       container.scrollTop = container.scrollHeight;
     }
-  }, [open]);
+  }, [chatMessages, open]);
 
   // Fetch match status for the two singles in aboutSingleA and aboutSingleB
   useEffect(() => {
@@ -427,12 +427,30 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
             </button>
           )}
         </div>
+        {/* Responsive Close/Back Button */}
+        {/* Top left back arrow for mobile */}
         <button
-          className="absolute top-4 right-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-md font-medium hover:bg-gray-300"
+          className="absolute top-4 left-4 block sm:hidden bg-white/80 rounded-full p-2 shadow focus:outline-none"
           onClick={onClose}
+          aria-label="Back"
           disabled={sending}
         >
-          Close
+          {/* Heroicons chevron-left */}
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-gray-700">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+        </button>
+        {/* Top right X for desktop */}
+        <button
+          className="absolute top-4 right-4 hidden sm:block bg-white/80 rounded-full p-2 shadow focus:outline-none"
+          onClick={onClose}
+          aria-label="Close"
+          disabled={sending}
+        >
+          {/* Heroicons X-mark */}
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-gray-700">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
     </div>,

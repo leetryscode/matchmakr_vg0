@@ -56,133 +56,134 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-main p-4 sm:p-6 md:p-8">
-        <div className="max-w-sm mx-auto gradient-border rounded-2xl shadow-deep overflow-hidden border border-accent-teal-light" style={{ background: 'linear-gradient(180deg, #FFFFFF 0%, #E6F7FA 100%)' }}>
-          <PhotoGallery 
-            userId={profile.id} 
-            photos={profile.photos}
-            userType={profile.user_type}
-          />
-
-          <div className="p-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <h1 className="text-3xl font-bold gradient-text">{profile.name}</h1>
-                <p className="text-lg text-text-light flex items-center">
-                  <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
-                    <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                      <path d="M6.5 1h3a1 1 0 0 1 1 1v1h2.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.5V2a1 1 0 0 1 1-1z" fill="#6B7280"/>
-                      <path d="M6.5 3h3v1h-3V3z" fill="white"/>
-                    </svg>
-                  </span>
-                  {[profile.occupation, age ? age : null].filter(Boolean).join(', ')}
-                </p>
-              </div>
-              {isOwnProfile && (
-                <EditProfileButton profile={profile} />
-              )}
-            </div>
-            {profile.user_type === 'SINGLE' && (profile.city || profile.state || profile.zip_code) && (
-              <p className="text-text-light mt-1 flex items-center">
+      <div className="min-h-screen p-4 sm:p-6 md:p-8">
+        <PhotoGallery 
+          userId={profile.id} 
+          photos={profile.photos}
+          userType={profile.user_type}
+        />
+        <div className="p-0">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-white">{profile.name}</h1>
+              <p className="text-lg text-white flex items-center">
                 <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
                   <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                    <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="#6B7280" stroke="none"/>
-                    <circle cx="8" cy="6" r="2" fill="white"/>
+                    <path d="M6.5 1h3a1 1 0 0 1 1 1v1h2.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.5V2a1 1 0 0 1 1-1z" fill="#fff"/>
+                    <path d="M6.5 3h3v1h-3V3z" fill="white"/>
                   </svg>
                 </span>
-                {[profile.city, profile.state].filter(Boolean).join(', ')}
-                {profile.zip_code && ` ${profile.zip_code}`}
+                {[profile.occupation, age ? age : null].filter(Boolean).join(', ')}
               </p>
-            )}
-            <div className="mt-6 border-t border-border-light pt-4">
-              <h2 className="text-lg font-semibold text-primary-blue">About {firstName}</h2>
-              <p className="mt-2 text-sm text-text-dark">{profile.bio || 'No bio yet.'}</p>
             </div>
-            {profile.user_type === 'SINGLE' && (
-              <div className="mt-6 border-t border-primary-teal border-opacity-30 pt-4">
+            {isOwnProfile && (
+              <EditProfileButton profile={profile} />
+            )}
+          </div>
+          {profile.user_type === 'SINGLE' && (profile.city || profile.state || profile.zip_code) && (
+            <p className="text-white mt-1 flex items-center">
+              <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
+                  <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="#fff" stroke="none"/>
+                  <circle cx="8" cy="6" r="2" fill="white"/>
+                </svg>
+              </span>
+              {[profile.city, profile.state].filter(Boolean).join(', ')}
+              {profile.zip_code && ` ${profile.zip_code}`}
+            </p>
+          )}
+          <div className="mt-6">
+            <div className="bg-white/10 rounded-xl border border-white/20 shadow-card p-4">
+              <h2 className="text-lg font-semibold text-white">About {firstName}</h2>
+              <p className="mt-2 text-sm text-white/90">{profile.bio || 'No bio yet.'}</p>
+            </div>
+          </div>
+          {profile.user_type === 'SINGLE' && (
+            <div className="mt-6">
+              <div className="bg-white/10 rounded-xl border border-white/20 shadow-card p-4">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold text-primary-teal">What their MatchMakr says</h2>
+                  <h2 className="text-lg font-semibold text-white">What their MatchMakr says</h2>
                   {isSponsorViewing && (
                     <EditProfileButton profile={profile} canEditEndorsementOnly={true} />
                   )}
                 </div>
-                <p className="mt-2 text-sm text-text-dark">{profile.matchmakr_endorsement || 'This is where your matchmakr writes about you...'}</p>
+                <p className="mt-2 text-sm text-white/90">{profile.matchmakr_endorsement || 'This is where your matchmakr writes about you...'}</p>
               </div>
-            )}
-            {profile.user_type === 'MATCHMAKR' && (
-              <div className="mt-6 border-t border-primary-teal border-opacity-30 pt-4">
-                <h2 className="text-lg font-semibold text-primary-teal">Sponsored Singles</h2>
-                {sponsoredSingles && sponsoredSingles.length > 0 ? (
-                  <div className="mt-4 grid grid-cols-3 gap-4">
-                    {sponsoredSingles.map(single => (
-                      <Link href={`/profile/${single.id}`} key={single.id} className="text-center group">
-                        <div className="w-20 h-20 rounded-full mx-auto overflow-hidden border-2 border-transparent group-hover:border-primary-blue transition-all duration-300">
-                          {single.profile_pic_url ? (
-                            <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full bg-background-main flex items-center justify-center">
-                              <span className="text-2xl font-bold text-text-light">
-                                {single.name?.charAt(0).toUpperCase() || '?'}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        <p className="mt-2 text-sm font-semibold text-text-dark truncate group-hover:text-primary-blue">{single.name}</p>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-2 text-sm text-text-light">Not currently sponsoring any singles.</p>
-                )}
-              </div>
-            )}
-            {profile.user_type === 'SINGLE' && matchmakrProfile && (
-              <div className="mt-6 border-t border-primary-blue border-opacity-30 pt-4">
-                <h2 className="text-lg font-semibold text-primary-blue mb-2">Their MatchMakr</h2>
-                <Link href={`/profile/${matchmakrProfile.id}`} className="flex items-center gap-4 p-3 rounded-lg bg-background-main shadow-card hover:shadow-card-hover border border-primary-blue/10 hover:border-primary-blue transition-all duration-300">
-                  <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light">
-                    {matchmakrProfile.profile_pic_url ? (
-                      <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'MatchMakr'} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-background-main flex items-center justify-center">
-                        <span className="text-2xl font-bold text-text-light">
-                          {matchmakrProfile.name?.charAt(0).toUpperCase() || '?'}
-                        </span>
+            </div>
+          )}
+          {profile.user_type === 'MATCHMAKR' && (
+            <div className="mt-6 border-t border-white/30 pt-4">
+              <h2 className="text-lg font-semibold text-white">Sponsored Singles</h2>
+              {sponsoredSingles && sponsoredSingles.length > 0 ? (
+                <div className="mt-4 grid grid-cols-3 gap-4">
+                  {sponsoredSingles.map(single => (
+                    <Link href={`/profile/${single.id}`} key={single.id} className="text-center group">
+                      <div className="w-20 h-20 rounded-full mx-auto overflow-hidden border-2 border-white group-hover:border-primary-blue transition-all duration-300">
+                        {single.profile_pic_url ? (
+                          <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-background-main flex items-center justify-center">
+                            <span className="text-2xl font-bold text-white/80">
+                              {single.name?.charAt(0).toUpperCase() || '?'}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-base font-semibold text-text-dark group-hover:text-primary-blue">{matchmakrProfile.name}</p>
-                    <p className="text-xs text-text-light">View MatchMakr Profile</p>
-                  </div>
-                  {/* Show Message button only if current user is a matchmakr */}
-                  {currentUserProfile?.user_type === 'MATCHMAKR' && (
-                    <button
-                      className="ml-4 px-4 py-2 rounded-md border-2 gradient-border bg-transparent text-primary-blue hover:text-white hover:bg-gradient-primary font-semibold transition-colors"
-                      onClick={e => { e.preventDefault(); setIsChatOpen(true); }}
-                    >
-                      Message
-                    </button>
+                      <p className="mt-2 text-sm font-semibold text-white truncate group-hover:text-primary-blue">{single.name}</p>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-2 text-sm text-white/80">Not currently sponsoring any singles.</p>
+              )}
+            </div>
+          )}
+          {profile.user_type === 'SINGLE' && matchmakrProfile && (
+            <div className="mt-6 border-t border-white/30 pt-4">
+              <h2 className="text-lg font-semibold text-white mb-2">Their MatchMakr</h2>
+              <Link href={`/profile/${matchmakrProfile.id}`} className="flex items-center gap-4 p-3 rounded-lg bg-white/10 shadow-card hover:shadow-card-hover border border-white/20 hover:border-primary-blue transition-all duration-300">
+                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white">
+                  {matchmakrProfile.profile_pic_url ? (
+                    <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'MatchMakr'} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-background-main flex items-center justify-center">
+                      <span className="text-2xl font-bold text-white/80">
+                        {matchmakrProfile.name?.charAt(0).toUpperCase() || '?'}
+                      </span>
+                    </div>
                   )}
-                </Link>
-                {/* Unified Chat Modal */}
-                {isChatOpen && currentUserProfile?.user_type === 'MATCHMAKR' && (
-                  <ChatModal
-                    open={isChatOpen}
-                    onClose={() => setIsChatOpen(false)}
-                    currentUserId={currentUserId || ''}
-                    currentUserName={currentUserName || ''}
-                    currentUserProfilePic={currentUserProfilePic || null}
-                    otherUserId={matchmakrProfile.id}
-                    otherUserName={matchmakrProfile.name || ''}
-                    otherUserProfilePic={matchmakrProfile.profile_pic_url}
-                    aboutSingleA={{ id: profile.id, name: profile.name || '', photo: profile.photos?.[0] || null }}
-                    aboutSingleB={currentSponsoredSingle ? { id: currentSponsoredSingle.id, name: currentSponsoredSingle.name || '', photo: currentSponsoredSingle.photo || null } : { id: '', name: '', photo: null }}
-                  />
+                </div>
+                <div>
+                  <p className="text-base font-semibold text-white group-hover:text-primary-blue">{matchmakrProfile.name}</p>
+                  <p className="text-xs text-white/80">View MatchMakr Profile</p>
+                </div>
+                {/* Show Message button only if current user is a matchmakr */}
+                {currentUserProfile?.user_type === 'MATCHMAKR' && (
+                  <button
+                    className="ml-4 px-4 py-2 rounded-md border-2 gradient-border bg-transparent text-primary-blue hover:text-white hover:bg-gradient-primary font-semibold transition-colors"
+                    onClick={e => { e.preventDefault(); setIsChatOpen(true); }}
+                  >
+                    Message
+                  </button>
                 )}
-              </div>
-            )}
-          </div>
+              </Link>
+              {/* Unified Chat Modal */}
+              {isChatOpen && currentUserProfile?.user_type === 'MATCHMAKR' && (
+                <ChatModal
+                  open={isChatOpen}
+                  onClose={() => setIsChatOpen(false)}
+                  currentUserId={currentUserId || ''}
+                  currentUserName={currentUserName || ''}
+                  currentUserProfilePic={currentUserProfilePic || null}
+                  otherUserId={matchmakrProfile.id}
+                  otherUserName={matchmakrProfile.name || ''}
+                  otherUserProfilePic={matchmakrProfile.profile_pic_url}
+                  aboutSingleA={{ id: profile.id, name: profile.name || '', photo: profile.photos?.[0] || null }}
+                  aboutSingleB={currentSponsoredSingle ? { id: currentSponsoredSingle.id, name: currentSponsoredSingle.name || '', photo: currentSponsoredSingle.photo || null } : { id: '', name: '', photo: null }}
+                />
+              )}
+            </div>
+          )}
         </div>
       </div>
     </>

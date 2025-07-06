@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisVerticalIcon } from '@heroicons/react/24/solid';
 import ImageCropper from './ImageCropper';
 import { Area } from 'react-easy-crop';
+import 'keen-slider/keen-slider.min.css';
+import { useKeenSlider } from 'keen-slider/react';
 
 // Helper function to create a cropped image
 const createImage = (url: string): Promise<HTMLImageElement> =>
@@ -85,6 +87,16 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
     // Determine max photos based on user type
     const maxPhotos = userType === 'MATCHMAKR' ? MAX_PHOTOS_MATCHMAKR : MAX_PHOTOS_SINGLE;
     const isMatchMakr = userType === 'MATCHMAKR';
+
+    const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
+        initial: 0,
+        slideChanged(s) {
+            setCurrentIndex(s.track.details.rel);
+        },
+        rubberband: false,
+        loop: false,
+        mode: 'snap',
+    });
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -239,109 +251,43 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
     };
 
     const currentItem = displayItems[currentIndex];
+    const isCarousel = !isMatchMakr && photos.length > 1;
 
     return (
-        <div className="relative mb-6">
-            <div className="relative w-full aspect-square bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
-                {currentItem === ADD_PHOTO_SLOT ? (
-                    <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="flex flex-col items-center justify-center w-full h-full bg-gray-100 hover:bg-gray-200 transition-colors"
-                        disabled={uploading}
-                    >
-                        {uploading ? (
-                            <div className="w-12 h-12 border-4 border-t-pink-500 rounded-full animate-spin" />
-                        ) : (
-                            <>
-                                <PlusIcon className="h-16 w-16 text-gray-400" />
-                                <span className="mt-2 text-sm font-semibold text-gray-600">
-                                    {isMatchMakr ? 'Add Profile Photo' : 'Add Photo'}
-                                </span>
-                                {isMatchMakr && (
-                                    <span className="mt-1 text-xs text-gray-500">MatchMakrs can have 1 photo</span>
-                                )}
-                            </>
-                        )}
-                    </button>
+        <div className="relative mb-6 px-2 sm:px-0">
+            <div className="relative w-full aspect-[4/5] bg-gray-200 rounded-2xl overflow-hidden flex items-center justify-center shadow-card mx-auto max-w-md mt-6">
+                {isCarousel ? (
+                    <div ref={sliderRef} className="keen-slider w-full h-full">
+                        {photos.map((photo, idx) => (
+                            <div className="keen-slider__slide flex items-center justify-center" key={idx}>
+                                <Image
+                                    src={photo}
+                                    alt={`Profile photo ${idx + 1}`}
+                                    fill
+                                    sizes="100vw"
+                                    className="object-cover rounded-2xl"
+                                    priority={idx === 0}
+                                />
+                            </div>
+                        ))}
+                    </div>
                 ) : (
                     <>
-                    <Image
-                        src={currentItem}
-                        alt={`Profile photo ${currentIndex + 1}`}
-                        fill
-                        sizes="100vw"
-                        objectFit="cover"
-                        priority
-                    />
-                    </>
-                )}
-
-                {/* Navigation and Action Buttons */}
-                {currentItem !== ADD_PHOTO_SLOT ? (
-                    <>
-                        <div ref={menuRef} className="absolute top-4 left-4 z-20">
-                            <button onClick={() => setIsMenuOpen(prev => !prev)} className="bg-black/30 text-white p-2 rounded-full hover:bg-black/50">
-                                <EllipsisVerticalIcon className="h-6 w-6" />
-                            </button>
-                            {isMenuOpen && (
-                                <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
-                                    <div className="py-1">
-                                        <button
-                                            onClick={() => {
-                                                handlePhotoDelete(currentItem);
-                                                setIsMenuOpen(false);
-                                            }}
-                                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                        >
-                                            Remove Photo
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                handleEditClick(currentItem);
-                                            }}
-                                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                        >
-                                            Edit Photo
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                         {displayItems.length > 1 && (
-                            <>
-                                <button onClick={() => handleNavigation('prev')} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 z-10">
-                                    <ChevronLeftIcon className="h-6 w-6" />
-                                </button>
-                                <button onClick={() => handleNavigation('next')} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 z-10">
-                                    <ChevronRightIcon className="h-6 w-6" />
-                                </button>
-                            </>
+                        {photos[0] && (
+                            <Image
+                                src={photos[0]}
+                                alt="Profile photo"
+                                fill
+                                sizes="100vw"
+                                className="object-cover rounded-2xl"
+                                priority
+                            />
                         )}
                     </>
-                ): (
-                     displayItems.length > 1 && (
-                            <>
-                                <button onClick={() => handleNavigation('prev')} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 z-10">
-                                    <ChevronLeftIcon className="h-6 w-6" />
-                                </button>
-                                <button onClick={() => handleNavigation('next')} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 z-10">
-                                    <ChevronRightIcon className="h-6 w-6" />
-                                </button>
-                            </>
-                        )
                 )}
             </div>
-
-            {imageToCrop && (
-                <ImageCropper
-                    image={imageToCrop}
-                    onClose={() => setImageToCrop(null)}
-                    onCropComplete={onCropComplete}
-                />
-            )}
-
-            {/* Photo indicator dots */}
-            {photos.length > 1 && (
+            {/* Photo indicator dots for carousel only */}
+            {isCarousel && (
                 <div className="flex justify-center mt-2 gap-2">
                     {photos.map((_, idx) => (
                         <span
@@ -351,7 +297,6 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                     ))}
                 </div>
             )}
-
             <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} className="hidden" accept="image/*" />
         </div>
     );

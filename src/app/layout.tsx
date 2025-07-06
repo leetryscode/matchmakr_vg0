@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-source-sans bg-background-main text-gray-800 leading-relaxed text-lg">
+      <body className="font-source-sans text-gray-800 leading-relaxed text-lg">
         <GlobalConfettiBlast>
           {children}
         </GlobalConfettiBlast>

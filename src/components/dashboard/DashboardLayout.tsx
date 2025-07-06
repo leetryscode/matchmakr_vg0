@@ -88,7 +88,7 @@ export default function DashboardLayout({ children, firstName, userId, userType 
     };
 
     return (
-        <div className="flex flex-col min-h-screen w-full bg-gradient-to-b from-primary-blue to-accent-teal-light text-white">
+        <div className="flex flex-col min-h-screen w-full text-white">
             {/* Brand Header Only */}
             <div className="flex flex-col items-center pt-8 pb-4">
                 <div className="text-2xl font-bold mb-2">MatchMakr</div>
