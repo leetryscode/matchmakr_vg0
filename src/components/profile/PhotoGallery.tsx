@@ -66,16 +66,17 @@ interface PhotoGalleryProps {
     userId: string;
     photos: (string | null)[] | null;
     userType?: 'SINGLE' | 'MATCHMAKR' | 'VENDOR';
+    canEdit?: boolean;
 }
 
 const MAX_PHOTOS_SINGLE = 6;
 const MAX_PHOTOS_MATCHMAKR = 1;
 const ADD_PHOTO_SLOT = 'ADD_PHOTO_SLOT';
 
-export default function PhotoGallery({ userId, photos: initialPhotos, userType = 'SINGLE' }: PhotoGalleryProps) {
+export default function PhotoGallery({ userId, photos: initialPhotos, userType = 'SINGLE', canEdit = true }: PhotoGalleryProps) {
     const supabase = createClient();
     const router = useRouter();
-    const [photos, setPhotos] = useState(initialPhotos?.filter((p): p is string => typeof p === 'string' && p.trim() !== '') || []);
+    const [photos, setPhotos] = useState(initialPhotos ? initialPhotos.filter((p): p is string => typeof p === 'string' && p.trim() !== '') : []);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [uploading, setUploading] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -112,11 +113,11 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
 
     const displayItems = useMemo(() => {
         const items = [...photos];
-        if (photos.length < maxPhotos) {
+        if (canEdit && photos.length < maxPhotos) {
             items.push(ADD_PHOTO_SLOT);
         }
         return items;
-    }, [photos, maxPhotos]);
+    }, [photos, maxPhotos, canEdit]);
 
     const handleNavigation = (direction: 'next' | 'prev') => {
         const newIndex = direction === 'next'
@@ -204,7 +205,17 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
 
             setPhotos(updatedPhotos);
             setEditingPhotoUrl(null);
-            setCurrentIndex(updatedPhotos.findIndex(p => p === publicUrl));
+            if (updatedPhotos.length < maxPhotos) {
+                setCurrentIndex(updatedPhotos.length); // Move to Add Photo slot
+                if (instanceRef.current) {
+                    instanceRef.current.moveToIdx(updatedPhotos.length);
+                }
+            } else {
+                setCurrentIndex(updatedPhotos.findIndex(p => p === publicUrl));
+                if (instanceRef.current) {
+                    instanceRef.current.moveToIdx(updatedPhotos.findIndex(p => p === publicUrl));
+                }
+            }
 
         } catch (error: any) {
             alert(error.message);
@@ -251,45 +262,117 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
     };
 
     const currentItem = displayItems[currentIndex];
-    const isCarousel = !isMatchMakr && photos.length > 1;
+    const isCarousel = !isMatchMakr && displayItems.length > 1;
 
     return (
         <div className="relative mb-6 px-2 sm:px-0">
             <div className="relative w-full aspect-[4/5] bg-gray-200 rounded-2xl overflow-hidden flex items-center justify-center shadow-card mx-auto max-w-md mt-6">
                 {isCarousel ? (
                     <div ref={sliderRef} className="keen-slider w-full h-full">
-                        {photos.map((photo, idx) => (
-                            <div className="keen-slider__slide flex items-center justify-center" key={idx}>
-                                <Image
-                                    src={photo}
-                                    alt={`Profile photo ${idx + 1}`}
-                                    fill
-                                    sizes="100vw"
-                                    className="object-cover rounded-2xl"
-                                    priority={idx === 0}
-                                />
+                        {displayItems.map((item, idx) => (
+                            <div className="keen-slider__slide flex items-center justify-center relative" key={idx}>
+                                {item === ADD_PHOTO_SLOT ? (
+                                    canEdit && (
+                                        <button
+                                            className="flex flex-col items-center justify-center w-full h-full text-white/80 hover:text-accent-teal-light transition-colors"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            type="button"
+                                        >
+                                            <PlusIcon className="w-10 h-10 mb-2" />
+                                            <span className="font-semibold text-lg">Add Photo</span>
+                                        </button>
+                                    )
+                                ) : (
+                                    <>
+                                        <Image
+                                            src={item}
+                                            alt={`Profile photo ${idx + 1}`}
+                                            fill
+                                            sizes="100vw"
+                                            className="object-cover rounded-2xl"
+                                            priority={idx === 0}
+                                        />
+                                        {/* Three dot menu for delete/edit */}
+                                        {canEdit && (
+                                            <div className="absolute top-2 right-2 z-10">
+                                                <button
+                                                    className="p-2 rounded-full bg-black/40 hover:bg-black/70 text-white"
+                                                    onClick={() => { setIsMenuOpen(item === photos[currentIndex]); setEditingPhotoUrl(item); }}
+                                                    type="button"
+                                                >
+                                                    <EllipsisVerticalIcon className="w-6 h-6" />
+                                                </button>
+                                                {isMenuOpen && editingPhotoUrl === item && (
+                                                    <div ref={menuRef} className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg z-20 py-2 border border-gray-200">
+                                                        <button
+                                                            className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-xl font-semibold transition-colors"
+                                                            onClick={() => { setIsMenuOpen(false); handlePhotoDelete(item); }}
+                                                        >
+                                                            Delete Photo
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                             </div>
                         ))}
                     </div>
                 ) : (
                     <>
-                        {photos[0] && (
-                            <Image
-                                src={photos[0]}
-                                alt="Profile photo"
-                                fill
-                                sizes="100vw"
-                                className="object-cover rounded-2xl"
-                                priority
-                            />
+                        {displayItems[0] === ADD_PHOTO_SLOT ? (
+                            canEdit && (
+                                <button
+                                    className="flex flex-col items-center justify-center w-full h-full text-white/80 hover:text-accent-teal-light transition-colors"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    type="button"
+                                >
+                                    <PlusIcon className="w-10 h-10 mb-2" />
+                                    <span className="font-semibold text-lg">Add Photo</span>
+                                </button>
+                            )
+                        ) : (
+                            <>
+                                <Image
+                                    src={displayItems[0]}
+                                    alt="Profile photo"
+                                    fill
+                                    sizes="100vw"
+                                    className="object-cover rounded-2xl"
+                                    priority
+                                />
+                                {/* Three dot menu for delete/edit */}
+                                {canEdit && (
+                                    <div className="absolute top-2 right-2 z-10">
+                                        <button
+                                            className="p-2 rounded-full bg-black/40 hover:bg-black/70 text-white"
+                                            onClick={() => { setIsMenuOpen(true); setEditingPhotoUrl(displayItems[0] as string); }}
+                                            type="button"
+                                        >
+                                            <EllipsisVerticalIcon className="w-6 h-6" />
+                                        </button>
+                                        {isMenuOpen && editingPhotoUrl === displayItems[0] && (
+                                            <div ref={menuRef} className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg z-20 py-2 border border-gray-200">
+                                                <button
+                                                    className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-xl font-semibold transition-colors"
+                                                    onClick={() => { setIsMenuOpen(false); handlePhotoDelete(displayItems[0] as string); }}
+                                                >
+                                                    Delete Photo
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </>
                         )}
                     </>
                 )}
             </div>
-            {/* Photo indicator dots for carousel only */}
+            {/* Photo indicator dots for carousel and add slot */}
             {isCarousel && (
                 <div className="flex justify-center mt-2 gap-2">
-                    {photos.map((_, idx) => (
+                    {displayItems.map((item, idx) => (
                         <span
                             key={idx}
                             className={`inline-block w-2 h-2 rounded-full ${idx === currentIndex ? 'bg-accent-teal-light' : 'bg-gray-300'} transition-all`}
@@ -298,6 +381,25 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                 </div>
             )}
             <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} className="hidden" accept="image/*" />
+            {/* Image Cropper Modal */}
+            {imageToCrop && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+                    <div className="bg-white rounded-xl p-6 max-w-lg w-full shadow-xl relative">
+                        <ImageCropper
+                            image={imageToCrop}
+                            onCropComplete={onCropComplete}
+                            onClose={() => setImageToCrop(null)}
+                        />
+                        <button
+                            className="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-2xl font-bold"
+                            onClick={() => setImageToCrop(null)}
+                            aria-label="Cancel"
+                        >
+                            &times;
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 } 

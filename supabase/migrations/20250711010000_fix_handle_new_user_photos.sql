@@ -1,4 +1,4 @@
--- Migration: Fix handle_new_user function to match current profiles schema
+-- Migration: Fix handle_new_user function to initialize photos column
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin

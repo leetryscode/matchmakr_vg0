@@ -295,7 +295,7 @@ export default function PondPage() {
                 <div className="bg-white/10 rounded-xl p-3 mb-6 shadow-deep border border-white/20">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                         <div>
-                            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                            <label htmlFor="city" className="block text-sm font-medium text-white mb-1">City</label>
                             <input
                                 type="text"
                                 id="city"
@@ -306,7 +306,7 @@ export default function PondPage() {
                             />
                         </div>
                         <div>
-                            <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                            <label htmlFor="state" className="block text-sm font-medium text-white mb-1">State</label>
                             <input
                                 type="text"
                                 id="state"
@@ -317,7 +317,7 @@ export default function PondPage() {
                             />
                         </div>
                         <div>
-                            <label htmlFor="zip" className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                            <label htmlFor="zip" className="block text-sm font-medium text-white mb-1">ZIP Code</label>
                             <input
                                 type="text"
                                 id="zip"

@@ -95,6 +95,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           userId={profile.id} 
           photos={profile.photos}
           userType={profile.user_type}
+          canEdit={isOwnProfile || isSponsorViewing}
         />
         <div className="p-0">
           <div className="flex justify-between items-start">
