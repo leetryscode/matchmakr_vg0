@@ -385,16 +385,17 @@ export default function PondPage() {
                                                     className="w-full h-full object-cover" 
                                                 />
                                             ) : (
-                                                <span className="text-4xl font-bold text-gray-400">
-                                                    {profile.name?.charAt(0).toUpperCase() || '?'}
-                                                </span>
+                                                <span className="text-2xl font-bold text-white">{profile.name?.charAt(0).toUpperCase() || '?'}</span>
                                             )}
                                         </div>
                                         {/* Name and Age only */}
                                         <div className="text-center">
-                                            <h3 className="font-bold text-lg text-white mb-2 group-hover:text-accent-teal-light transition-colors">
-                                                {profile.name}{age ? `, ${age}` : ''}
-                                            </h3>
+                                            <div className="flex items-center justify-center mb-1">
+                                                <span className="text-2xl font-bold text-white">{profile.name}{age ? ',' : ''}</span>
+                                                {age && (
+                                                    <span className="text-2xl font-bold text-white ml-2 align-middle">{age}</span>
+                                                )}
+                                            </div>
                                             {/* Interests badges */}
                                             {profile.interests && profile.interests.length > 0 && (
                                                 <div className="flex flex-wrap justify-center gap-2 mb-2">

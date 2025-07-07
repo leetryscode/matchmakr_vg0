@@ -225,7 +225,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                           </div>
                         )}
                       </div>
-                      <p className="mt-2 text-sm font-semibold text-white truncate group-hover:text-primary-blue">{single.name}</p>
+                      <p className="mt-2 text-sm font-semibold text-white truncate">{single.name}</p>
                     </Link>
                   ))}
                 </div>
@@ -250,7 +250,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                   )}
                 </div>
                 <div>
-                  <p className="text-base font-semibold text-white group-hover:text-primary-blue">{matchmakrProfile.name}</p>
+                  <p className="text-base font-semibold text-white">{matchmakrProfile.name}</p>
                   <p className="text-xs text-white/80">View MatchMakr Profile</p>
                 </div>
                 {/* Show Message button only if current user is a matchmakr */}

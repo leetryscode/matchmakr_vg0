@@ -123,7 +123,7 @@ export default async function MatchMakrDashboardPage() {
                         {currentUserProfilePic ? (
                             <img src={currentUserProfilePic} alt={currentUserName} className="object-cover w-full h-full" />
                         ) : (
-                            <span className="text-4xl font-bold text-primary-blue">{currentUserName?.charAt(0).toUpperCase() || '?'}</span>
+                            <span className="text-4xl font-bold text-white">{currentUserName?.charAt(0).toUpperCase() || '?'}</span>
                         )}
                     </div>
                 </a>
@@ -136,10 +136,10 @@ export default async function MatchMakrDashboardPage() {
                                     {single.profile_pic_url ? (
                                         <img src={single.profile_pic_url} alt={single.name || 'Single'} className="object-cover w-full h-full" />
                                     ) : (
-                                        <span className="text-2xl font-bold text-primary-blue">{single.name?.charAt(0).toUpperCase() || '?'}</span>
+                                        <span className="text-2xl font-bold text-white">{single.name?.charAt(0).toUpperCase() || '?'}</span>
                                     )}
                                 </div>
-                                <span className="mt-2 text-sm font-semibold text-white truncate group-hover:text-accent-teal-light text-center w-full">{single.name}</span>
+                                <span className="mt-2 text-sm font-semibold text-white text-center w-full">{single.name}</span>
                             </a>
                         ))
                     ) : (
