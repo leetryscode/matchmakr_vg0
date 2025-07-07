@@ -342,9 +342,9 @@ export default function PondPage() {
                             const age = calculateAge(profile.birth_year);
                             return (
                                 <Link href={`/profile/${profile.id}`} key={profile.id} className="group block">
-                                    <div className="bg-background-main rounded-lg p-4 shadow-card hover:shadow-card-hover transition-all duration-300 border border-border-light group-hover:border-primary-blue">
-                                        {/* Profile Picture */}
-                                        <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden border border-accent-teal-light group-hover:border-primary-blue transition-all duration-300">
+                                    <div className="bg-white/10 rounded-2xl p-4 shadow-card hover:shadow-card-hover border border-white/20 transition-all duration-300 group-hover:scale-105">
+                                        {/* Profile Picture - large square, rounded-2xl */}
+                                        <div className="w-full aspect-square max-w-xs mx-auto mb-4 overflow-hidden rounded-2xl border-2 border-white group-hover:border-accent-teal-light transition-all duration-300 flex items-center justify-center bg-gray-200">
                                             {profile.profile_pic_url ? (
                                                 <img 
                                                     src={profile.profile_pic_url} 
@@ -352,45 +352,20 @@ export default function PondPage() {
                                                     className="w-full h-full object-cover" 
                                                 />
                                             ) : (
-                                                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                                    <span className="text-2xl font-bold text-gray-400">
-                                                        {profile.name?.charAt(0).toUpperCase() || '?'}
-                                                    </span>
-                                                </div>
+                                                <span className="text-4xl font-bold text-gray-400">
+                                                    {profile.name?.charAt(0).toUpperCase() || '?'}
+                                                </span>
                                             )}
                                         </div>
-                                        {/* Profile Info */}
+                                        {/* Name and Age only */}
                                         <div className="text-center">
-                                            <h3 className="font-medium text-text-dark group-hover:text-primary-blue transition-colors">
+                                            <h3 className="font-bold text-lg text-white mb-2 group-hover:text-accent-teal-light transition-colors">
                                                 {profile.name}{age ? `, ${age}` : ''}
                                             </h3>
-                                            {profile.occupation && (
-                                                <p className="text-sm text-text-light mt-1 flex items-center">
-                                                    <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
-                                                        <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                                                            <path d="M6.5 1h3a1 1 0 0 1 1 1v1h2.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.5V2a1 1 0 0 1 1-1z" fill="#6B7280"/>
-                                                            <path d="M6.5 3h3v1h-3V3z" fill="white"/>
-                                                        </svg>
-                                                    </span>
-                                                    {profile.occupation}
-                                                </p>
-                                            )}
-                                            {(profile.city || profile.state || profile.zip_code) && (
-                                                <p className="text-sm text-text-light mt-1 flex items-center">
-                                                    <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
-                                                        <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                                                            <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="#6B7280" stroke="none"/>
-                                                            <circle cx="8" cy="6" r="2" fill="white"/>
-                                                        </svg>
-                                                    </span>
-                                                    {[profile.city, profile.state].filter(Boolean).join(', ')}
-                                                    {profile.zip_code && ` ${profile.zip_code}`}
-                                                </p>
-                                            )}
                                             {/* Message MatchMakr Button */}
                                             {profile.sponsored_by_id && (
                                                 <button
-                                                    className="mt-4 px-4 py-2 rounded-md border border-accent-teal-light bg-transparent text-primary-blue-light hover:text-white hover:bg-gradient-primary font-medium transition-colors"
+                                                    className="mt-2 px-4 py-2 rounded-full border border-accent-teal-light bg-white/10 hover:bg-white/20 text-white font-medium transition-colors"
                                                     onClick={e => { e.preventDefault(); handleOpenChat(profile); }}
                                                     disabled={chatLoading && openChatProfileId === profile.id}
                                                 >
