@@ -261,9 +261,9 @@ export default function PondPage() {
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold gradient-text mb-2">The Pond</h1>
-                    <p className="text-primary-blue">Find your single the perfect match!</p>
-                    <p className="text-text-light mt-1">Message their MatchMakr to see if it's a good fit!</p>
+                    <h1 className="text-4xl font-bold text-white mb-2">The Pond</h1>
+                    <p className="text-white">Find your single the perfect match!</p>
+                    <p className="text-white mt-1">Message their MatchMakr to see if it's a good fit!</p>
                 </div>
 
                 {/* Search Filters */}
@@ -320,92 +320,90 @@ export default function PondPage() {
                 </div>
 
                 {/* Results */}
-                <div className="bg-background-card rounded-xl p-6 shadow-deep border border-border-light">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl font-semibold text-primary-blue">
-                            {loading ? 'Loading...' : `${profiles.length} singles found`}
-                        </h2>
-                    </div>
-
-                    {loading ? (
-                        <div className="text-center py-8">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mx-auto"></div>
-                            <p className="mt-4 text-text-light">Loading profiles...</p>
-                        </div>
-                    ) : profiles.length === 0 ? (
-                        <div className="text-center py-8">
-                            <p className="text-text-light text-lg">No singles found matching your criteria.</p>
-                            <p className="text-text-light mt-2">Try adjusting your search filters.</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {profiles.map((profile) => {
-                                const age = calculateAge(profile.birth_year);
-                                return (
-                                    <Link href={`/profile/${profile.id}`} key={profile.id} className="group block">
-                                        <div className="bg-background-main rounded-lg p-4 shadow-card hover:shadow-card-hover transition-all duration-300 border border-border-light group-hover:border-primary-blue">
-                                            {/* Profile Picture */}
-                                            <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden border border-accent-teal-light group-hover:border-primary-blue transition-all duration-300">
-                                                {profile.profile_pic_url ? (
-                                                    <img 
-                                                        src={profile.profile_pic_url} 
-                                                        alt={profile.name || 'Profile'} 
-                                                        className="w-full h-full object-cover" 
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                                        <span className="text-2xl font-bold text-gray-400">
-                                                            {profile.name?.charAt(0).toUpperCase() || '?'}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            {/* Profile Info */}
-                                            <div className="text-center">
-                                                <h3 className="font-medium text-text-dark group-hover:text-primary-blue transition-colors">
-                                                    {profile.name}{age ? `, ${age}` : ''}
-                                                </h3>
-                                                {profile.occupation && (
-                                                    <p className="text-sm text-text-light mt-1 flex items-center">
-                                                        <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
-                                                            <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                                                                <path d="M6.5 1h3a1 1 0 0 1 1 1v1h2.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.5V2a1 1 0 0 1 1-1z" fill="#6B7280"/>
-                                                                <path d="M6.5 3h3v1h-3V3z" fill="white"/>
-                                                            </svg>
-                                                        </span>
-                                                        {profile.occupation}
-                                                    </p>
-                                                )}
-                                                {(profile.city || profile.state || profile.zip_code) && (
-                                                    <p className="text-sm text-text-light mt-1 flex items-center">
-                                                        <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
-                                                            <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                                                                <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="#6B7280" stroke="none"/>
-                                                                <circle cx="8" cy="6" r="2" fill="white"/>
-                                                            </svg>
-                                                        </span>
-                                                        {[profile.city, profile.state].filter(Boolean).join(', ')}
-                                                        {profile.zip_code && ` ${profile.zip_code}`}
-                                                    </p>
-                                                )}
-                                                {/* Message MatchMakr Button */}
-                                                {profile.sponsored_by_id && (
-                                                    <button
-                                                        className="mt-4 px-4 py-2 rounded-md border border-accent-teal-light bg-transparent text-primary-blue-light hover:text-white hover:bg-gradient-primary font-medium transition-colors"
-                                                        onClick={e => { e.preventDefault(); handleOpenChat(profile); }}
-                                                        disabled={chatLoading && openChatProfileId === profile.id}
-                                                    >
-                                                        {chatLoading && openChatProfileId === profile.id ? 'Loading...' : 'Message MatchMakr'}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </Link>
-                                );
-                            })}
-                        </div>
-                    )}
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-semibold text-white">
+                        {loading ? 'Loading...' : `${profiles.length} singles found`}
+                    </h2>
                 </div>
+
+                {loading ? (
+                    <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mx-auto"></div>
+                        <p className="mt-4 text-white">Loading profiles...</p>
+                    </div>
+                ) : profiles.length === 0 ? (
+                    <div className="text-center py-8">
+                        <p className="text-white text-lg">No singles found matching your criteria.</p>
+                        <p className="text-white mt-2">Try adjusting your search filters.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {profiles.map((profile) => {
+                            const age = calculateAge(profile.birth_year);
+                            return (
+                                <Link href={`/profile/${profile.id}`} key={profile.id} className="group block">
+                                    <div className="bg-background-main rounded-lg p-4 shadow-card hover:shadow-card-hover transition-all duration-300 border border-border-light group-hover:border-primary-blue">
+                                        {/* Profile Picture */}
+                                        <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden border border-accent-teal-light group-hover:border-primary-blue transition-all duration-300">
+                                            {profile.profile_pic_url ? (
+                                                <img 
+                                                    src={profile.profile_pic_url} 
+                                                    alt={profile.name || 'Profile'} 
+                                                    className="w-full h-full object-cover" 
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                                    <span className="text-2xl font-bold text-gray-400">
+                                                        {profile.name?.charAt(0).toUpperCase() || '?'}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {/* Profile Info */}
+                                        <div className="text-center">
+                                            <h3 className="font-medium text-text-dark group-hover:text-primary-blue transition-colors">
+                                                {profile.name}{age ? `, ${age}` : ''}
+                                            </h3>
+                                            {profile.occupation && (
+                                                <p className="text-sm text-text-light mt-1 flex items-center">
+                                                    <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
+                                                        <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
+                                                            <path d="M6.5 1h3a1 1 0 0 1 1 1v1h2.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.5V2a1 1 0 0 1 1-1z" fill="#6B7280"/>
+                                                            <path d="M6.5 3h3v1h-3V3z" fill="white"/>
+                                                        </svg>
+                                                    </span>
+                                                    {profile.occupation}
+                                                </p>
+                                            )}
+                                            {(profile.city || profile.state || profile.zip_code) && (
+                                                <p className="text-sm text-text-light mt-1 flex items-center">
+                                                    <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
+                                                        <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
+                                                            <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="#6B7280" stroke="none"/>
+                                                            <circle cx="8" cy="6" r="2" fill="white"/>
+                                                        </svg>
+                                                    </span>
+                                                    {[profile.city, profile.state].filter(Boolean).join(', ')}
+                                                    {profile.zip_code && ` ${profile.zip_code}`}
+                                                </p>
+                                            )}
+                                            {/* Message MatchMakr Button */}
+                                            {profile.sponsored_by_id && (
+                                                <button
+                                                    className="mt-4 px-4 py-2 rounded-md border border-accent-teal-light bg-transparent text-primary-blue-light hover:text-white hover:bg-gradient-primary font-medium transition-colors"
+                                                    onClick={e => { e.preventDefault(); handleOpenChat(profile); }}
+                                                    disabled={chatLoading && openChatProfileId === profile.id}
+                                                >
+                                                    {chatLoading && openChatProfileId === profile.id ? 'Loading...' : 'Message MatchMakr'}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
             {/* Chat Modal (global, not per card) */}
             {openChatProfileId && openChatMatchmakr && (
@@ -413,15 +411,14 @@ export default function PondPage() {
                     open={!!openChatProfileId && !!openChatMatchmakr}
                     onClose={handleCloseChat}
                     currentUserId={currentUser?.id || ''}
-                    currentUserName={currentUserName}
-                    currentUserProfilePic={currentUserProfilePic}
-                    otherUserId={openChatMatchmakr.id}
+                    currentUserName={currentUserName || ''}
+                    currentUserProfilePic={currentUserProfilePic || null}
+                    otherUserId={openChatMatchmakr.id || ''}
                     otherUserName={openChatMatchmakr.name || ''}
-                    otherUserProfilePic={openChatMatchmakr.profile_pic_url}
-                    aboutSingleA={(() => {
-                        const single = profiles.find(p => p.id === openChatProfileId);
-                        return single ? { id: single.id, name: single.name || '', photo: single.profile_pic_url || null } : { id: '', name: '', photo: null };
-                    })()}
+                    otherUserProfilePic={openChatMatchmakr.profile_pic_url || null}
+                    aboutSingleA={(profiles.find(p => p.id === openChatProfileId)
+                        ? { id: profiles.find(p => p.id === openChatProfileId)!.id, name: profiles.find(p => p.id === openChatProfileId)!.name || '', photo: profiles.find(p => p.id === openChatProfileId)!.profile_pic_url || null }
+                        : { id: '', name: '', photo: null })}
                     aboutSingleB={currentSponsoredSingle ? { id: currentSponsoredSingle.id, name: currentSponsoredSingle.name, photo: currentSponsoredSingle.photo } : { id: '', name: '', photo: null }}
                 />
             )}

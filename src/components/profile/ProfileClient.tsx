@@ -160,7 +160,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 {/* Show Message button only if current user is a matchmakr */}
                 {currentUserProfile?.user_type === 'MATCHMAKR' && (
                   <button
-                    className="ml-4 px-4 py-2 rounded-md border-2 gradient-border bg-transparent text-primary-blue hover:text-white hover:bg-gradient-primary font-semibold transition-colors"
+                    className="ml-4 px-4 py-2 rounded-md border border-white/20 bg-white/10 hover:bg-white/20 text-white font-semibold transition-colors"
                     onClick={e => { e.preventDefault(); setIsChatOpen(true); }}
                   >
                     Message
