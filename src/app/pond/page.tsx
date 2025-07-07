@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Profile } from '@/components/profile/types';
 import Link from 'next/link';
 import ChatModal from '@/components/chat/ChatModal';
+import InterestsInput from '@/components/profile/InterestsInput';
 
 interface PondProfile extends Profile {
     profile_pic_url: string | null;
@@ -29,6 +30,7 @@ export default function PondPage() {
     const [currentSponsoredSingle, setCurrentSponsoredSingle] = useState<{ id: string, name: string, photo: string | null } | null>(null);
     const [currentUserName, setCurrentUserName] = useState('');
     const [currentUserProfilePic, setCurrentUserProfilePic] = useState<string | null>(null);
+    const [selectedInterests, setSelectedInterests] = useState<{ id: number; name: string }[]>([]);
 
     useEffect(() => {
         checkUserAndLoadProfiles();
@@ -152,10 +154,20 @@ export default function PondPage() {
                 return { id: profile.id, interests: data.interests || [] };
             })
         );
-        setProfiles(prev => prev.map(p => {
+        let updatedProfiles = transformedProfiles.map(p => {
             const found = interestsResults.find(i => i.id === p.id);
             return found ? { ...p, interests: found.interests } : p;
-        }));
+        });
+
+        // Rank profiles: those matching selected interests first, then the rest
+        if (selectedInterests.length > 0) {
+            const selectedIds = selectedInterests.map(i => i.id);
+            updatedProfiles = [
+                ...updatedProfiles.filter(p => p.interests && p.interests.some((interest: { id: number; name: string }) => selectedIds.includes(interest.id))),
+                ...updatedProfiles.filter(p => !p.interests || !p.interests.some((interest: { id: number; name: string }) => selectedIds.includes(interest.id)))
+            ];
+        }
+        setProfiles(updatedProfiles);
     };
 
     const handleSearch = () => {
@@ -277,12 +289,11 @@ export default function PondPage() {
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold text-white mb-2">The Pond</h1>
                     <p className="text-white">Find your single the perfect match!</p>
-                    <p className="text-white mt-1">Message their MatchMakr to see if it's a good fit!</p>
                 </div>
 
                 {/* Search Filters */}
-                <div className="bg-background-card rounded-xl p-6 mb-8 shadow-deep border border-accent-teal-light">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="bg-white/10 rounded-xl p-3 mb-6 shadow-deep border border-white/20">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                         <div>
                             <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">City</label>
                             <input
@@ -290,7 +301,7 @@ export default function PondPage() {
                                 id="city"
                                 value={searchCity}
                                 onChange={(e) => setSearchCity(e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 bg-background-card text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                                className="w-full border border-white/20 rounded-md px-3 py-2 bg-white/10 text-white placeholder-white/60 focus:border-accent-teal-light focus:outline-none focus:ring-2 focus:ring-accent-teal-light focus:ring-opacity-50 shadow-inner"
                                 placeholder="e.g., New York"
                             />
                         </div>
@@ -301,7 +312,7 @@ export default function PondPage() {
                                 id="state"
                                 value={searchState}
                                 onChange={(e) => setSearchState(e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 bg-background-card text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                                className="w-full border border-white/20 rounded-md px-3 py-2 bg-white/10 text-white placeholder-white/60 focus:border-accent-teal-light focus:outline-none focus:ring-2 focus:ring-accent-teal-light focus:ring-opacity-50 shadow-inner"
                                 placeholder="e.g., NY"
                             />
                         </div>
@@ -312,24 +323,32 @@ export default function PondPage() {
                                 id="zip"
                                 value={searchZip}
                                 onChange={(e) => setSearchZip(e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 bg-background-card text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                                className="w-full border border-white/20 rounded-md px-3 py-2 bg-white/10 text-white placeholder-white/60 focus:border-accent-teal-light focus:outline-none focus:ring-2 focus:ring-accent-teal-light focus:ring-opacity-50 shadow-inner"
                                 placeholder="e.g., 10001"
                             />
                         </div>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 mb-2">
                         <button
                             onClick={handleSearch}
-                            className="px-6 py-2 bg-gradient-primary text-white rounded-md hover:bg-primary-blue-light font-semibold transition-colors shadow-deep"
+                            className="px-6 py-2 bg-white/20 text-white rounded-md border border-white/20 hover:bg-white/30 font-semibold transition-colors shadow-inner"
                         >
                             Search
                         </button>
                         <button
                             onClick={handleClearSearch}
-                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors"
+                            className="px-6 py-2 bg-white/10 text-white rounded-md border border-white/20 hover:bg-white/20 font-semibold transition-colors"
                         >
                             Clear
                         </button>
+                    </div>
+                    {/* Interest filter */}
+                    <div className="mt-2">
+                        <label className="block text-sm font-medium text-white mb-1">Filter by Interests</label>
+                        <InterestsInput
+                            value={selectedInterests}
+                            onChange={setSelectedInterests}
+                        />
                     </div>
                 </div>
 
