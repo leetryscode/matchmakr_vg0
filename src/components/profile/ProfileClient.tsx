@@ -6,6 +6,7 @@ import EditProfileButton from './EditProfileButton';
 import Link from 'next/link';
 import { Profile } from './types';
 import ChatModal from '../chat/ChatModal';
+import InterestsInput from './InterestsInput';
 
 // Types for sponsored singles and matchmakr
 interface SponsoredSingle {
@@ -17,6 +18,12 @@ interface MatchmakrProfile {
   id: string;
   name: string | null;
   profile_pic_url: string | null;
+}
+
+// Add Interest type for local use
+interface Interest {
+  id: number;
+  name: string;
 }
 
 interface ProfileClientProps {
@@ -51,8 +58,35 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   currentUserId,
 }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [showInterestsInput, setShowInterestsInput] = useState(false);
+  const [interests, setInterests] = useState<Interest[]>([]);
+  const [loadingInterests, setLoadingInterests] = useState(false);
+  const [savingInterests, setSavingInterests] = useState(false);
   const age = calculateAge(profile.birth_year);
   const firstName = profile.name?.split(' ')[0] || '';
+
+  // Fetch interests for this profile on mount
+  React.useEffect(() => {
+    if (profile.id) {
+      setLoadingInterests(true);
+      fetch(`/api/profiles/${profile.id}/interests`)
+        .then(res => res.json())
+        .then(data => setInterests(data.interests || []))
+        .finally(() => setLoadingInterests(false));
+    }
+  }, [profile.id]);
+
+  const handleSaveInterests = async (newInterests: Interest[]) => {
+    setSavingInterests(true);
+    await fetch(`/api/profiles/${profile.id}/interests`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ interestIds: newInterests.map(i => i.id) })
+    });
+    setInterests(newInterests);
+    setShowInterestsInput(false);
+    setSavingInterests(false);
+  };
 
   return (
     <>
@@ -81,16 +115,77 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
             )}
           </div>
           {profile.user_type === 'SINGLE' && (profile.city || profile.state || profile.zip_code) && (
-            <p className="text-white mt-1 flex items-center">
-              <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                  <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="#fff" stroke="none"/>
-                  <circle cx="8" cy="6" r="2" fill="white"/>
-                </svg>
-              </span>
-              {[profile.city, profile.state].filter(Boolean).join(', ')}
-              {profile.zip_code && ` ${profile.zip_code}`}
-            </p>
+            <>
+              <p className="text-white mt-1 flex items-center">
+                <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
+                    <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="#fff" stroke="none"/>
+                    <circle cx="8" cy="6" r="2" fill="white"/>
+                  </svg>
+                </span>
+                {[profile.city, profile.state].filter(Boolean).join(', ')}
+                {profile.zip_code && ` ${profile.zip_code}`}
+              </p>
+              {/* Add Interest Button and Interests Badges */}
+              {(isOwnProfile || isSponsorViewing) && (
+                <div className="mt-2">
+                  <button
+                    className="bg-white/10 text-white px-4 py-1 rounded-full border border-white/20 hover:bg-white/20 transition-colors text-sm font-semibold"
+                    onClick={() => setShowInterestsInput(v => !v)}
+                    disabled={loadingInterests || savingInterests}
+                  >
+                    {showInterestsInput ? 'Cancel' : 'Add Interest'}
+                  </button>
+                  {showInterestsInput && (
+                    <div className="mt-2">
+                      <InterestsInput
+                        value={interests}
+                        onChange={handleSaveInterests}
+                        disabled={savingInterests}
+                      />
+                      <button
+                        className="mt-2 px-4 py-1 rounded-full bg-accent-teal-light text-white font-semibold hover:bg-accent-teal transition-colors"
+                        onClick={() => handleSaveInterests(interests)}
+                        disabled={savingInterests}
+                      >
+                        Save Interests
+                      </button>
+                    </div>
+                  )}
+                  {/* Show current interests as badges */}
+                  {!showInterestsInput && interests.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {interests.slice(0, 8).map(interest => (
+                        <span key={interest.id} className="bg-white/20 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
+                          {interest.name}
+                          {(isOwnProfile || isSponsorViewing) && (
+                            <button
+                              type="button"
+                              className="ml-1 text-white/70 hover:text-red-400"
+                              onClick={async () => {
+                                const newInterests = interests.filter(i => i.id !== interest.id);
+                                setSavingInterests(true);
+                                await fetch(`/api/profiles/${profile.id}/interests`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ interestIds: newInterests.map(i => i.id) })
+                                });
+                                setInterests(newInterests);
+                                setSavingInterests(false);
+                              }}
+                              disabled={savingInterests}
+                              aria-label={`Remove ${interest.name}`}
+                            >
+                              &times;
+                            </button>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
           <div className="mt-6">
             <div className="bg-white/10 rounded-xl border border-white/20 shadow-card p-4">

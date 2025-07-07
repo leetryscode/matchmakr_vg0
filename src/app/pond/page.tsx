@@ -8,6 +8,7 @@ import ChatModal from '@/components/chat/ChatModal';
 
 interface PondProfile extends Profile {
     profile_pic_url: string | null;
+    interests?: { id: number; name: string }[];
 }
 
 export default function PondPage() {
@@ -142,6 +143,19 @@ export default function PondPage() {
 
         setProfiles(transformedProfiles);
         setLoading(false);
+
+        // Fetch interests for all profiles in parallel
+        const interestsResults = await Promise.all(
+            transformedProfiles.map(async (profile) => {
+                const res = await fetch(`/api/profiles/${profile.id}/interests`);
+                const data = await res.json();
+                return { id: profile.id, interests: data.interests || [] };
+            })
+        );
+        setProfiles(prev => prev.map(p => {
+            const found = interestsResults.find(i => i.id === p.id);
+            return found ? { ...p, interests: found.interests } : p;
+        }));
     };
 
     const handleSearch = () => {
@@ -362,6 +376,16 @@ export default function PondPage() {
                                             <h3 className="font-bold text-lg text-white mb-2 group-hover:text-accent-teal-light transition-colors">
                                                 {profile.name}{age ? `, ${age}` : ''}
                                             </h3>
+                                            {/* Interests badges */}
+                                            {profile.interests && profile.interests.length > 0 && (
+                                                <div className="flex flex-wrap justify-center gap-2 mb-2">
+                                                    {profile.interests.slice(0, 5).map(interest => (
+                                                        <span key={interest.id} className="bg-white/20 text-white px-3 py-1 rounded-full text-xs">
+                                                            {interest.name}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
                                             {/* Message MatchMakr Button */}
                                             {profile.sponsored_by_id && (
                                                 <button
