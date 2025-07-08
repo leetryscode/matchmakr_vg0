@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import InviteSingle from './InviteSingle';
 import Link from 'next/link';
 import ChatModal from '@/components/chat/ChatModal';
+import FlameUnreadIcon from './FlameUnreadIcon';
 
 interface SponsoredSingle {
     id: string;
@@ -51,6 +52,25 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
     const supabase = createClient();
     const [releasingSingle, setReleasingSingle] = useState<SponsoredSingle | null>(null);
     const [openChatSingle, setOpenChatSingle] = useState<SponsoredSingle | null>(null);
+    const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+
+    useEffect(() => {
+        const fetchUnreadCounts = async () => {
+            if (!sponsoredSingles) return;
+            const counts: Record<string, number> = {};
+            for (const single of sponsoredSingles) {
+                const { count } = await supabase
+                    .from('messages')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('sender_id', single.id)
+                    .eq('recipient_id', userId)
+                    .eq('read', false);
+                counts[single.id] = count || 0;
+            }
+            setUnreadCounts(counts);
+        };
+        fetchUnreadCounts();
+    }, [sponsoredSingles, userId]);
 
     const handleReleaseSingle = async (singleId: string, singleName: string | null) => {
         try {
@@ -101,6 +121,11 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                                 </div>
                                 {lastMsg && (
                                     <span className="text-xs text-white/60 whitespace-nowrap mr-2">{new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                )}
+                                {unreadCounts[single.id] > 0 && (
+                                    <span className="ml-2 flex items-center">
+                                        <FlameUnreadIcon count={unreadCounts[single.id]} />
+                                    </span>
                                 )}
                             </div>
                         );

@@ -48,6 +48,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
   const [localConversations, setLocalConversations] = useState(conversations);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [sponsoredSingleUnreadCount, setSponsoredSingleUnreadCount] = useState<number>(0);
 
   // Fetch chat history when modal opens
   useEffect(() => {
@@ -141,8 +142,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       const counts: Record<string, number> = {};
       for (const msg of conversations) {
         const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
-        // Only for matchmakr chats (not singles)
-        if (sponsoredSingles.some(s => s.id === otherId)) continue;
+        // Calculate unread count for every chat (singles and matchmakrs)
         const { count } = await supabase
           .from('messages')
           .select('*', { count: 'exact', head: true })
@@ -252,19 +252,31 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openChat]);
 
+  // Get sponsored single id (if any)
+  const sponsoredSingleId = sponsoredSingles && sponsoredSingles.length > 0 ? sponsoredSingles[0].id : null;
+
   return (
     <div className="mb-8">
       {/* Section header, no container */}
       <h2 className="font-inter font-bold text-xl text-white mb-2 border-b border-white/20 pb-1">MatchMakr Chat</h2>
-      {/* Chat rows */}
-      {localConversations.length === 0 ? (
+      {/* Chat rows for matchmakrs only */}
+      {localConversations.length === 0 ||
+        localConversations.filter((msg: any) => {
+          const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+          // Exclude the sponsored single from the MatchMakr Chat section
+          if (sponsoredSingleId && otherId === sponsoredSingleId) return false;
+          // Only show chats with other matchmakrs
+          return !sponsoredSingles.some(s => s.id === otherId);
+        }).length === 0 ? (
         <div className="text-blue-100 mb-6">You have no more chats with MatchMakrs.</div>
       ) : (
         <div className="mb-6 flex flex-col gap-3">
           {localConversations
             .filter((msg: any) => {
               const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
-              // Exclude singles (those in sponsoredSingles)
+              // Exclude the sponsored single from the MatchMakr Chat section
+              if (sponsoredSingleId && otherId === sponsoredSingleId) return false;
+              // Only show chats with other matchmakrs
               return !sponsoredSingles.some(s => s.id === otherId);
             })
             .map((msg: any) => {
@@ -339,8 +351,41 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             })}
         </div>
       )}
+      {/* Sponsored Single Chat Row (if any) */}
+      {sponsoredSingles && sponsoredSingles.length > 0 && (
+        <div
+          className="flex items-center gap-4 py-3 pl-3 w-full bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 shadow-md transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-2"
+          role="button"
+          tabIndex={0}
+          onClick={() => handleOpenChat({
+            id: sponsoredSingles[0].id,
+            name: sponsoredSingles[0].name,
+            profile_pic_url: sponsoredSingles[0].profile_pic_url || ''
+          })}
+        >
+          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white bg-gray-100 flex-shrink-0">
+            {sponsoredSingles[0].profile_pic_url ? (
+              <img src={sponsoredSingles[0].profile_pic_url} alt={sponsoredSingles[0].name || 'Single'} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-200">
+                {sponsoredSingles[0].name?.charAt(0).toUpperCase() || '?'}
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-medium text-white truncate drop-shadow">{sponsoredSingles[0].name}</div>
+            <div className="text-sm text-blue-100 truncate">Chat with your sponsored single</div>
+          </div>
+          {/* Unread icon, only show if unreadCount > 0 */}
+          {sponsoredSingleUnreadCount > 0 && (
+            <div className="ml-2 flex items-center">
+              <FlameUnreadIcon count={sponsoredSingleUnreadCount} />
+            </div>
+          )}
+        </div>
+      )}
       <button className="w-full bg-white/10 hover:bg-white/20 text-white py-3 px-6 rounded-full font-semibold text-lg border border-white/30 shadow-deep transition-all duration-300 hover:-translate-y-2">
-        Invite a MatchMakr!
+        Invite a Single User
       </button>
       {/* Chat Modal */}
       {openChat && typeof window !== 'undefined' && document.body && (
