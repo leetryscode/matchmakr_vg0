@@ -79,7 +79,69 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
+      },
+      messages: {
+        Row: {
+          id: string
+          sender_id: string
+          recipient_id: string
+          content: string
+          created_at: string
+          read: boolean
+          about_single_id: string | null
+          clicked_single_id: string | null
+        }
+        Insert: {
+          id?: string
+          sender_id: string
+          recipient_id: string
+          content: string
+          created_at?: string
+          read?: boolean
+          about_single_id?: string | null
+          clicked_single_id?: string | null
+        }
+        Update: {
+          id?: string
+          sender_id?: string
+          recipient_id?: string
+          content?: string
+          created_at?: string
+          read?: boolean
+          about_single_id?: string | null
+          clicked_single_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_about_single_id_fkey"
+            columns: ["about_single_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_clicked_single_id_fkey"
+            columns: ["clicked_single_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      },
     }
     Views: {
       [_ in never]: never

@@ -151,8 +151,8 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                     otherUserId={openChatSingle.id}
                     otherUserName={openChatSingle.name || ''}
                     otherUserProfilePic={openChatSingle.profile_pic_url}
-                    aboutSingleA={{ id: openChatSingle.id, name: openChatSingle.name || '', photo: openChatSingle.profile_pic_url }}
-                    aboutSingleB={{ id: userId, name: userName, photo: userProfilePic }}
+                    aboutSingle={{ id: openChatSingle.id, name: openChatSingle.name || '', photo: openChatSingle.profile_pic_url }}
+                    clickedSingle={{ id: userId, name: userName, photo: userProfilePic }}
                 />
             )}
         </>

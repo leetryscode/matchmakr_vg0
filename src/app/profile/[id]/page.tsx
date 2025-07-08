@@ -66,21 +66,23 @@ export default async function ProfilePage({ params }: { params: { id: string } }
         }
     }
 
-    // Fetch current user's sponsored single (if matchmakr)
+    // Fetch current user's sponsored singles (if matchmakr)
     let currentSponsoredSingle: { id: string; name: string | null; photo: string | null } | null = null;
+    let currentUserSponsoredSingles: { id: string; name: string | null; photo: string | null }[] = [];
     if (currentUser?.id) {
         const { data } = await supabase
             .from('profiles')
             .select('id, name, photos')
             .eq('sponsored_by_id', currentUser.id)
-            .eq('user_type', 'SINGLE')
-            .single();
-        if (data) {
-            currentSponsoredSingle = {
-                id: data.id,
-                name: data.name,
-                photo: data.photos && data.photos.length > 0 ? data.photos[0] : null
-            };
+            .eq('user_type', 'SINGLE');
+        if (data && data.length > 0) {
+            currentUserSponsoredSingles = data.map(single => ({
+                id: single.id,
+                name: single.name,
+                photo: single.photos && single.photos.length > 0 ? single.photos[0] : null
+            }));
+            // Set the first one as current for backward compatibility
+            currentSponsoredSingle = currentUserSponsoredSingles[0];
         }
     }
 
@@ -111,6 +113,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
             currentUserName={currentUserName}
             currentUserProfilePic={currentUserProfilePic}
             currentUserId={currentUser?.id || ''}
+            currentUserSponsoredSingles={currentUserSponsoredSingles}
         />
     );
 } 

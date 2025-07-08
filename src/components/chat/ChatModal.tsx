@@ -12,12 +12,12 @@ interface ChatModalProps {
   otherUserId: string;
   otherUserName: string;
   otherUserProfilePic?: string | null;
-  aboutSingleA: { id: string; name: string; photo?: string | null };
-  aboutSingleB: { id: string; name: string; photo?: string | null };
+  aboutSingle: { id: string; name: string; photo?: string | null };
+  clickedSingle: { id: string; name: string; photo?: string | null };
   isSingleToSingle?: boolean;
 }
 
-const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, currentUserName, currentUserProfilePic, otherUserId, otherUserName, otherUserProfilePic, aboutSingleA, aboutSingleB, isSingleToSingle = false }) => {
+const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, currentUserName, currentUserProfilePic, otherUserId, otherUserName, otherUserProfilePic, aboutSingle, clickedSingle, isSingleToSingle = false }) => {
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
   const [messageText, setMessageText] = useState('');
@@ -33,32 +33,77 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   const [canChatLoading, setCanChatLoading] = useState(false);
   const prevMatchStatus = useRef<string>('');
   const { triggerConfetti } = useConfetti();
+  const [chatContext, setChatContext] = useState<{
+    currentUserSingle: { id: string; name: string; photo: string | null } | null;
+    otherUserSingle: { id: string; name: string; photo: string | null } | null;
+  } | null>(null);
+  const [contextLoading, setContextLoading] = useState(false);
+  const [currentUserSingles, setCurrentUserSingles] = useState<{ id: string }[]>([]);
 
-  // Fetch chat history
+  // Fetch chat history and context
   useEffect(() => {
     if (!open) return;
+    
+    // Debug: Log the props to verify correct context
+    console.log('ChatModal: Fetching chat data with context:', {
+      currentUserId,
+      otherUserId,
+      aboutSingle: aboutSingle?.id,
+      clickedSingle: clickedSingle?.id,
+      isSingleToSingle
+    });
+    
     let isMounted = true;
-    const fetchChatHistory = async () => {
+    const fetchChatData = async () => {
       setChatLoading(true);
+      setContextLoading(true);
       setShowSpinner(false);
       if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
       loadingTimeout.current = setTimeout(() => {
         if (isMounted) setShowSpinner(true);
       }, 200);
-      const res = await fetch(`/api/messages/history?userId=${currentUserId}&otherId=${otherUserId}`);
-      const data = await res.json();
+      
+      let conversationId = null;
+      let contextData = null;
+      
+      // For MatchMakr-to-MatchMakr chats, get context and conversation_id first
+      if (!isSingleToSingle) {
+        let contextUrl = `/api/messages/chat-context?userId=${currentUserId}&otherId=${otherUserId}`;
+        if (aboutSingle?.id && clickedSingle?.id) {
+          contextUrl += `&about_single_id=${aboutSingle.id}&clicked_single_id=${clickedSingle.id}`;
+        }
+        const contextRes = await fetch(contextUrl);
+        contextData = await contextRes.json();
+        if (contextData?.success) {
+          conversationId = contextData.conversation_id;
+        }
+      }
+      
+      // Fetch chat history with conversation_id if available, or filter by singles if no conversation exists
+      let historyUrl = `/api/messages/history?userId=${currentUserId}&otherId=${otherUserId}`;
+      if (conversationId) {
+        historyUrl += `&conversation_id=${conversationId}`;
+      } else if (!isSingleToSingle && aboutSingle?.id && clickedSingle?.id) {
+        // If no conversation exists, filter by the specific singles to ensure isolation
+        historyUrl += `&about_single_id=${aboutSingle.id}&clicked_single_id=${clickedSingle.id}`;
+      }
+      const historyRes = await fetch(historyUrl);
+      const historyData = await historyRes.json();
+      
       if (isMounted) {
-        setChatMessages(data.success && data.messages ? data.messages : []);
+        setChatMessages(historyData.success && historyData.messages ? historyData.messages : []);
+        setChatContext(contextData?.success ? contextData : null);
         setChatLoading(false);
+        setContextLoading(false);
         setShowSpinner(false);
       }
     };
-    fetchChatHistory();
+    fetchChatData();
     return () => {
       isMounted = false;
       if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
     };
-  }, [open, currentUserId, otherUserId]);
+  }, [open, currentUserId, otherUserId, isSingleToSingle, aboutSingle?.id, clickedSingle?.id]);
 
   // Smart auto-scroll: only scroll if modal is opened or user is near the bottom
   useEffect(() => {
@@ -88,26 +133,35 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     }
   }, [chatMessages, open]);
 
-  // Fetch match status for the two singles in aboutSingleA and aboutSingleB
+  // Fetch match status for the two singles
   useEffect(() => {
     if (isSingleToSingle) {
       fetchMatchStatus();
+    } else if (chatContext?.currentUserSingle?.id && chatContext?.otherUserSingle?.id) {
+      fetchMatchStatus();
     }
     // eslint-disable-next-line
-  }, [aboutSingleA.id, aboutSingleB.id, currentUserId, isSingleToSingle]);
+  }, [
+    chatContext?.currentUserSingle?.id ?? '',
+    chatContext?.otherUserSingle?.id ?? '',
+    aboutSingle?.id ?? '',
+    clickedSingle?.id ?? '',
+    currentUserId ?? '',
+    isSingleToSingle
+  ]);
 
   // Check if singles can chat (for single-to-single chats)
   useEffect(() => {
-    if (isSingleToSingle && aboutSingleA.id && aboutSingleB.id) {
+    if (isSingleToSingle && aboutSingle.id && clickedSingle.id) {
       checkCanChat();
     }
-  }, [isSingleToSingle, aboutSingleA.id, aboutSingleB.id]);
+  }, [isSingleToSingle, aboutSingle.id, clickedSingle.id]);
 
   // Helper to check if singles can chat
   const checkCanChat = async () => {
     setCanChatLoading(true);
     try {
-      const res = await fetch(`/api/matches/can-chat?single_a_id=${aboutSingleA.id}&single_b_id=${aboutSingleB.id}`);
+      const res = await fetch(`/api/matches/can-chat?single_a_id=${aboutSingle.id}&single_b_id=${clickedSingle.id}`);
       const data = await res.json();
       if (data.success) {
         setCanChat(data.canChat);
@@ -135,14 +189,20 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     setMessageText('');
     setSending(true);
     try {
+      const messageData: any = {
+        sender_id: currentUserId,
+        recipient_id: otherUserId,
+        content: optimisticMsg.content,
+      };
+      // Add about_single_id and clicked_single_id for MatchMakr-to-MatchMakr chat
+      if (!isSingleToSingle && aboutSingle.id && clickedSingle.id) {
+        messageData.about_single_id = aboutSingle.id;
+        messageData.clicked_single_id = clickedSingle.id;
+      }
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sender_id: currentUserId,
-          recipient_id: otherUserId,
-          content: optimisticMsg.content,
-        }),
+        body: JSON.stringify(messageData),
       });
       const data = await res.json();
       if (!data.success) {
@@ -159,12 +219,27 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     setMatchLoading(true);
     setMatchError(null);
     try {
+      let singleAId, singleBId;
+      if (isSingleToSingle) {
+        singleAId = aboutSingle.id;
+        singleBId = clickedSingle.id;
+      } else {
+        singleAId = chatContext?.currentUserSingle?.id;
+        singleBId = chatContext?.otherUserSingle?.id;
+      }
+      
+      if (!singleAId || !singleBId) {
+        setMatchError('Both singles must be present to approve a match.');
+        setMatchLoading(false);
+        return;
+      }
+      
       const response = await fetch('/api/matches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          single_a_id: aboutSingleA.id,
-          single_b_id: aboutSingleB.id,
+          single_a_id: singleAId,
+          single_b_id: singleBId,
           matchmakr_id: currentUserId,
         }),
       });
@@ -186,7 +261,22 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     setMatchLoading(true);
     setMatchError(null);
     try {
-      const res = await fetch(`/api/matches/status?single_a_id=${aboutSingleA.id}&single_b_id=${aboutSingleB.id}&matchmakr_id=${currentUserId}`);
+      let singleAId, singleBId;
+      if (isSingleToSingle) {
+        singleAId = aboutSingle.id;
+        singleBId = clickedSingle.id;
+      } else {
+        singleAId = chatContext?.currentUserSingle?.id;
+        singleBId = chatContext?.otherUserSingle?.id;
+      }
+      
+      if (!singleAId || !singleBId) {
+        setMatchStatus('none');
+        setMatchLoading(false);
+        return;
+      }
+      
+      const res = await fetch(`/api/matches/status?single_a_id=${singleAId}&single_b_id=${singleBId}&matchmakr_id=${currentUserId}`);
       const data = await res.json();
       if (data.success) {
         setMatchStatus(data.status); // 'can-approve', 'pending', 'matched'
@@ -223,8 +313,19 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     markAsRead();
   }, [open, currentUserId, otherUserId]);
 
+  // Fetch current user's sponsored singles for display logic
+  useEffect(() => {
+    async function fetchSingles() {
+      if (!currentUserId) return;
+      const res = await fetch(`/api/profiles/${currentUserId}/interests`); // Use a real endpoint for singles
+      // For now, just set empty array if not available
+      setCurrentUserSingles([]);
+    }
+    fetchSingles();
+  }, [currentUserId]);
+
   // If the modal is open but the required data is not yet loaded, show a loading spinner
-  if (open && (!aboutSingleA || !aboutSingleB)) {
+  if (open && (isSingleToSingle ? (!aboutSingle || !clickedSingle) : (!chatContext || contextLoading))) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
         <div className="bg-white rounded-2xl p-8 shadow-xl w-[400px] text-center">
@@ -242,6 +343,55 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
 
   if (!open) return null;
 
+  // Helper to determine which single is 'ours' and which is 'theirs'
+  function getChatSingles(currentUserId: string, chatContext: any, currentUserSingles: { id: string }[]) {
+    // If aboutSingle and clickedSingle props are provided, use them
+    if (aboutSingle?.id && clickedSingle?.id) {
+      // Determine which is 'ours' based on currentUserSingles
+      if (currentUserSingles && currentUserSingles.some(s => s.id === aboutSingle.id)) {
+        return {
+          ourSingle: aboutSingle,
+          theirSingle: clickedSingle
+        };
+      } else if (currentUserSingles && currentUserSingles.some(s => s.id === clickedSingle.id)) {
+        return {
+          ourSingle: clickedSingle,
+          theirSingle: aboutSingle
+        };
+      } else {
+        // Fallback: assume aboutSingle is 'ours' and clickedSingle is 'theirs'
+        return {
+          ourSingle: aboutSingle,
+          theirSingle: clickedSingle
+        };
+      }
+    }
+    
+    // Fallback to chatContext logic
+    if (!chatContext) return { ourSingle: { id: '', name: '', photo: null }, theirSingle: { id: '', name: '', photo: null } };
+    // If the current user sponsors currentUserSingle, that's ours
+    if (currentUserSingles && currentUserSingles.some(s => s.id === chatContext.currentUserSingle?.id)) {
+      return {
+        ourSingle: chatContext.currentUserSingle || { id: '', name: '', photo: null },
+        theirSingle: chatContext.otherUserSingle || { id: '', name: '', photo: null }
+      };
+    }
+    // If the current user sponsors otherUserSingle, that's ours
+    if (currentUserSingles && currentUserSingles.some(s => s.id === chatContext.otherUserSingle?.id)) {
+      return {
+        ourSingle: chatContext.otherUserSingle || { id: '', name: '', photo: null },
+        theirSingle: chatContext.currentUserSingle || { id: '', name: '', photo: null }
+      };
+    }
+    // Fallback: just return as is
+    return {
+      ourSingle: chatContext.currentUserSingle || { id: '', name: '', photo: null },
+      theirSingle: chatContext.otherUserSingle || { id: '', name: '', photo: null }
+    };
+  }
+
+  const { ourSingle, theirSingle } = getChatSingles(currentUserId, chatContext, currentUserSingles);
+
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
       <div className="bg-white rounded-2xl p-0 shadow-xl w-[600px] h-[800px] flex flex-col text-center relative">
@@ -253,28 +403,28 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
               <div className="flex items-center justify-center gap-8">
                 <div className="flex flex-col items-center">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
-                    {aboutSingleA.photo ? (
-                      <img src={aboutSingleA.photo} alt={aboutSingleA.name} className="w-full h-full object-cover" />
+                    {aboutSingle.photo ? (
+                      <img src={aboutSingle.photo} alt={aboutSingle.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-background-main flex items-center justify-center">
-                        <span className="text-2xl font-bold text-text-light">{aboutSingleA.name?.charAt(0).toUpperCase() || '?'}</span>
+                        <span className="text-2xl font-bold text-text-light">{aboutSingle.name?.charAt(0).toUpperCase() || '?'}</span>
                       </div>
                     )}
                   </div>
-                  <div className="mt-2 text-sm font-medium text-text-dark">{aboutSingleA.name}</div>
+                  <div className="mt-2 text-sm font-medium text-text-dark">{aboutSingle.name}</div>
                 </div>
                 <div className="text-lg font-medium text-text-light">and</div>
                 <div className="flex flex-col items-center">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
-                    {aboutSingleB.photo ? (
-                      <img src={aboutSingleB.photo} alt={aboutSingleB.name} className="w-full h-full object-cover" />
+                    {clickedSingle.photo ? (
+                      <img src={clickedSingle.photo} alt={clickedSingle.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-background-main flex items-center justify-center">
-                        <span className="text-2xl font-bold text-text-light">{aboutSingleB.name?.charAt(0).toUpperCase() || '?'}</span>
+                        <span className="text-2xl font-bold text-text-light">{clickedSingle.name?.charAt(0).toUpperCase() || '?'}</span>
                       </div>
                     )}
                   </div>
-                  <div className="mt-2 text-sm font-medium text-text-dark">{aboutSingleB.name}</div>
+                  <div className="mt-2 text-sm font-medium text-text-dark">{clickedSingle.name}</div>
                 </div>
               </div>
               {/* Single-to-Single Chat Status */}
@@ -294,28 +444,30 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
               <div className="flex items-center justify-center gap-8">
                 <div className="flex flex-col items-center">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
-                    {aboutSingleA.photo ? (
-                      <img src={aboutSingleA.photo} alt={aboutSingleA.name} className="w-full h-full object-cover" />
+                    {theirSingle?.photo ? (
+                      <img src={theirSingle.photo} alt={theirSingle.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-background-main flex items-center justify-center">
-                        <span className="text-2xl font-bold text-text-light">{aboutSingleA.name?.charAt(0).toUpperCase() || '?'}</span>
+                        <span className="text-2xl font-bold text-text-light">{theirSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
                       </div>
                     )}
                   </div>
-                  <div className="mt-2 text-sm font-medium text-text-dark">{aboutSingleA.name}</div>
+                  <div className="mt-2 text-sm font-medium text-text-dark">Their Single</div>
+                  <div className="text-xs text-gray-500">{theirSingle?.name || 'Unknown'}</div>
                 </div>
                 <div className="text-lg font-medium text-text-light">and</div>
                 <div className="flex flex-col items-center">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
-                    {aboutSingleB.photo ? (
-                      <img src={aboutSingleB.photo} alt={aboutSingleB.name} className="w-full h-full object-cover" />
+                    {ourSingle?.photo ? (
+                      <img src={ourSingle.photo} alt={ourSingle.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-background-main flex items-center justify-center">
-                        <span className="text-2xl font-bold text-text-light">{aboutSingleB.name?.charAt(0).toUpperCase() || '?'}</span>
+                        <span className="text-2xl font-bold text-text-light">{ourSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
                       </div>
                     )}
                   </div>
-                  <div className="mt-2 text-sm font-medium text-text-dark">{aboutSingleB.name}</div>
+                  <div className="mt-2 text-sm font-medium text-text-dark">Our Single</div>
+                  <div className="text-xs text-gray-500">{ourSingle?.name || 'Unknown'}</div>
                 </div>
               </div>
               {/* Approve Match UI for matchmakrs in chats about two singles */}
@@ -330,13 +482,13 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                   <button
                     className="px-6 py-2 bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleApproveMatch}
-                    disabled={!aboutSingleA.id || !aboutSingleB.id || matchLoading}
-                    title={!aboutSingleA.id || !aboutSingleB.id ? 'Both singles must be present to approve a match.' : ''}
+                    disabled={!ourSingle?.id || !theirSingle?.id || matchLoading}
+                    title={!ourSingle?.id || !theirSingle?.id ? 'Both singles must be present to approve a match.' : ''}
                   >
                     Approve Match
                   </button>
                 ) : null}
-                {(!aboutSingleA.id || !aboutSingleB.id) && !isSingleToSingle && (
+                {(!ourSingle?.id || !theirSingle?.id) && !isSingleToSingle && (
                   <div className="text-gray-400 text-xs mt-2">Both singles must be present to approve a match.</div>
                 )}
                 {matchError && <div className="text-red-500 mt-2">{matchError}</div>}

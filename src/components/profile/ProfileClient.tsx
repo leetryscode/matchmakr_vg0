@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Profile } from './types';
 import ChatModal from '../chat/ChatModal';
 import InterestsInput from './InterestsInput';
+import SelectSingleModal from '../dashboard/SelectSingleModal';
 
 // Types for sponsored singles and matchmakr
 interface SponsoredSingle {
@@ -37,6 +38,7 @@ interface ProfileClientProps {
   currentUserName?: string;
   currentUserProfilePic?: string | null;
   currentUserId?: string;
+  currentUserSponsoredSingles?: { id: string; name: string | null; photo: string | null }[];
 }
 
 function calculateAge(birthYear: number | null): number | null {
@@ -56,12 +58,15 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   currentUserName,
   currentUserProfilePic,
   currentUserId,
+  currentUserSponsoredSingles,
 }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showInterestsInput, setShowInterestsInput] = useState(false);
   const [interests, setInterests] = useState<Interest[]>([]);
   const [loadingInterests, setLoadingInterests] = useState(false);
   const [savingInterests, setSavingInterests] = useState(false);
+  const [showSelectSingleModal, setShowSelectSingleModal] = useState(false);
+  const [selectedSingleForChat, setSelectedSingleForChat] = useState<string | null>(null);
   const age = calculateAge(profile.birth_year);
   const firstName = profile.name?.split(' ')[0] || '';
 
@@ -86,6 +91,25 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
     setInterests(newInterests);
     setShowInterestsInput(false);
     setSavingInterests(false);
+  };
+
+  // Handler to open chat with single selection if needed
+  const handleOpenChat = () => {
+    // Check if user has multiple sponsored singles
+    if (currentUserSponsoredSingles && currentUserSponsoredSingles.length > 1) {
+      setShowSelectSingleModal(true);
+    } else {
+      // If user has only one or no singles, proceed with normal flow
+      setSelectedSingleForChat(currentUserSponsoredSingles && currentUserSponsoredSingles.length > 0 ? currentUserSponsoredSingles[0].id : null);
+      setIsChatOpen(true);
+    }
+  };
+
+  // Handler for when a single is selected from the modal
+  const handleSingleSelected = (singleId: string) => {
+    setShowSelectSingleModal(false);
+    setSelectedSingleForChat(singleId);
+    setIsChatOpen(true);
   };
 
   return (
@@ -257,7 +281,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 {currentUserProfile?.user_type === 'MATCHMAKR' && (
                   <button
                     className="ml-4 px-4 py-2 rounded-md border border-white/20 bg-white/10 hover:bg-white/20 text-white font-semibold transition-colors"
-                    onClick={e => { e.preventDefault(); setIsChatOpen(true); }}
+                    onClick={e => { e.preventDefault(); handleOpenChat(); }}
                   >
                     Message
                   </button>
@@ -267,17 +291,40 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
               {isChatOpen && currentUserProfile?.user_type === 'MATCHMAKR' && (
                 <ChatModal
                   open={isChatOpen}
-                  onClose={() => setIsChatOpen(false)}
+                  onClose={() => {
+                    setIsChatOpen(false);
+                    setSelectedSingleForChat(null);
+                  }}
                   currentUserId={currentUserId || ''}
                   currentUserName={currentUserName || ''}
                   currentUserProfilePic={currentUserProfilePic || null}
                   otherUserId={matchmakrProfile.id}
                   otherUserName={matchmakrProfile.name || ''}
                   otherUserProfilePic={matchmakrProfile.profile_pic_url}
-                  aboutSingleA={{ id: profile.id, name: profile.name || '', photo: profile.photos?.[0] || null }}
-                  aboutSingleB={currentSponsoredSingle ? { id: currentSponsoredSingle.id, name: currentSponsoredSingle.name || '', photo: currentSponsoredSingle.photo || null } : { id: '', name: '', photo: null }}
+                  aboutSingle={selectedSingleForChat
+                    ? {
+                        id: selectedSingleForChat,
+                        name: currentUserSponsoredSingles?.find(s => s.id === selectedSingleForChat)?.name || '',
+                        photo: currentUserSponsoredSingles?.find(s => s.id === selectedSingleForChat)?.photo || null,
+                      }
+                    : { id: '', name: '', photo: null }
+                  }
+                  clickedSingle={{
+                    id: profile.id,
+                    name: profile.name || '',
+                    photo: profile.photos?.[0] || null,
+                  }}
                 />
               )}
+
+              {/* Select Single Modal */}
+              <SelectSingleModal
+                open={showSelectSingleModal}
+                onClose={() => setShowSelectSingleModal(false)}
+                sponsoredSingles={currentUserSponsoredSingles || []}
+                onSelectSingle={handleSingleSelected}
+                otherMatchmakrName={matchmakrProfile?.name || 'this MatchMakr'}
+              />
             </div>
           )}
         </div>

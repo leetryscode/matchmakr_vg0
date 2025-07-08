@@ -35,7 +35,7 @@ const ManageSinglesList = () => (
              <p className="text-center text-gray-500">Chats with the singles you manage.</p>
         </div>
         <button className="mt-4 w-full bg-gradient-light text-white py-3 rounded-lg hover:bg-gradient-primary font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
-            Invite a Single!
+            Invite a MatchMakr!
         </button>
     </div>
 );
@@ -74,7 +74,7 @@ export default async function MatchMakrDashboardPage() {
         profile_pic_url: single.photos && single.photos.length > 0 ? single.photos[0] : null
     })) || [];
 
-    const firstName = profile.name?.split(' ')[0] || null;
+    const firstName = profile.name?.split(' ')[0] || profile.name || 'User';
 
     // Fetch the current user's name and profile picture
     const { data: userProfile } = await supabase
@@ -106,6 +106,9 @@ export default async function MatchMakrDashboardPage() {
 
     return (
         <DashboardLayout firstName={firstName} userId={user.id} userType="MATCHMAKR">
+            <div className="pt-6 pb-2 px-4">
+                <div className="text-lg text-white/90 font-semibold mb-4">Hello, {firstName}</div>
+            </div>
             <SinglesPondButton />
             <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
             <SponsoredSinglesList 

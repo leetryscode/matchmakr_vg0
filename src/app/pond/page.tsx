@@ -6,6 +6,7 @@ import { Profile } from '@/components/profile/types';
 import Link from 'next/link';
 import ChatModal from '@/components/chat/ChatModal';
 import InterestsInput from '@/components/profile/InterestsInput';
+import SelectSingleModal from '@/components/dashboard/SelectSingleModal';
 
 interface PondProfile extends Profile {
     profile_pic_url: string | null;
@@ -23,14 +24,17 @@ export default function PondPage() {
     const [openChatProfileId, setOpenChatProfileId] = useState<string | null>(null);
     const [openChatMatchmakr, setOpenChatMatchmakr] = useState<{id: string, name: string | null, profile_pic_url: string | null} | null>(null);
     const [chatLoading, setChatLoading] = useState(false);
-    const [messageText, setMessageText] = useState('');
-    const [sending, setSending] = useState(false);
-    const [chatMessages, setChatMessages] = useState<any[]>([]);
-    const [chatLoadingHistory, setChatLoadingHistory] = useState(false);
+    // Restore state variables for single selection
     const [currentSponsoredSingle, setCurrentSponsoredSingle] = useState<{ id: string, name: string, photo: string | null } | null>(null);
+    const [sponsoredSingles, setSponsoredSingles] = useState<{ id: string, name: string, photo: string | null }[]>([]);
     const [currentUserName, setCurrentUserName] = useState('');
     const [currentUserProfilePic, setCurrentUserProfilePic] = useState<string | null>(null);
     const [selectedInterests, setSelectedInterests] = useState<{ id: number; name: string }[]>([]);
+    const [showSelectSingleModal, setShowSelectSingleModal] = useState(false);
+    const [pendingChatProfile, setPendingChatProfile] = useState<PondProfile | null>(null);
+    const [selectedSingleForChat, setSelectedSingleForChat] = useState<string | null>(null);
+    const [clickedSingleForChat, setClickedSingleForChat] = useState<{ id: string, name: string, photo: string | null } | null>(null);
+    const [aboutSingleForChat, setAboutSingleForChat] = useState<{ id: string, name: string, photo: string | null } | null>(null);
 
     useEffect(() => {
         checkUserAndLoadProfiles();
@@ -49,8 +53,11 @@ export default function PondPage() {
             .select('name, photos')
             .eq('id', user.id)
             .single();
-        setCurrentUserName(userProfile?.name || '');
-        setCurrentUserProfilePic(userProfile?.photos && userProfile.photos.length > 0 ? userProfile.photos[0] : null);
+        // Store user profile data for ChatModal
+        const currentUserName = userProfile?.name || '';
+        const currentUserProfilePic = userProfile?.photos && userProfile.photos.length > 0 ? userProfile.photos[0] : null;
+        setCurrentUserName(currentUserName);
+        setCurrentUserProfilePic(currentUserProfilePic);
 
         // Check if user is a matchmakr
         const { data: profile } = await supabase
@@ -64,22 +71,24 @@ export default function PondPage() {
             return;
         }
 
-        setCurrentUser(user);
+        setCurrentUser({ ...user, name: currentUserName, photos: userProfile?.photos });
 
-        // Fetch the current user's sponsored single (first one if multiple)
+        // Fetch the current user's sponsored singles for ChatModal
         const { data: singles } = await supabase
             .from('profiles')
             .select('id, name, photos')
             .eq('sponsored_by_id', user.id)
             .eq('user_type', 'SINGLE');
-        if (singles && singles.length > 0) {
-            setCurrentSponsoredSingle({
-                id: singles[0].id,
-                name: singles[0].name || '',
-                photo: singles[0].photos && singles[0].photos.length > 0 ? singles[0].photos[0] : null
-            });
-        } else {
-            setCurrentSponsoredSingle(null);
+        
+        const sponsoredSingles = singles ? singles.map(single => ({
+            id: single.id,
+            name: single.name || '',
+            photo: single.photos && single.photos.length > 0 ? single.photos[0] : null
+        })) : [];
+        
+        setSponsoredSingles(sponsoredSingles);
+        if (sponsoredSingles.length > 0) {
+            setCurrentSponsoredSingle(sponsoredSingles[0]);
         }
 
         await loadProfiles();
@@ -189,98 +198,73 @@ export default function PondPage() {
 
     // Handler to open chat modal and fetch matchmakr info
     const handleOpenChat = async (profile: PondProfile) => {
+        if (!profile.sponsored_by_id) return;
+        
         setChatLoading(true);
-        setOpenChatProfileId(profile.id);
-        if (profile.sponsored_by_id) {
-            const { data } = await supabase
-                .from('profiles')
-                .select('id, name, photos')
-                .eq('id', profile.sponsored_by_id)
-                .eq('user_type', 'MATCHMAKR')
-                .single();
-            if (data) {
-                setOpenChatMatchmakr({
-                    id: data.id,
-                    name: data.name,
-                    profile_pic_url: data.photos && data.photos.length > 0 ? data.photos[0] : null
-                });
-            } else {
-                setOpenChatMatchmakr(null);
-            }
-        } else {
-            setOpenChatMatchmakr(null);
+        
+        // Check if user has multiple sponsored singles
+        if (sponsoredSingles.length > 1) {
+            // Store the profile for later use and show single selection modal
+            setPendingChatProfile(profile);
+            setShowSelectSingleModal(true);
+            setChatLoading(false);
+            return;
         }
+        
+        // If user has only one or no singles, proceed with normal flow
+        await openChatWithSingle(profile, sponsoredSingles.length > 0 ? sponsoredSingles[0].id : null);
+    };
+
+    const openChatWithSingle = async (profile: PondProfile, singleId: string | null) => {
+        if (!profile.sponsored_by_id) return;
+        
+        setChatLoading(true);
+        
+        // Fetch the matchmakr's info
+        const { data: matchmakr } = await supabase
+            .from('profiles')
+            .select('id, name, photos')
+            .eq('id', profile.sponsored_by_id)
+            .single();
+        
+        if (matchmakr) {
+            setOpenChatProfileId(profile.id);
+            setOpenChatMatchmakr({
+                id: matchmakr.id,
+                name: matchmakr.name,
+                profile_pic_url: matchmakr.photos && matchmakr.photos.length > 0 ? matchmakr.photos[0] : null
+            });
+            // Set aboutSingleForChat to the sponsored single object
+            const aboutSingleObj = sponsoredSingles.find(s => s.id === (singleId || profile.id)) || { id: singleId || profile.id, name: '', photo: null };
+            setAboutSingleForChat({ id: aboutSingleObj.id, name: aboutSingleObj.name, photo: aboutSingleObj.photo });
+            // Set clickedSingleForChat to the clicked profile object
+            const clickedProfile = profiles.find(p => p.id === profile.id);
+            const clickedSingleObj = clickedProfile ? { id: clickedProfile.id, name: clickedProfile.name || '', photo: clickedProfile.profile_pic_url || null } : { id: profile.id, name: profile.name || '', photo: profile.profile_pic_url || null };
+            setClickedSingleForChat(clickedSingleObj);
+        }
+        
         setChatLoading(false);
+    };
+
+    const handleSingleSelected = async (singleId: string) => {
+        if (pendingChatProfile) {
+            await openChatWithSingle(pendingChatProfile, singleId);
+        }
+        setShowSelectSingleModal(false);
+        setPendingChatProfile(null);
     };
 
     const handleCloseChat = () => {
         setOpenChatProfileId(null);
         setOpenChatMatchmakr(null);
+        setSelectedSingleForChat(null);
+        setClickedSingleForChat(null);
+        setAboutSingleForChat(null);
+        setPendingChatProfile(null);
+        setShowSelectSingleModal(false);
     };
 
-    const handleSendMessage = async () => {
-        if (!currentUser?.id || !openChatMatchmakr?.id || !messageText.trim()) return;
-        setSending(true);
-        try {
-            const res = await fetch('/api/messages', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    sender_id: currentUser.id,
-                    recipient_id: openChatMatchmakr.id,
-                    content: messageText.trim(),
-                }),
-            });
-            const data = await res.json();
-            if (data.success) {
-                setMessageText('');
-            } else {
-                alert(data.error || 'Failed to send message');
-            }
-        } catch (err) {
-            alert('Failed to send message');
-        }
-        setSending(false);
-    };
-
-    // Fetch chat history when modal opens
-    useEffect(() => {
-        const fetchChatHistory = async () => {
-            if (!openChatProfileId || !openChatMatchmakr || !currentUser?.id) return;
-            setChatLoadingHistory(true);
-            const { data, error } = await supabase
-                .from('messages')
-                .select('*')
-                .or(`and(sender_id.eq.${currentUser.id},recipient_id.eq.${openChatMatchmakr.id}),and(sender_id.eq.${openChatMatchmakr.id},recipient_id.eq.${currentUser.id})`)
-                .order('created_at', { ascending: true });
-            if (!error && data) {
-                setChatMessages(data);
-            } else {
-                setChatMessages([]);
-            }
-            setChatLoadingHistory(false);
-        };
-        if (openChatProfileId && openChatMatchmakr && currentUser?.id) {
-            fetchChatHistory();
-        }
-    }, [openChatProfileId, openChatMatchmakr, currentUser?.id]);
-
-    // After sending a message, append to chat
-    useEffect(() => {
-        if (!sending && messageText === '' && openChatProfileId && openChatMatchmakr && currentUser?.id) {
-            // Refetch chat history after sending
-            (async () => {
-                const { data, error } = await supabase
-                    .from('messages')
-                    .select('*')
-                    .or(`and(sender_id.eq.${currentUser.id},recipient_id.eq.${openChatMatchmakr.id}),and(sender_id.eq.${openChatMatchmakr.id},recipient_id.eq.${currentUser.id})`)
-                    .order('created_at', { ascending: true });
-                if (!error && data) {
-                    setChatMessages(data);
-                }
-            })();
-        }
-    }, [sending, messageText, openChatProfileId, openChatMatchmakr, currentUser?.id]);
+    // Remove unused chat functions - ChatModal handles all chat functionality
 
     return (
         <div className="min-h-screen bg-gradient-main p-4 sm:p-6 md:p-8">
@@ -425,8 +409,9 @@ export default function PondPage() {
                 )}
             </div>
             {/* Chat Modal (global, not per card) */}
-            {openChatProfileId && openChatMatchmakr && (
+            {openChatProfileId && openChatMatchmakr && aboutSingleForChat && clickedSingleForChat && (
                 <ChatModal
+                    key={`${aboutSingleForChat.id}-${clickedSingleForChat.id}-${openChatMatchmakr.id}`}
                     open={!!openChatProfileId && !!openChatMatchmakr}
                     onClose={handleCloseChat}
                     currentUserId={currentUser?.id || ''}
@@ -435,12 +420,24 @@ export default function PondPage() {
                     otherUserId={openChatMatchmakr.id || ''}
                     otherUserName={openChatMatchmakr.name || ''}
                     otherUserProfilePic={openChatMatchmakr.profile_pic_url || null}
-                    aboutSingleA={(profiles.find(p => p.id === openChatProfileId)
-                        ? { id: profiles.find(p => p.id === openChatProfileId)!.id, name: profiles.find(p => p.id === openChatProfileId)!.name || '', photo: profiles.find(p => p.id === openChatProfileId)!.profile_pic_url || null }
-                        : { id: '', name: '', photo: null })}
-                    aboutSingleB={currentSponsoredSingle ? { id: currentSponsoredSingle.id, name: currentSponsoredSingle.name, photo: currentSponsoredSingle.photo } : { id: '', name: '', photo: null }}
+                    aboutSingle={aboutSingleForChat}
+                    clickedSingle={clickedSingleForChat}
                 />
             )}
+
+            {/* Select Single Modal */}
+            <SelectSingleModal
+                open={showSelectSingleModal}
+                onClose={() => {
+                    setShowSelectSingleModal(false);
+                    setPendingChatProfile(null);
+                }}
+                sponsoredSingles={sponsoredSingles}
+                onSelectSingle={handleSingleSelected}
+                otherMatchmakrName={pendingChatProfile?.sponsored_by_id ? 
+                    (profiles.find(p => p.id === pendingChatProfile.id)?.name || 'this MatchMakr') : 
+                    'this MatchMakr'}
+            />
         </div>
     );
 }

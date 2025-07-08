@@ -49,6 +49,27 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const [localConversations, setLocalConversations] = useState(conversations);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [sponsoredSingleUnreadCount, setSponsoredSingleUnreadCount] = useState<number>(0);
+  const [aboutSingle, setAboutSingle] = useState<{ id: string; name: string; photo: string | null } | null>(null);
+  const [clickedSingle, setClickedSingle] = useState<{ id: string; name: string; photo: string | null } | null>(null);
+  const [openConversationId, setOpenConversationId] = useState<string | null>(null);
+
+  // Helper to fetch single info by ID
+  const fetchSingleById = async (singleId: string) => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, name, photos')
+      .eq('id', singleId)
+      .single();
+    if (data) {
+      return {
+        id: data.id,
+        name: data.name || '',
+        photo: data.photos && data.photos.length > 0 ? data.photos[0] : null,
+      };
+    }
+    return { id: '', name: '', photo: null };
+  };
 
   // Fetch chat history when modal opens
   useEffect(() => {
@@ -61,7 +82,12 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       loadingTimeout.current = setTimeout(() => {
         if (isMounted) setShowSpinner(true);
       }, 200);
-      const res = await fetch(`/api/messages/history?userId=${userId}&otherId=${openChat.id}`);
+      
+      let url = `/api/messages/history?userId=${userId}&otherId=${openChat.id}`;
+      if (openConversationId) {
+        url += `&conversation_id=${openConversationId}`;
+      }
+      const res = await fetch(url);
       const data = await res.json();
       if (isMounted) {
         // Only update if new data is different
@@ -83,14 +109,18 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openChat, userId]);
+  }, [openChat, userId, openConversationId]);
 
   // After sending a message, refetch chat (but don't clear chatMessages)
   useEffect(() => {
     let isMounted = true;
     if (!sending && messageText === '' && openChat && userId) {
       (async () => {
-        const res = await fetch(`/api/messages/history?userId=${userId}&otherId=${openChat.id}`);
+        let url = `/api/messages/history?userId=${userId}&otherId=${openChat.id}`;
+        if (openConversationId) {
+          url += `&conversation_id=${openConversationId}`;
+        }
+        const res = await fetch(url);
         const data = await res.json();
         if (isMounted && data.success && data.messages) {
           // Only update if new data is different
@@ -105,7 +135,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     }
     return () => { isMounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sending, messageText, openChat, userId]);
+  }, [sending, messageText, openChat, userId, openConversationId]);
 
   // Smart auto-scroll: only scroll if modal is opened or user is near the bottom
   useEffect(() => {
@@ -138,18 +168,22 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   // Fetch unread counts for all conversations
   useEffect(() => {
     const fetchUnreadCounts = async () => {
-      const supabase = createClient();
       const counts: Record<string, number> = {};
       for (const msg of conversations) {
         const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
-        // Calculate unread count for every chat (singles and matchmakrs)
-        const { count } = await supabase
-          .from('messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('sender_id', otherId)
-          .eq('recipient_id', userId)
-          .eq('read', false);
-        counts[otherId] = count || 0;
+        // Use unread count from conversation data if available, otherwise fetch
+        if (msg.unreadCount !== undefined) {
+          counts[otherId] = msg.unreadCount;
+        } else {
+          const supabase = createClient();
+          const { count } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('sender_id', otherId)
+            .eq('recipient_id', userId)
+            .eq('read', false);
+          counts[otherId] = count || 0;
+        }
       }
       setUnreadCounts(counts);
     };
@@ -172,14 +206,22 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     setMessageText('');
     setSending(true);
     try {
+      const messageData: any = {
+        sender_id: userId,
+        recipient_id: openChat.id,
+        content: optimisticMsg.content,
+      };
+      
+      // Add singles context for MatchMakr-to-MatchMakr chats
+      if (aboutSingle?.id && clickedSingle?.id) {
+        messageData.about_single_id = aboutSingle.id;
+        messageData.clicked_single_id = clickedSingle.id;
+      }
+      
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sender_id: userId,
-          recipient_id: openChat.id,
-          content: optimisticMsg.content,
-        }),
+        body: JSON.stringify(messageData),
       });
       const data = await res.json();
       if (!data.success) {
@@ -191,36 +233,30 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     setSending(false);
   };
 
-  // When opening a chat, fetch the other matchmakr's sponsored single
-  const handleOpenChat = async (profile: { id: string; name: string; profile_pic_url: string | null }) => {
+  // Updated handleOpenChat to use conversation context
+  const handleOpenChat = async (conversation: any, profile: { id: string; name: string; profile_pic_url: string | null }) => {
+    // Debug: Log the conversation and profile data
+    console.log('Dashboard: Opening chat with context:', {
+      conversationId: conversation.id,
+      aboutSingle: conversation?.conversation?.about_single,
+      clickedSingle: conversation?.conversation?.clicked_single,
+      profile: profile
+    });
+    
     setOpenChat({ id: profile.id, name: profile.name, profile_pic_url: profile.profile_pic_url || '' });
-    setOtherSponsoredSingle(null);
+    
+    // Use singles and conversation_id from the conversation object
+    setAboutSingle(conversation?.conversation?.about_single || { id: '', name: '', photo: null });
+    setClickedSingle(conversation?.conversation?.clicked_single || { id: '', name: '', photo: null });
+    setOpenConversationId(conversation.id);
+
     // Mark messages as read
     await fetch('/api/messages/mark-read', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, otherId: profile.id }),
     });
-    const supabase = createClient();
-    // Fetch the other matchmakr's sponsored single
-    const { data: singles } = await supabase
-      .from('profiles')
-      .select('id, name, photos')
-      .eq('sponsored_by_id', profile.id)
-      .eq('user_type', 'SINGLE');
-    let otherSingleId = null;
-    if (singles && singles.length > 0) {
-      setOtherSponsoredSingle({
-        id: singles[0].id,
-        name: singles[0].name || '',
-        photo: singles[0].photos && singles[0].photos.length > 0 ? singles[0].photos[0] : null
-      });
-      otherSingleId = singles[0].id;
-    } else {
-      setOtherSponsoredSingle(null);
-    }
-    // Get the current user's sponsored single (if any)
-    const mySingleId = sponsoredSingles && sponsoredSingles.length > 0 ? sponsoredSingles[0].id : null;
+    
     // Refresh unread counts after opening chat
     const counts: Record<string, number> = { ...unreadCounts };
     counts[profile.id] = 0;
@@ -282,6 +318,12 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             .map((msg: any) => {
               const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
               const profile = otherProfiles[otherId];
+              const conversation = msg.conversation;
+              const singlesInfo = conversation?.about_single && conversation?.clicked_single ? 
+                `${conversation.about_single.name} & ${conversation.clicked_single.name}` : 
+                'About singles';
+              const unreadCount = msg.unreadCount || unreadCounts[otherId] || 0;
+              
               return (
                 <div
                   key={msg.id}
@@ -291,13 +333,13 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                   onClick={e => {
                     // Prevent opening if clicking the menu button
                     if ((e.target as HTMLElement).closest('button')) return;
-                    handleOpenChat(profile);
+                    handleOpenChat(msg, profile);
                   }}
                   onKeyDown={e => {
                     if ((e.target as HTMLElement).closest('button')) return;
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      handleOpenChat(profile);
+                      handleOpenChat(msg, profile);
                     }
                   }}
                 >
@@ -312,13 +354,14 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-white truncate drop-shadow">{profile?.name || 'Unknown MatchMakr'}</div>
+                    <div className="text-xs text-blue-200 truncate mb-1">{singlesInfo}</div>
                     <div className="text-sm text-blue-100 truncate">{msg.content}</div>
                   </div>
                   <div className="text-xs text-blue-100 ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                   {/* Unread icon, only show if unreadCount > 0 */}
-                  {unreadCounts[otherId] > 0 && (
+                  {unreadCount > 0 && (
                     <div className="ml-2 flex items-center">
-                      <FlameUnreadIcon count={unreadCounts[otherId]} />
+                      <FlameUnreadIcon count={unreadCount} />
                     </div>
                   )}
                   {/* Three dots menu */}
@@ -361,6 +404,10 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             id: sponsoredSingles[0].id,
             name: sponsoredSingles[0].name,
             profile_pic_url: sponsoredSingles[0].profile_pic_url || ''
+          }, {
+            id: sponsoredSingles[0].id,
+            name: sponsoredSingles[0].name,
+            profile_pic_url: sponsoredSingles[0].profile_pic_url || ''
           })}
         >
           <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white bg-gray-100 flex-shrink-0">
@@ -388,8 +435,9 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
         Invite a Single User
       </button>
       {/* Chat Modal */}
-      {openChat && typeof window !== 'undefined' && document.body && (
+      {openChat && aboutSingle && clickedSingle && typeof window !== 'undefined' && document.body && (
         <ChatModal
+          key={`${aboutSingle.id}-${clickedSingle.id}-${openChat.id}`}
           open={!!openChat}
           onClose={() => setOpenChat(null)}
           currentUserId={userId}
@@ -398,8 +446,8 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           otherUserId={openChat.id}
           otherUserName={openChat.name || ''}
           otherUserProfilePic={openChat.profile_pic_url}
-          aboutSingleA={sponsoredSingles && sponsoredSingles.length > 0 ? { id: sponsoredSingles[0].id, name: sponsoredSingles[0].name, photo: sponsoredSingles[0].profile_pic_url } : { id: '', name: '', photo: null }}
-          aboutSingleB={otherSponsoredSingle ? { id: otherSponsoredSingle.id, name: otherSponsoredSingle.name, photo: otherSponsoredSingle.photo } : { id: '', name: '', photo: null }}
+          aboutSingle={aboutSingle}
+          clickedSingle={clickedSingle}
         />
       )}
       {/* Confirmation Modal */}

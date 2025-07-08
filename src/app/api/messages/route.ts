@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 export async function POST(req: NextRequest) {
   const supabase = createClient();
   const body = await req.json();
-  const { sender_id, recipient_id, content } = body;
+  const { sender_id, recipient_id, content, about_single_id, clicked_single_id } = body;
 
   // Check authentication
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -70,9 +70,63 @@ export async function POST(req: NextRequest) {
   }
 
   // Insert message
+  let conversationId = null;
+  if (senderProfile.user_type === 'MATCHMAKR' && recipientProfile.user_type === 'MATCHMAKR' && about_single_id && clicked_single_id) {
+    console.log('Messages API: Looking for conversation with keys:', {
+      sender_id, recipient_id, about_single_id, clicked_single_id
+    });
+    
+    // Use the same logic as the unique constraint: LEAST and GREATEST
+    const smallerId = sender_id < recipient_id ? sender_id : recipient_id;
+    const largerId = sender_id < recipient_id ? recipient_id : sender_id;
+    
+    // Try to find existing conversation using the same logic as the unique constraint
+    const { data: existingConv } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('initiator_matchmakr_id', smallerId)
+      .eq('recipient_matchmakr_id', largerId)
+      .eq('about_single_id', about_single_id)
+      .eq('clicked_single_id', clicked_single_id)
+      .maybeSingle();
+    
+    if (existingConv && existingConv.id) {
+      conversationId = existingConv.id;
+      console.log('Messages API: Found existing conversation:', conversationId);
+    } else {
+      console.log('Messages API: No existing conversation found, creating new one');
+      // Create new conversation - always use the smaller ID as initiator
+      const { data: newConv, error: convError } = await supabase
+        .from('conversations')
+        .insert({
+          initiator_matchmakr_id: smallerId,
+          recipient_matchmakr_id: largerId,
+          about_single_id,
+          clicked_single_id,
+        })
+        .select('id')
+        .single();
+      if (convError || !newConv) {
+        console.log('Messages API: Error creating conversation:', convError);
+        return NextResponse.json({ error: convError?.message || 'Failed to create conversation' }, { status: 500 });
+      }
+      conversationId = newConv.id;
+      console.log('Messages API: Created new conversation:', conversationId);
+    }
+  }
+  const messageData: any = { sender_id, recipient_id, content };
+  if (about_single_id) {
+    messageData.about_single_id = about_single_id;
+  }
+  if (clicked_single_id) {
+    messageData.clicked_single_id = clicked_single_id;
+  }
+  if (conversationId) {
+    messageData.conversation_id = conversationId;
+  }
   const { error: insertError } = await supabase
     .from('messages')
-    .insert({ sender_id, recipient_id, content });
+    .insert(messageData);
   if (insertError) {
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }

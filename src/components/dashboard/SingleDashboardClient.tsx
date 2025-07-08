@@ -392,8 +392,8 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
             otherUserId={selectedSingle.otherSingle.id}
             otherUserName={selectedSingle.otherSingle.name}
             otherUserProfilePic={selectedSingle.otherSingle.photo}
-            aboutSingleA={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
-            aboutSingleB={{ id: selectedSingle.otherSingle.id, name: selectedSingle.otherSingle.name, photo: selectedSingle.otherSingle.photo }}
+            aboutSingle={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
+            clickedSingle={{ id: selectedSingle.otherSingle.id, name: selectedSingle.otherSingle.name, photo: selectedSingle.otherSingle.photo }}
             isSingleToSingle={true}
           />
         )}
@@ -409,8 +409,8 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
             otherUserId={sponsor.id}
             otherUserName={sponsor.name || ''}
             otherUserProfilePic={sponsor.profile_pic_url}
-            aboutSingleA={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
-            aboutSingleB={{ id: sponsor.id, name: sponsor.name || '', photo: sponsor.profile_pic_url }}
+            aboutSingle={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
+            clickedSingle={{ id: sponsor.id, name: sponsor.name || '', photo: sponsor.profile_pic_url }}
           />
         )}
         {/* End Sponsorship Modal */}
