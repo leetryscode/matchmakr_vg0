@@ -10,7 +10,8 @@ export async function GET(req: NextRequest) {
   const aboutSingleId = searchParams.get('about_single_id');
   const clickedSingleId = searchParams.get('clicked_single_id');
 
-  if (!userId || !otherId) {
+  // Only require userId/otherId if conversation_id is not present
+  if (!conversationId && (!userId || !otherId)) {
     return NextResponse.json({ success: false, error: 'Missing userId or otherId' }, { status: 400 });
   }
 

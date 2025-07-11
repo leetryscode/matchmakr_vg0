@@ -14,15 +14,12 @@ const SinglesPondButton = () => (
     <div className="mb-8">
         <div className="bg-white/10 p-8 rounded-xl shadow-card border border-white/20">
             <div className="text-center">
-                <h2 className="font-inter font-bold text-3xl text-white mb-3">Singles Pond</h2>
-                <p className="text-white/80 text-lg mb-6 leading-relaxed">
-                    Discover and connect with singles looking for matches. Your matchmaking superpower awaits!
-                </p>
                 <a href="/pond" className="inline-block">
-                    <button className="bg-gradient-primary text-white px-12 py-4 rounded-full font-semibold text-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-white">
-                        Dive into the Pond
+                    <button className="bg-gradient-to-br from-green-400 via-emerald-500 to-teal-500 text-white px-12 py-4 rounded-full font-semibold text-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-white">
+                        Singles Pond
                     </button>
                 </a>
+                <div className="mt-4 text-white text-base font-medium">Discover singles, message their matchmakr</div>
             </div>
         </div>
     </div>
@@ -106,8 +103,8 @@ export default async function MatchMakrDashboardPage() {
 
     return (
         <DashboardLayout firstName={firstName} userId={user.id} userType="MATCHMAKR">
-            <div className="pt-6 pb-2 px-4">
-                <div className="text-lg text-white/90 font-semibold mb-4">Hello, {firstName}</div>
+            <div className="pt-0 pb-2 px-4">
+                <div className="text-2xl text-white font-extrabold mb-1 tracking-tight drop-shadow-sm">Hello, {firstName}</div>
             </div>
             <SinglesPondButton />
             <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
@@ -130,7 +127,7 @@ export default async function MatchMakrDashboardPage() {
                         )}
                     </div>
                 </a>
-                <a href={`/profile/${user.id}`} className="text-base underline text-white hover:text-accent-teal-light focus:outline-none mb-6 block text-center">My Profile</a>
+                <a href={`/profile/${user.id}`} className="text-base text-white hover:text-accent-teal-light focus:outline-none mb-6 block text-center">My Profile</a>
                 <div className="flex flex-wrap justify-center gap-x-8 gap-y-6 w-full max-w-xs">
                     {processedSponsoredSingles && processedSponsoredSingles.length > 0 ? (
                         processedSponsoredSingles.map(single => (

@@ -287,35 +287,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                   </button>
                 )}
               </Link>
-              {/* Unified Chat Modal */}
-              {isChatOpen && currentUserProfile?.user_type === 'MATCHMAKR' && (
-                <ChatModal
-                  open={isChatOpen}
-                  onClose={() => {
-                    setIsChatOpen(false);
-                    setSelectedSingleForChat(null);
-                  }}
-                  currentUserId={currentUserId || ''}
-                  currentUserName={currentUserName || ''}
-                  currentUserProfilePic={currentUserProfilePic || null}
-                  otherUserId={matchmakrProfile.id}
-                  otherUserName={matchmakrProfile.name || ''}
-                  otherUserProfilePic={matchmakrProfile.profile_pic_url}
-                  aboutSingle={selectedSingleForChat
-                    ? {
-                        id: selectedSingleForChat,
-                        name: currentUserSponsoredSingles?.find(s => s.id === selectedSingleForChat)?.name || '',
-                        photo: currentUserSponsoredSingles?.find(s => s.id === selectedSingleForChat)?.photo || null,
-                      }
-                    : { id: '', name: '', photo: null }
-                  }
-                  clickedSingle={{
-                    id: profile.id,
-                    name: profile.name || '',
-                    photo: profile.photos?.[0] || null,
-                  }}
-                />
-              )}
+              {/* Removed ChatModal - now using dedicated chat page */}
 
               {/* Select Single Modal */}
               <SelectSingleModal
@@ -324,6 +296,9 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 sponsoredSingles={currentUserSponsoredSingles || []}
                 onSelectSingle={handleSingleSelected}
                 otherMatchmakrName={matchmakrProfile?.name || 'this MatchMakr'}
+                currentUserId={currentUserId}
+                otherUserId={matchmakrProfile?.id}
+                clickedSingleId={profile.id}
               />
             </div>
           )}

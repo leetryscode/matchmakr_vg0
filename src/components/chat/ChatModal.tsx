@@ -347,7 +347,29 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   function getChatSingles(currentUserId: string, chatContext: any, currentUserSingles: { id: string }[]) {
     // If aboutSingle and clickedSingle props are provided, use them
     if (aboutSingle?.id && clickedSingle?.id) {
-      // Determine which is 'ours' based on currentUserSingles
+      // For MatchMakr-to-MatchMakr chats, determine "Our Single" and "Their Single" based on conversation context
+      if (chatContext?.currentUserSingle && chatContext?.otherUserSingle) {
+        // Use the chat context to determine which single belongs to which user
+        const currentUserSingleId = chatContext.currentUserSingle.id;
+        const otherUserSingleId = chatContext.otherUserSingle.id;
+        
+        // Determine which single belongs to the current user
+        if (currentUserSingles && currentUserSingles.some(s => s.id === currentUserSingleId)) {
+          // Current user sponsors the currentUserSingle
+          return {
+            ourSingle: chatContext.currentUserSingle,
+            theirSingle: chatContext.otherUserSingle
+          };
+        } else if (currentUserSingles && currentUserSingles.some(s => s.id === otherUserSingleId)) {
+          // Current user sponsors the otherUserSingle
+          return {
+            ourSingle: chatContext.otherUserSingle,
+            theirSingle: chatContext.currentUserSingle
+          };
+        }
+      }
+      
+      // Fallback: determine based on which single the current user sponsors
       if (currentUserSingles && currentUserSingles.some(s => s.id === aboutSingle.id)) {
         return {
           ourSingle: aboutSingle,
@@ -452,7 +474,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                       </div>
                     )}
                   </div>
-                  <div className="mt-2 text-sm font-medium text-text-dark">Their Single</div>
+                  {/* Removed 'Their Single' text */}
                   <div className="text-xs text-gray-500">{theirSingle?.name || 'Unknown'}</div>
                 </div>
                 <div className="text-lg font-medium text-text-light">and</div>
@@ -466,7 +488,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                       </div>
                     )}
                   </div>
-                  <div className="mt-2 text-sm font-medium text-text-dark">Our Single</div>
+                  {/* Removed 'Our Single' text */}
                   <div className="text-xs text-gray-500">{ourSingle?.name || 'Unknown'}</div>
                 </div>
               </div>

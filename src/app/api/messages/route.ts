@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
     senderProfile.user_type === 'SINGLE' &&
     recipientProfile.user_type === 'SINGLE'
   ) {
+    console.log('DEBUG: single-to-single chat attempt', { sender_id, recipient_id, senderProfile, recipientProfile });
     // Check if they have an approved match
     const { data: match, error: matchError } = await supabase
       .from('matches')
@@ -63,9 +64,11 @@ export async function POST(req: NextRequest) {
       .single();
     
     if (matchError || !match || !match.matchmakr_a_approved || !match.matchmakr_b_approved) {
+      console.log('DEBUG: single-to-single chat blocked', { match, matchError });
       return NextResponse.json({ error: 'Not allowed: singles can only chat if both matchmakrs have approved the match.' }, { status: 403 });
     }
   } else {
+    console.log('DEBUG: chat blocked by fallback', { sender_id, recipient_id, senderProfile, recipientProfile });
     return NextResponse.json({ error: 'Not allowed: can only message your sponsor or sponsored single, other matchmakrs, or approved singles.' }, { status: 403 });
   }
 

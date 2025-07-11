@@ -307,7 +307,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
           name={sponsor.name}
           lastMessage={sponsorLastMessage}
           unreadCount={sponsorUnreadCount}
-          onClick={() => { setOpenChat(true); setSelectedSingle(null); }}
+          onClick={() => { router.push(`/dashboard/chat/single/${userId}`); }}
           timestamp={sponsorTimestamp}
           menuButton={
             <button

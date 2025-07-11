@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
 interface SponsoredSingle {
     id: string;
@@ -14,6 +15,10 @@ interface SelectSingleModalProps {
     sponsoredSingles: SponsoredSingle[];
     onSelectSingle: (singleId: string) => void;
     otherMatchmakrName: string;
+    // Add props for chat navigation
+    currentUserId?: string;
+    otherUserId?: string;
+    clickedSingleId?: string;
 }
 
 export default function SelectSingleModal({
@@ -21,8 +26,28 @@ export default function SelectSingleModal({
     onClose,
     sponsoredSingles,
     onSelectSingle,
-    otherMatchmakrName
+    otherMatchmakrName,
+    currentUserId,
+    otherUserId,
+    clickedSingleId
 }: SelectSingleModalProps) {
+    const router = useRouter();
+
+    const handleSingleSelected = async (singleId: string) => {
+        if (currentUserId && otherUserId && clickedSingleId) {
+            // Navigate to the new chat page
+            const res = await fetch(`/api/messages/chat-context?userId=${currentUserId}&otherId=${otherUserId}&about_single_id=${singleId}&clicked_single_id=${clickedSingleId}`);
+            const data = await res.json();
+            if (data && data.conversation_id) {
+                router.push(`/dashboard/chat/${data.conversation_id}`);
+                onClose();
+                return;
+            }
+        }
+        // Fallback to the original callback
+        onSelectSingle(singleId);
+    };
+
     if (!open) return null;
 
     return (
@@ -41,7 +66,7 @@ export default function SelectSingleModal({
                     {sponsoredSingles.map((single) => (
                         <button
                             key={single.id}
-                            onClick={() => onSelectSingle(single.id)}
+                            onClick={() => handleSingleSelected(single.id)}
                             className="w-full p-4 border border-gray-200 rounded-xl hover:border-accent-teal-light hover:bg-accent-teal-light/5 transition-all duration-200 flex items-center space-x-3"
                         >
                             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100">

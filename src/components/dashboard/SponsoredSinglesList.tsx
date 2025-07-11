@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import InviteSingle from './InviteSingle';
 import Link from 'next/link';
-import ChatModal from '@/components/chat/ChatModal';
 import FlameUnreadIcon from './FlameUnreadIcon';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface SponsoredSingle {
     id: string;
@@ -50,27 +50,66 @@ function ReleaseSingleModal({ single, onClose, onConfirm }: { single: SponsoredS
 
 function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName, userProfilePic }: SponsoredSinglesListProps) {
     const supabase = createClient();
+    const router = useRouter();
+    const pathname = usePathname();
     const [releasingSingle, setReleasingSingle] = useState<SponsoredSingle | null>(null);
-    const [openChatSingle, setOpenChatSingle] = useState<SponsoredSingle | null>(null);
     const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+    const [latestMessages, setLatestMessages] = useState<Record<string, { content: string; created_at: string }>>({});
 
-    useEffect(() => {
-        const fetchUnreadCounts = async () => {
-            if (!sponsoredSingles) return;
-            const counts: Record<string, number> = {};
-            for (const single of sponsoredSingles) {
-                const { count } = await supabase
-                    .from('messages')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('sender_id', single.id)
-                    .eq('recipient_id', userId)
-                    .eq('read', false);
-                counts[single.id] = count || 0;
+    const fetchUnreadCounts = async () => {
+        if (!sponsoredSingles) return;
+        const counts: Record<string, number> = {};
+        for (const single of sponsoredSingles) {
+            const { count } = await supabase
+                .from('messages')
+                .select('*', { count: 'exact', head: true })
+                .eq('sender_id', single.id)
+                .eq('recipient_id', userId)
+                .eq('read', false);
+            counts[single.id] = count || 0;
+        }
+        setUnreadCounts(counts);
+    };
+
+    const fetchLatestMessages = async () => {
+        if (!sponsoredSingles || sponsoredSingles.length === 0) return;
+        
+        const messages: Record<string, { content: string; created_at: string }> = {};
+        
+        for (const single of sponsoredSingles) {
+            // Get the latest message for this single
+            const { data: latestMessage } = await supabase
+                .from('messages')
+                .select('content, created_at')
+                .or(`and(sender_id.eq.${single.id},recipient_id.eq.${userId}),and(sender_id.eq.${userId},recipient_id.eq.${single.id})`)
+                .order('created_at', { ascending: false })
+                .limit(1);
+            
+            if (latestMessage && latestMessage.length > 0) {
+                messages[single.id] = {
+                    content: latestMessage[0].content,
+                    created_at: latestMessage[0].created_at
+                };
             }
-            setUnreadCounts(counts);
-        };
+        }
+        
+        setLatestMessages(messages);
+    };
+
+    // Initial fetch
+    useEffect(() => {
         fetchUnreadCounts();
+        fetchLatestMessages();
     }, [sponsoredSingles, userId]);
+
+    // Refresh when returning from single chat page
+    useEffect(() => {
+        // If we're on the dashboard page and just returned from a single chat page
+        if (pathname === '/dashboard/matchmakr') {
+            fetchUnreadCounts();
+            fetchLatestMessages();
+        }
+    }, [pathname, userId, sponsoredSingles]);
 
     const handleReleaseSingle = async (singleId: string, singleName: string | null) => {
         try {
@@ -96,15 +135,15 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
             <div className="flex flex-col gap-3 mb-4">
                 {sponsoredSingles && sponsoredSingles.length > 0 ? (
                     sponsoredSingles.map(single => {
-                        const lastMsg = singleChats && singleChats[single.id];
+                        const lastMsg = latestMessages[single.id] || singleChats?.[single.id];
                         return (
                             <div
                                 key={single.id}
                                 className="flex items-center gap-4 py-3 pl-3 w-full bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 shadow-md transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setOpenChatSingle(single)}
-                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenChatSingle(single); } }}
+                                onClick={() => router.push(`/dashboard/chat/single/${single.id}`)}
+                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/dashboard/chat/single/${single.id}`); } }}
                             >
                                 <div className="w-14 h-14 rounded-full flex items-center justify-center bg-gradient-primary text-white font-bold text-xl shadow-avatar overflow-hidden">
                                     {single.profile_pic_url ? (
@@ -140,21 +179,6 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                 onClose={() => setReleasingSingle(null)}
                 onConfirm={handleReleaseSingle}
             />
-            {/* Chat Modal for single */}
-            {openChatSingle && (
-                <ChatModal
-                    open={!!openChatSingle}
-                    onClose={() => setOpenChatSingle(null)}
-                    currentUserId={userId}
-                    currentUserName={userName}
-                    currentUserProfilePic={userProfilePic}
-                    otherUserId={openChatSingle.id}
-                    otherUserName={openChatSingle.name || ''}
-                    otherUserProfilePic={openChatSingle.profile_pic_url}
-                    aboutSingle={{ id: openChatSingle.id, name: openChatSingle.name || '', photo: openChatSingle.profile_pic_url }}
-                    clickedSingle={{ id: userId, name: userName, photo: userProfilePic }}
-                />
-            )}
         </>
     );
 }

@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import ChatModal from '../chat/ChatModal';
 import { createClient } from '@/lib/supabase/client';
 import FlameUnreadIcon from './FlameUnreadIcon';
+import { useRouter } from 'next/navigation';
 
 interface MatchMakrChatListClientProps {
   userId: string;
@@ -52,6 +53,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const [aboutSingle, setAboutSingle] = useState<{ id: string; name: string; photo: string | null } | null>(null);
   const [clickedSingle, setClickedSingle] = useState<{ id: string; name: string; photo: string | null } | null>(null);
   const [openConversationId, setOpenConversationId] = useState<string | null>(null);
+  const router = useRouter();
 
   // Helper to fetch single info by ID
   const fetchSingleById = async (singleId: string) => {
@@ -331,15 +333,15 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                   role="button"
                   tabIndex={0}
                   onClick={e => {
-                    // Prevent opening if clicking the menu button
                     if ((e.target as HTMLElement).closest('button')) return;
-                    handleOpenChat(msg, profile);
+                    // Instead of handleOpenChat, navigate to the chat page
+                    router.push(`/dashboard/chat/${msg.conversation.id}`);
                   }}
                   onKeyDown={e => {
                     if ((e.target as HTMLElement).closest('button')) return;
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      handleOpenChat(msg, profile);
+                      router.push(`/dashboard/chat/${msg.conversation.id}`);
                     }
                   }}
                 >
@@ -434,22 +436,6 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       <button className="w-full bg-white/10 hover:bg-white/20 text-white py-3 px-6 rounded-full font-semibold text-lg border border-white/30 shadow-deep transition-all duration-300 hover:-translate-y-2">
         Invite a Single User
       </button>
-      {/* Chat Modal */}
-      {openChat && aboutSingle && clickedSingle && typeof window !== 'undefined' && document.body && (
-        <ChatModal
-          key={`${aboutSingle.id}-${clickedSingle.id}-${openChat.id}`}
-          open={!!openChat}
-          onClose={() => setOpenChat(null)}
-          currentUserId={userId}
-          currentUserName={currentUserName}
-          currentUserProfilePic={currentUserProfilePic}
-          otherUserId={openChat.id}
-          otherUserName={openChat.name || ''}
-          otherUserProfilePic={openChat.profile_pic_url}
-          aboutSingle={aboutSingle}
-          clickedSingle={clickedSingle}
-        />
-      )}
       {/* Confirmation Modal */}
       {confirmDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
