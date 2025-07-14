@@ -2,9 +2,11 @@ import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import DashboardWrapper from '@/components/dashboard/DashboardWrapper';
 import React from 'react';
 
-export default async function VendorDashboardPage() {
+// Server component to fetch initial data
+async function VendorDashboardContent() {
     const cookieStore = cookies();
     const supabase = createClient();
 
@@ -34,5 +36,14 @@ export default async function VendorDashboardPage() {
                 <p className="text-gray-600">This page is under construction. Your full vendor management tools will be available here soon!</p>
             </div>
         </DashboardLayout>
+    );
+}
+
+// Client wrapper component
+export default function VendorDashboardPage() {
+    return (
+        <DashboardWrapper expectedUserType="VENDOR">
+            <VendorDashboardContent />
+        </DashboardWrapper>
     );
 } 

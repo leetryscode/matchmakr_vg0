@@ -1,20 +1,49 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
   const supabase = createClient();
+  const { user, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loadingSignIn, setLoadingSignIn] = useState(false);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    console.log('AuthContext user:', user, 'loading:', loading);
+    if (!loading && user) {
+      // User is already logged in, redirect to appropriate dashboard
+      const redirectToDashboard = async () => {
+        try {
+          console.log('Attempting profile fetch for user.id:', user.id);
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('user_type')
+            .eq('id', user.id)
+            .single();
+          console.log('Fetched profile:', profile, 'error:', profileError);
+          if (profile?.user_type) {
+            router.push(`/dashboard/${profile.user_type.toLowerCase()}`);
+          } else {
+            router.push('/');
+          }
+        } catch (err) {
+          console.error('Error in redirectToDashboard:', err);
+        }
+      };
+      redirectToDashboard();
+    }
+  }, [user, loading, router, supabase]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setLoadingSignIn(true);
     setError(null);
 
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
@@ -24,34 +53,33 @@ export default function LoginPage() {
 
     if (signInError) {
       setError(signInError.message);
-      setLoading(false);
+      setLoadingSignIn(false);
       return;
     }
 
     if (signInData.user) {
-        // On successful login, fetch the user's profile to get their user_type
-        const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('user_type')
-            .eq('id', signInData.user.id)
-            .single();
-
-        if (profileError) {
-            setError('Could not fetch user profile. Please try again.');
-            setLoading(false);
-            return;
-        }
-
-        if (profile) {
-            const userType = profile.user_type.toLowerCase();
-            router.push(`/dashboard/${userType}`);
-        } else {
-            // This case should ideally not happen if the trigger is working
-            setError('No profile found for this user.');
-            setLoading(false);
-        }
+      // The auth context will handle the redirect
+      setLoadingSignIn(false);
     }
   };
+
+  // Show loading while checking auth state
+  if (loading) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
+        <div className="text-lg">Loading...</div>
+      </main>
+    );
+  }
+
+  // Don't show login form if user is already logged in
+  if (user) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
+        <div className="text-lg">Redirecting...</div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
@@ -82,10 +110,10 @@ export default function LoginPage() {
           {error && <p className="text-red-500 font-light">{error}</p>}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loadingSignIn}
             className="rounded-full bg-gradient-primary px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-light hover:-translate-y-1 shadow-button hover:shadow-button-hover disabled:opacity-50"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loadingSignIn ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
         <a href="/" className="text-primary-blue underline mt-4 hover:text-primary-blue-light transition-colors font-light">

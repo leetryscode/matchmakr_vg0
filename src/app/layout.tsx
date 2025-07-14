@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import GlobalConfettiBlast from '../components/GlobalConfettiBlast';
+import { AuthProvider } from '../contexts/AuthContext';
 
 export const metadata: Metadata = {
   title: 'MatchMakr',
@@ -15,9 +16,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-source-sans text-gray-800 leading-relaxed text-lg">
-        <GlobalConfettiBlast>
-          {children}
-        </GlobalConfettiBlast>
+        <AuthProvider>
+          <GlobalConfettiBlast>
+            {children}
+          </GlobalConfettiBlast>
+        </AuthProvider>
       </body>
     </html>
   )

@@ -2,12 +2,14 @@ import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import DashboardWrapper from '@/components/dashboard/DashboardWrapper';
 import React, { useState } from 'react';
 import InviteMatchMakr from '@/components/dashboard/InviteMatchMakr';
 import ChatModal from '@/components/chat/ChatModal';
 import SingleDashboardClient from '@/components/dashboard/SingleDashboardClient';
 
-export default async function SingleDashboardPage() {
+// Server component to fetch initial data
+async function SingleDashboardContent() {
     const supabase = createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -56,5 +58,14 @@ export default async function SingleDashboardPage() {
                 userPhotos={profile.photos || []}
             />
         </DashboardLayout>
+    );
+}
+
+// Client wrapper component
+export default function SingleDashboardPage() {
+    return (
+        <DashboardWrapper expectedUserType="SINGLE">
+            <SingleDashboardContent />
+        </DashboardWrapper>
     );
 } 

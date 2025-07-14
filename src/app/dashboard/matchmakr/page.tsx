@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import DashboardWrapper from '@/components/dashboard/DashboardWrapper';
 import React from 'react';
 import InviteSingle from '@/components/dashboard/InviteSingle';
 import InviteOtherMatchMakrs from '@/components/dashboard/InviteOtherMatchMakrs';
@@ -37,7 +38,8 @@ const ManageSinglesList = () => (
     </div>
 );
 
-export default async function MatchMakrDashboardPage() {
+// Server component to fetch initial data
+async function MatchMakrDashboardContent() {
     const cookieStore = cookies();
     const supabase = createClient();
 
@@ -148,5 +150,14 @@ export default async function MatchMakrDashboardPage() {
                 </div>
             </div>
         </DashboardLayout>
+    );
+}
+
+// Client wrapper component
+export default function MatchMakrDashboardPage() {
+    return (
+        <DashboardWrapper expectedUserType="MATCHMAKR">
+            <MatchMakrDashboardContent />
+        </DashboardWrapper>
     );
 } 

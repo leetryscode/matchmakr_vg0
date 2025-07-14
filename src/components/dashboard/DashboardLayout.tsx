@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -14,6 +15,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children, firstName, userId, userType }: DashboardLayoutProps) {
     const router = useRouter();
     const supabase = createClient();
+    const { signOut } = useAuth();
 
     const [showDropdown, setShowDropdown] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
@@ -83,8 +85,35 @@ export default function DashboardLayout({ children, firstName, userId, userType 
     }, [showDropdown]);
 
     const handleSignOut = async () => {
-        await supabase.auth.signOut();
-        router.push('/');
+        console.log('Logout button clicked');
+        try {
+            // Call server-side logout route
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            
+            if (response.ok) {
+                console.log('Server logout successful');
+                // Clear client-side storage
+                localStorage.clear();
+                sessionStorage.clear();
+                // Clear all cookies
+                document.cookie.split(';').forEach(function(c) {
+                    document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
+                });
+                // Redirect to login
+                window.location.href = '/login';
+            } else {
+                console.error('Server logout failed');
+                window.location.href = '/login';
+            }
+        } catch (err) {
+            console.error('Logout error:', err);
+            window.location.href = '/login';
+        }
     };
 
     return (

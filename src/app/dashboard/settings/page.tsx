@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import DashboardWrapper from '@/components/dashboard/DashboardWrapper';
 import EndSponsorshipSection from './EndSponsorshipSection';
 
-export default async function SettingsPage() {
+// Server component to fetch initial data
+async function SettingsContent() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -40,5 +42,14 @@ export default async function SettingsPage() {
         <div className="text-lg text-white/80">You do not currently have a MatchMakr.</div>
       )}
     </div>
+  );
+}
+
+// Client wrapper component
+export default function SettingsPage() {
+  return (
+    <DashboardWrapper expectedUserType="SINGLE">
+      <SettingsContent />
+    </DashboardWrapper>
   );
 } 
