@@ -453,11 +453,20 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                 className="px-6 py-2 bg-red-600 text-white rounded-md font-semibold hover:bg-red-700"
                 onClick={async () => {
                   setDeletingChatId(confirmDelete.otherId);
-                  // Call DELETE API
+                  // Find the conversation to get about_single_id and clicked_single_id
+                  const conv = localConversations.find(msg => {
+                    const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+                    return otherId === confirmDelete.otherId;
+                  });
                   await fetch('/api/messages', {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sender_id: userId, recipient_id: confirmDelete.otherId }),
+                    body: JSON.stringify({
+                      sender_id: userId,
+                      recipient_id: confirmDelete.otherId,
+                      about_single_id: conv?.conversation?.about_single?.id,
+                      clicked_single_id: conv?.conversation?.clicked_single?.id
+                    }),
                   });
                   setLocalConversations(localConversations.filter(msg => {
                     const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;

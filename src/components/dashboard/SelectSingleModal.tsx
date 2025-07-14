@@ -35,8 +35,16 @@ export default function SelectSingleModal({
 
     const handleSingleSelected = async (singleId: string) => {
         if (currentUserId && otherUserId && clickedSingleId) {
+            // Always use the lower/higher of the two single IDs
+            let aId = singleId;
+            let bId = clickedSingleId;
+            if (aId > bId) {
+                const temp = aId;
+                aId = bId;
+                bId = temp;
+            }
             // Navigate to the new chat page
-            const res = await fetch(`/api/messages/chat-context?userId=${currentUserId}&otherId=${otherUserId}&about_single_id=${singleId}&clicked_single_id=${clickedSingleId}`);
+            const res = await fetch(`/api/messages/chat-context?userId=${currentUserId}&otherId=${otherUserId}&about_single_id=${aId}&clicked_single_id=${bId}`);
             const data = await res.json();
             if (data && data.conversation_id) {
                 router.push(`/dashboard/chat/${data.conversation_id}`);

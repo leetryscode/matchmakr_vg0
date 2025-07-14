@@ -53,17 +53,45 @@ export async function GET(req: NextRequest) {
     } else if (aboutSingleId && clickedSingleId) {
       // If singles are provided, look for the specific conversation
       console.log('Chat context: Looking for conversation with specific singles:', { aboutSingleId, clickedSingleId });
-      // Use the same logic as the unique constraint: LEAST and GREATEST
-      const smallerId = (userId ?? '') < (otherId ?? '') ? (userId ?? '') : (otherId ?? '');
-      const largerId = (userId ?? '') < (otherId ?? '') ? (otherId ?? '') : (userId ?? '');
-      const { data: conversation } = await supabase
-        .from('conversations')
-        .select('id, about_single_id, clicked_single_id')
-        .eq('initiator_matchmakr_id', smallerId)
-        .eq('recipient_matchmakr_id', largerId)
-        .eq('about_single_id', aboutSingleId)
-        .eq('clicked_single_id', clickedSingleId)
-        .maybeSingle();
+      // Always use the lower/higher of the two single IDs for uniqueness
+      let aId = aboutSingleId;
+      let bId = clickedSingleId;
+      if (aId && bId && aId > bId) {
+        const temp = aId;
+        aId = bId;
+        bId = temp;
+      }
+      // Try to find existing conversation using unordered singles
+      let conversation = null;
+      if (aId && bId) {
+        const { data } = await supabase
+          .from('conversations')
+          .select('id, single_a_id, single_b_id, about_single_id, clicked_single_id')
+          .eq('single_a_id', aId)
+          .eq('single_b_id', bId)
+          .maybeSingle();
+        conversation = data;
+      }
+      if (!conversation && aId && bId) {
+        // Create new conversation for this unordered pair
+        const { data: newConv, error: createError } = await supabase
+          .from('conversations')
+          .insert({
+            single_a_id: aId,
+            single_b_id: bId,
+            about_single_id: aboutSingleId,
+            clicked_single_id: clickedSingleId,
+            initiator_matchmakr_id: userId,
+            recipient_matchmakr_id: otherId,
+            status: 'ACTIVE'
+          })
+          .select('id')
+          .single();
+        if (createError) {
+          return NextResponse.json({ error: 'Failed to create conversation' }, { status: 500 });
+        }
+        conversation = newConv;
+      }
       if (conversation) {
         foundConversationId = conversation.id;
         foundAboutSingleId = conversation.about_single_id;
