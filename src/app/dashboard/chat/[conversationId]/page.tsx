@@ -15,6 +15,26 @@ export default function ChatPage() {
   const [chatContext, setChatContext] = useState<any>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const supabase = createClient();
+
+  // Realtime subscription for new messages
+  useEffect(() => {
+    if (!conversationId) return;
+    
+    const channel = supabase.channel('public:messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+        const newMessage = payload.new;
+        // If the new message belongs to this conversation, add it to chatMessages
+        if (newMessage.conversation_id === conversationId) {
+          setChatMessages(prev => [...prev, newMessage]);
+        }
+      })
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId, supabase]);
 
   // Fetch chat context and messages
   useEffect(() => {
@@ -37,12 +57,11 @@ export default function ChatPage() {
   // Fetch current user ID from Supabase Auth
   useEffect(() => {
     const fetchUser = async () => {
-      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUserId(user?.id || null);
     };
     fetchUser();
-  }, []);
+  }, [supabase]);
 
   // Mark messages as read as soon as chat is opened
   useEffect(() => {

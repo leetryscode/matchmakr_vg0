@@ -54,6 +54,23 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const [clickedSingle, setClickedSingle] = useState<{ id: string; name: string; photo: string | null } | null>(null);
   const [openConversationId, setOpenConversationId] = useState<string | null>(null);
   const router = useRouter();
+  const supabase = createClient();
+
+  // Realtime subscription for new messages
+  useEffect(() => {
+    const channel = supabase.channel('public:messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+        const newMessage = payload.new;
+        // If the new message belongs to the open conversation, add it to chatMessages
+        if (openConversationId && newMessage.conversation_id === openConversationId) {
+          setChatMessages(prev => [...prev, newMessage]);
+        }
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [openConversationId, supabase]);
 
   // Helper to fetch single info by ID
   const fetchSingleById = async (singleId: string) => {

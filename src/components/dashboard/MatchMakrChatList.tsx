@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/client';
 import MatchMakrChatListClient from './MatchMakrChatListClient';
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 interface MatchMakrChatListProps {
   userId: string;
@@ -13,14 +13,16 @@ interface MatchMakrChatListProps {
 }
 
 const MatchMakrChatList = ({ userId, currentUserName, currentUserProfilePic }: MatchMakrChatListProps) => {
+  console.log('[MatchMakrChatList] Component mounted. userId:', userId);
   const [conversations, setConversations] = useState<any[]>([]);
   const [otherProfiles, setOtherProfiles] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const fetchConversations = async () => {
-    setLoading(true);
+    console.log('[MatchMakrChatList] fetchConversations called. userId:', userId);
     const supabase = createClient();
 
     // Fetch conversations directly from Supabase
@@ -32,6 +34,8 @@ const MatchMakrChatList = ({ userId, currentUserName, currentUserProfilePic }: M
         recipient_matchmakr_id,
         about_single_id,
         clicked_single_id,
+        single_a_id,
+        single_b_id,
         status,
         match_status,
         created_at,
@@ -44,10 +48,11 @@ const MatchMakrChatList = ({ userId, currentUserName, currentUserProfilePic }: M
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching conversations:', error);
+      console.error('[MatchMakrChatList] Error fetching conversations:', error);
       setLoading(false);
       return;
     }
+    console.log('[MatchMakrChatList] conversationsData:', conversationsData);
 
     // Get unread counts and last messages for each conversation
     const conversationsWithDetails = await Promise.all((conversationsData || []).map(async (conv) => {
@@ -152,18 +157,35 @@ const MatchMakrChatList = ({ userId, currentUserName, currentUserProfilePic }: M
     setLoading(false);
   };
 
-  // Initial fetch
+  // Check if we're coming from pond with refresh parameter
   useEffect(() => {
-    fetchConversations();
-  }, [userId]);
-
-  // Refresh when returning from chat page
-  useEffect(() => {
-    // If we're on the dashboard page and just returned from a chat page
-    if (pathname === '/dashboard/matchmakr') {
+    const refreshParam = searchParams.get('refresh');
+    if (refreshParam === 'true') {
+      console.log('[MatchMakrChatList] Detected refresh parameter, clearing URL and refreshing data');
+      // Clear the refresh parameter from URL
+      router.replace('/dashboard/matchmakr');
+      // Force refresh by calling fetchConversations directly
       fetchConversations();
     }
+  }, [searchParams, router]);
+
+  // Fetch conversations on navigation or user change
+  useEffect(() => {
+    console.log('[MatchMakrChatList] Main effect triggered. pathname:', pathname, 'userId:', userId);
+    setLoading(true);
+    setConversations([]);
+    fetchConversations();
   }, [pathname, userId]);
+
+  // Always fetch on component mount
+  useEffect(() => {
+    console.log('[MatchMakrChatList] Component mount effect triggered');
+    if (userId) {
+      setLoading(true);
+      setConversations([]);
+      fetchConversations();
+    }
+  }, [userId]);
 
   if (loading) {
     return <div className="text-blue-100 mb-6">Loading chats...</div>;
