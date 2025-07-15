@@ -190,121 +190,62 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const supabase = createClient();
   const body = await req.json();
-  const { sender_id, recipient_id, about_single_id, clicked_single_id } = body;
+  const { conversation_id } = body;
 
-  console.log('DELETE request:', { sender_id, recipient_id, about_single_id, clicked_single_id });
+  console.log('DELETE request for conversation_id:', conversation_id);
 
   // Check authentication
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if (user.id !== sender_id && user.id !== recipient_id) {
+
+  // Verify the user is part of this conversation
+  const { data: conversation, error: convError } = await supabase
+    .from('conversations')
+    .select('initiator_matchmakr_id, recipient_matchmakr_id')
+    .eq('id', conversation_id)
+    .maybeSingle();
+
+  if (convError) {
+    console.error('Error finding conversation:', convError);
+    return NextResponse.json({ error: convError.message }, { status: 500 });
+  }
+
+  if (!conversation) {
+    return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+  }
+
+  // Check if user is part of this conversation
+  if (user.id !== conversation.initiator_matchmakr_id && user.id !== conversation.recipient_matchmakr_id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  // First, find the specific conversation to get its ID
-  let conversationId = null;
-  if (about_single_id && clicked_single_id) {
-    // Use the same logic as conversation creation: LEAST and GREATEST for matchmakr IDs
-    const smallerId = sender_id < recipient_id ? sender_id : recipient_id;
-    const largerId = sender_id < recipient_id ? recipient_id : sender_id;
-    
-    // Use unordered pair for singles (same as creation logic)
-    let aId = about_single_id;
-    let bId = clicked_single_id;
-    if (aId > bId) {
-      const temp = aId;
-      aId = bId;
-      bId = temp;
-    }
-    
-    console.log('Looking for conversation with:', { smallerId, largerId, aId, bId });
-    
-    const { data: conversation, error: convError } = await supabase
-      .from('conversations')
-      .select('id')
-      .eq('initiator_matchmakr_id', smallerId)
-      .eq('recipient_matchmakr_id', largerId)
-      .eq('single_a_id', aId)
-      .eq('single_b_id', bId)
-      .maybeSingle();
-    
-    if (convError) {
-      console.error('Error finding conversation:', convError);
-      return NextResponse.json({ error: convError.message }, { status: 500 });
-    }
-    
-    if (conversation) {
-      conversationId = conversation.id;
-      console.log('Found conversation ID:', conversationId);
-    } else {
-      console.log('No conversation found with these parameters');
-    }
-  }
+  // Delete all messages for this conversation
+  console.log('Deleting messages for conversation_id:', conversation_id);
+  const { error: deleteMessagesError } = await supabase
+    .from('messages')
+    .delete()
+    .eq('conversation_id', conversation_id);
 
-  // Delete messages for the specific conversation only
-  if (conversationId) {
-    // Delete messages by conversation_id (most precise)
-    console.log('Deleting messages by conversation_id:', conversationId);
-    const { error: deleteError } = await supabase
-      .from('messages')
-      .delete()
-      .eq('conversation_id', conversationId);
-    if (deleteError) {
-      console.error('Error deleting messages:', deleteError);
-      return NextResponse.json({ error: deleteError.message }, { status: 500 });
-    }
-    console.log('Messages deleted successfully');
-  } else if (about_single_id && clicked_single_id) {
-    // Fallback: delete messages filtered by the specific singles ONLY
-    console.log('Deleting messages by singles:', { about_single_id, clicked_single_id });
-    const { error: deleteError } = await supabase
-      .from('messages')
-      .delete()
-      .or(`and(sender_id.eq.${sender_id},recipient_id.eq.${recipient_id}),and(sender_id.eq.${recipient_id},recipient_id.eq.${sender_id})`)
-      .eq('about_single_id', about_single_id)
-      .eq('clicked_single_id', clicked_single_id);
-    if (deleteError) {
-      console.error('Error deleting messages by singles:', deleteError);
-      return NextResponse.json({ error: deleteError.message }, { status: 500 });
-    }
-    console.log('Messages deleted by singles successfully');
-  } else {
-    console.error('No conversation ID or singles provided for deletion');
-    return NextResponse.json({ error: 'Missing conversation ID or singles for deletion' }, { status: 400 });
+  if (deleteMessagesError) {
+    console.error('Error deleting messages:', deleteMessagesError);
+    return NextResponse.json({ error: deleteMessagesError.message }, { status: 500 });
   }
+  console.log('Messages deleted successfully');
 
-  // Delete the specific conversation row
-  if (about_single_id && clicked_single_id) {
-    // Use the same logic as conversation creation: LEAST and GREATEST for matchmakr IDs
-    const smallerId = sender_id < recipient_id ? sender_id : recipient_id;
-    const largerId = sender_id < recipient_id ? recipient_id : sender_id;
-    
-    // Use unordered pair for singles (same as creation logic)
-    let aId = about_single_id;
-    let bId = clicked_single_id;
-    if (aId > bId) {
-      const temp = aId;
-      aId = bId;
-      bId = temp;
-    }
-    
-    console.log('Deleting conversation row with:', { smallerId, largerId, aId, bId });
-    
-    const { error: convDeleteError } = await supabase
-      .from('conversations')
-      .delete()
-      .eq('initiator_matchmakr_id', smallerId)
-      .eq('recipient_matchmakr_id', largerId)
-      .eq('single_a_id', aId)
-      .eq('single_b_id', bId);
-    if (convDeleteError) {
-      console.error('Error deleting conversation:', convDeleteError);
-      return NextResponse.json({ error: convDeleteError.message }, { status: 500 });
-    }
-    console.log('Conversation deleted successfully');
+  // Delete the conversation row
+  console.log('Deleting conversation row:', conversation_id);
+  const { error: deleteConversationError } = await supabase
+    .from('conversations')
+    .delete()
+    .eq('id', conversation_id);
+
+  if (deleteConversationError) {
+    console.error('Error deleting conversation:', deleteConversationError);
+    return NextResponse.json({ error: deleteConversationError.message }, { status: 500 });
   }
+  console.log('Conversation deleted successfully');
 
   return NextResponse.json({ success: true });
 } 

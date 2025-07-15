@@ -451,7 +451,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
         </div>
       )}
       <button className="w-full bg-white/10 hover:bg-white/20 text-white py-3 px-6 rounded-full font-semibold text-lg border border-white/30 shadow-deep transition-all duration-300 hover:-translate-y-2">
-        Invite a Single User
+        Invite another matchmakr
       </button>
       {/* Confirmation Modal */}
       {confirmDelete && (
@@ -489,54 +489,39 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                   console.log('Delete clicked - menuOpen:', menuOpen);
                   console.log('Found conversation:', conv);
                   
-                  // Get the specific conversation details for deletion
-                  const aboutSingleId = conv?.conversation?.about_single?.id;
-                  const clickedSingleId = conv?.conversation?.clicked_single?.id;
-                  const conversationId = conv?.conversation?.id;
+                  if (!conv) {
+                    console.error('No conversation found for deletion');
+                    setDeletingChatId(null);
+                    setConfirmDelete(null);
+                    return;
+                  }
                   
-                  console.log('Deletion parameters:', {
-                    sender_id: userId,
-                    recipient_id: confirmDelete.otherId,
-                    about_single_id: aboutSingleId,
-                    clicked_single_id: clickedSingleId,
-                    conversation_id: conversationId
-                  });
-                  
-                  const response = await fetch('/api/messages', {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      sender_id: userId,
-                      recipient_id: confirmDelete.otherId,
-                      about_single_id: aboutSingleId,
-                      clicked_single_id: clickedSingleId
-                    }),
-                  });
-                  
-                  const result = await response.json();
-                  console.log('Delete response:', result);
-                  
-                  // Remove only the specific conversation from the UI
-                  setLocalConversations(localConversations.filter(msg => {
-                    // Keep conversations that don't match the specific conversation being deleted
-                    const msgAboutSingleId = msg.conversation?.about_single?.id;
-                    const msgClickedSingleId = msg.conversation?.clicked_single?.id;
-                    const msgConversationId = msg.conversation?.id;
+                  try {
+                    const response = await fetch('/api/messages', {
+                      method: 'DELETE',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        conversation_id: conv.conversation.id
+                      }),
+                    });
                     
-                    // Remove if it's the same conversation (same conversation ID or same singles)
-                    if (conversationId && msgConversationId === conversationId) {
-                      return false;
+                    if (response.ok) {
+                      console.log('Chat deleted successfully');
+                      // Remove the specific conversation from the list
+                      setLocalConversations(localConversations.filter(msg => {
+                        return msg.conversation.id !== conv.conversation.id;
+                      }));
+                    } else {
+                      console.error('Failed to delete chat');
                     }
-                    if (aboutSingleId && clickedSingleId && 
-                        msgAboutSingleId === aboutSingleId && 
-                        msgClickedSingleId === clickedSingleId) {
-                      return false;
-                    }
-                    
-                    return true;
-                  }));
-                  setConfirmDelete(null);
-                  setDeletingChatId(null);
+                  } catch (error) {
+                    console.error('Error deleting chat:', error);
+                  } finally {
+                    setDeletingChatId(null);
+                    setConfirmDelete(null);
+                  }
                 }}
               >
                 Delete
