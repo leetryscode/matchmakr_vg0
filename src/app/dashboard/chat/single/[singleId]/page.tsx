@@ -165,7 +165,20 @@ export default function SingleChatPage() {
     <div className="min-h-screen flex flex-col bg-gradient-main p-0 sm:p-2">
       <div className="flex-1 w-full bg-white/80 rounded-none shadow-2xl flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 sticky top-0 bg-white/80 z-10 rounded-none">
-          <button onClick={() => router.push('/dashboard/matchmakr')} className="text-primary-blue font-semibold text-base">&larr; Back to Dashboard</button>
+          <button 
+            onClick={() => {
+              // Check if we can go back in history
+              if (window.history.length > 1) {
+                router.back();
+              } else {
+                // Fallback to dashboard
+                router.push('/dashboard/matchmakr');
+              }
+            }} 
+            className="text-primary-blue font-semibold text-base"
+          >
+            &larr; Back
+          </button>
           <div></div>
           <div></div>
         </div>
