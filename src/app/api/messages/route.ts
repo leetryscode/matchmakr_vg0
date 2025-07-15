@@ -192,6 +192,8 @@ export async function DELETE(req: NextRequest) {
   const body = await req.json();
   const { sender_id, recipient_id, about_single_id, clicked_single_id } = body;
 
+  console.log('DELETE request:', { sender_id, recipient_id, about_single_id, clicked_single_id });
+
   // Check authentication
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
@@ -201,30 +203,107 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  // Delete all messages between the two matchmakrs (in either direction)
-  const { error: deleteError } = await supabase
-    .from('messages')
-    .delete()
-    .or(`and(sender_id.eq.${sender_id},recipient_id.eq.${recipient_id}),and(sender_id.eq.${recipient_id},recipient_id.eq.${sender_id})`);
-  if (deleteError) {
-    return NextResponse.json({ error: deleteError.message }, { status: 500 });
-  }
-
-  // Also delete the conversation row if about_single_id and clicked_single_id are provided
+  // First, find the specific conversation to get its ID
+  let conversationId = null;
   if (about_single_id && clicked_single_id) {
     // Use the same logic as conversation creation: LEAST and GREATEST for matchmakr IDs
     const smallerId = sender_id < recipient_id ? sender_id : recipient_id;
     const largerId = sender_id < recipient_id ? recipient_id : sender_id;
+    
+    // Use unordered pair for singles (same as creation logic)
+    let aId = about_single_id;
+    let bId = clicked_single_id;
+    if (aId > bId) {
+      const temp = aId;
+      aId = bId;
+      bId = temp;
+    }
+    
+    console.log('Looking for conversation with:', { smallerId, largerId, aId, bId });
+    
+    const { data: conversation, error: convError } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('initiator_matchmakr_id', smallerId)
+      .eq('recipient_matchmakr_id', largerId)
+      .eq('single_a_id', aId)
+      .eq('single_b_id', bId)
+      .maybeSingle();
+    
+    if (convError) {
+      console.error('Error finding conversation:', convError);
+      return NextResponse.json({ error: convError.message }, { status: 500 });
+    }
+    
+    if (conversation) {
+      conversationId = conversation.id;
+      console.log('Found conversation ID:', conversationId);
+    } else {
+      console.log('No conversation found with these parameters');
+    }
+  }
+
+  // Delete messages for the specific conversation only
+  if (conversationId) {
+    // Delete messages by conversation_id (most precise)
+    console.log('Deleting messages by conversation_id:', conversationId);
+    const { error: deleteError } = await supabase
+      .from('messages')
+      .delete()
+      .eq('conversation_id', conversationId);
+    if (deleteError) {
+      console.error('Error deleting messages:', deleteError);
+      return NextResponse.json({ error: deleteError.message }, { status: 500 });
+    }
+    console.log('Messages deleted successfully');
+  } else if (about_single_id && clicked_single_id) {
+    // Fallback: delete messages filtered by the specific singles ONLY
+    console.log('Deleting messages by singles:', { about_single_id, clicked_single_id });
+    const { error: deleteError } = await supabase
+      .from('messages')
+      .delete()
+      .or(`and(sender_id.eq.${sender_id},recipient_id.eq.${recipient_id}),and(sender_id.eq.${recipient_id},recipient_id.eq.${sender_id})`)
+      .eq('about_single_id', about_single_id)
+      .eq('clicked_single_id', clicked_single_id);
+    if (deleteError) {
+      console.error('Error deleting messages by singles:', deleteError);
+      return NextResponse.json({ error: deleteError.message }, { status: 500 });
+    }
+    console.log('Messages deleted by singles successfully');
+  } else {
+    console.error('No conversation ID or singles provided for deletion');
+    return NextResponse.json({ error: 'Missing conversation ID or singles for deletion' }, { status: 400 });
+  }
+
+  // Delete the specific conversation row
+  if (about_single_id && clicked_single_id) {
+    // Use the same logic as conversation creation: LEAST and GREATEST for matchmakr IDs
+    const smallerId = sender_id < recipient_id ? sender_id : recipient_id;
+    const largerId = sender_id < recipient_id ? recipient_id : sender_id;
+    
+    // Use unordered pair for singles (same as creation logic)
+    let aId = about_single_id;
+    let bId = clicked_single_id;
+    if (aId > bId) {
+      const temp = aId;
+      aId = bId;
+      bId = temp;
+    }
+    
+    console.log('Deleting conversation row with:', { smallerId, largerId, aId, bId });
+    
     const { error: convDeleteError } = await supabase
       .from('conversations')
       .delete()
       .eq('initiator_matchmakr_id', smallerId)
       .eq('recipient_matchmakr_id', largerId)
-      .eq('about_single_id', about_single_id)
-      .eq('clicked_single_id', clicked_single_id);
+      .eq('single_a_id', aId)
+      .eq('single_b_id', bId);
     if (convDeleteError) {
+      console.error('Error deleting conversation:', convDeleteError);
       return NextResponse.json({ error: convDeleteError.message }, { status: 500 });
     }
+    console.log('Conversation deleted successfully');
   }
 
   return NextResponse.json({ success: true });

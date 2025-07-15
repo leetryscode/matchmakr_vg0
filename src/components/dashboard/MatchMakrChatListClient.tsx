@@ -387,7 +387,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                   <div className="relative menu-btn flex items-center justify-end ml-auto">
                     <button
                       className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
-                      onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === otherId ? null : otherId); }}
+                      onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === msg.conversation.id ? null : msg.conversation.id); }}
                       tabIndex={-1}
                       aria-label="Open menu"
                     >
@@ -397,7 +397,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                         <circle cx="12" cy="19" r="2" fill="#fff"/>
                       </svg>
                     </button>
-                    {menuOpen === otherId && (
+                    {menuOpen === msg.conversation.id && (
                       <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                         <button
                           className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-t-lg"
@@ -470,24 +470,70 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                 className="px-6 py-2 bg-red-600 text-white rounded-md font-semibold hover:bg-red-700"
                 onClick={async () => {
                   setDeletingChatId(confirmDelete.otherId);
-                  // Find the conversation to get about_single_id and clicked_single_id
-                  const conv = localConversations.find(msg => {
-                    const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
-                    return otherId === confirmDelete.otherId;
+                  
+                  // Find the specific conversation that was clicked (using the menuOpen conversation ID)
+                  // If menuOpen is null, we need to find the conversation by otherId and singles
+                  let conv = null;
+                  if (menuOpen) {
+                    conv = localConversations.find(msg => {
+                      return msg.conversation.id === menuOpen;
+                    });
+                  } else {
+                    // Fallback: find by otherId and the first conversation with that otherId
+                    conv = localConversations.find(msg => {
+                      const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+                      return otherId === confirmDelete.otherId;
+                    });
+                  }
+                  
+                  console.log('Delete clicked - menuOpen:', menuOpen);
+                  console.log('Found conversation:', conv);
+                  
+                  // Get the specific conversation details for deletion
+                  const aboutSingleId = conv?.conversation?.about_single?.id;
+                  const clickedSingleId = conv?.conversation?.clicked_single?.id;
+                  const conversationId = conv?.conversation?.id;
+                  
+                  console.log('Deletion parameters:', {
+                    sender_id: userId,
+                    recipient_id: confirmDelete.otherId,
+                    about_single_id: aboutSingleId,
+                    clicked_single_id: clickedSingleId,
+                    conversation_id: conversationId
                   });
-                  await fetch('/api/messages', {
+                  
+                  const response = await fetch('/api/messages', {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                       sender_id: userId,
                       recipient_id: confirmDelete.otherId,
-                      about_single_id: conv?.conversation?.about_single?.id,
-                      clicked_single_id: conv?.conversation?.clicked_single?.id
+                      about_single_id: aboutSingleId,
+                      clicked_single_id: clickedSingleId
                     }),
                   });
+                  
+                  const result = await response.json();
+                  console.log('Delete response:', result);
+                  
+                  // Remove only the specific conversation from the UI
                   setLocalConversations(localConversations.filter(msg => {
-                    const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
-                    return otherId !== confirmDelete.otherId;
+                    // Keep conversations that don't match the specific conversation being deleted
+                    const msgAboutSingleId = msg.conversation?.about_single?.id;
+                    const msgClickedSingleId = msg.conversation?.clicked_single?.id;
+                    const msgConversationId = msg.conversation?.id;
+                    
+                    // Remove if it's the same conversation (same conversation ID or same singles)
+                    if (conversationId && msgConversationId === conversationId) {
+                      return false;
+                    }
+                    if (aboutSingleId && clickedSingleId && 
+                        msgAboutSingleId === aboutSingleId && 
+                        msgClickedSingleId === clickedSingleId) {
+                      return false;
+                    }
+                    
+                    return true;
                   }));
                   setConfirmDelete(null);
                   setDeletingChatId(null);
