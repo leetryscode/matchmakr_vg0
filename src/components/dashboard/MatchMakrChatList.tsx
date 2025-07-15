@@ -188,7 +188,24 @@ const MatchMakrChatList = ({ userId, currentUserName, currentUserProfilePic }: M
   }, [userId]);
 
   if (loading) {
-    return <div className="text-blue-100 mb-6">Loading chats...</div>;
+    return (
+      <div className="mb-6">
+        <div className="animate-pulse">
+          <div className="h-4 bg-white/20 rounded mb-4 w-1/3"></div>
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center space-x-3 p-3 bg-white/10 rounded-lg">
+                <div className="w-12 h-12 bg-white/20 rounded-full"></div>
+                <div className="flex-1">
+                  <div className="h-4 bg-white/20 rounded w-1/2 mb-2"></div>
+                  <div className="h-3 bg-white/10 rounded w-3/4"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return <MatchMakrChatListClient 

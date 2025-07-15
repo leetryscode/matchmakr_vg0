@@ -37,6 +37,11 @@ export default function PondPage() {
     const [selectedSingleForChat, setSelectedSingleForChat] = useState<string | null>(null);
     const [clickedSingleForChat, setClickedSingleForChat] = useState<{ id: string, name: string, photo: string | null } | null>(null);
     const [aboutSingleForChat, setAboutSingleForChat] = useState<{ id: string, name: string, photo: string | null } | null>(null);
+    // Pagination state
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const ITEMS_PER_PAGE = 20;
 
     const router = useRouter();
     const pathname = usePathname();
@@ -101,8 +106,13 @@ export default function PondPage() {
         await loadProfiles();
     };
 
-    const loadProfiles = async () => {
-        setLoading(true);
+    const loadProfiles = async (isLoadMore = false) => {
+        if (isLoadMore) {
+            setLoadingMore(true);
+        } else {
+            setLoading(true);
+            setPage(1);
+        }
         
         console.log('Search values:', { searchCity, searchState, searchZip }); // Debug log
 
@@ -110,7 +120,8 @@ export default function PondPage() {
             .from('profiles')
             .select('*')
             .eq('user_type', 'SINGLE')
-            .not('sponsored_by_id', 'is', null);
+            .not('sponsored_by_id', 'is', null)
+            .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1);
 
         // Build filter conditions for partial matches
         const filters = [];
@@ -138,16 +149,6 @@ export default function PondPage() {
 
         console.log('Supabase data:', data, 'Error:', error); // Debug log
 
-        // Direct query for all singles (for debugging)
-        if (filters.length === 0) {
-            const direct = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('user_type', 'SINGLE')
-                .not('sponsored_by_id', 'is', null);
-            console.log('Direct all singles query:', direct.data, 'Error:', direct.error);
-        }
-
         if (error) {
             console.error('Error loading profiles:', error);
             return;
@@ -159,31 +160,68 @@ export default function PondPage() {
             profile_pic_url: profile.photos && profile.photos.length > 0 ? profile.photos[0] : null
         })) || [];
 
-        setProfiles(transformedProfiles);
-        setLoading(false);
+        // Check if we have more data
+        setHasMore(transformedProfiles.length === ITEMS_PER_PAGE);
 
-        // Fetch interests for all profiles in parallel
-        const interestsResults = await Promise.all(
-            transformedProfiles.map(async (profile) => {
-                const res = await fetch(`/api/profiles/${profile.id}/interests`);
-                const data = await res.json();
-                return { id: profile.id, interests: data.interests || [] };
-            })
-        );
-        let updatedProfiles = transformedProfiles.map(p => {
-            const found = interestsResults.find(i => i.id === p.id);
-            return found ? { ...p, interests: found.interests } : p;
-        });
+        // Batch fetch all interests in one query
+        if (transformedProfiles.length > 0) {
+            const profileIds = transformedProfiles.map(p => p.id);
+            const { data: interestsData } = await supabase
+                .from('profile_interests')
+                .select(`
+                    profile_id,
+                    interest:interests (
+                        id,
+                        name
+                    )
+                `)
+                .in('profile_id', profileIds);
 
-        // Rank profiles: those matching selected interests first, then the rest
-        if (selectedInterests.length > 0) {
-            const selectedIds = selectedInterests.map(i => i.id);
-            updatedProfiles = [
-                ...updatedProfiles.filter(p => p.interests && p.interests.some((interest: { id: number; name: string }) => selectedIds.includes(interest.id))),
-                ...updatedProfiles.filter(p => !p.interests || !p.interests.some((interest: { id: number; name: string }) => selectedIds.includes(interest.id)))
-            ];
+            // Group interests by profile_id
+            const interestsByProfile: Record<string, any[]> = {};
+            interestsData?.forEach((item: any) => {
+                if (!interestsByProfile[item.profile_id]) {
+                    interestsByProfile[item.profile_id] = [];
+                }
+                interestsByProfile[item.profile_id].push(item.interest);
+            });
+
+            // Update profiles with interests
+            const updatedProfiles = transformedProfiles.map(p => ({
+                ...p,
+                interests: interestsByProfile[p.id] || []
+            }));
+
+            // Rank profiles: those matching selected interests first, then the rest
+            if (selectedInterests.length > 0) {
+                const selectedIds = selectedInterests.map(i => i.id);
+                const rankedProfiles = [
+                    ...updatedProfiles.filter(p => p.interests && p.interests.some((interest: { id: number; name: string }) => selectedIds.includes(interest.id))),
+                    ...updatedProfiles.filter(p => !p.interests || !p.interests.some((interest: { id: number; name: string }) => selectedIds.includes(interest.id)))
+                ];
+                if (isLoadMore) {
+                    setProfiles(prev => [...prev, ...rankedProfiles]);
+                } else {
+                    setProfiles(rankedProfiles);
+                }
+            } else {
+                if (isLoadMore) {
+                    setProfiles(prev => [...prev, ...updatedProfiles]);
+                } else {
+                    setProfiles(updatedProfiles);
+                }
+            }
         }
-        setProfiles(updatedProfiles);
+
+        setLoading(false);
+        setLoadingMore(false);
+    };
+
+    const loadMore = () => {
+        if (!loadingMore && hasMore) {
+            setPage(prev => prev + 1);
+            loadProfiles(true);
+        }
     };
 
     const handleSearch = () => {
@@ -431,6 +469,26 @@ export default function PondPage() {
                                 </Link>
                             );
                         })}
+                    </div>
+                )}
+                
+                {/* Load More Button */}
+                {!loading && hasMore && (
+                    <div className="text-center mt-8">
+                        <button
+                            onClick={loadMore}
+                            disabled={loadingMore}
+                            className="px-8 py-3 bg-white/20 text-white rounded-lg border border-white/20 hover:bg-white/30 font-semibold transition-colors disabled:opacity-50"
+                        >
+                            {loadingMore ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    Loading more...
+                                </div>
+                            ) : (
+                                'Load More Singles'
+                            )}
+                        </button>
                     </div>
                 )}
             </div>
