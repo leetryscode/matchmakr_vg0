@@ -97,6 +97,36 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
     fetchMatches();
   }, [userId]);
 
+  // Real-time subscription for matches
+  useEffect(() => {
+    if (!userId) return;
+    
+    const channel = supabase.channel('public:matches')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'matches' }, payload => {
+        const newMatch = payload.new;
+        // Check if this match involves the current user and both matchmakrs have approved
+        if ((newMatch.single_a_id === userId || newMatch.single_b_id === userId) && 
+            newMatch.matchmakr_a_approved && newMatch.matchmakr_b_approved) {
+          // Refresh matches to show the new approved match
+          fetchMatches();
+        }
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'matches' }, payload => {
+        const updatedMatch = payload.new;
+        // Check if this match involves the current user and both matchmakrs have approved
+        if ((updatedMatch.single_a_id === userId || updatedMatch.single_b_id === userId) && 
+            updatedMatch.matchmakr_a_approved && updatedMatch.matchmakr_b_approved) {
+          // Refresh matches to show the newly approved match
+          fetchMatches();
+        }
+      })
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, supabase]);
+
   // Fetch sponsor chat info
   useEffect(() => {
     if (!sponsor) return;

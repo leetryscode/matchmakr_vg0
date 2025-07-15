@@ -242,8 +242,10 @@ export default function SingleChatPage() {
                       )}
                     </div>
                   )}
-                  <div className={`max-w-[70%] flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}> 
-                    <div className={`font-semibold text-primary-blue text-xs mb-1 ${isCurrentUser ? 'text-right' : 'text-left'}`}>{isCurrentUser ? 'You' : leftProfile?.name || ''}</div>
+                  <div className={`max-w-[70%] flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
+                    <div className={`font-semibold text-primary-blue text-xs mb-1 ${isCurrentUser ? 'text-right' : 'text-left'}`}>
+                      {!isCurrentUser ? leftProfile?.name || '' : ''}
+                    </div>
                     <div className={`px-5 py-3 rounded-2xl ${isCurrentUser ? '' : ''} ${msg.optimistic ? 'opacity-60' : ''}`}
                       style={isCurrentUser ? {
                         background: 'linear-gradient(45deg, #a7f3d0 0%, #bae6fd 100%)',

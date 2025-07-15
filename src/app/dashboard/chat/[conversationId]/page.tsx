@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { useConfetti } from '@/components/GlobalConfettiBlast';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -16,6 +17,15 @@ export default function ChatPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const supabase = createClient();
+  
+  // Match approval states
+  const [matchStatus, setMatchStatus] = useState<'none' | 'pending' | 'matched' | 'can-approve'>('none');
+  const [matchLoading, setMatchLoading] = useState(false);
+  const [matchError, setMatchError] = useState<string | null>(null);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [approvalLoading, setApprovalLoading] = useState(false);
+  const prevMatchStatus = useRef<string>('');
+  const { triggerConfetti } = useConfetti();
 
   // Realtime subscription for new messages
   useEffect(() => {
@@ -82,6 +92,85 @@ export default function ChatPage() {
       container.scrollTop = container.scrollHeight;
     }
   }, [chatMessages]);
+
+  // Fetch match status when chat context is available
+  useEffect(() => {
+    if (chatContext?.currentUserSingle?.id && chatContext?.otherUserSingle?.id && currentUserId) {
+      fetchMatchStatus();
+    }
+  }, [chatContext?.currentUserSingle?.id, chatContext?.otherUserSingle?.id, currentUserId]);
+
+  // Animation trigger when matchStatus transitions to 'matched'
+  useEffect(() => {
+    if (matchStatus === 'matched' && prevMatchStatus.current !== 'matched') {
+      triggerConfetti();
+    }
+    prevMatchStatus.current = matchStatus;
+  }, [matchStatus, triggerConfetti]);
+
+  // Helper to fetch match status
+  const fetchMatchStatus = async () => {
+    setMatchLoading(true);
+    setMatchError(null);
+    try {
+      const singleAId = chatContext.currentUserSingle.id;
+      const singleBId = chatContext.otherUserSingle.id;
+      
+      if (!singleAId || !singleBId) {
+        setMatchStatus('none');
+        setMatchLoading(false);
+        return;
+      }
+      
+      const res = await fetch(`/api/matches/status?single_a_id=${singleAId}&single_b_id=${singleBId}&matchmakr_id=${currentUserId}`);
+      const data = await res.json();
+      if (data.success) {
+        setMatchStatus(data.status); // 'can-approve', 'pending', 'matched'
+      } else {
+        setMatchStatus('can-approve');
+      }
+    } catch (e) {
+      setMatchError('Failed to fetch match status');
+    }
+    setMatchLoading(false);
+  };
+
+  // Approve match handler
+  const handleApproveMatch = async () => {
+    setApprovalLoading(true);
+    setMatchError(null);
+    try {
+      const singleAId = chatContext.currentUserSingle.id;
+      const singleBId = chatContext.otherUserSingle.id;
+      
+      if (!singleAId || !singleBId) {
+        setMatchError('Both singles must be present to approve a match.');
+        setApprovalLoading(false);
+        return;
+      }
+      
+      const response = await fetch('/api/matches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          single_a_id: singleAId,
+          single_b_id: singleBId,
+          matchmakr_id: currentUserId,
+        }),
+      });
+      if (response.ok) {
+        setMatchStatus('matched');
+        triggerConfetti();
+        setShowApprovalModal(false);
+      } else {
+        setMatchError('Failed to approve match');
+      }
+    } catch (error) {
+      setMatchError('Failed to approve match');
+    } finally {
+      setApprovalLoading(false);
+    }
+  };
 
   // Helper to get the other MatchMakr's ID
   function getOtherMatchmakrId() {
@@ -177,6 +266,34 @@ export default function ChatPage() {
             </div>
           </div>
         )}
+        
+        {/* Approve Match UI for matchmakrs in chats about two singles */}
+        {chatContext && (
+          <div className="px-4 py-4 border-b border-gray-100 bg-white/70">
+            {matchLoading ? (
+              <div className="text-center text-gray-500">Checking match status...</div>
+            ) : matchStatus === 'matched' ? (
+              <div className="text-center text-green-600 font-bold">🎉 It's a Match! Both matchmakrs have approved.</div>
+            ) : matchStatus === 'pending' ? (
+              <div className="text-center text-yellow-600 font-semibold">⏳ Pending approval from the other matchmakr...</div>
+            ) : matchStatus === 'can-approve' ? (
+              <div className="text-center">
+                <button
+                  className="px-6 py-2 bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setShowApprovalModal(true)}
+                  disabled={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id || matchLoading}
+                  title={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id ? 'Both singles must be present to approve a match.' : ''}
+                >
+                  Approve Match
+                </button>
+                {(!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id) && (
+                  <div className="text-gray-400 text-xs mt-2">Both singles must be present to approve a match.</div>
+                )}
+              </div>
+            ) : null}
+            {matchError && <div className="text-center text-red-500 mt-2">{matchError}</div>}
+          </div>
+        )}
         {/* Chat history */}
         <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-2 py-4 text-left" style={{ minHeight: 400 }}>
           {chatLoading ? (
@@ -208,8 +325,10 @@ export default function ChatPage() {
                       )}
                     </div>
                   )}
-                  <div className={`max-w-[70%] flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}> 
-                    <div className={`font-semibold text-primary-blue text-xs mb-1 ${isCurrentUser ? 'text-right' : 'text-left'}`}>{senderName}</div>
+                  <div className={`max-w-[70%] flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
+                    <div className={`font-semibold text-primary-blue text-xs mb-1 ${isCurrentUser ? 'text-right' : 'text-left'}`}>
+                      {!isCurrentUser ? senderName : ''}
+                    </div>
                     <div className={`px-5 py-3 rounded-2xl ${isCurrentUser ? '' : ''} ${msg.optimistic ? 'opacity-60' : ''}`}
                       style={isCurrentUser ? {
                         background: 'linear-gradient(45deg, #a7f3d0 0%, #bae6fd 100%)',
@@ -266,6 +385,32 @@ export default function ChatPage() {
           )}
         </div>
       </div>
+      
+      {/* Approval Confirmation Modal */}
+      {showApprovalModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
+          <div className="bg-white rounded-2xl p-8 shadow-xl max-w-md w-full mx-4 text-center">
+            <h3 className="text-xl font-bold mb-4 text-primary-blue">Approve Match?</h3>
+            <p className="mb-6 text-gray-600">Are you sure? When both MatchMakrs approve, the singles will chat!</p>
+            <div className="flex gap-4 justify-center">
+              <button
+                className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300"
+                onClick={() => setShowApprovalModal(false)}
+                disabled={approvalLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-6 py-2 bg-gradient-primary text-white rounded-md font-semibold hover:bg-gradient-light transition-all duration-300 shadow-button hover:shadow-button-hover disabled:opacity-50"
+                onClick={handleApproveMatch}
+                disabled={approvalLoading}
+              >
+                {approvalLoading ? 'Approving...' : 'Yes, Approve'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
