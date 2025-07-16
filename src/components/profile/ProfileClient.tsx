@@ -216,12 +216,12 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
             <div className="mt-6">
               <div className="bg-white/10 rounded-xl border border-white/20 shadow-card p-4">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold text-white">What their MatchMakr says</h2>
+                  <h2 className="text-lg font-semibold text-white">What their Sponsor says</h2>
                   {isSponsorViewing && (
                     <EditProfileButton profile={profile} canEditEndorsementOnly={true} />
                   )}
                 </div>
-                <p className="mt-2 text-sm text-white/90">{profile.matchmakr_endorsement || 'This is where your matchmakr writes about you...'}</p>
+                <p className="mt-2 text-sm text-white/90">{profile.matchmakr_endorsement || 'This is where your sponsor writes about you...'}</p>
               </div>
             </div>
           )}
@@ -254,11 +254,11 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           )}
           {profile.user_type === 'SINGLE' && matchmakrProfile && (
             <div className="mt-6 border-t border-white/30 pt-4">
-              <h2 className="text-lg font-semibold text-white mb-2">Their MatchMakr</h2>
+              <h2 className="text-lg font-semibold text-white mb-2">Their Sponsor</h2>
               <Link href={`/profile/${matchmakrProfile.id}`} className="flex items-center gap-4 p-3 rounded-lg bg-white/10 shadow-card hover:shadow-card-hover border border-white/20 hover:border-primary-blue transition-all duration-300">
                 <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white">
                   {matchmakrProfile.profile_pic_url ? (
-                    <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'MatchMakr'} className="w-full h-full object-cover" />
+                    <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'Sponsor'} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-background-main flex items-center justify-center">
                       <span className="text-2xl font-bold text-white/80">
@@ -269,7 +269,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 </div>
                 <div>
                   <p className="text-base font-semibold text-white">{matchmakrProfile.name}</p>
-                  <p className="text-xs text-white/80">View MatchMakr Profile</p>
+                  <p className="text-xs text-white/80">View Sponsor Profile</p>
                 </div>
                 {/* Show Message button only if current user is a matchmakr */}
                 {currentUserProfile?.user_type === 'MATCHMAKR' && (
@@ -289,7 +289,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 onClose={() => setShowSelectSingleModal(false)}
                 sponsoredSingles={currentUserSponsoredSingles || []}
                 onSelectSingle={handleSingleSelected}
-                otherMatchmakrName={matchmakrProfile?.name || 'this MatchMakr'}
+                otherMatchmakrName={matchmakrProfile?.name || 'this Sponsor'}
                 currentUserId={currentUserId}
                 otherUserId={matchmakrProfile?.id}
                 clickedSingleId={profile.id}

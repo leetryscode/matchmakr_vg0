@@ -48,7 +48,7 @@ const InviteMatchmakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center border border-gray-200">
-                <h2 className="text-2xl font-bold mb-4 text-primary-blue">Invite a MatchMakr</h2>
+                <h2 className="text-2xl font-bold mb-4 text-primary-blue">Invite a Sponsor</h2>
                 <p className="text-gray-600 mb-6">
                     This person will be responsible for managing your profile and finding your matches!
                 </p>
@@ -56,7 +56,7 @@ const InviteMatchmakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="MatchMakr's email address"
+                    placeholder="Sponsor's email address"
                     className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
                     disabled={isLoading}
                 />
@@ -88,7 +88,7 @@ export default function InviteMatchMakr() {
     return (
         <>
             <div className="bg-background-card p-6 rounded-lg shadow-card mt-8 border border-gray-200">
-                <h2 className="text-2xl font-bold mb-4 text-primary-blue">Chat With my MatchMakr</h2>
+                <h2 className="text-2xl font-bold mb-4 text-primary-blue">Chat With my Sponsor</h2>
                 <div className="mt-4 p-4 border border-gray-200 rounded-lg flex items-center justify-between bg-gray-50">
                     <span className="text-gray-700">Chat with the user who manages your profile!</span>
                     <button className="bg-gradient-primary text-white px-4 py-2 rounded-lg hover:bg-gradient-light transition-all duration-300 shadow-button hover:shadow-button-hover">
@@ -99,7 +99,7 @@ export default function InviteMatchMakr() {
                     onClick={() => setIsModalOpen(true)}
                     className="mt-4 w-full bg-gradient-light text-white py-3 rounded-lg hover:bg-gradient-primary font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover"
                 >
-                    Invite someone to be my MatchMakr!
+                    Invite someone to be my Sponsor!
                 </button>
             </div>
             <InviteMatchmakrModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />

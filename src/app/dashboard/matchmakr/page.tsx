@@ -20,7 +20,7 @@ const SinglesPondButton = () => (
                         Singles Pond
                     </button>
                 </a>
-                <div className="mt-4 text-white text-base font-medium">Discover singles, message their matchmakr</div>
+                <div className="mt-4 text-white text-base font-medium">Discover singles, message their sponsor</div>
             </div>
         </div>
     </div>
@@ -33,7 +33,7 @@ const ManageSinglesList = () => (
              <p className="text-center text-gray-500">Chats with the singles you manage.</p>
         </div>
         <button className="mt-4 w-full bg-gradient-light text-white py-3 rounded-lg hover:bg-gradient-primary font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
-            Invite a MatchMakr!
+            Invite a Sponsor!
         </button>
     </div>
 );

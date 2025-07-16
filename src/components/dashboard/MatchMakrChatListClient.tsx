@@ -351,7 +351,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   return (
     <div className="mb-8">
       {/* Section header, no container */}
-      <h2 className="font-inter font-bold text-xl text-white mb-2 border-b border-white/20 pb-1">MatchMakr Chat</h2>
+      <h2 className="font-inter font-bold text-xl text-white mb-2 border-b border-white/20 pb-1">Sponsor Chat</h2>
       {/* Chat rows for matchmakrs only */}
       {localConversations.length === 0 ||
         localConversations.filter((msg: any) => {
@@ -361,7 +361,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           // Only show chats with other matchmakrs
           return !sponsoredSingles.some(s => s.id === otherId);
         }).length === 0 ? (
-        <div className="text-blue-100 mb-6">You have no more chats with MatchMakrs.</div>
+        <div className="text-blue-100 mb-6">You have no more chats with Sponsors.</div>
       ) : (
         <div className="mb-6 flex flex-col gap-3">
           {localConversations
@@ -402,7 +402,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                 >
                   <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white bg-gray-100 flex-shrink-0">
                     {profile?.profile_pic_url ? (
-                      <img src={profile.profile_pic_url} alt={profile.name || 'MatchMakr'} className="w-full h-full object-cover" />
+                      <img src={profile.profile_pic_url} alt={profile.name || 'Sponsor'} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-200">
                         {profile?.name?.charAt(0).toUpperCase() || '?'}
@@ -410,7 +410,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-white truncate drop-shadow">{profile?.name || 'Unknown MatchMakr'}</div>
+                    <div className="font-medium text-white truncate drop-shadow">{profile?.name || 'Unknown Sponsor'}</div>
                     <div className="text-xs text-blue-200 truncate mb-1">{singlesInfo}</div>
                     <div className="text-sm text-blue-100 truncate">{msg.content}</div>
                   </div>
@@ -439,7 +439,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                       <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                         <button
                           className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-t-lg"
-                          onClick={e => { e.stopPropagation(); setConfirmDelete({otherId, profileName: profile?.name || 'this matchmakr'}); setMenuOpen(null); }}
+                          onClick={e => { e.stopPropagation(); setConfirmDelete({otherId, profileName: profile?.name || 'this sponsor'}); setMenuOpen(null); }}
                         >
                           Delete Chat
                         </button>
@@ -489,7 +489,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
         </div>
       )}
       <button className="w-full bg-white/10 hover:bg-white/20 text-white py-3 px-6 rounded-full font-semibold text-lg border border-white/30 shadow-deep transition-all duration-300 hover:-translate-y-2">
-        Invite another matchmakr
+        Invite another sponsor
       </button>
       {/* Confirmation Modal */}
       {confirmDelete && (

@@ -39,7 +39,7 @@ async function SettingsContent() {
       {sponsor ? (
         <EndSponsorshipSection sponsor={sponsor} />
       ) : (
-        <div className="text-lg text-white/80">You do not currently have a MatchMakr.</div>
+        <div className="text-lg text-white/80">You do not currently have a Sponsor.</div>
       )}
     </div>
   );

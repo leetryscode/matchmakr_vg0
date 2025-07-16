@@ -385,9 +385,9 @@ export default function ChatPage() {
               {matchLoading ? (
                 <div className="text-center text-gray-500">Checking match status...</div>
               ) : matchStatus === 'matched' ? (
-                <div className="text-center text-green-600 font-bold">🎉 It's a Match! Both matchmakrs have approved.</div>
+                <div className="text-center text-green-600 font-bold">🎉 It's a Match! Both sponsors have approved.</div>
               ) : matchStatus === 'pending' ? (
-                <div className="text-center text-yellow-600 font-semibold">⏳ Pending approval from the other matchmakr...</div>
+                <div className="text-center text-yellow-600 font-semibold">⏳ Pending approval from the other sponsor...</div>
               ) : matchStatus === 'can-approve' ? (
                 <div className="text-center">
                   <button
@@ -544,7 +544,7 @@ export default function ChatPage() {
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
           <div className="bg-white rounded-2xl p-8 shadow-xl max-w-md w-full mx-4 text-center">
             <h3 className="text-xl font-bold mb-4 text-primary-blue">Approve Match?</h3>
-            <p className="mb-6 text-gray-600">Are you sure? When both MatchMakrs approve, the singles will chat!</p>
+            <p className="mb-6 text-gray-600">Are you sure? When both Sponsors approve, the singles will chat!</p>
             <div className="flex gap-4 justify-center">
               <button
                 className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300"

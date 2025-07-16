@@ -446,9 +446,9 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                 {canChatLoading ? (
                   <div className="text-gray-500">Checking if you can chat...</div>
                 ) : canChat ? (
-                  <div className="text-green-600 font-bold">✨ You can chat! Both matchmakrs have approved your match.</div>
+                  <div className="text-green-600 font-bold">✨ You can chat! Both sponsors have approved your match.</div>
                 ) : (
-                  <div className="text-yellow-600 font-semibold">⏳ Waiting for both matchmakrs to approve your match...</div>
+                  <div className="text-yellow-600 font-semibold">⏳ Waiting for both sponsors to approve your match...</div>
                 )}
               </div>
             </>
@@ -489,9 +489,9 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                 {matchLoading ? (
                   <div className="text-gray-500">Checking match status...</div>
                 ) : matchStatus === 'matched' ? (
-                  <div className="text-green-600 font-bold">It's a Match! Both matchmakrs have approved.</div>
+                  <div className="text-green-600 font-bold">It's a Match! Both sponsors have approved.</div>
                 ) : matchStatus === 'pending' ? (
-                  <div className="text-yellow-600 font-semibold">Pending approval from the other matchmakr...</div>
+                  <div className="text-yellow-600 font-semibold">Pending approval from the other sponsor...</div>
                 ) : matchStatus === 'can-approve' ? (
                   <button
                     className="px-6 py-2 bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"

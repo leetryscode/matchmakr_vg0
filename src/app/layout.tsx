@@ -4,8 +4,8 @@ import GlobalConfettiBlast from '../components/GlobalConfettiBlast';
 import { AuthProvider } from '../contexts/AuthContext';
 
 export const metadata: Metadata = {
-  title: 'MatchMakr',
-  description: 'Find your perfect match',
+  title: 'GreenLight',
+  description: 'A matchmaking platform that connects singles through Sponsors',
 }
 
 export default function RootLayout({

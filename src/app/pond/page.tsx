@@ -394,13 +394,13 @@ export default function PondPage() {
                                                     ))}
                                                 </div>
                                             )}
-                                            {/* Message MatchMakr Button */}
+                                            {/* Message Sponsor Button */}
                                             {profile.sponsored_by_id && (
                                                 <button
                                                     className="mt-2 px-4 py-2 rounded-full border border-accent-teal-light bg-white/10 hover:bg-white/20 text-white font-medium transition-colors"
                                                     onClick={e => { e.preventDefault(); handleOpenChat(profile); }}
                                                 >
-                                                    Message MatchMakr
+                                                    Message Sponsor
                                                 </button>
                                             )}
                                         </div>
@@ -440,9 +440,9 @@ export default function PondPage() {
                 }}
                 sponsoredSingles={sponsoredSingles}
                 onSelectSingle={handleSingleSelected}
-                otherMatchmakrName={pendingChatProfile?.sponsored_by_id ? 
-                    (profiles.find(p => p.id === pendingChatProfile.id)?.name || 'this MatchMakr') : 
-                    'this MatchMakr'}
+                otherMatchmakrName={pendingChatProfile?.sponsored_by_id ?
+                  (profiles.find(p => p.id === pendingChatProfile.id)?.name || 'this Sponsor') :
+                  'this Sponsor'}
                 currentUserId={currentUser?.id}
                 otherUserId={pendingChatProfile?.sponsored_by_id || undefined}
                 clickedSingleId={pendingChatProfile?.id || undefined}

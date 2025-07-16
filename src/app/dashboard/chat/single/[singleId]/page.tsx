@@ -51,7 +51,7 @@ export default function SingleChatPage() {
             if (sponsorProfile) {
               setSponsorInfo({
                 id: sponsorProfile.id,
-                name: sponsorProfile.name || 'MatchMakr',
+                name: sponsorProfile.name || 'Sponsor',
                 photo: sponsorProfile.photos && sponsorProfile.photos.length > 0 ? sponsorProfile.photos[0] : null
               });
             }
@@ -219,7 +219,7 @@ export default function SingleChatPage() {
           <div className="flex items-center justify-center px-4 py-4 border-b border-gray-100 bg-white/70">
             <div className="text-center">
               <div className="text-lg font-medium text-text-light mb-2">
-                Chat with your matchmakr: <span className="font-bold text-primary-blue">{sponsorInfo.name}</span>
+                Chat with your sponsor: <span className="font-bold text-primary-blue">{sponsorInfo.name}</span>
               </div>
               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light mx-auto">
                 {sponsorInfo.photo ? (

@@ -53,10 +53,10 @@ export default function OnboardingPage() {
                 </div>
               </button>
               <button
-                onClick={() => handleUserTypeSelect('MatchMakr')}
+                onClick={() => handleUserTypeSelect('MATCHMAKR')}
                 className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-gray-800 hover:bg-gray-50 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-gray-200"
               >
-                <h3 className="text-2xl font-light gradient-text">MatchMakr →</h3>
+                <h3 className="text-2xl font-light gradient-text">Sponsor →</h3>
                 <div className="text-lg font-light">
                   I want to find matches for my friends.
                 </div>

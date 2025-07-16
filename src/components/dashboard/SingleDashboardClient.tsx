@@ -330,8 +330,8 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
     <>
       <ProfileSection />
       <div className="flex flex-col gap-4 w-full">
-        {/* My MatchMakrs Section */}
-        <h2 className="text-xl font-bold text-white mb-2 border-b border-white/20 pb-1">My MatchMakrs</h2>
+        {/* My Sponsors Section */}
+        <h2 className="text-xl font-bold text-white mb-2 border-b border-white/20 pb-1">My Sponsors</h2>
         <ChatRow
           photo={sponsor.profile_pic_url}
           name={sponsor.name}

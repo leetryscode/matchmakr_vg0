@@ -20,7 +20,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
         redirect('/dashboard/matchmakr');
     }
 
-    // Fetch sponsored singles if the profile is a MatchMakr
+    // Fetch the list of singles sponsored by this Sponsor
     let sponsoredSingles: { id: string; name: string | null; profile_pic_url: string | null }[] | null = null;
     let matchmakrProfile: { id: string; name: string | null; profile_pic_url: string | null } | null = null;
     if (profile.user_type === 'MATCHMAKR') {

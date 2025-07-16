@@ -120,7 +120,7 @@ export default function DashboardLayout({ children, firstName, userId, userType 
         <div className="flex flex-col min-h-screen w-full text-white">
             {/* Brand Header Only */}
             <div className="flex flex-col items-center pt-8 pb-4">
-                <div className="text-2xl font-bold mb-2">MatchMakr</div>
+                <div className="text-2xl font-light tracking-wide text-white">GreenLight</div>
             </div>
             {/* Main Content */}
             <main className="flex-grow p-4 md:p-8">
@@ -188,7 +188,7 @@ export default function DashboardLayout({ children, firstName, userId, userType 
                                         {notifications.map((n) => (
                                             <li key={n.id} className={`p-4 ${!n.read ? 'bg-blue-50' : ''}`}>
                                                 <div className="font-medium text-sm mb-1">
-                                                    {n.type === 'matchmakr_chat' ? 'Your matchmakr messaged another matchmakr about you!' : n.type}
+                                                    {n.type === 'matchmakr_chat' ? 'Your sponsor messaged another sponsor about you!' : n.type}
                                                 </div>
                                                 <div className="text-xs text-gray-500 mb-1">{new Date(n.created_at).toLocaleString()}</div>
                                             </li>

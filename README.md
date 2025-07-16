@@ -1,19 +1,19 @@
-# MatchMakr
+# GreenLight
 
-A matchmaking platform that connects singles through MatchMakrs (matchmakers). MatchMakrs can sponsor singles, discover other singles in the pond, and facilitate conversations between singles through an approval system.
+A matchmaking platform that connects singles through Sponsors (matchmakers). Sponsors can sponsor singles, discover other singles in the pond, and facilitate conversations between singles through an approval system.
 
 ## 🚀 Features
 
 ### Core Functionality
-- **User Types**: MatchMakrs, Singles, Vendors
+- **User Types**: Sponsors, Singles, Vendors
 - **Authentication**: Supabase Auth with role-based access
-- **Real-time Chat**: Instant messaging between MatchMakrs and Singles
+- **Real-time Chat**: Instant messaging between Sponsors and Singles
 - **Match Approval**: Two-step approval system for matches
 - **Profile Management**: Photo uploads, interests, location-based discovery
 - **Pond Discovery**: Browse and connect with singles
 
 ### Chat System
-- **MatchMakr-to-MatchMakr**: Conversations about specific singles
+- **Sponsor-to-Sponsor**: Conversations about specific singles
 - **Single-to-Single**: Direct messaging between matched singles
 - **Real-time Updates**: Live message delivery and read status
 - **Unread Counts**: Per-conversation unread message tracking
@@ -30,7 +30,7 @@ A matchmaking platform that connects singles through MatchMakrs (matchmakers). M
 ## 📁 Project Structure
 
 ```
-MatchMakr_v0/
+GreenLight_v0/
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── api/               # API routes
@@ -52,7 +52,7 @@ MatchMakr_v0/
 ## 🗄 Database Schema
 
 ### Core Tables
-- **`profiles`**: User accounts with types (MATCHMAKR, SINGLE, VENDOR)
+- **`profiles`**: User accounts with types (SPONSOR, SINGLE, VENDOR)
 - **`conversations`**: Chat threads between users
 - **`messages`**: Individual messages with read status
 - **`matches`**: Approved connections between singles
@@ -89,13 +89,13 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 #### Dashboard System
 - **`DashboardWrapper`**: Authentication and user type verification
 - **`DashboardLayout`**: Common layout with navigation
-- **`MatchMakrChatList`**: Chat list for MatchMakrs
+- **`SponsorChatList`**: Chat list for Sponsors
 - **`SingleDashboardClient`**: Dashboard for Singles
 
 #### Chat System
 - **`ChatPage`**: Individual chat interface
 - **`ChatModal`**: Modal-based chat (legacy)
-- **`MatchMakrChatListClient`**: Complex chat list logic
+- **`SponsorChatListClient`**: Complex chat list logic
 
 #### API Routes
 - **`/api/conversations`**: Fetch chat conversations
@@ -109,7 +109,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 1. **Chat functionality is complex** - test thoroughly
 2. **Unread counts are conversation-specific** - not user-specific
 3. **Real-time updates** use Supabase subscriptions
-4. **Match approval** requires both MatchMakrs to approve
+4. **Match approval** requires both Sponsors to approve
 
 #### Database Changes
 1. Create migration: `npx supabase migration new migration_name`
@@ -141,7 +141,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ## 🧹 Technical Debt
 
 ### Code Quality
-- **`MatchMakrChatListClient`**: 553 lines, doing too much
+- **`SponsorChatListClient`**: 553 lines, doing too much
 - **Excessive console.log statements** throughout
 - **Inconsistent error handling** patterns
 - **Mixed use of `any` types** instead of proper TypeScript
