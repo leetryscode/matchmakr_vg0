@@ -112,101 +112,37 @@ export default function PondPage() {
         
         console.log('Search values:', { searchCity, searchState, searchZip }); // Debug log
 
-        let query = supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_type', 'SINGLE')
-            .not('sponsored_by_id', 'is', null)
-            .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1);
-
-        // Build filter conditions for partial matches
-        const filters = [];
-        if (searchCity.trim() !== '') {
-            filters.push(`city.ilike.%${searchCity}%`);
-        }
-        if (searchState.trim() !== '') {
-            filters.push(`state.ilike.%${searchState}%`);
-        }
-        if (searchZip.trim() !== '') {
-            filters.push(`zip_code.ilike.%${searchZip}%`);
-        }
-
-        if (filters.length > 0) {
-            // Use or() with the 'filter' option to apply to the row
-            query = query.or(filters.join(','), { foreignTable: undefined });
-            console.log('OR filter string:', filters.join(','));
-        }
-
-        if (filters.length === 0) {
-            console.log('No filters applied, fetching all singles.');
-        }
-
-        const { data, error } = await query;
-
-        console.log('Supabase data:', data, 'Error:', error); // Debug log
-
-        if (error) {
-            console.error('Error loading profiles:', error);
-            return;
-        }
-
-        // Transform data to include profile_pic_url
-        const transformedProfiles = data?.map(profile => ({
-            ...profile,
-            profile_pic_url: profile.photos && profile.photos.length > 0 ? profile.photos[0] : null
-        })) || [];
-
-        // Check if we have more data
-        setHasMore(transformedProfiles.length === ITEMS_PER_PAGE);
-
-        // Batch fetch all interests in one query
-        if (transformedProfiles.length > 0) {
-            const profileIds = transformedProfiles.map(p => p.id);
-            const { data: interestsData } = await supabase
-                .from('profile_interests')
-                .select(`
-                    profile_id,
-                    interest:interests (
-                        id,
-                        name
-                    )
-                `)
-                .in('profile_id', profileIds);
-
-            // Group interests by profile_id
-            const interestsByProfile: Record<string, any[]> = {};
-            interestsData?.forEach((item: any) => {
-                if (!interestsByProfile[item.profile_id]) {
-                    interestsByProfile[item.profile_id] = [];
-                }
-                interestsByProfile[item.profile_id].push(item.interest);
+        try {
+            // Use the new optimized API endpoint
+            const params = new URLSearchParams({
+                page: page.toString(),
+                limit: ITEMS_PER_PAGE.toString(),
+                city: searchCity,
+                state: searchState,
+                zip: searchZip,
+                interests: JSON.stringify(selectedInterests)
             });
 
-            // Update profiles with interests
-            const updatedProfiles = transformedProfiles.map(p => ({
-                ...p,
-                interests: interestsByProfile[p.id] || []
-            }));
+            const response = await fetch(`/api/profiles/pond?${params}`);
+            const data = await response.json();
 
-            // Rank profiles: those matching selected interests first, then the rest
-            if (selectedInterests.length > 0) {
-                const selectedIds = selectedInterests.map(i => i.id);
-                const rankedProfiles = [
-                    ...updatedProfiles.filter(p => p.interests && p.interests.some((interest: { id: number; name: string }) => selectedIds.includes(interest.id))),
-                    ...updatedProfiles.filter(p => !p.interests || !p.interests.some((interest: { id: number; name: string }) => selectedIds.includes(interest.id)))
-                ];
-                if (isLoadMore) {
-                    setProfiles(prev => [...prev, ...rankedProfiles]);
-                } else {
-                    setProfiles(rankedProfiles);
-                }
-            } else {
-                if (isLoadMore) {
-                    setProfiles(prev => [...prev, ...updatedProfiles]);
-                } else {
-                    setProfiles(updatedProfiles);
-                }
+            if (!data.success) {
+                console.error('Error loading profiles:', data.error);
+                return;
             }
+
+            console.log('API data:', data); // Debug log
+
+            // Check if we have more data
+            setHasMore(data.hasMore);
+
+            if (isLoadMore) {
+                setProfiles(prev => [...prev, ...data.profiles]);
+            } else {
+                setProfiles(data.profiles);
+            }
+        } catch (error) {
+            console.error('Error loading profiles:', error);
         }
 
         setLoading(false);
