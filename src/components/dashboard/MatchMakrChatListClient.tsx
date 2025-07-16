@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import ChatModal from '../chat/ChatModal';
 import { createClient } from '@/lib/supabase/client';
 import FlameUnreadIcon from './FlameUnreadIcon';
 import { useRouter } from 'next/navigation';

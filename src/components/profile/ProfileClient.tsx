@@ -5,9 +5,9 @@ import EditProfileModal from './EditProfileModal';
 import EditProfileButton from './EditProfileButton';
 import Link from 'next/link';
 import { Profile } from './types';
-import ChatModal from '../chat/ChatModal';
 import InterestsInput from './InterestsInput';
 import SelectSingleModal from '../dashboard/SelectSingleModal';
+import { useRouter } from 'next/navigation';
 
 // Types for sponsored singles and matchmakr
 interface SponsoredSingle {
@@ -60,15 +60,14 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   currentUserId,
   currentUserSponsoredSingles,
 }) => {
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [savingInterests, setSavingInterests] = useState(false);
   const [showInterestsInput, setShowInterestsInput] = useState(false);
   const [interests, setInterests] = useState<Interest[]>([]);
   const [loadingInterests, setLoadingInterests] = useState(false);
-  const [savingInterests, setSavingInterests] = useState(false);
   const [showSelectSingleModal, setShowSelectSingleModal] = useState(false);
-  const [selectedSingleForChat, setSelectedSingleForChat] = useState<string | null>(null);
   const age = calculateAge(profile.birth_year);
   const firstName = profile.name?.split(' ')[0] || '';
+  const router = useRouter();
 
   // Fetch interests for this profile on mount
   React.useEffect(() => {
@@ -95,21 +94,16 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
   // Handler to open chat with single selection if needed
   const handleOpenChat = () => {
-    // Check if user has multiple sponsored singles
-    if (currentUserSponsoredSingles && currentUserSponsoredSingles.length > 1) {
-      setShowSelectSingleModal(true);
-    } else {
-      // If user has only one or no singles, proceed with normal flow
-      setSelectedSingleForChat(currentUserSponsoredSingles && currentUserSponsoredSingles.length > 0 ? currentUserSponsoredSingles[0].id : null);
-      setIsChatOpen(true);
+    if (matchmakrProfile?.id) {
+      router.push(`/dashboard/chat/single/${matchmakrProfile.id}`);
     }
   };
 
   // Handler for when a single is selected from the modal
   const handleSingleSelected = (singleId: string) => {
-    setShowSelectSingleModal(false);
-    setSelectedSingleForChat(singleId);
-    setIsChatOpen(true);
+    if (matchmakrProfile?.id) {
+      router.push(`/dashboard/chat/single/${matchmakrProfile.id}`);
+    }
   };
 
   return (
@@ -287,7 +281,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                   </button>
                 )}
               </Link>
-              {/* Removed ChatModal - now using dedicated chat page */}
+              {/* Chat functionality is now handled by SelectSingleModal */}
 
               {/* Select Single Modal */}
               <SelectSingleModal

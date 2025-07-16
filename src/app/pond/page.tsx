@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Profile } from '@/components/profile/types';
 import Link from 'next/link';
-import ChatModal from '@/components/chat/ChatModal';
 import InterestsInput from '@/components/profile/InterestsInput';
 import SelectSingleModal from '@/components/dashboard/SelectSingleModal';
 import { useRouter } from 'next/navigation';
@@ -23,9 +22,6 @@ export default function PondPage() {
     const [searchState, setSearchState] = useState('');
     const [searchZip, setSearchZip] = useState('');
     const [currentUser, setCurrentUser] = useState<any>(null);
-    const [openChatProfileId, setOpenChatProfileId] = useState<string | null>(null);
-    const [openChatMatchmakr, setOpenChatMatchmakr] = useState<{id: string, name: string | null, profile_pic_url: string | null} | null>(null);
-    const [chatLoading, setChatLoading] = useState(false);
     // Restore state variables for single selection
     const [currentSponsoredSingle, setCurrentSponsoredSingle] = useState<{ id: string, name: string, photo: string | null } | null>(null);
     const [sponsoredSingles, setSponsoredSingles] = useState<{ id: string, name: string, photo: string | null }[]>([]);
@@ -65,7 +61,7 @@ export default function PondPage() {
             .select('name, photos')
             .eq('id', user.id)
             .single();
-        // Store user profile data for ChatModal
+        // Store user profile data
         const currentUserName = userProfile?.name || '';
         const currentUserProfilePic = userProfile?.photos && userProfile.photos.length > 0 ? userProfile.photos[0] : null;
         setCurrentUserName(currentUserName);
@@ -85,7 +81,7 @@ export default function PondPage() {
 
         setCurrentUser({ ...user, name: currentUserName, photos: userProfile?.photos });
 
-        // Fetch the current user's sponsored singles for ChatModal
+        // Fetch the current user's sponsored singles
         const { data: singles } = await supabase
             .from('profiles')
             .select('id, name, photos')
@@ -245,25 +241,21 @@ export default function PondPage() {
     const handleOpenChat = async (profile: PondProfile) => {
         if (!profile.sponsored_by_id) return;
         
-        setChatLoading(true);
-        
         // Check if user has multiple sponsored singles
         if (sponsoredSingles.length > 1) {
-            // Store the profile for later use and show single selection modal
+            // Show single selection modal
             setPendingChatProfile(profile);
             setShowSelectSingleModal(true);
-            setChatLoading(false);
             return;
         }
         
-        // If user has only one or no singles, proceed with normal flow
-        await openChatWithSingle(profile, sponsoredSingles.length > 0 ? sponsoredSingles[0].id : null);
+        // If only one sponsored single, use it directly
+        const singleId = sponsoredSingles.length === 1 ? sponsoredSingles[0].id : null;
+        await openChatWithSingle(profile, singleId);
     };
 
     const openChatWithSingle = async (profile: PondProfile, singleId: string | null) => {
         if (!profile.sponsored_by_id) return;
-        
-        setChatLoading(true);
         
         // Fetch the matchmakr's info
         const { data: matchmakr } = await supabase
@@ -273,50 +265,62 @@ export default function PondPage() {
             .single();
         
         if (matchmakr) {
-            setOpenChatProfileId(profile.id);
-            setOpenChatMatchmakr({
+            setSelectedSingleForChat(profile.id);
+            setClickedSingleForChat({
                 id: matchmakr.id,
                 name: matchmakr.name,
-                profile_pic_url: matchmakr.photos && matchmakr.photos.length > 0 ? matchmakr.photos[0] : null
+                photo: matchmakr.photos && matchmakr.photos.length > 0 ? matchmakr.photos[0] : null
             });
-            // Set aboutSingleForChat to the sponsored single object
+            
+            // Set aboutSingleForChat to the selected single
             const aboutSingleObj = sponsoredSingles.find(s => s.id === (singleId || profile.id)) || { id: singleId || profile.id, name: '', photo: null };
             setAboutSingleForChat({ id: aboutSingleObj.id, name: aboutSingleObj.name, photo: aboutSingleObj.photo });
-            // Set clickedSingleForChat to the clicked profile object
-            const clickedProfile = profiles.find(p => p.id === profile.id);
-            const clickedSingleObj = clickedProfile ? { id: clickedProfile.id, name: clickedProfile.name || '', photo: clickedProfile.profile_pic_url || null } : { id: profile.id, name: profile.name || '', photo: profile.profile_pic_url || null };
-            setClickedSingleForChat(clickedSingleObj);
         }
         
-        // Fetch or create the conversation
-        const res = await fetch(`/api/messages/chat-context?userId=${currentUser?.id}&otherId=${profile.sponsored_by_id}&about_single_id=${aboutSingleForChat?.id}&clicked_single_id=${clickedSingleForChat?.id}`);
-        const data = await res.json();
-        if (data && data.conversation_id) {
-            // Navigate to the new chat page
-            router.push(`/dashboard/chat/${data.conversation_id}`);
+        // Create or find conversation
+        const { data: conversation } = await supabase
+            .from('conversations')
+            .select('id')
+            .eq('initiator_matchmakr_id', currentUser.id < profile.sponsored_by_id ? currentUser.id : profile.sponsored_by_id)
+            .eq('recipient_matchmakr_id', currentUser.id < profile.sponsored_by_id ? profile.sponsored_by_id : currentUser.id)
+            .eq('about_single_id', singleId || profile.id)
+            .eq('clicked_single_id', profile.id)
+            .maybeSingle();
+        
+        if (conversation) {
+            router.push(`/dashboard/chat/${conversation.id}`);
+        } else {
+            // Create new conversation
+            const { data } = await supabase
+                .from('conversations')
+                .insert({
+                    initiator_matchmakr_id: currentUser.id < profile.sponsored_by_id ? currentUser.id : profile.sponsored_by_id,
+                    recipient_matchmakr_id: currentUser.id < profile.sponsored_by_id ? profile.sponsored_by_id : currentUser.id,
+                    about_single_id: singleId || profile.id,
+                    clicked_single_id: profile.id
+                })
+                .select('id')
+                .single();
+            
+            if (data) {
+                router.push(`/dashboard/chat/${data.id}`);
+            }
         }
-        setChatLoading(false);
     };
 
     const handleSingleSelected = async (singleId: string) => {
         if (pendingChatProfile) {
             await openChatWithSingle(pendingChatProfile, singleId);
         }
-        setShowSelectSingleModal(false);
-        setPendingChatProfile(null);
     };
 
     const handleCloseChat = () => {
-        setOpenChatProfileId(null);
-        setOpenChatMatchmakr(null);
         setSelectedSingleForChat(null);
         setClickedSingleForChat(null);
         setAboutSingleForChat(null);
-        setPendingChatProfile(null);
-        setShowSelectSingleModal(false);
     };
 
-    // Remove unused chat functions - ChatModal handles all chat functionality
+    // Chat functionality is now handled by SelectSingleModal
 
     return (
         <div className="min-h-screen bg-gradient-main p-4 sm:p-6 md:p-8">
@@ -459,9 +463,8 @@ export default function PondPage() {
                                                 <button
                                                     className="mt-2 px-4 py-2 rounded-full border border-accent-teal-light bg-white/10 hover:bg-white/20 text-white font-medium transition-colors"
                                                     onClick={e => { e.preventDefault(); handleOpenChat(profile); }}
-                                                    disabled={chatLoading && openChatProfileId === profile.id}
                                                 >
-                                                    {chatLoading && openChatProfileId === profile.id ? 'Loading...' : 'Message MatchMakr'}
+                                                    Message MatchMakr
                                                 </button>
                                             )}
                                         </div>
@@ -492,9 +495,6 @@ export default function PondPage() {
                     </div>
                 )}
             </div>
-            {/* Chat Modal (global, not per card) */}
-            {/* Removed ChatModal rendering */}
-
             {/* Select Single Modal */}
             <SelectSingleModal
                 open={showSelectSingleModal}
