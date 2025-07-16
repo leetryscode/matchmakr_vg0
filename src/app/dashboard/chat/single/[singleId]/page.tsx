@@ -111,13 +111,45 @@ export default function SingleChatPage() {
     });
   }, [singleId, currentUserId, currentUserType, sponsorInfo]);
 
-  // Auto-scroll to bottom
+  // Always scroll to bottom when new messages arrive or chat loads
   useEffect(() => {
     const container = chatContainerRef.current;
     if (container) {
-      container.scrollTop = container.scrollHeight;
+      // Use setTimeout to ensure DOM is fully rendered
+      setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+      }, 100);
     }
-  }, [chatMessages]);
+  }, [chatMessages, chatLoading]);
+
+  // Add typing indicator state
+  const [isTyping, setIsTyping] = useState(false);
+
+  // Realtime subscription for new messages
+  useEffect(() => {
+    if (!currentUserId) return;
+    
+    const supabase = createClient();
+    const channel = supabase.channel('public:messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+        const newMessage = payload.new;
+        // If the new message is between current user and the other user, add it to chatMessages
+        const otherId = currentUserType === 'SINGLE' ? sponsorInfo?.id : singleId;
+        if ((newMessage.sender_id === currentUserId && newMessage.recipient_id === otherId) ||
+            (newMessage.sender_id === otherId && newMessage.recipient_id === currentUserId)) {
+          setChatMessages(prev => {
+            // Remove any optimistic message with the same content to avoid duplicates
+            const filtered = prev.filter(msg => !(msg.optimistic && msg.content === newMessage.content));
+            return [...filtered, newMessage];
+          });
+        }
+      })
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId, currentUserType, sponsorInfo?.id, singleId]);
 
   // Send message
   const handleSendMessage = async () => {
@@ -225,6 +257,7 @@ export default function SingleChatPage() {
           ) : chatMessages.length === 0 ? (
             <div className="text-center text-gray-400 py-4">No messages yet.</div>
           ) : (
+            // Show messages in chronological order (oldest to newest)
             chatMessages.map(msg => {
               const isCurrentUser = msg.sender_id === currentUserId;
               const leftProfile = otherUserInfo;
@@ -275,6 +308,24 @@ export default function SingleChatPage() {
                 </div>
               );
             })
+          )}
+          {/* Typing indicator - show on right side for current user */}
+          {isTyping && (
+            <div className="flex justify-end items-center my-4">
+              <div className="max-w-[70%] flex flex-col items-end">
+                <div className="font-semibold text-primary-blue text-xs mb-1 text-right">
+                  You
+                </div>
+                <div className="px-5 py-3 rounded-2xl bg-gray-100 text-gray-500 italic">
+                  typing...
+                </div>
+              </div>
+              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light ml-4 flex-shrink-0 flex items-center justify-center">
+                <div className="w-full h-full bg-background-main flex items-center justify-center">
+                  <span className="text-lg font-bold text-text-light">M</span>
+                </div>
+              </div>
+            </div>
           )}
         </div>
         {/* Input Section */}

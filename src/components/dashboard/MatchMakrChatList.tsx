@@ -72,6 +72,27 @@ const MatchMakrChatList = ({ userId, currentUserName, currentUserProfilePic }: M
     }
   }, [searchParams, router]);
 
+  // Refresh conversations when returning to dashboard (pathname changes)
+  useEffect(() => {
+    // Only refresh when on the matchmakr dashboard page
+    if (pathname === '/dashboard/matchmakr') {
+      console.log('[MatchMakrChatList] Refreshing conversations on dashboard return');
+      fetchConversations();
+    }
+  }, [pathname, userId]);
+
+  // Check for chat page visit flag and refresh data
+  useEffect(() => {
+    if (pathname === '/dashboard/matchmakr') {
+      const chatPageVisited = sessionStorage.getItem('chatPageVisited');
+      if (chatPageVisited === 'true') {
+        console.log('[MatchMakrChatList] Detected return from chat page, refreshing data');
+        sessionStorage.removeItem('chatPageVisited');
+        fetchConversations();
+      }
+    }
+  }, [pathname, userId]);
+
   // Fetch conversations on navigation or user change
   useEffect(() => {
     console.log('[MatchMakrChatList] Main effect triggered. pathname:', pathname, 'userId:', userId);

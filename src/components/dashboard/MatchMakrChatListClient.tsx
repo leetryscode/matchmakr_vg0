@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { createClient } from '@/lib/supabase/client';
 import FlameUnreadIcon from './FlameUnreadIcon';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface MatchMakrChatListClientProps {
   userId: string;
@@ -53,6 +53,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const [clickedSingle, setClickedSingle] = useState<{ id: string; name: string; photo: string | null } | null>(null);
   const [openConversationId, setOpenConversationId] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = createClient();
 
   // Realtime subscription for new messages
@@ -155,53 +156,36 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sending, messageText, openChat, userId, openConversationId]);
 
-  // Smart auto-scroll: only scroll if modal is opened or user is near the bottom
-  useEffect(() => {
-    if (!openChat) return;
-    const container = chatContainerRef.current;
-    if (!container) return;
-    // If modal just opened, always scroll to bottom
-    if (chatMessages.length === 0 || prevMsgCount.current === 0) {
-      container.scrollTop = container.scrollHeight;
-    } else if (chatMessages.length > prevMsgCount.current) {
-      // If user is near the bottom, scroll to bottom
-      const threshold = 50; // px
-      const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
-      if (distanceFromBottom < threshold) {
-        container.scrollTop = container.scrollHeight;
-      }
-    }
-    prevMsgCount.current = chatMessages.length;
-  }, [chatMessages.length, openChat]);
-
-  // Always scroll to bottom when modal is opened
+  // Always scroll to bottom when new messages arrive or modal opens
   useEffect(() => {
     if (!openChat) return;
     const container = chatContainerRef.current;
     if (container) {
       container.scrollTop = container.scrollHeight;
     }
-  }, [openChat]);
+  }, [chatMessages, openChat]);
 
   // Fetch unread counts for all conversations
   useEffect(() => {
     const fetchUnreadCounts = async () => {
       const counts: Record<string, number> = {};
       for (const msg of conversations) {
-        const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+        const conversationId = msg.conversation?.id;
+        if (!conversationId) continue;
+        
         // Use unread count from conversation data if available, otherwise fetch
         if (msg.unreadCount !== undefined) {
-          counts[otherId] = msg.unreadCount;
+          counts[conversationId] = msg.unreadCount;
         } else {
           const supabase = createClient();
           const { count } = await supabase
             .from('messages')
             .select('*', { count: 'exact', head: true })
-            .eq('sender_id', otherId)
+            .eq('sender_id', msg.sender_id === userId ? msg.recipient_id : msg.sender_id)
             .eq('recipient_id', userId)
-            .eq('conversation_id', msg.conversation?.id)
+            .eq('conversation_id', conversationId)
             .eq('read', false);
-          counts[otherId] = count || 0;
+          counts[conversationId] = count || 0;
         }
       }
       setUnreadCounts(counts);
@@ -209,6 +193,33 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     fetchUnreadCounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversations, userId]);
+
+  // Refresh unread counts when returning to dashboard (pathname changes)
+  useEffect(() => {
+    const refreshUnreadCounts = async () => {
+      const counts: Record<string, number> = {};
+      for (const msg of conversations) {
+        const conversationId = msg.conversation?.id;
+        if (!conversationId) continue;
+        
+        const supabase = createClient();
+        const { count } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('sender_id', msg.sender_id === userId ? msg.recipient_id : msg.sender_id)
+          .eq('recipient_id', userId)
+          .eq('conversation_id', conversationId)
+          .eq('read', false);
+        counts[conversationId] = count || 0;
+      }
+      setUnreadCounts(counts);
+    };
+    
+    // Only refresh when on the matchmakr dashboard page
+    if (pathname === '/dashboard/matchmakr') {
+      refreshUnreadCounts();
+    }
+  }, [pathname, conversations, userId]);
 
   // Optimistically append sent message
   const handleSendMessage = async () => {
@@ -282,8 +293,30 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     
     // Refresh unread counts after opening chat
     const counts: Record<string, number> = { ...unreadCounts };
-    counts[profile.id] = 0;
+    counts[conversation.id] = 0;
     setUnreadCounts(counts);
+  };
+
+  // Function to update unread count when navigating to chat page
+  const handleNavigateToChat = async (conversationId: string, otherId: string) => {
+    // Mark messages as read for this specific conversation
+    await fetch('/api/messages/mark-read', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        userId, 
+        otherId,
+        conversationId 
+      }),
+    });
+    
+    // Update local unread count immediately
+    const counts: Record<string, number> = { ...unreadCounts };
+    counts[conversationId] = 0;
+    setUnreadCounts(counts);
+    
+    // Navigate to chat page
+    router.push(`/dashboard/chat/${conversationId}`);
   };
 
   // After closing chat modal, refresh unread counts
@@ -294,16 +327,16 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
         const supabase = createClient();
         const counts: Record<string, number> = {};
         for (const msg of conversations) {
-          const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
-          if (sponsoredSingles.some(s => s.id === otherId)) continue;
+          const conversationId = msg.conversation?.id;
+          if (!conversationId) continue;
           const { count } = await supabase
             .from('messages')
             .select('*', { count: 'exact', head: true })
-            .eq('sender_id', otherId)
+            .eq('sender_id', msg.sender_id === userId ? msg.recipient_id : msg.sender_id)
             .eq('recipient_id', userId)
-            .eq('conversation_id', msg.conversation?.id)
+            .eq('conversation_id', conversationId)
             .eq('read', false);
-          counts[otherId] = count || 0;
+          counts[conversationId] = count || 0;
         }
         setUnreadCounts(counts);
       };
@@ -346,7 +379,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
               const singlesInfo = conversation?.about_single && conversation?.clicked_single ? 
                 `${conversation.about_single.name} & ${conversation.clicked_single.name}` : 
                 'About singles';
-              const unreadCount = msg.unreadCount || unreadCounts[otherId] || 0;
+              const unreadCount = msg.unreadCount || unreadCounts[conversation?.id] || 0;
               
               return (
                 <div
@@ -356,14 +389,14 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                   tabIndex={0}
                   onClick={e => {
                     if ((e.target as HTMLElement).closest('button')) return;
-                    // Instead of handleOpenChat, navigate to the chat page
-                    router.push(`/dashboard/chat/${msg.conversation.id}`);
+                    // Use the new function to handle navigation and unread count update
+                    handleNavigateToChat(msg.conversation.id, otherId);
                   }}
                   onKeyDown={e => {
                     if ((e.target as HTMLElement).closest('button')) return;
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      router.push(`/dashboard/chat/${msg.conversation.id}`);
+                      handleNavigateToChat(msg.conversation.id, otherId);
                     }
                   }}
                 >

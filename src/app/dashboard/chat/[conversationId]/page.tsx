@@ -16,6 +16,8 @@ export default function ChatPage() {
   const [chatContext, setChatContext] = useState<any>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const fallbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const shouldAutoScrollRef = useRef<boolean>(true);
   const supabase = createClient();
   
   // Match approval states
@@ -34,9 +36,21 @@ export default function ChatPage() {
     const channel = supabase.channel('public:messages')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
         const newMessage = payload.new;
+        console.log('Realtime message received:', newMessage);
         // If the new message belongs to this conversation, add it to chatMessages
         if (newMessage.conversation_id === conversationId) {
-          setChatMessages(prev => [...prev, newMessage]);
+          console.log('Adding message to chat:', newMessage);
+          setChatMessages(prev => {
+            // Filter out any optimistic messages with the same content
+            const filteredPrev = prev.filter(msg => !msg.optimistic || msg.content !== newMessage.content);
+            return [...filteredPrev, newMessage];
+          });
+          
+          // Clear any pending fallback timeout since we got the real message
+          if (fallbackTimeoutRef.current) {
+            clearTimeout(fallbackTimeoutRef.current);
+            fallbackTimeoutRef.current = null;
+          }
         }
       })
       .subscribe();
@@ -89,13 +103,74 @@ export default function ChatPage() {
     });
   }, [chatContext, currentUserId]);
 
-  // Auto-scroll to bottom
+  // Always scroll to bottom when new messages arrive or chat loads
   useEffect(() => {
     const container = chatContainerRef.current;
-    if (container) {
-      container.scrollTop = container.scrollHeight;
+    if (container && shouldAutoScrollRef.current) {
+      // Use requestAnimationFrame for smoother scrolling
+      requestAnimationFrame(() => {
+        container.scrollTop = container.scrollHeight;
+      });
     }
-  }, [chatMessages]);
+  }, [chatMessages, chatLoading]);
+
+  // Additional scroll to bottom when chat finishes loading
+  useEffect(() => {
+    if (!chatLoading && chatMessages.length > 0) {
+      const container = chatContainerRef.current;
+      if (container) {
+        // Use a slightly longer delay to ensure all content is rendered
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 150);
+      }
+    }
+  }, [chatLoading, chatMessages.length]);
+
+  // Handle scroll events to determine if we should auto-scroll
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      // If user is near the bottom (within 50px), enable auto-scroll
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
+      shouldAutoScrollRef.current = isNearBottom;
+      setShowScrollToBottom(!isNearBottom);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Set a flag to refresh dashboard when leaving this page
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem('chatPageVisited', 'true');
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Set the flag when component unmounts (user navigates away)
+      sessionStorage.setItem('chatPageVisited', 'true');
+    };
+  }, []);
+
+  // Add typing indicator state
+  const [isTyping, setIsTyping] = useState(false);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
   // Fetch match status when chat context is available
   useEffect(() => {
@@ -191,16 +266,20 @@ export default function ChatPage() {
     if (!messageText.trim() || !chatContext?.conversation_id || !currentUserId) return;
     const recipientId = getOtherMatchmakrId();
     setSending(true);
-    const optimisticMsg = {
-      id: `optimistic-${Date.now()}`,
-      sender_id: currentUserId,
-      recipient_id: recipientId,
-      content: messageText.trim(),
-      created_at: new Date().toISOString(),
-      optimistic: true,
-    };
-    setChatMessages(prev => [...prev, optimisticMsg]);
+    const messageContent = messageText.trim();
     setMessageText('');
+    
+    // Add optimistic message
+    const optimisticMessage = {
+      id: `temp-${Date.now()}`,
+      content: messageContent,
+      sender_id: currentUserId,
+      conversation_id: chatContext.conversation_id,
+      created_at: new Date().toISOString(),
+      optimistic: true
+    };
+    setChatMessages(prev => [...prev, optimisticMessage]);
+    
     try {
       await fetch('/api/messages', {
         method: 'POST',
@@ -208,12 +287,37 @@ export default function ChatPage() {
         body: JSON.stringify({
           sender_id: currentUserId,
           recipient_id: recipientId,
-          content: optimisticMsg.content,
+          content: messageContent,
           conversation_id: chatContext.conversation_id,
           about_single_id: chatContext.currentUserSingle?.id,
           clicked_single_id: chatContext.otherUserSingle?.id,
         }),
       });
+      
+      // Set up fallback refetch if realtime doesn't work
+      fallbackTimeoutRef.current = setTimeout(async () => {
+        // Check if the message appeared via realtime
+        const hasRealMessage = chatMessages.some(msg => 
+          !msg.optimistic && 
+          msg.content === messageContent && 
+          msg.sender_id === currentUserId
+        );
+        
+        if (!hasRealMessage) {
+          console.log('Message not received via realtime, refetching...');
+          // Refetch messages
+          const historyRes = await fetch(`/api/messages/history?conversation_id=${conversationId}`);
+          const historyData = await historyRes.json();
+          if (historyData.success && historyData.messages) {
+            setChatMessages(historyData.messages);
+          }
+        }
+      }, 2000); // Wait 2 seconds for realtime
+      
+    } catch (error) {
+      // Remove optimistic message on error
+      setChatMessages(prev => prev.filter(msg => !msg.optimistic));
+      console.error('Failed to send message:', error);
     } finally {
       setSending(false);
     }
@@ -222,89 +326,96 @@ export default function ChatPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-main p-0 sm:p-2">
       <div className="flex-1 w-full bg-white/80 rounded-none shadow-2xl flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 sticky top-0 bg-white/80 z-10 rounded-none">
-          <button 
-            onClick={() => {
-              // Check if we can go back in history
-              if (window.history.length > 1) {
-                router.back();
-              } else {
-                // Fallback to dashboard
-                router.push('/dashboard/matchmakr');
-              }
-            }} 
-            className="text-primary-blue font-semibold text-base"
-          >
-            &larr; Back
-          </button>
-          <div></div>
-          <div></div>
+        {/* Fixed header section */}
+        <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-sm">
+          {/* Navigation header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+            <button 
+              onClick={() => {
+                // Check if we can go back in history
+                if (window.history.length > 1) {
+                  router.back();
+                } else {
+                  // Fallback to dashboard with refresh parameter
+                  router.push('/dashboard/matchmakr?refresh=true');
+                }
+              }} 
+              className="text-primary-blue font-semibold text-base"
+            >
+              &larr; Back
+            </button>
+            <div></div>
+            <div></div>
+          </div>
+          
+          {/* Chat header with singles' photos and names */}
+          {chatContext && (
+            <div className="flex items-center justify-center gap-8 px-4 py-4 border-b border-gray-100">
+              <div className="flex flex-col items-center">
+                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
+                  {chatContext.otherUserSingle?.photo ? (
+                    <img src={chatContext.otherUserSingle.photo} alt={chatContext.otherUserSingle.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-background-main flex items-center justify-center">
+                      <span className="text-2xl font-bold text-text-light">{chatContext.otherUserSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="text-xs text-gray-500">{chatContext.otherUserSingle?.name || 'Unknown'}</div>
+              </div>
+              <div className="text-lg font-medium text-text-light">and</div>
+              <div className="flex flex-col items-center">
+                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
+                  {chatContext.currentUserSingle?.photo ? (
+                    <img src={chatContext.currentUserSingle.photo} alt={chatContext.currentUserSingle.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-background-main flex items-center justify-center">
+                      <span className="text-2xl font-bold text-text-light">{chatContext.currentUserSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="text-xs text-gray-500">{chatContext.currentUserSingle?.name || 'Unknown'}</div>
+              </div>
+            </div>
+          )}
+          
+          {/* Approve Match UI for matchmakrs in chats about two singles */}
+          {chatContext && (
+            <div className="px-4 py-4 border-b border-gray-100">
+              {matchLoading ? (
+                <div className="text-center text-gray-500">Checking match status...</div>
+              ) : matchStatus === 'matched' ? (
+                <div className="text-center text-green-600 font-bold">🎉 It's a Match! Both matchmakrs have approved.</div>
+              ) : matchStatus === 'pending' ? (
+                <div className="text-center text-yellow-600 font-semibold">⏳ Pending approval from the other matchmakr...</div>
+              ) : matchStatus === 'can-approve' ? (
+                <div className="text-center">
+                  <button
+                    className="px-6 py-2 bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => setShowApprovalModal(true)}
+                    disabled={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id || matchLoading}
+                    title={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id ? 'Both singles must be present to approve a match.' : ''}
+                  >
+                    Approve Match
+                  </button>
+                  {(!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id) && (
+                    <div className="text-gray-400 text-xs mt-2">Both singles must be present to approve a match.</div>
+                  )}
+                </div>
+              ) : null}
+              {matchError && <div className="text-center text-red-500 mt-2">{matchError}</div>}
+            </div>
+          )}
         </div>
-        {/* Chat header with singles' photos and names */}
-        {chatContext && (
-          <div className="flex items-center justify-center gap-8 px-4 py-4 border-b border-gray-100 bg-white/70">
-            <div className="flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
-                {chatContext.otherUserSingle?.photo ? (
-                  <img src={chatContext.otherUserSingle.photo} alt={chatContext.otherUserSingle.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-background-main flex items-center justify-center">
-                    <span className="text-2xl font-bold text-text-light">{chatContext.otherUserSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
-                  </div>
-                )}
-              </div>
-              <div className="text-xs text-gray-500">{chatContext.otherUserSingle?.name || 'Unknown'}</div>
-            </div>
-            <div className="text-lg font-medium text-text-light">and</div>
-            <div className="flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
-                {chatContext.currentUserSingle?.photo ? (
-                  <img src={chatContext.currentUserSingle.photo} alt={chatContext.currentUserSingle.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-background-main flex items-center justify-center">
-                    <span className="text-2xl font-bold text-text-light">{chatContext.currentUserSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
-                  </div>
-                )}
-              </div>
-              <div className="text-xs text-gray-500">{chatContext.currentUserSingle?.name || 'Unknown'}</div>
-            </div>
-          </div>
-        )}
         
-        {/* Approve Match UI for matchmakrs in chats about two singles */}
-        {chatContext && (
-          <div className="px-4 py-4 border-b border-gray-100 bg-white/70">
-            {matchLoading ? (
-              <div className="text-center text-gray-500">Checking match status...</div>
-            ) : matchStatus === 'matched' ? (
-              <div className="text-center text-green-600 font-bold">🎉 It's a Match! Both matchmakrs have approved.</div>
-            ) : matchStatus === 'pending' ? (
-              <div className="text-center text-yellow-600 font-semibold">⏳ Pending approval from the other matchmakr...</div>
-            ) : matchStatus === 'can-approve' ? (
-              <div className="text-center">
-                <button
-                  className="px-6 py-2 bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setShowApprovalModal(true)}
-                  disabled={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id || matchLoading}
-                  title={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id ? 'Both singles must be present to approve a match.' : ''}
-                >
-                  Approve Match
-                </button>
-                {(!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id) && (
-                  <div className="text-gray-400 text-xs mt-2">Both singles must be present to approve a match.</div>
-                )}
-              </div>
-            ) : null}
-            {matchError && <div className="text-center text-red-500 mt-2">{matchError}</div>}
-          </div>
-        )}
-        {/* Chat history */}
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-2 py-4 text-left" style={{ minHeight: 400 }}>
+        {/* Scrollable chat area */}
+        <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-2 py-4 text-left bg-background-main relative" style={{ minHeight: 400 }}>
           {chatLoading ? (
             <div className="text-center text-gray-400 py-4">Loading chat...</div>
           ) : chatMessages.length === 0 ? (
             <div className="text-center text-gray-400 py-4">No messages yet.</div>
           ) : (
+            // Show messages in chronological order (oldest to newest)
             chatMessages.map(msg => {
               const isCurrentUser = msg.sender_id === currentUserId;
               // Determine sender profile
@@ -362,6 +473,44 @@ export default function ChatPage() {
                 </div>
               );
             })
+          )}
+          {/* Typing indicator - show on right side for current user */}
+          {isTyping && (
+            <div className="flex justify-end items-center my-4">
+              <div className="max-w-[70%] flex flex-col items-end">
+                <div className="font-semibold text-primary-blue text-xs mb-1 text-right">
+                  You
+                </div>
+                <div className="px-5 py-3 rounded-2xl bg-gray-100 text-gray-500 italic">
+                  typing...
+                </div>
+              </div>
+              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light ml-4 flex-shrink-0 flex items-center justify-center">
+                <div className="w-full h-full bg-background-main flex items-center justify-center">
+                  <span className="text-lg font-bold text-text-light">M</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Scroll to bottom button */}
+          {showScrollToBottom && (
+            <button
+              onClick={() => {
+                const container = chatContainerRef.current;
+                if (container) {
+                  container.scrollTop = container.scrollHeight;
+                  shouldAutoScrollRef.current = true;
+                  setShowScrollToBottom(false);
+                }
+              }}
+              className="absolute bottom-4 right-4 bg-primary-blue text-white rounded-full p-3 shadow-lg hover:bg-primary-blue-dark transition-all duration-200 z-10"
+              title="Scroll to bottom"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7 14L12 9L17 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
           )}
         </div>
         {/* Input Section */}

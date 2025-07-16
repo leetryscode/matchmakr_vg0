@@ -106,33 +106,17 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     };
   }, [open, currentUserId, otherUserId, isSingleToSingle, aboutSingle?.id, clickedSingle?.id]);
 
-  // Smart auto-scroll: only scroll if modal is opened or user is near the bottom
-  useEffect(() => {
-    if (!open) return;
-    const container = chatContainerRef.current;
-    if (!container) return;
-    // If modal just opened, always scroll to bottom
-    if (chatMessages.length === 0 || prevMsgCount.current === 0) {
-      container.scrollTop = container.scrollHeight;
-    } else if (chatMessages.length > prevMsgCount.current) {
-      // If user is near the bottom, scroll to bottom
-      const threshold = 50; // px
-      const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
-      if (distanceFromBottom < threshold) {
-        container.scrollTop = container.scrollHeight;
-      }
-    }
-    prevMsgCount.current = chatMessages.length;
-  }, [chatMessages.length, open]);
-
-  // Always scroll to bottom when chatMessages or modal open changes
+  // Always scroll to bottom when new messages arrive or modal opens
   useEffect(() => {
     if (!open) return;
     const container = chatContainerRef.current;
     if (container) {
-      container.scrollTop = container.scrollHeight;
+      // Use setTimeout to ensure DOM is fully rendered
+      setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+      }, 100);
     }
-  }, [chatMessages, open]);
+  }, [chatMessages, open, chatLoading]);
 
   // Fetch match status for the two singles
   useEffect(() => {
