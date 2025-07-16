@@ -33,11 +33,16 @@ export async function GET(req: NextRequest) {
   if (match.matchmakr_a_approved && match.matchmakr_b_approved) {
     return NextResponse.json({ success: true, status: 'matched' });
   }
-  if ((match.matchmakr_a_id === matchmakr_id && match.matchmakr_a_approved) ||
-      (match.matchmakr_b_id === matchmakr_id && match.matchmakr_b_approved)) {
-    // current matchmakr has approved, but not both
+  
+  // Check if current matchmakr has already approved
+  const currentMatchmakrApproved = (match.matchmakr_a_id === matchmakr_id && match.matchmakr_a_approved) ||
+                                  (match.matchmakr_b_id === matchmakr_id && match.matchmakr_b_approved);
+  
+  if (currentMatchmakrApproved) {
+    // Current matchmakr has approved, waiting for the other one
     return NextResponse.json({ success: true, status: 'pending' });
+  } else {
+    // Current matchmakr hasn't approved yet, can approve
+    return NextResponse.json({ success: true, status: 'can-approve' });
   }
-  // else, current matchmakr has not approved
-  return NextResponse.json({ success: true, status: 'can-approve' });
 } 

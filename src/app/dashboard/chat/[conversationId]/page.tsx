@@ -159,8 +159,8 @@ export default function ChatPage() {
         }),
       });
       if (response.ok) {
-        setMatchStatus('matched');
-        triggerConfetti();
+        // Refetch the match status to get the correct state
+        await fetchMatchStatus();
         setShowApprovalModal(false);
       } else {
         setMatchError('Failed to approve match');

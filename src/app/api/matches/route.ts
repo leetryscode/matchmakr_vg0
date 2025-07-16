@@ -64,9 +64,16 @@ export async function POST(req: NextRequest) {
     if (String(matchmakr_id) === String(match.matchmakr_b_id) && !match.matchmakr_b_approved) {
       updateFields.matchmakr_b_approved = true;
     }
-    // If both approved, set approved_at
-    const bothApproved = (updateFields.matchmakr_a_approved || match.matchmakr_a_approved) && (updateFields.matchmakr_b_approved || match.matchmakr_b_approved);
-    if (bothApproved && !match.approved_at) updateFields.approved_at = new Date().toISOString();
+    
+    // Check if both are now approved (including the current update)
+    const willBeBothApproved = (updateFields.matchmakr_a_approved !== undefined ? updateFields.matchmakr_a_approved : match.matchmakr_a_approved) && 
+                               (updateFields.matchmakr_b_approved !== undefined ? updateFields.matchmakr_b_approved : match.matchmakr_b_approved);
+    
+    // Only set approved_at if both are approved and it wasn't already set
+    if (willBeBothApproved && !match.approved_at) {
+      updateFields.approved_at = new Date().toISOString();
+    }
+    
     if (Object.keys(updateFields).length > 0) {
       const { data: updated, error: updateError } = await supabase
         .from('matches')
