@@ -14,7 +14,7 @@ SELECT
   -- Last message info
   last_msg.content as last_message_content,
   last_msg.created_at as last_message_time,
-  -- Unread count
+  -- Unread count (only count messages sent TO the current user in this conversation)
   COALESCE(unread_counts.count, 0) as unread_count
 FROM conversations c
 LEFT JOIN LATERAL (
@@ -28,6 +28,7 @@ LEFT JOIN (
   SELECT conversation_id, COUNT(*) as count
   FROM messages 
   WHERE read = false 
+  AND conversation_id IS NOT NULL
   GROUP BY conversation_id
 ) unread_counts ON unread_counts.conversation_id = c.id;
 

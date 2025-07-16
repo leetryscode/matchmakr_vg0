@@ -36,6 +36,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   const [chatContext, setChatContext] = useState<{
     currentUserSingle: { id: string; name: string; photo: string | null } | null;
     otherUserSingle: { id: string; name: string; photo: string | null } | null;
+    conversation_id?: string;
   } | null>(null);
   const [contextLoading, setContextLoading] = useState(false);
   const [currentUserSingles, setCurrentUserSingles] = useState<{ id: string }[]>([]);
@@ -301,17 +302,24 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   useEffect(() => {
     if (!open) return;
     const markAsRead = async () => {
+      // Get conversation_id from chat context if available
+      let conversationId = null;
+      if (!isSingleToSingle && chatContext?.conversation_id) {
+        conversationId = chatContext.conversation_id;
+      }
+      
       await fetch('/api/messages/mark-read', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: currentUserId,
           otherId: otherUserId,
+          conversationId: conversationId,
         }),
       });
     };
     markAsRead();
-  }, [open, currentUserId, otherUserId]);
+  }, [open, currentUserId, otherUserId, chatContext?.conversation_id, isSingleToSingle]);
 
   // Fetch current user's sponsored singles for display logic
   useEffect(() => {

@@ -199,6 +199,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             .select('*', { count: 'exact', head: true })
             .eq('sender_id', otherId)
             .eq('recipient_id', userId)
+            .eq('conversation_id', msg.conversation?.id)
             .eq('read', false);
           counts[otherId] = count || 0;
         }
@@ -268,11 +269,15 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     setClickedSingle(conversation?.conversation?.clicked_single || { id: '', name: '', photo: null });
     setOpenConversationId(conversation.id);
 
-    // Mark messages as read
+    // Mark messages as read for this specific conversation
     await fetch('/api/messages/mark-read', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, otherId: profile.id }),
+      body: JSON.stringify({ 
+        userId, 
+        otherId: profile.id,
+        conversationId: conversation.id 
+      }),
     });
     
     // Refresh unread counts after opening chat
@@ -296,6 +301,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             .select('*', { count: 'exact', head: true })
             .eq('sender_id', otherId)
             .eq('recipient_id', userId)
+            .eq('conversation_id', msg.conversation?.id)
             .eq('read', false);
           counts[otherId] = count || 0;
         }

@@ -81,7 +81,11 @@ export default function ChatPage() {
     fetch('/api/messages/mark-read', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: currentUserId, otherId }),
+      body: JSON.stringify({ 
+        userId: currentUserId, 
+        otherId,
+        conversationId: chatContext.conversation_id 
+      }),
     });
   }, [chatContext, currentUserId]);
 

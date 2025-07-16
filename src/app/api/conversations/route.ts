@@ -46,6 +46,10 @@ export async function GET(req: NextRequest) {
       if (Array.isArray(clicked)) clicked = clicked[0] || null;
       if (clicked && typeof clicked !== 'object') clicked = null;
 
+      // Determine the correct unread count for the current user
+      const isInitiator = conv.initiator_matchmakr_id === userId;
+      const unreadCount = isInitiator ? conv.initiator_unread_count : conv.recipient_unread_count;
+
       return {
         id: conv.id,
         sender_id: conv.initiator_matchmakr_id,
@@ -54,7 +58,7 @@ export async function GET(req: NextRequest) {
         created_at: conv.last_message_time || conv.created_at,
         about_single_id: conv.about_single_id,
         clicked_single_id: conv.clicked_single_id,
-        unreadCount: conv.unread_count || 0,
+        unreadCount: unreadCount || 0,
         lastMessage: conv.last_message_content ? {
           content: conv.last_message_content,
           created_at: conv.last_message_time
