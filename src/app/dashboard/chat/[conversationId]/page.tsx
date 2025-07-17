@@ -179,13 +179,7 @@ export default function ChatPage() {
     }
   }, [chatContext?.currentUserSingle?.id, chatContext?.otherUserSingle?.id, currentUserId]);
 
-  // Animation trigger when matchStatus transitions to 'matched'
-  useEffect(() => {
-    if (matchStatus === 'matched' && prevMatchStatus.current !== 'matched') {
-      triggerConfetti();
-    }
-    prevMatchStatus.current = matchStatus;
-  }, [matchStatus, triggerConfetti]);
+
 
   // Helper to fetch match status
   const fetchMatchStatus = async () => {
@@ -238,6 +232,13 @@ export default function ChatPage() {
         }),
       });
       if (response.ok) {
+        const data = await response.json();
+        
+        // Trigger confetti for first approval or match completion
+        if (data.wasFirstApproval || data.isMatchCompletion) {
+          triggerConfetti();
+        }
+        
         // Refetch the match status to get the correct state
         await fetchMatchStatus();
         setShowApprovalModal(false);

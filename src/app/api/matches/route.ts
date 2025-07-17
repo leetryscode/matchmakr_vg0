@@ -87,6 +87,15 @@ export async function POST(req: NextRequest) {
       match = updated;
     }
   }
+  // Determine if this is first approval or match completion
+  const wasFirstApproval = !match.matchmakr_a_approved && !match.matchmakr_b_approved;
+  const isMatchCompletion = match.matchmakr_a_approved && match.matchmakr_b_approved && match.approved_at;
+  
   // Always return the same structure
-  return NextResponse.json({ success: true, match });
+  return NextResponse.json({ 
+    success: true, 
+    match,
+    wasFirstApproval,
+    isMatchCompletion
+  });
 } 

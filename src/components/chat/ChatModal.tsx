@@ -229,8 +229,13 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
         }),
       });
       if (response.ok) {
+        const data = await response.json();
         setMatchStatus('matched');
-        triggerConfetti();
+        
+        // Trigger confetti for first approval or match completion
+        if (data.wasFirstApproval || data.isMatchCompletion) {
+          triggerConfetti();
+        }
       } else {
         setMatchError('Failed to approve match');
       }
@@ -274,13 +279,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     setMatchLoading(false);
   };
 
-  // Animation trigger when matchStatus transitions to 'matched'
-  useEffect(() => {
-    if (matchStatus === 'matched' && prevMatchStatus.current !== 'matched') {
-      triggerConfetti();
-    }
-    prevMatchStatus.current = matchStatus;
-  }, [matchStatus, triggerConfetti]);
+
 
   // Mark messages as read when modal opens
   useEffect(() => {
