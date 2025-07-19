@@ -24,9 +24,17 @@ interface Post {
   user_name: string;
   user_type: string;
   user_photos: string[] | null;
+  parent_post_id: string | null;
   created_at: string;
   like_count: number;
   reply_count: number;
+  author_id?: string;
+  profiles?: {
+    id: string;
+    name: string;
+    user_type: string;
+    photos: string[] | null;
+  };
 }
 
 export default function ForumPage() {
@@ -38,6 +46,11 @@ export default function ForumPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [currentUserType, setCurrentUserType] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState('');
+  const [submittingReply, setSubmittingReply] = useState(false);
+  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
+  const [replies, setReplies] = useState<Record<string, Post[]>>({});
 
   const supabase = createClientComponentClient();
   const { user, loading: authLoading } = useAuth();
@@ -155,6 +168,85 @@ export default function ForumPage() {
       }
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCreateReply = async (parentPostId: string) => {
+    if (!user || !replyContent.trim()) return;
+
+    setSubmittingReply(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/forum/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: replyContent.trim(),
+          parent_post_id: parentPostId,
+          user_id: user.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create reply');
+      }
+
+      // Refresh replies for this post
+      await fetchReplies(parentPostId);
+      setReplyContent('');
+      setReplyingTo(null);
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setSubmittingReply(false);
+    }
+  };
+
+  const fetchReplies = async (postId: string) => {
+    try {
+      console.log('Fetching replies for post:', postId);
+      const response = await fetch(`/api/forum/posts/${postId}/replies`);
+      const data = await response.json();
+      console.log('Replies response:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch replies');
+      }
+
+      setReplies(prev => ({
+        ...prev,
+        [postId]: data.replies || []
+      }));
+      console.log('Updated replies state for post:', postId, data.replies);
+    } catch (error: any) {
+      console.error('Error fetching replies:', error);
+    }
+  };
+
+  const toggleReplies = async (postId: string) => {
+    console.log('Toggle replies called for post:', postId);
+    console.log('Current expanded replies:', Array.from(expandedReplies));
+    console.log('Current replies state:', replies);
+    
+    if (expandedReplies.has(postId)) {
+      console.log('Hiding replies for post:', postId);
+      setExpandedReplies(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(postId);
+        return newSet;
+      });
+    } else {
+      console.log('Showing replies for post:', postId);
+      setExpandedReplies(prev => new Set(prev).add(postId));
+      if (!replies[postId]) {
+        console.log('Fetching replies for post:', postId);
+        await fetchReplies(postId);
+      } else {
+        console.log('Replies already loaded for post:', postId);
+      }
     }
   };
 
@@ -297,6 +389,8 @@ export default function ForumPage() {
           </div>
         )}
 
+
+
         {/* Posts List */}
         <div className="space-y-4">
           {loading ? (
@@ -360,13 +454,111 @@ export default function ForumPage() {
                     </svg>
                     Like ({post.like_count})
                   </button>
-                  <button className="flex items-center gap-1 text-white/60 hover:text-blue-300 text-sm">
+                  <button 
+                    onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
+                    className="flex items-center gap-1 text-white/60 hover:text-blue-300 text-sm"
+                  >
                     <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                     </svg>
                     Reply ({post.reply_count})
                   </button>
+                  {post.reply_count > 0 && (
+                    <button 
+                      onClick={() => toggleReplies(post.id)}
+                      className="flex items-center gap-1 text-white/60 hover:text-blue-300 text-sm"
+                    >
+                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M7 8l4-4 4 4M7 16l4 4 4-4" />
+                      </svg>
+                      {expandedReplies.has(post.id) ? 'Hide' : 'Show'} Replies ({post.reply_count})
+                    </button>
+                  )}
                 </div>
+
+                {/* Reply Form */}
+                {replyingTo === post.id && user && (
+                  <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
+                    <div className="mb-3">
+                      <textarea
+                        value={replyContent}
+                        onChange={(e) => setReplyContent(e.target.value)}
+                        placeholder="Write a reply..."
+                        className="w-full p-3 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white/10 text-white placeholder-white/60"
+                        rows={3}
+                        maxLength={140}
+                      />
+                      <div className="text-sm text-white/60 mt-1 text-right">
+                        {replyContent.length}/140 characters
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => setReplyingTo(null)}
+                        className="px-4 py-2 text-white/60 hover:text-white"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => handleCreateReply(post.id)}
+                        disabled={submittingReply || !replyContent.trim()}
+                        className="bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {submittingReply ? 'Posting...' : 'Reply'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Replies Section */}
+                {expandedReplies.has(post.id) && (
+                  <div className="mt-4 space-y-3">
+                    {replies[post.id] ? (
+                      replies[post.id].map((reply) => (
+                        <div key={reply.id} className="ml-8 bg-white/5 rounded-lg p-4 border border-white/10">
+                          <div className="flex items-start gap-3 mb-2">
+                            <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white bg-gray-200 flex-shrink-0">
+                              {reply.profiles?.photos && reply.profiles.photos.length > 0 ? (
+                                <img 
+                                  src={reply.profiles.photos[0]} 
+                                  alt={reply.profiles.name} 
+                                  className="w-full h-full object-cover" 
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">
+                                  {reply.profiles?.name?.charAt(0).toUpperCase() || '?'}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-semibold text-white text-sm">
+                                {currentUserType === 'MATCHMAKR' ? (
+                                  <Link 
+                                    href={`/profile/${reply.author_id}`}
+                                    className="hover:text-blue-300 transition-colors cursor-pointer"
+                                  >
+                                    {reply.profiles?.name}
+                                  </Link>
+                                ) : (
+                                  reply.profiles?.name
+                                )}
+                              </div>
+                              <div className="text-xs text-white/60">
+                                {new Date(reply.created_at).toLocaleDateString()} at {new Date(reply.created_at).toLocaleTimeString()}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-white/90 text-sm leading-relaxed">{reply.content}</div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-white/60">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-300 mx-auto mb-2"></div>
+                        Loading replies...
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))
           )}

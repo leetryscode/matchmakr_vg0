@@ -13,10 +13,11 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
 
-    // Build query
+    // Build query - only get main posts (not replies)
     let query = supabase
       .from('forum_posts_with_counts')
       .select('*')
+      .is('parent_post_id', null) // Only get main posts, not replies
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -43,15 +44,22 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
     const body = await request.json();
-    const { content, category_id, user_id } = body;
+    const { content, category_id, user_id, parent_post_id } = body;
 
     // Validate input
-    if (!content || !category_id) {
-      return NextResponse.json({ error: 'Missing required fields', status: 400 });
+    if (!content) {
+      return NextResponse.json({ error: 'Missing content', status: 400 });
     }
 
-    if (content.length > 280) {
-      return NextResponse.json({ error: 'Content too long', status: 400 });
+    // For replies, we don't need category_id
+    if (!parent_post_id && !category_id) {
+      return NextResponse.json({ error: 'Missing category_id for new posts', status: 400 });
+    }
+
+    // Character limit: 280 for posts, 140 for replies
+    const maxLength = parent_post_id ? 140 : 280;
+    if (content.length > maxLength) {
+      return NextResponse.json({ error: `Content too long. Maximum ${maxLength} characters allowed.`, status: 400 });
     }
 
     // Get user - try from request body first, then from auth
@@ -118,12 +126,13 @@ export async function POST(request: NextRequest) {
     */
 
     // Insert post
-    console.log('Attempting to insert post:', { content, category_id, author_id: user.id });
+    console.log('Attempting to insert post:', { content, category_id, parent_post_id, author_id: user.id });
     const { data: post, error } = await supabase
       .from('forum_posts')
       .insert({
         content,
-        category_id,
+        category_id: parent_post_id ? null : category_id, // Replies don't need category_id
+        parent_post_id,
         author_id: user.id,
       })
       .select()
