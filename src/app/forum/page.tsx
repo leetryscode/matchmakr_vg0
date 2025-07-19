@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import BottomNavigation from '@/components/dashboard/BottomNavigation';
 
 interface Category {
@@ -35,6 +36,7 @@ export default function ForumPage() {
   const [newPostContent, setNewPostContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [currentUserType, setCurrentUserType] = useState<string | null>(null);
 
   const supabase = createClientComponentClient();
   const { user, loading: authLoading } = useAuth();
@@ -44,6 +46,21 @@ export default function ForumPage() {
   useEffect(() => {
     console.log('Auth state:', { user: user?.id, authLoading });
   }, [user, authLoading]);
+
+  // Fetch current user's type
+  useEffect(() => {
+    const fetchUserType = async () => {
+      if (user?.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('user_type')
+          .eq('id', user.id)
+          .single();
+        setCurrentUserType(profile?.user_type || null);
+      }
+    };
+    fetchUserType();
+  }, [user, supabase]);
 
   useEffect(() => {
     fetchCategories();
@@ -304,7 +321,18 @@ export default function ForumPage() {
                       </span>
                     </div>
                     <div>
-                      <div className="font-semibold text-white">{post.user_name}</div>
+                      <div className="font-semibold text-white">
+                        {currentUserType === 'MATCHMAKR' ? (
+                          <Link 
+                            href={`/profile/${post.user_id}`}
+                            className="hover:text-blue-300 transition-colors cursor-pointer"
+                          >
+                            {post.user_name}
+                          </Link>
+                        ) : (
+                          post.user_name
+                        )}
+                      </div>
                       <div className="text-sm text-white/60">
                         {new Date(post.created_at).toLocaleDateString()} at {new Date(post.created_at).toLocaleTimeString()}
                       </div>
