@@ -23,6 +23,7 @@ interface Post {
   user_id: string;
   user_name: string;
   user_type: string;
+  user_photos: string[] | null;
   created_at: string;
   like_count: number;
   reply_count: number;
@@ -315,10 +316,18 @@ export default function ForumPage() {
               <div key={post.id} className="bg-white/10 rounded-lg shadow-sm p-6 border border-white/20">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-400/30">
-                      <span className="text-blue-200 font-semibold">
-                        {post.user_name?.charAt(0).toUpperCase() || '?'}
-                      </span>
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white bg-gray-200 flex-shrink-0">
+                      {post.user_photos && post.user_photos.length > 0 ? (
+                        <img 
+                          src={post.user_photos[0]} 
+                          alt={post.user_name} 
+                          className="w-full h-full object-cover" 
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-sm font-bold text-white">
+                          {post.user_name?.charAt(0).toUpperCase() || '?'}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <div className="font-semibold text-white">
