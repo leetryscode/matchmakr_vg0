@@ -240,24 +240,30 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
 
   // Profile section at the top (matches schematic)
   const ProfileSection = () => (
-    <div className="flex flex-col items-center mb-4">
-      <button
-        onClick={() => router.push(`/profile/${userId}`)}
-        className="w-24 h-24 rounded-full border-4 border-white bg-gray-200 overflow-hidden mb-2 focus:outline-none focus:ring-2 focus:ring-accent-teal-light"
-        aria-label="Go to My Profile"
-      >
-        {userProfilePic ? (
-          <Image src={userProfilePic} alt={userName} width={96} height={96} className="object-cover w-full h-full" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-primary-blue">{userName?.charAt(0).toUpperCase() || '?'}</div>
-        )}
-      </button>
-      <button
-        onClick={() => router.push(`/profile/${userId}`)}
-        className="text-base underline text-white hover:text-accent-teal-light focus:outline-none"
-      >
-        My Profile
-      </button>
+    <div className="flex flex-col mb-4">
+      {/* Personalized greeting */}
+      <div className="text-left self-start mb-4">
+        <h1 className="text-xl font-bold text-white">Hello, {userName?.split(' ')[0] || 'there'}!</h1>
+      </div>
+      <div className="flex flex-col items-center">
+        <button
+          onClick={() => router.push(`/profile/${userId}`)}
+          className="w-24 h-24 rounded-full border-4 border-white bg-gray-200 overflow-hidden mb-2 focus:outline-none focus:ring-2 focus:ring-accent-teal-light"
+          aria-label="Go to My Profile"
+        >
+          {userProfilePic ? (
+            <Image src={userProfilePic} alt={userName} width={96} height={96} className="object-cover w-full h-full" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-primary-blue">{userName?.charAt(0).toUpperCase() || '?'}</div>
+          )}
+        </button>
+        <button
+          onClick={() => router.push(`/profile/${userId}`)}
+          className="text-base underline text-white hover:text-accent-teal-light focus:outline-none"
+        >
+          My Profile
+        </button>
+      </div>
     </div>
   );
 
