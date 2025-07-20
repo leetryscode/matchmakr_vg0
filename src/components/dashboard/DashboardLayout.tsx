@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import BottomNavigation from './BottomNavigation';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -23,8 +22,6 @@ export default function DashboardLayout({ children, firstName, userId, userType 
                     {children}
                 </div>
             </main>
-            {/* Bottom Navigation */}
-            <BottomNavigation userId={userId} />
         </div>
     );
 } 

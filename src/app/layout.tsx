@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import GlobalConfettiBlast from '../components/GlobalConfettiBlast';
 import { AuthProvider } from '../contexts/AuthContext';
+import GlobalLayout from '../components/dashboard/GlobalLayout';
 
 export const metadata: Metadata = {
   title: 'GreenLight',
@@ -18,7 +19,9 @@ export default function RootLayout({
       <body className="font-source-sans text-gray-800 leading-relaxed text-lg">
         <AuthProvider>
           <GlobalConfettiBlast>
-            {children}
+            <GlobalLayout>
+              {children}
+            </GlobalLayout>
           </GlobalConfettiBlast>
         </AuthProvider>
       </body>

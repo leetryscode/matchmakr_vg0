@@ -51,37 +51,57 @@ export async function middleware(req: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser()
 
-  // If user is not signed in and the current path is not /login, redirect to /login
-  if (!user && req.nextUrl.pathname !== '/login') {
-    const redirectUrl = req.nextUrl.clone()
-    redirectUrl.pathname = '/login'
-    return NextResponse.redirect(redirectUrl)
-  }
-
-  // If user is signed in and the current path is /login, redirect to appropriate dashboard
-  if (user && req.nextUrl.pathname === '/login') {
-    // Get the user's profile to determine their user type
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_type')
-      .eq('id', user.id)
-      .single()
-
-    let redirectUrl = '/dashboard/matchmakr' // default
-    if (profile?.user_type) {
-      redirectUrl = `/dashboard/${profile.user_type.toLowerCase()}`
+    // If there's an auth error, don't redirect immediately - let the client handle it
+    if (error) {
+      console.log('Middleware auth error:', error);
+      return res;
     }
 
-    const redirectUrlObj = req.nextUrl.clone()
-    redirectUrlObj.pathname = redirectUrl
-    return NextResponse.redirect(redirectUrlObj)
-  }
+    // If user is not signed in and the current path is not /login, redirect to /login
+    if (!user && req.nextUrl.pathname !== '/login' && !req.nextUrl.pathname.startsWith('/api/')) {
+      const redirectUrl = req.nextUrl.clone()
+      redirectUrl.pathname = '/login'
+      return NextResponse.redirect(redirectUrl)
+    }
 
-  return res
+    // If user is signed in and the current path is /login, redirect to appropriate dashboard
+    if (user && req.nextUrl.pathname === '/login') {
+      // Get the user's profile to determine their user type
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('user_type')
+          .eq('id', user.id)
+          .single()
+
+        let redirectUrl = '/dashboard/matchmakr' // default
+        if (profile?.user_type) {
+          redirectUrl = `/dashboard/${profile.user_type.toLowerCase()}`
+        }
+
+        const redirectUrlObj = req.nextUrl.clone()
+        redirectUrlObj.pathname = redirectUrl
+        return NextResponse.redirect(redirectUrlObj)
+      } catch (error) {
+        console.error('Error fetching profile in middleware:', error);
+        // If we can't fetch the profile, just redirect to the default dashboard
+        const redirectUrlObj = req.nextUrl.clone()
+        redirectUrlObj.pathname = '/dashboard/matchmakr'
+        return NextResponse.redirect(redirectUrlObj)
+      }
+    }
+
+    return res
+  } catch (error) {
+    console.error('Middleware error:', error);
+    return res;
+  }
 }
 
 export const config = {

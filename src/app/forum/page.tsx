@@ -5,7 +5,6 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import BottomNavigation from '@/components/dashboard/BottomNavigation';
 
 interface Category {
   id: string;
@@ -773,9 +772,6 @@ export default function ForumPage() {
           )}
         </div>
       </div>
-
-      {/* Bottom Navigation */}
-      {user && <BottomNavigation userId={user.id} />}
 
       {/* Delete Warning Modal */}
       <DeleteModal

@@ -13,13 +13,33 @@ interface BottomNavigationProps {
 export default function BottomNavigation({ userId }: BottomNavigationProps) {
     const router = useRouter();
     const supabase = createClient();
-    const { signOut } = useAuth();
+    const { user } = useAuth();
 
     const [showDropdown, setShowDropdown] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [userType, setUserType] = useState<string>('');
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Fetch user type for dashboard routing
+    useEffect(() => {
+        if (!user) return;
+        
+        const fetchUserType = async () => {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('user_type')
+                .eq('id', user.id)
+                .single();
+
+            if (profile) {
+                setUserType(profile.user_type);
+            }
+        };
+
+        fetchUserType();
+    }, [user, supabase]);
 
     // Fetch notifications for the current user
     useEffect(() => {
@@ -82,46 +102,17 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
         };
     }, [showDropdown]);
 
-    const handleSignOut = async () => {
-        console.log('Logout button clicked');
-        try {
-            // Call server-side logout route
-            const response = await fetch('/api/logout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            
-            if (response.ok) {
-                console.log('Server logout successful');
-                // Clear client-side storage
-                localStorage.clear();
-                sessionStorage.clear();
-                // Clear all cookies
-                document.cookie.split(';').forEach(function(c) {
-                    document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
-                });
-                // Redirect to login
-                window.location.href = '/login';
-            } else {
-                console.error('Server logout failed');
-                window.location.href = '/login';
-            }
-        } catch (err) {
-            console.error('Logout error:', err);
-            window.location.href = '/login';
-        }
+    const handleDashboardClick = () => {
+        if (!userType) return;
+        
+        const dashboardPath = `/dashboard/${userType.toLowerCase()}`;
+        router.push(dashboardPath);
     };
 
     return (
         <nav className="fixed bottom-0 left-0 w-full bg-white/60 backdrop-blur-md shadow-card z-50 border-t border-white/30">
             <div className="flex justify-around items-center py-3">
-                {/* Logout */}
-                <button onClick={handleSignOut} className="flex flex-col items-center text-gray-500 hover:text-primary-blue-light text-xs focus:outline-none">
-                    <span>Logout</span>
-                </button>
-                {/* Settings Icon Placeholder */}
+                {/* Settings Button */}
                 <button onClick={() => router.push('/dashboard/settings')} className="flex flex-col items-center text-gray-500 hover:text-primary-blue text-xs focus:outline-none">
                     {/* Simple Gear SVG */}
                     <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -130,9 +121,10 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
                     </svg>
                     <span>Settings</span>
                 </button>
-                {/* Coffee/Date Ideas Icon Placeholder */}
+
+                {/* Date Ideas Button (Placeholder) */}
                 <button className="flex flex-col items-center text-gray-500 hover:text-primary-blue text-xs focus:outline-none">
-                    {/* Simple Coffee SVG */}
+                    {/* Coffee Cup SVG */}
                     <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                         <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
                         <rect x="2" y="8" width="16" height="8" rx="4" />
@@ -142,13 +134,32 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
                     </svg>
                     <span>Date Ideas</span>
                 </button>
-                {/* Forum Navigation Button */}
+
+                {/* Dashboard Button */}
+                <button
+                    onClick={handleDashboardClick} 
+                    className="flex flex-col items-center text-gray-500 hover:text-primary-blue text-xs focus:outline-none"
+                >
+                    {/* Home/Dashboard SVG */}
+                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9,22 9,12 15,12 15,22" />
+                    </svg>
+                    <span>Dashboard</span>
+                </button>
+
+                {/* Green Room Button */}
                 <Link
                     href="/forum"
                     className="flex flex-col items-center text-gray-500 hover:text-primary-blue text-xs focus:outline-none"
                 >
-                    <span>Forum</span>
+                    {/* Chat/Forum SVG */}
+                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                    <span>Green Room</span>
                 </Link>
+
                 {/* Bell Notification Icon (functional, with unread count) */}
                 <div className="relative flex flex-col items-center">
                     <button
@@ -168,7 +179,7 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
                             </span>
                         )}
                     </button>
-                    {/* Notification Dropdown (moved from header) */}
+                    {/* Notification Dropdown */}
                     {showDropdown && (
                         <div ref={dropdownRef} className="absolute bottom-12 right-0 w-80 bg-white text-gray-900 rounded-xl shadow-lg border border-gray-200 z-50 animate-fade-in">
                             <div className="p-4 border-b font-bold text-lg text-primary-blue">Notifications</div>

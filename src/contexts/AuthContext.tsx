@@ -24,26 +24,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const getInitialSession = async () => {
       try {
         const { data: { user }, error } = await supabase.auth.getUser();
-        if (error || !user) {
-          // Session is invalid or expired, clear everything and redirect
+        if (error) {
+          console.error('Auth error:', error);
+          // Only clear and redirect if it's a real auth error, not just no session
+          if (error.message !== 'Invalid JWT') {
+            localStorage.clear();
+            sessionStorage.clear();
+            document.cookie.split(';').forEach(function(c) {
+              document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
+            });
+            router.push('/login');
+          }
+          setUser(null);
+        } else if (!user) {
+          // No user but no error - this is normal for unauthenticated users
+          setUser(null);
+        } else {
+          setUser(user);
+        }
+      } catch (err) {
+        console.error('Session error:', err);
+        // Only clear and redirect on actual errors, not just no session
+        if (err instanceof Error && err.message !== 'Invalid JWT') {
           localStorage.clear();
           sessionStorage.clear();
           document.cookie.split(';').forEach(function(c) {
             document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
           });
           router.push('/login');
-          setUser(null);
-        } else {
-          setUser(user);
         }
-      } catch (err) {
-        // On error, treat as invalid session
-        localStorage.clear();
-        sessionStorage.clear();
-        document.cookie.split(';').forEach(function(c) {
-          document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
-        });
-        router.push('/login');
         setUser(null);
       } finally {
         setLoading(false);
@@ -55,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
         setUser(session?.user ?? null);
         setLoading(false);
 
@@ -64,14 +74,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           router.push('/login');
         } else if (event === 'SIGNED_IN' && session?.user) {
           // Fetch user profile to determine redirect
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('user_type')
-            .eq('id', session.user.id)
-            .single();
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('user_type')
+              .eq('id', session.user.id)
+              .single();
 
-          if (profile?.user_type) {
-            router.push(`/dashboard/${profile.user_type.toLowerCase()}`);
+            if (profile?.user_type) {
+              router.push(`/dashboard/${profile.user_type.toLowerCase()}`);
+            }
+          } catch (error) {
+            console.error('Error fetching profile on sign in:', error);
           }
         }
       }
