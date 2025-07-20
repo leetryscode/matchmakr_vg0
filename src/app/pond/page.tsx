@@ -44,18 +44,43 @@ export default function PondPage() {
 
     useEffect(() => {
         console.log('Pond page useEffect triggered');
-        setLoading(true);
-        setSponsoredSingles([]);
-        checkUserAndLoadProfiles();
+        
+        // Only initialize if we don't have profiles
+        if (profiles.length === 0) {
+            setLoading(true);
+            setLoadingMore(false);
+            checkUserAndLoadProfiles();
+        }
+        
+        // Cleanup function to reset state when component unmounts
+        return () => {
+            console.log('Pond page cleanup - resetting state');
+            setProfiles([]);
+            setLoading(false);
+            setLoadingMore(false);
+        };
     }, []); // Only run on mount, not on pathname changes
+
+    // Handle browser back button and navigation events - only reload if profiles are empty
+    useEffect(() => {
+        console.log('Pond page pathname changed to:', pathname);
+        // Only re-initialize if we don't have profiles loaded
+        if (pathname === '/pond' && profiles.length === 0) {
+            console.log('Pond page re-initializing after pathname change - no profiles loaded');
+            setLoading(true);
+            setLoadingMore(false);
+            checkUserAndLoadProfiles();
+        }
+    }, [pathname, profiles.length]);
 
     const checkUserAndLoadProfiles = async () => {
         console.log('Pond page checkUserAndLoadProfiles started');
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            window.location.href = '/login';
-            return;
-        }
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                window.location.href = '/login';
+                return;
+            }
 
         // Fetch current user's name and profile picture
         const { data: userProfile } = await supabase
@@ -103,6 +128,11 @@ export default function PondPage() {
 
         console.log('Pond page calling loadProfiles');
         await loadProfiles(false, 1);
+        } catch (error) {
+            console.error('Error in checkUserAndLoadProfiles:', error);
+            setLoading(false);
+            setLoadingMore(false);
+        }
     };
 
     const loadProfiles = async (isLoadMore = false, currentPage = page) => {
