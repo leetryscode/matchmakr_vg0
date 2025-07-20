@@ -37,6 +37,60 @@ interface Post {
   };
 }
 
+interface DeleteModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  message: string;
+  isDeleting: boolean;
+}
+
+function DeleteModal({ isOpen, onClose, onConfirm, title, message, isDeleting }: DeleteModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white/10 backdrop-blur-md rounded-lg border border-white/20 shadow-xl max-w-md w-full p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-red-400">
+              <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-white">{title}</h3>
+        </div>
+        
+        <p className="text-white/80 mb-6 leading-relaxed">{message}</p>
+        
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            disabled={isDeleting}
+            className="flex-1 px-4 py-2 text-white/60 hover:text-white border border-white/20 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isDeleting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Deleting...
+              </>
+            ) : (
+              'Delete'
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ForumPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -51,6 +105,20 @@ export default function ForumPage() {
   const [submittingReply, setSubmittingReply] = useState(false);
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
   const [replies, setReplies] = useState<Record<string, Post[]>>({});
+  const [deletingPost, setDeletingPost] = useState<string | null>(null);
+  const [deletingReply, setDeletingReply] = useState<string | null>(null);
+  
+  // Delete modal state
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    type: 'post' | 'reply';
+    id: string;
+    parentPostId?: string;
+  }>({
+    isOpen: false,
+    type: 'post',
+    id: '',
+  });
 
   const supabase = createClientComponentClient();
   const { user, loading: authLoading } = useAuth();
@@ -250,6 +318,118 @@ export default function ForumPage() {
     }
   };
 
+  const openDeleteModal = (type: 'post' | 'reply', id: string, parentPostId?: string) => {
+    setDeleteModal({
+      isOpen: true,
+      type,
+      id,
+      parentPostId,
+    });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({
+      isOpen: false,
+      type: 'post',
+      id: '',
+    });
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!user) {
+      return;
+    }
+
+    console.log('Attempting to delete post:', postId);
+    setDeletingPost(postId);
+    try {
+      const deleteUrl = `/api/forum-delete/${postId}`;
+      console.log('Making POST request to:', deleteUrl);
+      const response = await fetch(deleteUrl, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+      console.log('Delete response:', { status: response.status, data });
+      console.log('Response data details:', {
+        message: data.message,
+        timestamp: data.timestamp,
+        route: data.route,
+        postId: data.postId
+      });
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete post');
+      }
+
+      console.log('Post deleted successfully, refreshing posts...');
+      // Remove the post from local state immediately
+      setPosts(prevPosts => {
+        const filteredPosts = prevPosts.filter(post => post.id !== postId);
+        console.log('Local state update:', { 
+          beforeCount: prevPosts.length, 
+          afterCount: filteredPosts.length,
+          removedPostId: postId 
+        });
+        return filteredPosts;
+      });
+      // Also refresh from server to ensure consistency
+      await fetchPosts();
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      setError(error.message);
+    } finally {
+      setDeletingPost(null);
+      closeDeleteModal();
+    }
+  };
+
+  const handleDeleteReply = async (replyId: string, parentPostId: string) => {
+    if (!user) {
+      return;
+    }
+
+    console.log('Attempting to delete reply:', replyId);
+    setDeletingReply(replyId);
+    try {
+      const deleteUrl = `/api/forum-delete/${replyId}`;
+      console.log('Making POST request to:', deleteUrl);
+      const response = await fetch(deleteUrl, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+      console.log('Delete reply response:', { status: response.status, data });
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete reply');
+      }
+
+      console.log('Reply deleted successfully, refreshing replies...');
+      // Remove the reply from local state immediately
+      setReplies(prevReplies => ({
+        ...prevReplies,
+        [parentPostId]: prevReplies[parentPostId]?.filter(reply => reply.id !== replyId) || []
+      }));
+      // Also refresh from server to ensure consistency
+      await fetchReplies(parentPostId);
+    } catch (error: any) {
+      console.error('Delete reply error:', error);
+      setError(error.message);
+    } finally {
+      setDeletingReply(null);
+      closeDeleteModal();
+    }
+  };
+
+  const confirmDelete = () => {
+    if (deleteModal.type === 'post') {
+      handleDeletePost(deleteModal.id);
+    } else {
+      handleDeleteReply(deleteModal.id, deleteModal.parentPostId!);
+    }
+  };
+
   const selectedCategoryName = categories.find(cat => cat.id === selectedCategory)?.name;
 
   return (
@@ -389,8 +569,6 @@ export default function ForumPage() {
           </div>
         )}
 
-
-
         {/* Posts List */}
         <div className="space-y-4">
           {loading ? (
@@ -456,12 +634,12 @@ export default function ForumPage() {
                   </button>
                   <button 
                     onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
-                    className="flex items-center gap-1 text-white/60 hover:text-blue-300 text-sm"
+                    className="flex items-center gap-1 text-white/60 hover:text-white text-sm transition-colors"
                   >
                     <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                     </svg>
-                    Reply ({post.reply_count})
+                    Reply
                   </button>
                   {post.reply_count > 0 && (
                     <button 
@@ -474,6 +652,18 @@ export default function ForumPage() {
                       {expandedReplies.has(post.id) ? 'Hide' : 'Show'} Replies ({post.reply_count})
                     </button>
                   )}
+                  {user && post.user_id === user.id && (
+                    <button 
+                      onClick={() => openDeleteModal('post', post.id)}
+                      disabled={deletingPost === post.id}
+                      className="flex items-center gap-1 text-white/60 hover:text-red-400 text-sm transition-colors disabled:opacity-50"
+                    >
+                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                      </svg>
+                      Delete
+                    </button>
+                  )}
                 </div>
 
                 {/* Reply Form */}
@@ -484,7 +674,7 @@ export default function ForumPage() {
                         value={replyContent}
                         onChange={(e) => setReplyContent(e.target.value)}
                         placeholder="Write a reply..."
-                        className="w-full p-3 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white/10 text-white placeholder-white/60"
+                        className="w-full p-3 border border-white/20 rounded-lg focus:ring-2 focus:ring-white focus:border-white focus:outline-none resize-none bg-white/10 text-white placeholder-white/60"
                         rows={3}
                         maxLength={140}
                       />
@@ -502,7 +692,7 @@ export default function ForumPage() {
                       <button
                         onClick={() => handleCreateReply(post.id)}
                         disabled={submittingReply || !replyContent.trim()}
-                        className="bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-white/60 hover:text-white py-2 px-4 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         {submittingReply ? 'Posting...' : 'Reply'}
                       </button>
@@ -549,6 +739,20 @@ export default function ForumPage() {
                             </div>
                           </div>
                           <div className="text-white/90 text-sm leading-relaxed">{reply.content}</div>
+                          {user && reply.author_id === user.id && (
+                            <div className="flex justify-end mt-2">
+                              <button 
+                                onClick={() => openDeleteModal('reply', reply.id, post.id)}
+                                disabled={deletingReply === reply.id}
+                                className="flex items-center gap-1 text-white/60 hover:text-red-400 text-xs transition-colors disabled:opacity-50"
+                              >
+                                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                  <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                </svg>
+                                Delete
+                              </button>
+                            </div>
+                          )}
                         </div>
                       ))
                     ) : (
@@ -567,6 +771,20 @@ export default function ForumPage() {
 
       {/* Bottom Navigation */}
       {user && <BottomNavigation userId={user.id} />}
+
+      {/* Delete Warning Modal */}
+      <DeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        title={deleteModal.type === 'post' ? 'Delete Post' : 'Delete Reply'}
+        message={
+          deleteModal.type === 'post' 
+            ? 'Are you sure you want to delete this post? This will also delete all replies and cannot be undone.'
+            : 'Are you sure you want to delete this reply? This action cannot be undone.'
+        }
+        isDeleting={deletingPost === deleteModal.id || deletingReply === deleteModal.id}
+      />
     </div>
   );
 } 
