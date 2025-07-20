@@ -12,29 +12,36 @@ export async function GET(req: NextRequest) {
   const searchZip = searchParams.get('zip') || '';
   const selectedInterests = searchParams.get('interests') ? JSON.parse(searchParams.get('interests')!) : [];
 
+  console.log('Pond API called with params:', { page, limit, searchCity, searchState, searchZip, selectedInterests });
+
   try {
+    // First, let's test if the view exists and has data
+    const { data: testData, error: testError } = await supabase
+      .from('profile_with_interests')
+      .select('count(*)')
+      .limit(1);
+    
+    console.log('Pond API view test:', { testData, testError: testError?.message });
+
     let query = supabase
       .from('profile_with_interests')
       .select('*')
       .range((page - 1) * limit, page * limit - 1);
 
     // Build filter conditions for partial matches
-    const filters = [];
     if (searchCity.trim() !== '') {
-      filters.push(`city.ilike.%${searchCity}%`);
+      query = query.ilike('city', `%${searchCity}%`);
     }
     if (searchState.trim() !== '') {
-      filters.push(`state.ilike.%${searchState}%`);
+      query = query.ilike('state', `%${searchState}%`);
     }
     if (searchZip.trim() !== '') {
-      filters.push(`zip_code.ilike.%${searchZip}%`);
-    }
-
-    if (filters.length > 0) {
-      query = query.or(filters.join(','));
+      query = query.ilike('zip_code', `%${searchZip}%`);
     }
 
     const { data: profiles, error } = await query;
+
+    console.log('Pond API query result:', { profilesCount: profiles?.length || 0, error: error?.message });
 
     if (error) {
       console.error('Error fetching profiles:', error);

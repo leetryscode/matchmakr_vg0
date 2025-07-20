@@ -20,10 +20,13 @@ const InterestsInput: React.FC<InterestsInputProps> = ({ value, onChange, disabl
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetch('/api/interests')
-      .then(res => res.json())
-      .then(data => setAllInterests(data.interests || []));
-  }, []);
+    // Only fetch if we don't already have interests
+    if (allInterests.length === 0) {
+      fetch('/api/interests')
+        .then(res => res.json())
+        .then(data => setAllInterests(data.interests || []));
+    }
+  }, [allInterests.length]);
 
   useEffect(() => {
     if (input.trim() === '') {

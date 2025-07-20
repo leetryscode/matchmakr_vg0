@@ -12,7 +12,7 @@ interface BottomNavigationProps {
 
 export default function BottomNavigation({ userId }: BottomNavigationProps) {
     const router = useRouter();
-    const supabase = createClient();
+    const supabaseRef = useRef(createClient());
     const { user } = useAuth();
 
     const [showDropdown, setShowDropdown] = useState(false);
@@ -27,7 +27,7 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
         if (!user) return;
         
         const fetchUserType = async () => {
-            const { data: profile } = await supabase
+            const { data: profile } = await supabaseRef.current
                 .from('profiles')
                 .select('user_type')
                 .eq('id', user.id)
@@ -39,13 +39,13 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
         };
 
         fetchUserType();
-    }, [user, supabase]);
+    }, [user]);
 
     // Fetch notifications for the current user
     useEffect(() => {
         if (!showDropdown) return;
         setLoading(true);
-        supabase
+        supabaseRef.current
             .from('notifications')
             .select('*')
             .eq('user_id', userId)
@@ -55,11 +55,11 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
                 setNotifications(data || []);
                 setLoading(false);
             });
-    }, [showDropdown, userId, supabase]);
+    }, [showDropdown, userId]);
 
     // Fetch unread count (for badge)
     useEffect(() => {
-        supabase
+        supabaseRef.current
             .from('notifications')
             .select('id', { count: 'exact', head: true })
             .eq('user_id', userId)
@@ -71,7 +71,7 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
     useEffect(() => {
         if (!showDropdown || unreadCount === 0) return;
         // Mark all unread notifications as read
-        supabase
+        supabaseRef.current
             .from('notifications')
             .update({ read: true })
             .eq('user_id', userId)
@@ -81,7 +81,7 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
                 // Optionally update notifications state to reflect read status
                 setNotifications((prev) => prev.map(n => ({ ...n, read: true })));
             });
-    }, [showDropdown, unreadCount, userId, supabase]);
+    }, [showDropdown, unreadCount, userId]);
 
     // Close dropdown on outside click or Escape
     useEffect(() => {

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { createClient } from '@/lib/supabase/client';
 import FlameUnreadIcon from './FlameUnreadIcon';
@@ -52,25 +52,47 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const [aboutSingle, setAboutSingle] = useState<{ id: string; name: string; photo: string | null } | null>(null);
   const [clickedSingle, setClickedSingle] = useState<{ id: string; name: string; photo: string | null } | null>(null);
   const [openConversationId, setOpenConversationId] = useState<string | null>(null);
+  const [lastUnreadFetch, setLastUnreadFetch] = useState<number>(0);
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
 
-  // Realtime subscription for new messages
+  // Optimized realtime subscription for new messages
   useEffect(() => {
-    const channel = supabase.channel('public:messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-        const newMessage = payload.new;
-        // If the new message belongs to the open conversation, add it to chatMessages
-        if (openConversationId && newMessage.conversation_id === openConversationId) {
-          setChatMessages(prev => [...prev, newMessage]);
-        }
-      })
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
+    if (!openConversationId) return;
+
+    let channel: any = null;
+    const setupSubscription = async () => {
+      try {
+        channel = supabase.channel(`messages-${openConversationId}`)
+          .on('postgres_changes', { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'messages',
+            filter: `conversation_id=eq.${openConversationId}`
+          }, payload => {
+            const newMessage = payload.new;
+            // Only add if it's not from the current user and belongs to the open conversation
+            if (newMessage.sender_id !== userId && newMessage.conversation_id === openConversationId) {
+              setChatMessages(prev => [...prev, newMessage]);
+            }
+          })
+          .subscribe((status) => {
+            console.log('Subscription status:', status);
+          });
+      } catch (error) {
+        console.error('Error setting up realtime subscription:', error);
+      }
     };
-  }, [openConversationId, supabase]);
+
+    setupSubscription();
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [openConversationId, userId, supabase]);
 
   // Helper to fetch single info by ID
   const fetchSingleById = async (singleId: string) => {
@@ -90,71 +112,59 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     return { id: '', name: '', photo: null };
   };
 
-  // Fetch chat history when modal opens
-  useEffect(() => {
-    let isMounted = true;
-    const fetchChatHistory = async () => {
-      if (!openChat || !userId) return;
-      setChatLoadingHistory(true);
-      setShowSpinner(false);
-      if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
-      loadingTimeout.current = setTimeout(() => {
-        if (isMounted) setShowSpinner(true);
-      }, 200);
-      
+  // Optimized fetch chat history function
+  const fetchChatHistory = useCallback(async (forceRefresh = false) => {
+    if (!openChat || !userId) return;
+    
+    // Rate limiting for chat history fetches
+    const now = Date.now();
+    if (!forceRefresh && now - lastUnreadFetch < 3000) {
+      console.log('[MatchMakrChatListClient] Skipping chat history fetch - too recent');
+      return;
+    }
+
+    setChatLoadingHistory(true);
+    setShowSpinner(false);
+    if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
+    loadingTimeout.current = setTimeout(() => {
+      setShowSpinner(true);
+    }, 200);
+    
+    try {
       let url = `/api/messages/history?userId=${userId}&otherId=${openChat.id}`;
       if (openConversationId) {
         url += `&conversation_id=${openConversationId}`;
       }
       const res = await fetch(url);
       const data = await res.json();
-      if (isMounted) {
-        // Only update if new data is different
-        if (data.success && data.messages && !areMessagesEqual(data.messages, chatMessages.filter(m => !m.optimistic))) {
-          // Remove optimistic messages that are now confirmed
-          const confirmedIds = new Set(data.messages.map((m: any) => m.id));
-          const stillOptimistic = removeDuplicateOptimisticMessages(data.messages, chatMessages.filter(m => m.optimistic));
-          setChatMessages([...data.messages, ...stillOptimistic]);
-        }
-        setChatLoadingHistory(false);
-        setShowSpinner(false);
+      
+      if (data.success && data.messages) {
+        // Remove optimistic messages that are now confirmed
+        const stillOptimistic = removeDuplicateOptimisticMessages(data.messages, chatMessages.filter(m => m.optimistic));
+        setChatMessages([...data.messages, ...stillOptimistic]);
       }
-    };
-    if (openChat && userId) {
-      fetchChatHistory();
+      setLastUnreadFetch(now);
+    } catch (error) {
+      console.error('Error fetching chat history:', error);
+    } finally {
+      setChatLoadingHistory(false);
+      setShowSpinner(false);
     }
-    return () => {
-      isMounted = false;
-      if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openChat, userId, openConversationId]);
+  }, [openChat, userId, openConversationId, lastUnreadFetch]);
+
+  // Fetch chat history when modal opens
+  useEffect(() => {
+    if (openChat && userId) {
+      fetchChatHistory(true);
+    }
+  }, [openChat, userId, fetchChatHistory]);
 
   // After sending a message, refetch chat (but don't clear chatMessages)
   useEffect(() => {
-    let isMounted = true;
     if (!sending && messageText === '' && openChat && userId) {
-      (async () => {
-        let url = `/api/messages/history?userId=${userId}&otherId=${openChat.id}`;
-        if (openConversationId) {
-          url += `&conversation_id=${openConversationId}`;
-        }
-        const res = await fetch(url);
-        const data = await res.json();
-        if (isMounted && data.success && data.messages) {
-          // Only update if new data is different
-          if (!areMessagesEqual(data.messages, chatMessages.filter(m => !m.optimistic))) {
-            // Remove optimistic messages that are now confirmed
-            const confirmedIds = new Set(data.messages.map((m: any) => m.id));
-            const stillOptimistic = removeDuplicateOptimisticMessages(data.messages, chatMessages.filter(m => m.optimistic));
-            setChatMessages([...data.messages, ...stillOptimistic]);
-          }
-        }
-      })();
+      fetchChatHistory();
     }
-    return () => { isMounted = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sending, messageText, openChat, userId, openConversationId]);
+  }, [sending, messageText, openChat, userId, fetchChatHistory]);
 
   // Always scroll to bottom when new messages arrive or modal opens
   useEffect(() => {
@@ -165,18 +175,26 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     }
   }, [chatMessages, openChat]);
 
-  // Fetch unread counts for all conversations
-  useEffect(() => {
-    const fetchUnreadCounts = async () => {
+  // Optimized unread counts fetching - consolidated into single function
+  const fetchUnreadCounts = useCallback(async (forceRefresh = false) => {
+    const now = Date.now();
+    if (!forceRefresh && now - lastUnreadFetch < 5000) {
+      console.log('[MatchMakrChatListClient] Skipping unread counts fetch - too recent');
+      return;
+    }
+
+    try {
       const counts: Record<string, number> = {};
+      
+      // Use unread counts from conversation data if available
       for (const msg of conversations) {
         const conversationId = msg.conversation?.id;
         if (!conversationId) continue;
         
-        // Use unread count from conversation data if available, otherwise fetch
         if (msg.unreadCount !== undefined) {
           counts[conversationId] = msg.unreadCount;
         } else {
+          // Only fetch from database if not available in conversation data
           const supabase = createClient();
           const { count } = await supabase
             .from('messages')
@@ -188,38 +206,32 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           counts[conversationId] = count || 0;
         }
       }
+      
       setUnreadCounts(counts);
-    };
-    fetchUnreadCounts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      setLastUnreadFetch(now);
+    } catch (error) {
+      console.error('Error fetching unread counts:', error);
+    }
   }, [conversations, userId]);
+
+  // Fetch unread counts when conversations change
+  useEffect(() => {
+    fetchUnreadCounts();
+  }, [conversations, userId, fetchUnreadCounts]);
 
   // Refresh unread counts when returning to dashboard (pathname changes)
   useEffect(() => {
-    const refreshUnreadCounts = async () => {
-      const counts: Record<string, number> = {};
-      for (const msg of conversations) {
-        const conversationId = msg.conversation?.id;
-        if (!conversationId) continue;
-        
-        const supabase = createClient();
-        const { count } = await supabase
-          .from('messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('sender_id', msg.sender_id === userId ? msg.recipient_id : msg.sender_id)
-          .eq('recipient_id', userId)
-          .eq('conversation_id', conversationId)
-          .eq('read', false);
-        counts[conversationId] = count || 0;
-      }
-      setUnreadCounts(counts);
-    };
-    
-    // Only refresh when on the matchmakr dashboard page
     if (pathname === '/dashboard/matchmakr') {
-      refreshUnreadCounts();
+      fetchUnreadCounts(true);
     }
-  }, [pathname, conversations, userId]);
+  }, [pathname, fetchUnreadCounts]);
+
+  // After closing chat modal, refresh unread counts
+  useEffect(() => {
+    if (!openChat) {
+      fetchUnreadCounts(true);
+    }
+  }, [openChat, fetchUnreadCounts]);
 
   // Optimistically append sent message
   const handleSendMessage = async () => {
@@ -319,31 +331,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     router.push(`/dashboard/chat/${conversationId}`);
   };
 
-  // After closing chat modal, refresh unread counts
-  useEffect(() => {
-    if (!openChat) {
-      // Refetch unread counts
-      const fetchUnreadCounts = async () => {
-        const supabase = createClient();
-        const counts: Record<string, number> = {};
-        for (const msg of conversations) {
-          const conversationId = msg.conversation?.id;
-          if (!conversationId) continue;
-          const { count } = await supabase
-            .from('messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('sender_id', msg.sender_id === userId ? msg.recipient_id : msg.sender_id)
-            .eq('recipient_id', userId)
-            .eq('conversation_id', conversationId)
-            .eq('read', false);
-          counts[conversationId] = count || 0;
-        }
-        setUnreadCounts(counts);
-      };
-      fetchUnreadCounts();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openChat]);
+
 
   // Get sponsored single id (if any)
   const sponsoredSingleId = sponsoredSingles && sponsoredSingles.length > 0 ? sponsoredSingles[0].id : null;

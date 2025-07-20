@@ -43,12 +43,14 @@ export default function PondPage() {
     const pathname = usePathname();
 
     useEffect(() => {
+        console.log('Pond page useEffect triggered');
         setLoading(true);
         setSponsoredSingles([]);
         checkUserAndLoadProfiles();
-    }, [pathname]);
+    }, []); // Only run on mount, not on pathname changes
 
     const checkUserAndLoadProfiles = async () => {
+        console.log('Pond page checkUserAndLoadProfiles started');
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             window.location.href = '/login';
@@ -99,23 +101,22 @@ export default function PondPage() {
             setCurrentSponsoredSingle(sponsoredSingles[0]);
         }
 
-        await loadProfiles();
+        console.log('Pond page calling loadProfiles');
+        await loadProfiles(false, 1);
     };
 
-    const loadProfiles = async (isLoadMore = false) => {
+    const loadProfiles = async (isLoadMore = false, currentPage = page) => {
+        console.log('Pond page loadProfiles called with:', { isLoadMore, currentPage, page });
         if (isLoadMore) {
             setLoadingMore(true);
         } else {
             setLoading(true);
-            setPage(1);
         }
         
-        console.log('Search values:', { searchCity, searchState, searchZip }); // Debug log
-
         try {
             // Use the new optimized API endpoint
             const params = new URLSearchParams({
-                page: page.toString(),
+                page: currentPage.toString(),
                 limit: ITEMS_PER_PAGE.toString(),
                 city: searchCity,
                 state: searchState,
@@ -126,12 +127,12 @@ export default function PondPage() {
             const response = await fetch(`/api/profiles/pond?${params}`);
             const data = await response.json();
 
+            console.log('Pond page received data:', { success: data.success, profilesCount: data.profiles?.length || 0, error: data.error });
+
             if (!data.success) {
                 console.error('Error loading profiles:', data.error);
                 return;
             }
-
-            console.log('API data:', data); // Debug log
 
             // Check if we have more data
             setHasMore(data.hasMore);
@@ -145,26 +146,30 @@ export default function PondPage() {
             console.error('Error loading profiles:', error);
         }
 
+        console.log('Pond page setting loading to false');
         setLoading(false);
         setLoadingMore(false);
     };
 
     const loadMore = () => {
         if (!loadingMore && hasMore) {
-            setPage(prev => prev + 1);
-            loadProfiles(true);
+            const nextPage = page + 1;
+            setPage(nextPage);
+            loadProfiles(true, nextPage);
         }
     };
 
     const handleSearch = () => {
-        loadProfiles();
+        setPage(1);
+        loadProfiles(false, 1);
     };
 
     const handleClearSearch = () => {
         setSearchCity('');
         setSearchState('');
         setSearchZip('');
-        loadProfiles();
+        setPage(1);
+        loadProfiles(false, 1);
     };
 
     const calculateAge = (birthYear: number | null): number | null => {

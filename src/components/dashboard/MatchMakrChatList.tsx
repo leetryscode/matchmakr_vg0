@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/client';
 import MatchMakrChatListClient from './MatchMakrChatListClient';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 interface MatchMakrChatListProps {
@@ -17,14 +17,23 @@ const MatchMakrChatList = ({ userId, currentUserName, currentUserProfilePic }: M
   const [conversations, setConversations] = useState<any[]>([]);
   const [otherProfiles, setOtherProfiles] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const fetchConversations = async () => {
-    console.log('[MatchMakrChatList] fetchConversations called. userId:', userId);
+  const fetchConversations = useCallback(async (forceRefresh = false) => {
+    // Prevent excessive API calls - only fetch if forced or if it's been more than 5 seconds
+    const now = Date.now();
+    if (!forceRefresh && now - lastFetchTime < 5000) {
+      console.log('[MatchMakrChatList] Skipping fetch - too recent');
+      return;
+    }
+
+    console.log('[MatchMakrChatList] fetchConversations called. userId:', userId, 'forceRefresh:', forceRefresh);
     
     try {
+      setLoading(true);
       // Use the new optimized API endpoint
       const response = await fetch(`/api/conversations?userId=${userId}`);
       const data = await response.json();
@@ -53,63 +62,51 @@ const MatchMakrChatList = ({ userId, currentUserName, currentUserProfilePic }: M
 
       setConversations(data.conversations);
       setOtherProfiles(otherProfilesData);
+      setLastFetchTime(now);
       setLoading(false);
     } catch (error) {
       console.error('[MatchMakrChatList] Error fetching conversations:', error);
       setLoading(false);
     }
-  };
+  }, [userId, lastFetchTime]);
 
-  // Check if we're coming from pond with refresh parameter
+  // Single consolidated useEffect to handle all fetch scenarios
   useEffect(() => {
+    if (!userId) return;
+
+    let shouldFetch = false;
+    let forceRefresh = false;
+
+    // Check for refresh parameter
     const refreshParam = searchParams.get('refresh');
     if (refreshParam === 'true') {
       console.log('[MatchMakrChatList] Detected refresh parameter, clearing URL and refreshing data');
-      // Clear the refresh parameter from URL
       router.replace('/dashboard/matchmakr');
-      // Force refresh by calling fetchConversations directly
-      fetchConversations();
+      forceRefresh = true;
+      shouldFetch = true;
     }
-  }, [searchParams, router]);
 
-  // Refresh conversations when returning to dashboard (pathname changes)
-  useEffect(() => {
-    // Only refresh when on the matchmakr dashboard page
-    if (pathname === '/dashboard/matchmakr') {
-      console.log('[MatchMakrChatList] Refreshing conversations on dashboard return');
-      fetchConversations();
-    }
-  }, [pathname, userId]);
-
-  // Check for chat page visit flag and refresh data
-  useEffect(() => {
+    // Check for chat page visit flag
     if (pathname === '/dashboard/matchmakr') {
       const chatPageVisited = sessionStorage.getItem('chatPageVisited');
       if (chatPageVisited === 'true') {
         console.log('[MatchMakrChatList] Detected return from chat page, refreshing data');
         sessionStorage.removeItem('chatPageVisited');
-        fetchConversations();
+        forceRefresh = true;
+        shouldFetch = true;
       }
     }
-  }, [pathname, userId]);
 
-  // Fetch conversations on navigation or user change
-  useEffect(() => {
-    console.log('[MatchMakrChatList] Main effect triggered. pathname:', pathname, 'userId:', userId);
-    setLoading(true);
-    setConversations([]);
-    fetchConversations();
-  }, [pathname, userId]);
-
-  // Always fetch on component mount
-  useEffect(() => {
-    console.log('[MatchMakrChatList] Component mount effect triggered');
-    if (userId) {
-      setLoading(true);
-      setConversations([]);
-      fetchConversations();
+    // Always fetch on initial mount or when userId changes
+    if (!shouldFetch) {
+      shouldFetch = true;
+      forceRefresh = false;
     }
-  }, [userId]);
+
+    if (shouldFetch) {
+      fetchConversations(forceRefresh);
+    }
+  }, [userId, pathname, searchParams, router, fetchConversations]);
 
   if (loading) {
     return (

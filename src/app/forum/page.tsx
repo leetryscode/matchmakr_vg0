@@ -529,7 +529,7 @@ export default function ForumPage() {
                   onChange={(e) => setNewPostContent(e.target.value)}
                   placeholder="Post to the Green Room"
                   className="w-full bg-transparent text-white placeholder-white/60 resize-none border-none outline-none text-lg"
-                  rows={3}
+                  rows={1}
                   maxLength={280}
                 />
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
