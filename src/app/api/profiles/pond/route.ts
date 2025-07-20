@@ -15,13 +15,7 @@ export async function GET(req: NextRequest) {
   console.log('Pond API called with params:', { page, limit, searchCity, searchState, searchZip, selectedInterests });
 
   try {
-    // First, let's test if the view exists and has data
-    const { data: testData, error: testError } = await supabase
-      .from('profile_with_interests')
-      .select('count(*)')
-      .limit(1);
-    
-    console.log('Pond API view test:', { testData, testError: testError?.message });
+    console.log('Pond API - starting request processing');
 
     let query = supabase
       .from('profile_with_interests')
