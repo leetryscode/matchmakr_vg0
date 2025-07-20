@@ -91,15 +91,36 @@ function DeleteModal({ isOpen, onClose, onConfirm, title, message, isDeleting }:
   );
 }
 
+// Helper function to format relative time
+function formatRelativeTime(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return `${diffInSeconds}s`;
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes}m`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours}h`;
+  } else {
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days}d`;
+  }
+}
+
 export default function ForumPage() {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>('a5d6eff5-087b-47f1-b61d-28fd83324c24'); // Default to General Chatter
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [newPostContent, setNewPostContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [currentUserType, setCurrentUserType] = useState<string | null>(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
   const [submittingReply, setSubmittingReply] = useState(false);
@@ -129,19 +150,23 @@ export default function ForumPage() {
     console.log('Auth state:', { user: user?.id, authLoading });
   }, [user, authLoading]);
 
-  // Fetch current user's type
+  // Fetch current user's profile and type
   useEffect(() => {
-    const fetchUserType = async () => {
+    const fetchUserProfile = async () => {
       if (user?.id) {
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('profiles')
-          .select('user_type')
+          .select('*')
           .eq('id', user.id)
           .single();
-        setCurrentUserType(profile?.user_type || null);
+        
+        if (!error && profile) {
+          setCurrentUserProfile(profile);
+          setCurrentUserType(profile.user_type || null);
+        }
       }
     };
-    fetchUserType();
+    fetchUserProfile();
   }, [user, supabase]);
 
   useEffect(() => {
@@ -430,44 +455,56 @@ export default function ForumPage() {
     }
   };
 
+  const handleReplyClick = async (postId: string) => {
+    // If replies aren't expanded, expand them first
+    if (!expandedReplies.has(postId)) {
+      setExpandedReplies(prev => new Set(prev).add(postId));
+      if (!replies[postId]) {
+        await fetchReplies(postId);
+      }
+    }
+    // Then open the reply form
+    setReplyingTo(replyingTo === postId ? null : postId);
+  };
+
   const selectedCategoryName = categories.find(cat => cat.id === selectedCategory)?.name;
 
   return (
     <div className="min-h-screen bg-gradient-main">
-      <div className="max-w-4xl mx-auto p-4 sm:p-6 md:p-8">
-        {/* Back Navigation */}
-        <div className="flex justify-between items-center mb-6">
+      <div className="max-w-2xl mx-auto p-4 sm:p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => {
-              // Check if we can go back in history
               if (window.history.length > 1) {
                 router.back();
               } else {
-                // Fallback to dashboard
                 router.push('/dashboard/matchmakr');
               }
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 hover:bg-white/20 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-white/80 hover:text-white transition-colors"
           >
             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
-            Back
           </button>
-          <div></div> {/* Spacer for centering */}
+          <div className="text-center">
+            <h1 className="text-xl font-bold text-white">The Green Room</h1>
+            <p className="text-sm text-white/60 mt-1">Help us build this platform by sharing your thoughts. The Dev Team is listening!</p>
+          </div>
+          <div className="w-8"></div> {/* Spacer for centering */}
         </div>
 
-        <div className="bg-white/10 rounded-lg shadow-sm p-6 mb-6 border border-white/20">
-          <h1 className="text-3xl font-bold text-white">The Green Room</h1>
-          <p className="text-white/80">Share ideas and connect with GreenLight's very first users! The Dev Team is listening and needs your input! Help us grow this thing.</p>
-        </div>
-
-        {/* Categories as pinned threads */}
+        {/* Categories */}
         <div className="flex flex-wrap gap-2 mb-6">
           {categories.map((cat) => (
             <button
               key={cat.id}
-              className={`px-3 py-1.5 rounded-full border text-sm font-medium shadow-sm transition-colors ${selectedCategory === cat.id ? 'bg-blue-500/30 text-white border-blue-400/50' : 'bg-white/10 text-white border-white/30 hover:bg-white/20'}`}
+              className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-colors ${
+                selectedCategory === cat.id 
+                  ? 'bg-blue-500 text-white border-blue-500' 
+                  : 'bg-white/10 text-white/80 border-white/20 hover:bg-white/20'
+              }`}
               onClick={() => setSelectedCategory(cat.id)}
             >
               {cat.name}
@@ -475,7 +512,7 @@ export default function ForumPage() {
           ))}
           {selectedCategory && (
             <button
-              className="px-3 py-1.5 rounded-full border text-sm font-medium bg-white/10 text-white border-white/30 hover:bg-white/20"
+              className="px-3 py-1.5 rounded-full border text-sm font-medium bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
               onClick={() => setSelectedCategory(null)}
             >
               Show All
@@ -483,94 +520,56 @@ export default function ForumPage() {
           )}
         </div>
 
-        {/* New Post Form */}
+        {/* New Post Form - Twitter Style */}
         {selectedCategory && user && (
-          <div className="mb-6 bg-white/10 rounded-lg shadow-sm p-6 border border-white/20">
-            <h3 className="text-lg font-semibold text-white mb-4">
-              New Post in {selectedCategoryName}
-            </h3>
+          <div className="mb-6 bg-white/5 rounded-xl border border-white/10 p-4">
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <textarea
+                  value={newPostContent}
+                  onChange={(e) => setNewPostContent(e.target.value)}
+                  placeholder="Post to the Green Room"
+                  className="w-full bg-transparent text-white placeholder-white/60 resize-none border-none outline-none text-lg"
+                  rows={3}
+                  maxLength={280}
+                />
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                  <div className="text-sm text-white/60">
+                    {newPostContent.length}/280
+                  </div>
+                  <button
+                    onClick={handleCreatePost}
+                    disabled={submitting || !newPostContent.trim()}
+                    className="bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white px-6 py-2 rounded-full font-semibold transition-colors disabled:cursor-not-allowed border border-white/20"
+                  >
+                    {submitting ? 'Posting...' : 'Post'}
+                  </button>
+                </div>
+              </div>
+            </div>
             
             {error && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                <p className="mb-2">{error}</p>
-                {error.includes('log in') && (
-                  <div className="flex space-x-2 text-sm">
-                    <a href="/login" className="text-blue-600 underline">Log In</a>
-                    <button
-                      onClick={async () => {
-                        // Clear all cookies that might be corrupted
-                        document.cookie.split(';').forEach(function(c) {
-                          const eqPos = c.indexOf('=');
-                          const name = eqPos > -1 ? c.substr(0, eqPos) : c;
-                          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-                        });
-                        await supabase.auth.signOut();
-                        window.location.reload();
-                      }}
-                      className="text-red-600 underline"
-                    >
-                      Clear Session
-                    </button>
-                  </div>
-                )}
+              <div className="mt-3 p-3 bg-red-500/20 border border-red-400/30 text-red-200 rounded-lg text-sm">
+                {error}
               </div>
             )}
-
-            <div className="mb-4">
-              <textarea
-                value={newPostContent}
-                onChange={(e) => setNewPostContent(e.target.value)}
-                placeholder="Share your thoughts..."
-                className="w-full p-3 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white/10 text-white placeholder-white/60"
-                rows={4}
-                maxLength={280}
-              />
-              <div className="text-sm text-white/60 mt-1 text-right">
-                {newPostContent.length}/280 characters
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                onClick={handleCreatePost}
-                disabled={submitting || !newPostContent.trim()}
-                className="bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? 'Posting...' : 'Post'}
-              </button>
-            </div>
           </div>
         )}
         
         {/* Login prompt if not authenticated */}
         {selectedCategory && !user && !authLoading && (
           <div className="mb-6 p-4 bg-yellow-500/20 border border-yellow-400/30 rounded-lg">
-            <p className="text-yellow-200 mb-2">
+            <p className="text-yellow-200 mb-2 text-sm">
               Please log in to create posts.
             </p>
             <div className="flex space-x-2">
-              <a href="/login" className="text-blue-300 underline font-semibold">Log In</a>
-              <button
-                onClick={async () => {
-                  // Clear all cookies that might be corrupted
-                  document.cookie.split(';').forEach(function(c) {
-                    const eqPos = c.indexOf('=');
-                    const name = eqPos > -1 ? c.substr(0, eqPos) : c;
-                    document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-                  });
-                  await supabase.auth.signOut();
-                  window.location.reload();
-                }}
-                className="text-red-300 underline font-semibold"
-              >
-                Clear Session
-              </button>
+              <a href="/login" className="text-blue-300 underline font-semibold text-sm">Log In</a>
             </div>
           </div>
         )}
 
-        {/* Posts List */}
-        <div className="space-y-4">
+        {/* Posts List - Twitter Style */}
+        <div className="space-y-0">
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-300 mx-auto"></div>
@@ -585,184 +584,190 @@ export default function ForumPage() {
             </div>
           ) : (
             posts.map((post) => (
-              <div key={post.id} className="bg-white/10 rounded-lg shadow-sm p-6 border border-white/20">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white bg-gray-200 flex-shrink-0">
-                      {post.user_photos && post.user_photos.length > 0 ? (
-                        <img 
-                          src={post.user_photos[0]} 
-                          alt={post.user_name} 
-                          className="w-full h-full object-cover" 
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-sm font-bold text-white">
-                          {post.user_name?.charAt(0).toUpperCase() || '?'}
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-white">
+              <div key={post.id} className="border-b border-white/10 p-4 hover:bg-white/5 transition-colors">
+                <div className="flex gap-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/20 bg-gray-200 flex-shrink-0">
+                    {post.user_photos && post.user_photos.length > 0 ? (
+                      <img 
+                        src={post.user_photos[0]} 
+                        alt={post.user_name} 
+                        className="w-full h-full object-cover" 
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-sm font-bold text-white">
+                        {post.user_name?.charAt(0).toUpperCase() || ''}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-white text-sm">
                         {currentUserType === 'MATCHMAKR' ? (
                           <Link 
                             href={`/profile/${post.user_id}`}
-                            className="hover:text-blue-300 transition-colors cursor-pointer"
+                            className="hover:underline"
                           >
                             {post.user_name}
                           </Link>
                         ) : (
                           post.user_name
                         )}
-                      </div>
-                      <div className="text-sm text-white/60">
-                        {new Date(post.created_at).toLocaleDateString()} at {new Date(post.created_at).toLocaleTimeString()}
-                      </div>
+                      </span>
+                      <span className="text-white/60 text-sm">·</span>
+                      <span className="text-white/60 text-sm">{formatRelativeTime(post.created_at)}</span>
+                      <span className="text-white/60 text-sm">·</span>
+                      <span className="text-white/60 text-sm">{post.user_type}</span>
                     </div>
-                  </div>
-                  <div className="text-sm text-white/60">
-                    {post.user_type}
-                  </div>
-                </div>
-                <div className="text-white/90 leading-relaxed">{post.content}</div>
-                <div className="flex items-center gap-4 mt-4 pt-4 border-t border-white/20">
-                  <button className="flex items-center gap-1 text-white/60 hover:text-blue-300 text-sm">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path d="M14 9V5a3 3 0 0 0-6 0v4" />
-                      <rect x="2" y="9" width="20" height="12" rx="2" ry="2" />
-                    </svg>
-                    Like ({post.like_count})
-                  </button>
-                  <button 
-                    onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
-                    className="flex items-center gap-1 text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                    Reply
-                  </button>
-                  {post.reply_count > 0 && (
-                    <button 
-                      onClick={() => toggleReplies(post.id)}
-                      className="flex items-center gap-1 text-white/60 hover:text-blue-300 text-sm"
-                    >
-                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path d="M7 8l4-4 4 4M7 16l4 4 4-4" />
-                      </svg>
-                      {expandedReplies.has(post.id) ? 'Hide' : 'Show'} Replies ({post.reply_count})
-                    </button>
-                  )}
-                  {user && post.user_id === user.id && (
-                    <button 
-                      onClick={() => openDeleteModal('post', post.id)}
-                      disabled={deletingPost === post.id}
-                      className="flex items-center gap-1 text-white/60 hover:text-red-400 text-sm transition-colors disabled:opacity-50"
-                    >
-                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                      </svg>
-                      Delete
-                    </button>
-                  )}
-                </div>
-
-                {/* Reply Form */}
-                {replyingTo === post.id && user && (
-                  <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
-                    <div className="mb-3">
-                      <textarea
-                        value={replyContent}
-                        onChange={(e) => setReplyContent(e.target.value)}
-                        placeholder="Write a reply..."
-                        className="w-full p-3 border border-white/20 rounded-lg focus:ring-2 focus:ring-white focus:border-white focus:outline-none resize-none bg-white/10 text-white placeholder-white/60"
-                        rows={3}
-                        maxLength={140}
-                      />
-                      <div className="text-sm text-white/60 mt-1 text-right">
-                        {replyContent.length}/140 characters
-                      </div>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => setReplyingTo(null)}
-                        className="px-4 py-2 text-white/60 hover:text-white"
-                      >
-                        Cancel
+                    <div className="text-white text-sm leading-relaxed mb-3">{post.content}</div>
+                    
+                    {/* Action buttons */}
+                    <div className="flex items-center justify-between max-w-md">
+                      <button className="flex items-center gap-2 text-white/60 hover:text-blue-400 text-sm transition-colors">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path d="M14 9V5a3 3 0 0 0-6 0v4" />
+                          <rect x="2" y="9" width="20" height="12" rx="2" ry="2" />
+                        </svg>
+                        {post.like_count}
                       </button>
-                      <button
-                        onClick={() => handleCreateReply(post.id)}
-                        disabled={submittingReply || !replyContent.trim()}
-                        className="text-white/60 hover:text-white py-2 px-4 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      <button 
+                        onClick={() => handleReplyClick(post.id)}
+                        className="flex items-center gap-2 text-white/60 hover:text-green-400 text-sm transition-colors"
                       >
-                        {submittingReply ? 'Posting...' : 'Reply'}
+                        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                        {post.reply_count}
                       </button>
+                      {post.reply_count > 0 && (
+                        <button 
+                          onClick={() => toggleReplies(post.id)}
+                          className="flex items-center gap-2 text-white/60 hover:text-blue-400 text-sm transition-colors"
+                        >
+                          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path d="M7 8l4-4 4 4M7 16l4 4 4-4" />
+                          </svg>
+                          {expandedReplies.has(post.id) ? 'Hide' : 'Show'}
+                        </button>
+                      )}
+                      {user && post.user_id === user.id && (
+                        <button 
+                          onClick={() => openDeleteModal('post', post.id)}
+                          disabled={deletingPost === post.id}
+                          className="flex items-center gap-2 text-white/60 hover:text-red-400 text-sm transition-colors disabled:opacity-50"
+                        >
+                          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
+                        </button>
+                      )}
                     </div>
-                  </div>
-                )}
 
-                {/* Replies Section */}
-                {expandedReplies.has(post.id) && (
-                  <div className="mt-4 space-y-3">
-                    {replies[post.id] ? (
-                      replies[post.id].map((reply) => (
-                        <div key={reply.id} className="ml-8 bg-white/5 rounded-lg p-4 border border-white/10">
-                          <div className="flex items-start gap-3 mb-2">
-                            <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white bg-gray-200 flex-shrink-0">
-                              {reply.profiles?.photos && reply.profiles.photos.length > 0 ? (
-                                <img 
-                                  src={reply.profiles.photos[0]} 
-                                  alt={reply.profiles.name} 
-                                  className="w-full h-full object-cover" 
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">
-                                  {reply.profiles?.name?.charAt(0).toUpperCase() || '?'}
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-semibold text-white text-sm">
-                                {currentUserType === 'MATCHMAKR' ? (
-                                  <Link 
-                                    href={`/profile/${reply.author_id}`}
-                                    className="hover:text-blue-300 transition-colors cursor-pointer"
-                                  >
-                                    {reply.profiles?.name}
-                                  </Link>
-                                ) : (
-                                  reply.profiles?.name
-                                )}
-                              </div>
+                    {/* Reply Form */}
+                    {replyingTo === post.id && user && (
+                      <div className="mt-4 pt-4 border-t border-white/10">
+                        <div className="flex gap-3">
+                          <div className="flex-1">
+                            <textarea
+                              value={replyContent}
+                              onChange={(e) => setReplyContent(e.target.value)}
+                              placeholder="Post your reply"
+                              className="w-full bg-transparent text-white placeholder-white/60 resize-none border-none outline-none text-sm"
+                              rows={2}
+                              maxLength={140}
+                            />
+                            <div className="flex items-center justify-between mt-2">
                               <div className="text-xs text-white/60">
-                                {new Date(reply.created_at).toLocaleDateString()} at {new Date(reply.created_at).toLocaleTimeString()}
+                                {replyContent.length}/140
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => setReplyingTo(null)}
+                                  className="px-3 py-1 text-white/60 hover:text-white text-sm"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={() => handleCreateReply(post.id)}
+                                  disabled={submittingReply || !replyContent.trim()}
+                                  className="bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white px-4 py-1 rounded-full text-sm font-semibold transition-colors disabled:cursor-not-allowed border border-white/20"
+                                >
+                                  {submittingReply ? 'Posting...' : 'Reply'}
+                                </button>
                               </div>
                             </div>
                           </div>
-                          <div className="text-white/90 text-sm leading-relaxed">{reply.content}</div>
-                          {user && reply.author_id === user.id && (
-                            <div className="flex justify-end mt-2">
-                              <button 
-                                onClick={() => openDeleteModal('reply', reply.id, post.id)}
-                                disabled={deletingReply === reply.id}
-                                className="flex items-center gap-1 text-white/60 hover:text-red-400 text-xs transition-colors disabled:opacity-50"
-                              >
-                                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                  <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                </svg>
-                                Delete
-                              </button>
-                            </div>
-                          )}
                         </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-4 text-white/60">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-300 mx-auto mb-2"></div>
-                        Loading replies...
+                      </div>
+                    )}
+
+                    {/* Replies Section */}
+                    {expandedReplies.has(post.id) && (
+                      <div className="mt-4 space-y-3">
+                        {replies[post.id] ? (
+                          replies[post.id].map((reply) => (
+                            <div key={reply.id} className="ml-1 border-l border-white/10 pl-2">
+                              <div className="flex gap-3">
+                                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white/20 bg-gray-200 flex-shrink-0">
+                                  {reply.profiles?.photos && reply.profiles.photos.length > 0 ? (
+                                    <img 
+                                      src={reply.profiles.photos[0]} 
+                                      alt={reply.profiles.name} 
+                                      className="w-full h-full object-cover" 
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">
+                                      {reply.profiles?.name?.charAt(0).toUpperCase() || ''}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-semibold text-white text-sm">
+                                      {currentUserType === 'MATCHMAKR' ? (
+                                        <Link 
+                                          href={`/profile/${reply.author_id}`}
+                                          className="hover:underline"
+                                        >
+                                          {reply.profiles?.name}
+                                        </Link>
+                                      ) : (
+                                        reply.profiles?.name
+                                      )}
+                                    </span>
+                                    <span className="text-white/60 text-sm">·</span>
+                                    <span className="text-white/60 text-sm">{formatRelativeTime(reply.created_at)}</span>
+                                    <span className="text-white/60 text-sm">·</span>
+                                    <span className="text-white/60 text-sm">{reply.profiles?.user_type}</span>
+                                  </div>
+                                  <div className="text-white/90 text-sm leading-relaxed">{reply.content}</div>
+                                  {user && reply.author_id === user.id && (
+                                    <div className="flex justify-end mt-2">
+                                      <button 
+                                        onClick={() => openDeleteModal('reply', reply.id, post.id)}
+                                        disabled={deletingReply === reply.id}
+                                        className="flex items-center gap-1 text-white/60 hover:text-red-400 text-xs transition-colors disabled:opacity-50"
+                                      >
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                        </svg>
+                                        Delete
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-4 text-white/60">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-300 mx-auto mb-2"></div>
+                            Loading replies...
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                )}
+                </div>
               </div>
             ))
           )}
