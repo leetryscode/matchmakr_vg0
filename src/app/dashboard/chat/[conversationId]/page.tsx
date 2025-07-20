@@ -515,7 +515,7 @@ export default function ChatPage() {
           )}
         </div>
         {/* Input Section */}
-        <div className="px-4 py-5 border-t border-border-light flex items-center gap-3 bg-white/80 rounded-none">
+        <div className="px-4 py-5 pb-24 border-t border-border-light flex items-center gap-3 bg-white/80 rounded-none">
           <input
             type="text"
             className="flex-1 border border-gray-300 rounded-2xl px-4 py-4 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 placeholder:text-gray-400 placeholder:italic text-base bg-white/90"
