@@ -106,7 +106,7 @@ const MatchMakrChatList = ({ userId, currentUserName, currentUserProfilePic }: M
     if (shouldFetch) {
       fetchConversations(forceRefresh);
     }
-  }, [userId, pathname, searchParams, router, fetchConversations]);
+  }, [userId, pathname, searchParams, router]);
 
   if (loading) {
     return (

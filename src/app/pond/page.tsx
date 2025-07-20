@@ -45,33 +45,17 @@ export default function PondPage() {
     useEffect(() => {
         console.log('Pond page useEffect triggered');
         
-        // Only initialize if we don't have profiles
-        if (profiles.length === 0) {
-            setLoading(true);
-            setLoadingMore(false);
-            checkUserAndLoadProfiles();
-        }
-        
-        // Cleanup function to reset state when component unmounts
-        return () => {
-            console.log('Pond page cleanup - resetting state');
-            setProfiles([]);
-            setLoading(false);
-            setLoadingMore(false);
-        };
-    }, []); // Only run on mount, not on pathname changes
+        // Simple initialization - always load profiles on mount
+        setLoading(true);
+        checkUserAndLoadProfiles();
+    }, []); // Only run on mount
 
-    // Handle browser back button and navigation events - only reload if profiles are empty
+    // Debug loading state changes
     useEffect(() => {
-        console.log('Pond page pathname changed to:', pathname);
-        // Only re-initialize if we don't have profiles loaded
-        if (pathname === '/pond' && profiles.length === 0) {
-            console.log('Pond page re-initializing after pathname change - no profiles loaded');
-            setLoading(true);
-            setLoadingMore(false);
-            checkUserAndLoadProfiles();
-        }
-    }, [pathname, profiles.length]);
+        console.log('Pond page loading state changed:', { loading, profilesCount: profiles.length });
+    }, [loading, profiles.length]);
+
+    // Remove the complex pathname-based useEffect that was causing issues
 
     const checkUserAndLoadProfiles = async () => {
         console.log('Pond page checkUserAndLoadProfiles started');
@@ -144,6 +128,10 @@ export default function PondPage() {
         }
         
         try {
+            // Add timeout to prevent hanging
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            
             // Use the new optimized API endpoint
             const params = new URLSearchParams({
                 page: currentPage.toString(),
@@ -154,7 +142,11 @@ export default function PondPage() {
                 interests: JSON.stringify(selectedInterests)
             });
 
-            const response = await fetch(`/api/profiles/pond?${params}`);
+            const response = await fetch(`/api/profiles/pond?${params}`, {
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
             const data = await response.json();
 
             console.log('Pond page received data:', { success: data.success, profilesCount: data.profiles?.length || 0, error: data.error });
@@ -172,13 +164,18 @@ export default function PondPage() {
             } else {
                 setProfiles(data.profiles);
             }
+            
+            console.log('Pond page profiles updated:', { profilesCount: data.profiles?.length || 0, loading: false });
         } catch (error) {
             console.error('Error loading profiles:', error);
+            if (error instanceof Error && error.name === 'AbortError') {
+                console.log('Pond API request timed out');
+            }
+        } finally {
+            console.log('Pond page setting loading to false');
+            setLoading(false);
+            setLoadingMore(false);
         }
-
-        console.log('Pond page setting loading to false');
-        setLoading(false);
-        setLoadingMore(false);
     };
 
     const loadMore = () => {
@@ -286,15 +283,14 @@ export default function PondPage() {
     };
 
     const handleCloseChat = () => {
-        setSelectedSingleForChat(null);
-        setClickedSingleForChat(null);
-        setAboutSingleForChat(null);
+        setShowSelectSingleModal(false);
+        setPendingChatProfile(null);
     };
 
-    // Chat functionality is now handled by SelectSingleModal
+    console.log('Pond page render state:', { loading, profilesCount: profiles.length, hasMore });
 
     return (
-        <div className="min-h-screen bg-gradient-main p-4 sm:p-6 md:p-8">
+        <div className="min-h-screen bg-gradient-to-br from-primary-green via-primary-green-dark to-primary-green-darker p-4">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
@@ -386,6 +382,7 @@ export default function PondPage() {
                     <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mx-auto"></div>
                         <p className="mt-4 text-white">Loading profiles...</p>
+                        <p className="text-white text-sm">Debug: loading={loading.toString()}, profiles.length={profiles.length}</p>
                     </div>
                 ) : profiles.length === 0 ? (
                     <div className="text-center py-8">
@@ -393,7 +390,7 @@ export default function PondPage() {
                         <p className="text-white mt-2">Try adjusting your search filters.</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div key={`profiles-${profiles.length}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {profiles.map((profile) => {
                             const age = calculateAge(profile.birth_year);
                             return (
