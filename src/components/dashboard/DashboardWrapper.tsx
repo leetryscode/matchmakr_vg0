@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 interface DashboardWrapperProps {
@@ -16,6 +16,7 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
   const supabase = createClient();
   const [userTypeVerified, setUserTypeVerified] = useState(false);
   const [userTypeLoading, setUserTypeLoading] = useState(false);
+  const lastUserId = useRef<string | null>(null);
 
   useEffect(() => {
     console.log('DashboardWrapper effect:', { 
@@ -23,7 +24,8 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
       user: !!user, 
       expectedUserType, 
       userTypeVerified, 
-      userTypeLoading 
+      userTypeLoading,
+      lastUserId: lastUserId.current
     });
 
     if (loading) {
@@ -35,6 +37,14 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
       console.log('No user found, redirecting to login');
       router.push('/login');
       return;
+    }
+
+    // Only reset verification state if the user actually changed
+    if (user.id !== lastUserId.current) {
+      console.log('User changed, resetting verification state');
+      setUserTypeVerified(false);
+      setUserTypeLoading(false);
+      lastUserId.current = user.id;
     }
 
     // If we have an expected user type, verify the user's profile matches
@@ -82,14 +92,6 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
       console.log('User type already verified');
     }
   }, [user, loading, expectedUserType, router, supabase, userTypeVerified, userTypeLoading]);
-
-  // Reset verification state when user changes
-  useEffect(() => {
-    if (user) {
-      setUserTypeVerified(false);
-      setUserTypeLoading(false);
-    }
-  }, [user?.id]);
 
   if (loading || (expectedUserType && !userTypeVerified)) {
     console.log('Showing loading state:', { loading, expectedUserType, userTypeVerified });
