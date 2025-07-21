@@ -207,7 +207,7 @@ export default function SingleChatPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-main p-0 sm:p-2">
+    <div className="min-h-screen flex flex-col p-0 sm:p-2 bg-white">
       <div className="flex-1 w-full bg-white/80 rounded-none shadow-2xl flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 sticky top-0 bg-white/80 z-10 rounded-none">
           <button 
@@ -342,7 +342,7 @@ export default function SingleChatPage() {
           )}
         </div>
         {/* Input Section */}
-        <div className="px-4 py-5 pb-24 border-t border-border-light flex items-center gap-3 bg-white/80 rounded-none">
+        <div className="px-4 py-5 pb-4 border-t border-border-light flex items-center gap-3 bg-white/80 rounded-none">
           <input
             type="text"
             className="flex-1 border border-gray-300 rounded-2xl px-4 py-4 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 placeholder:text-gray-400 placeholder:italic text-base bg-white/90"
