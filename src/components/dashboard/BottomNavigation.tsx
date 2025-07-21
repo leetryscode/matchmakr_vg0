@@ -103,10 +103,24 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
     }, [showDropdown]);
 
     const handleDashboardClick = () => {
-        if (!userType) return;
+        console.log('=== DASHBOARD CLICK ===');
+        console.log('User type:', userType);
+        console.log('Router object:', router);
+        
+        if (!userType) {
+            console.log('No user type, cannot navigate');
+            return;
+        }
         
         const dashboardPath = `/dashboard/${userType.toLowerCase()}`;
-        router.push(dashboardPath);
+        console.log('Attempting navigation to:', dashboardPath);
+        
+        try {
+            router.push(dashboardPath);
+            console.log('router.push called successfully');
+        } catch (error) {
+            console.error('Error navigating to dashboard:', error);
+        }
     };
 
     return (

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Profile } from '@/components/profile/types';
 import Link from 'next/link';
@@ -13,6 +13,21 @@ interface PondProfile extends Profile {
     profile_pic_url: string | null;
     interests?: { id: number; name: string }[];
 }
+
+interface PondCache {
+    profiles: PondProfile[];
+    page: number;
+    hasMore: boolean;
+    searchCity: string;
+    searchState: string;
+    searchZip: string;
+    selectedInterests: { id: number; name: string }[];
+    scrollPosition: number;
+    timestamp: number;
+}
+
+const CACHE_KEY = 'pond_cache';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export default function PondPage() {
     const supabase = createClient();
@@ -37,18 +52,136 @@ export default function PondPage() {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
+    const [showingCachedData, setShowingCachedData] = useState(false);
     const ITEMS_PER_PAGE = 20;
 
     const router = useRouter();
     const pathname = usePathname();
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+    // Cache management functions
+    const saveToCache = (data: Omit<PondCache, 'timestamp'>) => {
+        try {
+            const cacheData: PondCache = {
+                ...data,
+                timestamp: Date.now()
+            };
+            localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+            console.log('Saved to cache:', cacheData);
+        } catch (error) {
+            console.error('Error saving to cache:', error);
+        }
+    };
+
+    const loadFromCache = (): PondCache | null => {
+        try {
+            const cached = localStorage.getItem(CACHE_KEY);
+            if (!cached) return null;
+            
+            const cacheData: PondCache = JSON.parse(cached);
+            const isExpired = Date.now() - cacheData.timestamp > CACHE_DURATION;
+            
+            if (isExpired) {
+                localStorage.removeItem(CACHE_KEY);
+                return null;
+            }
+            
+            console.log('Loaded from cache:', cacheData);
+            return cacheData;
+        } catch (error) {
+            console.error('Error loading from cache:', error);
+            return null;
+        }
+    };
+
+    const clearCache = () => {
+        try {
+            localStorage.removeItem(CACHE_KEY);
+            console.log('Cache cleared');
+        } catch (error) {
+            console.error('Error clearing cache:', error);
+        }
+    };
+
+    // Restore scroll position
+    const restoreScrollPosition = (position: number) => {
+        setTimeout(() => {
+            if (scrollContainerRef.current) {
+                scrollContainerRef.current.scrollTop = position;
+                console.log('Restored scroll position:', position);
+            }
+        }, 100);
+    };
+
+    // Save scroll position
+    const saveScrollPosition = () => {
+        if (scrollContainerRef.current) {
+            const position = scrollContainerRef.current.scrollTop;
+            const currentCache = loadFromCache();
+            if (currentCache) {
+                saveToCache({
+                    ...currentCache,
+                    scrollPosition: position
+                });
+            }
+        }
+    };
 
     useEffect(() => {
         console.log('Pond page useEffect triggered');
         
-        // Simple initialization - always load profiles on mount
-        setLoading(true);
-        checkUserAndLoadProfiles();
+        // Try to load from cache first
+        const cached = loadFromCache();
+        if (cached) {
+            console.log('Using cached data');
+            setProfiles(cached.profiles);
+            setPage(cached.page);
+            setHasMore(cached.hasMore);
+            setSearchCity(cached.searchCity);
+            setSearchState(cached.searchState);
+            setSearchZip(cached.searchZip);
+            setSelectedInterests(cached.selectedInterests);
+            setLoading(false);
+            setShowingCachedData(true);
+            
+            // Restore scroll position after a short delay
+            restoreScrollPosition(cached.scrollPosition);
+        } else {
+            console.log('No cache found, loading fresh data');
+            setLoading(true);
+            setShowingCachedData(false);
+            checkUserAndLoadProfiles();
+        }
     }, []); // Only run on mount
+
+    // Save to cache when data changes
+    useEffect(() => {
+        if (!loading && profiles.length > 0) {
+            saveToCache({
+                profiles,
+                page,
+                hasMore,
+                searchCity,
+                searchState,
+                searchZip,
+                selectedInterests,
+                scrollPosition: scrollContainerRef.current?.scrollTop || 0
+            });
+        }
+    }, [profiles, page, hasMore, searchCity, searchState, searchZip, selectedInterests, loading]);
+
+    // Save scroll position on scroll
+    useEffect(() => {
+        const handleScroll = () => {
+            saveScrollPosition();
+        };
+
+        const container = scrollContainerRef.current;
+        if (container) {
+            container.addEventListener('scroll', handleScroll);
+            return () => container.removeEventListener('scroll', handleScroll);
+        }
+    }, []);
 
     // Debug loading state changes
     useEffect(() => {
@@ -119,8 +252,34 @@ export default function PondPage() {
         }
     };
 
-    const loadProfiles = async (isLoadMore = false, currentPage = page) => {
-        console.log('Pond page loadProfiles called with:', { isLoadMore, currentPage, page });
+    const loadProfiles = async (isLoadMore = false, currentPage = page, forceRefresh = false) => {
+        console.log('Pond page loadProfiles called with:', { isLoadMore, currentPage, page, forceRefresh });
+        
+        // If we have cached data and this isn't a forced refresh, show cached data immediately
+        if (!forceRefresh && !isLoadMore) {
+            const cached = loadFromCache();
+            if (cached && cached.profiles.length > 0) {
+                console.log('Showing cached data immediately');
+                setProfiles(cached.profiles);
+                setPage(cached.page);
+                setHasMore(cached.hasMore);
+                setSearchCity(cached.searchCity);
+                setSearchState(cached.searchState);
+                setSearchZip(cached.searchZip);
+                setSelectedInterests(cached.selectedInterests);
+                setLoading(false);
+                
+                // Restore scroll position
+                restoreScrollPosition(cached.scrollPosition);
+                
+                // Load fresh data in background
+                setTimeout(() => {
+                    loadProfiles(false, 1, true);
+                }, 1000);
+                return;
+            }
+        }
+        
         if (isLoadMore) {
             setLoadingMore(true);
         } else {
@@ -165,16 +324,25 @@ export default function PondPage() {
                 setProfiles(data.profiles);
             }
             
+            // Clear cached data flag when fresh data loads
+            if (!isLoadMore) {
+                setShowingCachedData(false);
+            }
+            
             console.log('Pond page profiles updated:', { profilesCount: data.profiles?.length || 0, loading: false });
         } catch (error) {
             console.error('Error loading profiles:', error);
-            if (error instanceof Error && error.name === 'AbortError') {
-                console.log('Pond API request timed out');
+            if (isLoadMore) {
+                setLoadingMore(false);
+            } else {
+                setLoading(false);
             }
         } finally {
-            console.log('Pond page setting loading to false');
-            setLoading(false);
-            setLoadingMore(false);
+            if (isLoadMore) {
+                setLoadingMore(false);
+            } else {
+                setLoading(false);
+            }
         }
     };
 
@@ -376,6 +544,18 @@ export default function PondPage() {
                     <h2 className="text-xl font-semibold text-white">
                         {loading ? 'Loading...' : `${profiles.length} singles found`}
                     </h2>
+                    <button
+                        onClick={() => {
+                            clearCache();
+                            setLoading(true);
+                            setShowingCachedData(false);
+                            loadProfiles(false, 1, true);
+                        }}
+                        className="px-3 py-1 bg-white/10 text-white rounded-md border border-white/20 hover:bg-white/20 text-sm transition-colors"
+                        title="Clear cache and reload"
+                    >
+                        Refresh
+                    </button>
                 </div>
 
                 {loading ? (
@@ -390,56 +570,61 @@ export default function PondPage() {
                         <p className="text-white mt-2">Try adjusting your search filters.</p>
                     </div>
                 ) : (
-                    <div key={`profiles-${profiles.length}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {profiles.map((profile) => {
-                            const age = calculateAge(profile.birth_year);
-                            return (
-                                <Link href={`/profile/${profile.id}`} key={profile.id} className="group block">
-                                    <div className="bg-white/10 rounded-2xl p-4 shadow-card hover:shadow-card-hover border border-white/20 transition-all duration-300 group-hover:scale-105">
-                                        {/* Profile Picture - large square, rounded-2xl */}
-                                        <div className="w-full aspect-square max-w-xs mx-auto mb-4 overflow-hidden rounded-2xl border-2 border-white group-hover:border-accent-teal-light transition-all duration-300 flex items-center justify-center bg-gray-200">
-                                            {profile.profile_pic_url ? (
-                                                <img 
-                                                    src={profile.profile_pic_url} 
-                                                    alt={profile.name || 'Profile'} 
-                                                    className="w-full h-full object-cover" 
-                                                />
-                                            ) : (
-                                                <span className="text-2xl font-bold text-white">{profile.name?.charAt(0).toUpperCase() || '?'}</span>
-                                            )}
-                                        </div>
-                                        {/* Name and Age only */}
-                                        <div className="text-center">
-                                            <div className="flex items-center justify-center mb-1">
-                                                <span className="text-2xl font-bold text-white">{profile.name}{age ? ',' : ''}</span>
-                                                {age && (
-                                                    <span className="text-2xl font-bold text-white ml-2 align-middle">{age}</span>
+                    <div 
+                        ref={scrollContainerRef}
+                        className="max-h-[70vh] overflow-y-auto"
+                    >
+                        <div key={`profiles-${profiles.length}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {profiles.map((profile) => {
+                                const age = calculateAge(profile.birth_year);
+                                return (
+                                    <Link href={`/profile/${profile.id}`} key={profile.id} className="group block">
+                                        <div className="bg-white/10 rounded-2xl p-4 shadow-card hover:shadow-card-hover border border-white/20 transition-all duration-300 group-hover:scale-105">
+                                            {/* Profile Picture - large square, rounded-2xl */}
+                                            <div className="w-full aspect-square max-w-xs mx-auto mb-4 overflow-hidden rounded-2xl border-2 border-white group-hover:border-accent-teal-light transition-all duration-300 flex items-center justify-center bg-gray-200">
+                                                {profile.profile_pic_url ? (
+                                                    <img 
+                                                        src={profile.profile_pic_url} 
+                                                        alt={profile.name || 'Profile'} 
+                                                        className="w-full h-full object-cover" 
+                                                    />
+                                                ) : (
+                                                    <span className="text-2xl font-bold text-white">{profile.name?.charAt(0).toUpperCase() || '?'}</span>
                                                 )}
                                             </div>
-                                            {/* Interests badges */}
-                                            {profile.interests && profile.interests.length > 0 && (
-                                                <div className="flex flex-wrap justify-center gap-2 mb-2">
-                                                    {profile.interests.slice(0, 5).map(interest => (
-                                                        <span key={interest.id} className="bg-white/20 text-white px-3 py-1 rounded-full text-xs">
-                                                            {interest.name}
-                                                        </span>
-                                                    ))}
+                                            {/* Name and Age only */}
+                                            <div className="text-center">
+                                                <div className="flex items-center justify-center mb-1">
+                                                    <span className="text-2xl font-bold text-white">{profile.name}{age ? ',' : ''}</span>
+                                                    {age && (
+                                                        <span className="text-2xl font-bold text-white ml-2 align-middle">{age}</span>
+                                                    )}
                                                 </div>
-                                            )}
-                                            {/* Message Sponsor Button */}
-                                            {profile.sponsored_by_id && (
-                                                <button
-                                                    className="mt-2 px-4 py-2 rounded-full border border-accent-teal-light bg-white/10 hover:bg-white/20 text-white font-medium transition-colors"
-                                                    onClick={e => { e.preventDefault(); handleOpenChat(profile); }}
-                                                >
-                                                    Message Sponsor
-                                                </button>
-                                            )}
+                                                {/* Interests badges */}
+                                                {profile.interests && profile.interests.length > 0 && (
+                                                    <div className="flex flex-wrap justify-center gap-2 mb-2">
+                                                        {profile.interests.slice(0, 5).map(interest => (
+                                                            <span key={interest.id} className="bg-white/20 text-white px-3 py-1 rounded-full text-xs">
+                                                                {interest.name}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                {/* Message Sponsor Button */}
+                                                {profile.sponsored_by_id && (
+                                                    <button
+                                                        className="mt-2 px-4 py-2 rounded-full border border-accent-teal-light bg-white/10 hover:bg-white/20 text-white font-medium transition-colors"
+                                                        onClick={e => { e.preventDefault(); handleOpenChat(profile); }}
+                                                    >
+                                                        Message Sponsor
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                </Link>
-                            );
-                        })}
+                                    </Link>
+                                );
+                            })}
+                        </div>
                     </div>
                 )}
                 
