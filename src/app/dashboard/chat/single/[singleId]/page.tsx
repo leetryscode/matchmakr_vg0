@@ -135,6 +135,17 @@ export default function SingleChatPage() {
     }
   }, [chatMessages, chatLoading]);
 
+  // Force scroll to bottom on initial load
+  useEffect(() => {
+    if (!chatLoading && chatMessages.length > 0) {
+      const container = chatContainerRef.current;
+      if (container) {
+        // Immediate scroll to bottom
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+  }, [chatLoading]);
+
   // Add typing indicator state
   const [isTyping, setIsTyping] = useState(false);
 

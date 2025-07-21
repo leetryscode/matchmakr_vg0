@@ -122,10 +122,23 @@ export default function ChatPage() {
         // Use a slightly longer delay to ensure all content is rendered
         setTimeout(() => {
           container.scrollTop = container.scrollHeight;
+          shouldAutoScrollRef.current = true;
         }, 150);
       }
     }
   }, [chatLoading, chatMessages.length]);
+
+  // Force scroll to bottom on initial load
+  useEffect(() => {
+    if (!chatLoading && chatMessages.length > 0) {
+      const container = chatContainerRef.current;
+      if (container) {
+        // Immediate scroll to bottom
+        container.scrollTop = container.scrollHeight;
+        shouldAutoScrollRef.current = true;
+      }
+    }
+  }, [chatLoading]);
 
   // Handle scroll events to determine if we should auto-scroll
   useEffect(() => {
@@ -410,7 +423,7 @@ export default function ChatPage() {
         </div>
         
         {/* Scrollable chat area */}
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-2 py-4 text-left bg-background-main relative" style={{ minHeight: 400 }}>
+        <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-2 py-4 text-left bg-white relative" style={{ minHeight: 400 }}>
           {chatLoading ? (
             <div className="text-center text-gray-400 py-4">Loading chat...</div>
           ) : chatMessages.length === 0 ? (

@@ -24,17 +24,33 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
 
     // Fetch user type for dashboard routing
     useEffect(() => {
-        if (!user) return;
+        if (!user) {
+            console.log('BottomNavigation: No user available');
+            return;
+        }
         
         const fetchUserType = async () => {
-            const { data: profile } = await supabaseRef.current
-                .from('profiles')
-                .select('user_type')
-                .eq('id', user.id)
-                .single();
+            console.log('BottomNavigation: Fetching user type for user:', user.id);
+            try {
+                const { data: profile, error } = await supabaseRef.current
+                    .from('profiles')
+                    .select('user_type')
+                    .eq('id', user.id)
+                    .single();
 
-            if (profile) {
-                setUserType(profile.user_type);
+                if (error) {
+                    console.error('BottomNavigation: Error fetching user type:', error);
+                    return;
+                }
+
+                if (profile) {
+                    console.log('BottomNavigation: User type fetched:', profile.user_type);
+                    setUserType(profile.user_type);
+                } else {
+                    console.log('BottomNavigation: No profile found for user');
+                }
+            } catch (error) {
+                console.error('BottomNavigation: Exception fetching user type:', error);
             }
         };
 
@@ -108,7 +124,14 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
         console.log('Router object:', router);
         
         if (!userType) {
-            console.log('No user type, cannot navigate');
+            console.log('No user type, trying fallback navigation');
+            // Try to navigate to a default dashboard route
+            try {
+                router.push('/dashboard/matchmakr');
+                console.log('Fallback navigation to /dashboard/matchmakr');
+            } catch (error) {
+                console.error('Error with fallback navigation:', error);
+            }
             return;
         }
         
