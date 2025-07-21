@@ -572,7 +572,7 @@ export default function PondPage() {
                 ) : (
                     <div 
                         ref={scrollContainerRef}
-                        className="max-h-[70vh] overflow-y-auto"
+                        className="max-h-[calc(70vh-5rem)] overflow-y-auto"
                     >
                         <div key={`profiles-${profiles.length}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {profiles.map((profile) => {

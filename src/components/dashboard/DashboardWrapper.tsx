@@ -18,7 +18,18 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
   const [userTypeLoading, setUserTypeLoading] = useState(false);
 
   useEffect(() => {
-    if (loading) return;
+    console.log('DashboardWrapper effect:', { 
+      loading, 
+      user: !!user, 
+      expectedUserType, 
+      userTypeVerified, 
+      userTypeLoading 
+    });
+
+    if (loading) {
+      console.log('Auth still loading...');
+      return;
+    }
 
     if (!user) {
       console.log('No user found, redirecting to login');
@@ -29,6 +40,7 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
     // If we have an expected user type, verify the user's profile matches
     if (expectedUserType && !userTypeVerified && !userTypeLoading) {
       const verifyUserType = async () => {
+        console.log('Starting user type verification for:', expectedUserType);
         setUserTypeLoading(true);
         try {
           const { data: profile, error } = await supabase
@@ -37,8 +49,11 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
             .eq('id', user.id)
             .single();
 
+          console.log('Profile verification result:', { profile, error });
+
           if (error) {
             console.error('Error fetching profile:', error);
+            setUserTypeLoading(false);
             return;
           }
 
@@ -53,6 +68,7 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
             return;
           }
 
+          console.log('User type verified successfully');
           setUserTypeVerified(true);
         } catch (error) {
           console.error('Error verifying user type:', error);
@@ -62,10 +78,21 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
       };
 
       verifyUserType();
+    } else if (expectedUserType && userTypeVerified) {
+      console.log('User type already verified');
     }
   }, [user, loading, expectedUserType, router, supabase, userTypeVerified, userTypeLoading]);
 
+  // Reset verification state when user changes
+  useEffect(() => {
+    if (user) {
+      setUserTypeVerified(false);
+      setUserTypeLoading(false);
+    }
+  }, [user?.id]);
+
   if (loading || (expectedUserType && !userTypeVerified)) {
+    console.log('Showing loading state:', { loading, expectedUserType, userTypeVerified });
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
