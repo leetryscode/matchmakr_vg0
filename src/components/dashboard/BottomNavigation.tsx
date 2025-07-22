@@ -13,49 +13,15 @@ interface BottomNavigationProps {
 export default function BottomNavigation({ userId }: BottomNavigationProps) {
     const router = useRouter();
     const supabaseRef = useRef(createClient());
-    const { user } = useAuth();
+    const { user, userType } = useAuth();
 
     const [showDropdown, setShowDropdown] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [userType, setUserType] = useState<string>('');
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Fetch user type for dashboard routing
-    useEffect(() => {
-        if (!user) {
-            console.log('BottomNavigation: No user available');
-            return;
-        }
-        
-        const fetchUserType = async () => {
-            console.log('BottomNavigation: Fetching user type for user:', user.id);
-            try {
-                const { data: profile, error } = await supabaseRef.current
-                    .from('profiles')
-                    .select('user_type')
-                    .eq('id', user.id)
-                    .single();
-
-                if (error) {
-                    console.error('BottomNavigation: Error fetching user type:', error);
-                    return;
-                }
-
-                if (profile) {
-                    console.log('BottomNavigation: User type fetched:', profile.user_type);
-                    setUserType(profile.user_type);
-                } else {
-                    console.log('BottomNavigation: No profile found for user');
-                }
-            } catch (error) {
-                console.error('BottomNavigation: Exception fetching user type:', error);
-            }
-        };
-
-        fetchUserType();
-    }, [user]);
+    // User type is now cached in AuthContext, no need to fetch it here
 
     // Fetch notifications for the current user
     useEffect(() => {

@@ -124,27 +124,18 @@ export default function SingleChatPage() {
     });
   }, [singleId, currentUserId, currentUserType, sponsorInfo]);
 
-  // Always scroll to bottom when new messages arrive or chat loads
-  useEffect(() => {
-    const container = chatContainerRef.current;
-    if (container) {
-      // Use setTimeout to ensure DOM is fully rendered
-      setTimeout(() => {
-        container.scrollTop = container.scrollHeight;
-      }, 100);
-    }
-  }, [chatMessages, chatLoading]);
-
-  // Force scroll to bottom on initial load
+  // Scroll to bottom when chat loads or new messages arrive
   useEffect(() => {
     if (!chatLoading && chatMessages.length > 0) {
       const container = chatContainerRef.current;
       if (container) {
-        // Immediate scroll to bottom
-        container.scrollTop = container.scrollHeight;
+        // Use a longer delay to ensure all content is rendered
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 300);
       }
     }
-  }, [chatLoading]);
+  }, [chatLoading, chatMessages.length]);
 
   // Add typing indicator state
   const [isTyping, setIsTyping] = useState(false);

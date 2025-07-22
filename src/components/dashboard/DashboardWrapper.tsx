@@ -2,8 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useEffect } from 'react';
 
 interface DashboardWrapperProps {
   children: React.ReactNode;
@@ -11,21 +10,15 @@ interface DashboardWrapperProps {
 }
 
 export default function DashboardWrapper({ children, expectedUserType }: DashboardWrapperProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, userType } = useAuth();
   const router = useRouter();
-  const supabase = createClient();
-  const [userTypeVerified, setUserTypeVerified] = useState(false);
-  const [userTypeLoading, setUserTypeLoading] = useState(false);
-  const lastUserId = useRef<string | null>(null);
 
   useEffect(() => {
     console.log('DashboardWrapper effect:', { 
       loading, 
       user: !!user, 
       expectedUserType, 
-      userTypeVerified, 
-      userTypeLoading,
-      lastUserId: lastUserId.current
+      userType
     });
 
     if (loading) {
@@ -39,67 +32,28 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
       return;
     }
 
-    // Only reset verification state if the user actually changed
-    if (user.id !== lastUserId.current) {
-      console.log('User changed, resetting verification state');
-      setUserTypeVerified(false);
-      setUserTypeLoading(false);
-      lastUserId.current = user.id;
+    // If we have an expected user type, verify it matches the cached user type
+    if (expectedUserType && userType && userType !== expectedUserType) {
+      console.log(`User type mismatch. Expected: ${expectedUserType}, Got: ${userType}`);
+      router.push(`/dashboard/${userType.toLowerCase()}`);
+      return;
     }
+  }, [user, loading, expectedUserType, userType, router]);
 
-    // If we have an expected user type, verify the user's profile matches
-    if (expectedUserType && !userTypeVerified && !userTypeLoading) {
-      const verifyUserType = async () => {
-        console.log('Starting user type verification for:', expectedUserType);
-        setUserTypeLoading(true);
-        try {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('user_type')
-            .eq('id', user.id)
-            .single();
-
-          console.log('Profile verification result:', { profile, error });
-
-          if (error) {
-            console.error('Error fetching profile:', error);
-            setUserTypeLoading(false);
-            return;
-          }
-
-          if (!profile || profile.user_type !== expectedUserType) {
-            console.log(`User type mismatch. Expected: ${expectedUserType}, Got: ${profile?.user_type}`);
-            // Redirect to appropriate dashboard based on user type
-            if (profile?.user_type) {
-              router.push(`/dashboard/${profile.user_type.toLowerCase()}`);
-            } else {
-              router.push('/');
-            }
-            return;
-          }
-
-          console.log('User type verified successfully');
-          setUserTypeVerified(true);
-        } catch (error) {
-          console.error('Error verifying user type:', error);
-        } finally {
-          setUserTypeLoading(false);
-        }
-      };
-
-      verifyUserType();
-    } else if (expectedUserType && userTypeVerified) {
-      console.log('User type already verified');
-    }
-  }, [user, loading, expectedUserType, router, supabase, userTypeVerified, userTypeLoading]);
-
-  if (loading || (expectedUserType && !userTypeVerified)) {
-    console.log('Showing loading state:', { loading, expectedUserType, userTypeVerified });
+  if (loading) {
+    console.log('Showing loading state: Auth still loading');
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-main">
         <div className="text-white text-lg">Loading...</div>
       </div>
     );
+  }
+
+  // If we have an expected user type but no cached user type, allow access anyway
+  // This prevents infinite loading when the cache hasn't populated yet
+  if (expectedUserType && !userType) {
+    console.log('No cached user type, but allowing access to prevent infinite loading');
+    // Don't show loading screen, just render the children
   }
 
   if (!user) {

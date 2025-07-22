@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  userType: string | null;
   signOut: () => Promise<void>;
 }
 
@@ -16,8 +17,37 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userType, setUserType] = useState<string | null>(null);
   const supabase = createClient();
   const router = useRouter();
+
+  // Function to fetch and cache user type
+  const fetchUserType = async (userId: string) => {
+    console.log('AuthContext: Fetching user type for userId:', userId);
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('user_type')
+        .eq('id', userId)
+        .single();
+
+      console.log('AuthContext: Profile fetch result:', { profile, error });
+
+      if (error) {
+        console.error('AuthContext: Error fetching user type:', error);
+        return;
+      }
+
+      if (profile?.user_type) {
+        console.log('AuthContext: Cached user type:', profile.user_type);
+        setUserType(profile.user_type);
+      } else {
+        console.log('AuthContext: No user_type found in profile:', profile);
+      }
+    } catch (error) {
+      console.error('AuthContext: Exception fetching user type:', error);
+    }
+  };
 
   useEffect(() => {
     // Get initial session
@@ -39,8 +69,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (!user) {
           // No user but no error - this is normal for unauthenticated users
           setUser(null);
+          setUserType(null);
         } else {
           setUser(user);
+          // Fetch user type when user is set
+          fetchUserType(user.id);
         }
       } catch (err) {
         console.error('Session error:', err);
@@ -71,21 +104,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Handle auth state changes
         if (event === 'SIGNED_OUT') {
           // Clear any cached data and redirect to login
+          setUserType(null);
           router.push('/login');
         } else if (event === 'SIGNED_IN' && session?.user) {
-          // Fetch user profile to determine redirect
-          try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('user_type')
-              .eq('id', session.user.id)
-              .single();
-
-            if (profile?.user_type) {
-              router.push(`/dashboard/${profile.user_type.toLowerCase()}`);
-            }
-          } catch (error) {
-            console.error('Error fetching profile on sign in:', error);
+          // Fetch and cache user type, then redirect
+          await fetchUserType(session.user.id);
+          if (userType) {
+            router.push(`/dashboard/${userType.toLowerCase()}`);
           }
         }
       }
@@ -99,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut }}>
+    <AuthContext.Provider value={{ user, loading, userType, signOut }}>
       {children}
     </AuthContext.Provider>
   );

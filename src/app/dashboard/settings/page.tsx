@@ -12,17 +12,23 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState<any>(null);
   const [sponsor, setSponsor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
+    console.log('Settings page useEffect:', { authLoading, user: !!user, loading });
+    
     // Redirect if not authenticated
     if (!authLoading && !user) {
+      console.log('Settings: No user, redirecting to login');
       router.push('/login');
       return;
     }
 
     const fetchProfile = async () => {
       if (!user) return;
+      
+      console.log('Settings: Fetching profile for user:', user.id);
       
       try {
         // Fetch the user's profile
@@ -32,8 +38,11 @@ export default function SettingsPage() {
           .eq('id', user.id)
           .single();
 
+        console.log('Settings: Profile fetch result:', { profileData, error });
+
         if (error) {
-          console.error('Error fetching profile:', error);
+          console.error('Settings: Error fetching profile:', error);
+          setLoading(false);
           return;
         }
 
@@ -41,11 +50,14 @@ export default function SettingsPage() {
 
         // Fetch sponsor if user is a SINGLE and has one
         if (profileData.user_type === 'SINGLE' && profileData.sponsored_by_id) {
+          console.log('Settings: Fetching sponsor for single user');
           const { data: sponsorProfile } = await supabase
             .from('profiles')
             .select('id, name, photos')
             .eq('id', profileData.sponsored_by_id)
             .single();
+
+          console.log('Settings: Sponsor fetch result:', sponsorProfile);
 
           if (sponsorProfile) {
             setSponsor({
@@ -55,14 +67,24 @@ export default function SettingsPage() {
           }
         }
       } catch (error) {
-        console.error('Error in settings:', error);
+        console.error('Settings: Error in settings:', error);
       } finally {
+        console.log('Settings: Setting loading to false');
         setLoading(false);
       }
     };
 
     if (user) {
+      // Set a timeout to prevent infinite loading
+      const timeout = setTimeout(() => {
+        console.log('Settings: Loading timeout reached, allowing access');
+        setLoadingTimeout(true);
+        setLoading(false);
+      }, 5000); // 5 second timeout
+      
       fetchProfile();
+      
+      return () => clearTimeout(timeout);
     }
   }, [user, supabase, authLoading, router]);
 
@@ -108,7 +130,7 @@ export default function SettingsPage() {
   }
 
   // Show loading while fetching profile
-  if (loading) {
+  if (loading && !loadingTimeout) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary-blue to-accent-teal-light p-6 text-white">
         <div className="text-lg">Loading settings...</div>

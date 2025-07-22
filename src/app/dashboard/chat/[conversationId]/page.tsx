@@ -103,42 +103,19 @@ export default function ChatPage() {
     });
   }, [chatContext, currentUserId]);
 
-  // Always scroll to bottom when new messages arrive or chat loads
-  useEffect(() => {
-    const container = chatContainerRef.current;
-    if (container && shouldAutoScrollRef.current) {
-      // Use requestAnimationFrame for smoother scrolling
-      requestAnimationFrame(() => {
-        container.scrollTop = container.scrollHeight;
-      });
-    }
-  }, [chatMessages, chatLoading]);
-
-  // Additional scroll to bottom when chat finishes loading
+  // Scroll to bottom when chat loads or new messages arrive
   useEffect(() => {
     if (!chatLoading && chatMessages.length > 0) {
       const container = chatContainerRef.current;
       if (container) {
-        // Use a slightly longer delay to ensure all content is rendered
+        // Use a longer delay to ensure all content is rendered
         setTimeout(() => {
           container.scrollTop = container.scrollHeight;
           shouldAutoScrollRef.current = true;
-        }, 150);
+        }, 300);
       }
     }
   }, [chatLoading, chatMessages.length]);
-
-  // Force scroll to bottom on initial load
-  useEffect(() => {
-    if (!chatLoading && chatMessages.length > 0) {
-      const container = chatContainerRef.current;
-      if (container) {
-        // Immediate scroll to bottom
-        container.scrollTop = container.scrollHeight;
-        shouldAutoScrollRef.current = true;
-      }
-    }
-  }, [chatLoading]);
 
   // Handle scroll events to determine if we should auto-scroll
   useEffect(() => {
