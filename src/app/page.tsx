@@ -13,7 +13,7 @@ export default function HomePage() {
         {/* Space for future slogan */}
         <div className="h-12 sm:h-16 md:h-20"></div>
         
-        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-xs sm:max-w-none">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Link href="/onboarding" className="rounded-full bg-gradient-primary px-8 py-3 font-light text-white shadow-button hover:shadow-button-hover hover:-translate-y-1 transition-all duration-300 text-center">
             Get Started
           </Link>
