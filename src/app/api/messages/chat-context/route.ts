@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
             recipient_matchmakr_id: otherId,
             status: 'ACTIVE'
           })
-          .select('id')
+          .select('id, about_single_id, clicked_single_id')
           .single();
         if (createError) {
           return NextResponse.json({ error: 'Failed to create conversation' }, { status: 500 });
@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
             clicked_single_id: clickedSingleId,
             status: 'ACTIVE'
           })
-          .select('id')
+          .select('id, about_single_id, clicked_single_id')
           .single();
         if (createError) {
           console.log('Chat context: Error creating conversation:', createError);
