@@ -30,7 +30,7 @@ function ReleaseSingleModal({ single, onClose, onConfirm }: { single: SponsoredS
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
             <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-gray-200">
-                <h2 className="font-inter font-bold text-2xl mb-4 text-primary-blue">Release {single.name || 'this Single'}?</h2>
+                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>RELEASE {single.name || 'THIS SINGLE'}?</h2>
                 <p className="text-gray-600 mb-6 leading-relaxed">
                     You will no longer be able to manage their profile or find matches for them. This action cannot be undone, and they would need to invite you again to reconnect.
                 </p>
@@ -162,7 +162,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
     return (
         <>
             {/* Section header, no container */}
-            <h2 className="font-inter font-bold text-xl text-white mb-2 border-b border-white/20 pb-1">Chat with your singles</h2>
+                            <h2 className="text-xl font-light text-white mb-2 border-b border-white/20 pb-1 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>CHAT WITH YOUR SINGLES</h2>
             <div className="flex flex-col gap-3 mb-4">
                 {sponsoredSingles && sponsoredSingles.length > 0 ? (
                     sponsoredSingles.map(single => {

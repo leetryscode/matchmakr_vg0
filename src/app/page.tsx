@@ -5,8 +5,8 @@ export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-        <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] gradient-text leading-[1.1]">
-          Welcome to <span className="gradient-text">GreenLight</span>
+        <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] leading-[1.1]">
+          Welcome to <span className="font-light tracking-[0.15em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>GREENLIGHT</span>
         </h1>
         <p className="text-2xl font-light text-gray-700">Find your match today.</p>
         <div className="flex gap-4">

@@ -106,7 +106,7 @@ async function MatchMakrDashboardContent() {
     return (
         <DashboardLayout firstName={firstName} userId={user.id} userType="MATCHMAKR">
             <div className="pt-0 pb-2 px-4">
-                <div className="text-2xl text-white font-extrabold mb-1 tracking-tight drop-shadow-sm">Hello, {firstName}</div>
+                <div className="text-2xl text-white font-light mb-1 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>HELLO, {firstName?.toUpperCase()}</div>
             </div>
             <SinglesPondButton />
             <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
@@ -119,7 +119,7 @@ async function MatchMakrDashboardContent() {
             />
             {/* Manage my Singles Section */}
             <div className="mt-10 flex flex-col items-center mb-32">
-                <h2 className="font-inter font-bold text-xl text-white mb-4 border-b border-white/20 pb-1 w-full text-center">Manage my Singles</h2>
+                <h2 className="text-xl text-white mb-4 border-b border-white/20 pb-1 w-full text-center tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>MANAGE MY SINGLES</h2>
                 <a href={`/profile/${user.id}`} className="block mb-2">
                     <div className="w-28 h-28 rounded-full border-4 border-white bg-gray-200 overflow-hidden flex items-center justify-center mx-auto shadow-lg hover:scale-105 transition">
                         {currentUserProfilePic ? (

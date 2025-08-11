@@ -39,6 +39,117 @@ A modern matchmaking platform that connects singles through Sponsors (matchmaker
 - **Real-time**: Supabase Realtime subscriptions with optimized channel management
 - **Performance**: Client-side caching, rate limiting, and optimized database queries
 
+## 🎨 Design System & Color Scheme
+
+### Primary Color Palette
+MatchMakr features a modern, cohesive blue-to-teal gradient theme that creates a professional and engaging user experience.
+
+#### Core Colors
+- **Primary Blue**: `#0066FF` - Main brand color for primary actions and highlights
+- **Primary Teal**: `#00C9A7` - Complementary color for gradients and accents
+- **Light Blue**: `#4D9CFF` - Secondary blue for lighter elements and hover states
+- **Light Teal**: `#4DDDCC` - Secondary teal for subtle accents and backgrounds
+
+#### Background Colors
+- **Main Background**: `#F8FAFC` - Light, modern background for clean layouts
+- **Card Background**: `#FFFFFF` - Pure white for content cards and modals
+- **Gradient Start**: `#0066FF` - Blue starting point for gradient backgrounds
+- **Gradient End**: `#00C9A7` - Teal ending point for gradient backgrounds
+
+### Gradient System
+The application uses a sophisticated gradient system for visual hierarchy and modern aesthetics:
+
+#### Available Gradients
+- **`bg-gradient-primary`**: Main blue-to-teal gradient (`#0066FF` → `#00C9A7`)
+- **`bg-gradient-light`**: Lighter blue-to-teal gradient (`#4D9CFF` → `#4DDDCC`)
+- **`bg-gradient-radial`**: Radial blue-to-teal gradient for circular elements
+- **`bg-gradient-diagonal`**: 45-degree diagonal gradient for dynamic layouts
+- **`bg-gradient-card`**: Subtle background gradient for card elements
+
+#### Text Gradients
+- **`text-gradient-primary`**: Text with blue-to-teal gradient effect
+- **`gradient-text`**: Legacy class for gradient text (maintained for compatibility)
+
+### Component Color Usage
+
+#### Interactive Elements
+- **Primary Buttons**: `bg-gradient-primary` with white text
+- **Secondary Buttons**: `bg-gradient-light` with white text
+- **Hover States**: Enhanced shadows with blue-tinted effects
+- **Focus Rings**: `ring-primary-blue` with 50% opacity
+
+#### Chat System
+- **Current User Messages**: Blue-to-teal gradient (`#0066FF` → `#00C9A7`) with white text
+- **Other User Messages**: Light blue-to-teal gradient (`#4D9CFF` → `#4DDDCC`) with white text
+- **Send Buttons**: Gradient backgrounds with matching border gradients
+- **Typing Indicators**: Subtle blue backgrounds for status elements
+
+#### Navigation & Layout
+- **Page Backgrounds**: Full-screen gradient backgrounds for immersive experiences
+- **Card Borders**: Subtle white/transparent borders with hover effects
+- **Navigation Elements**: Blue accents with teal hover states
+- **Status Indicators**: Blue for success, yellow for pending, red for errors
+
+### Shadow System
+Enhanced shadow system that complements the color scheme:
+
+#### Shadow Variants
+- **`shadow-card`**: Subtle blue-tinted shadows for cards
+- **`shadow-primary`**: Blue-tinted shadows for primary elements
+- **`shadow-accent`**: Teal-tinted shadows for accent elements
+- **`shadow-deep`**: Deeper shadows for elevated elements
+- **`shadow-button`**: Interactive shadows for buttons and controls
+
+#### Shadow Colors
+- **Card Shadows**: `rgba(0,102,255,0.08)` for subtle depth
+- **Primary Shadows**: `rgba(0,102,255,0.3)` for emphasis
+- **Accent Shadows**: `rgba(0,201,167,0.3)` for teal elements
+- **Hover Shadows**: Enhanced opacity for interactive feedback
+
+### Accessibility & Contrast
+- **Text Contrast**: White text on gradient backgrounds for optimal readability
+- **Focus States**: High-contrast blue focus rings for keyboard navigation
+- **Hover Effects**: Subtle color shifts with maintained contrast ratios
+- **Status Colors**: Semantic color usage (blue for info, yellow for warnings, red for errors)
+
+### Implementation Details
+The color scheme is implemented through:
+- **Tailwind CSS**: Custom color palette and gradient utilities
+- **CSS Variables**: CSS custom properties for consistent theming
+- **Component Classes**: Reusable utility classes for consistent styling
+- **Dynamic Gradients**: Inline styles for complex gradient combinations
+
+## 🔤 Typography & Brand Identity
+
+### Logo Typography
+The GREENLIGHT logo uses a sophisticated, minimalist typography approach inspired by premium brands like WHOOP:
+
+#### Font Specifications
+- **Primary Font**: `Bahnschrift Light` - A modern, refined sans-serif that conveys sophistication and tech-forward innovation
+- **Fallback Stack**: `'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif`
+- **Weight**: Light (font-weight: 300) for elegant, refined appearance
+- **Case**: All uppercase for strong, confident brand presence
+- **Letter Spacing**: `tracking-[0.15em]` for premium, spacious feel
+- **Size**: `text-lg` for subtle, compact appearance that doesn't dominate the interface
+
+#### Design Philosophy
+- **Minimalist**: Clean, uncluttered typography without unnecessary effects
+- **Premium**: Bahnschrift Light's refined letterforms create a sophisticated aesthetic
+- **Spacious**: Generous letter spacing enhances readability and premium feel
+- **Consistent**: Same treatment across all brand touchpoints
+- **Accessible**: High contrast white text for optimal readability
+
+### Body Typography
+- **Primary Font**: Inter - Modern, highly readable sans-serif for body text and UI elements
+- **Secondary Fonts**: Source Sans Pro and Raleway for specific use cases
+- **Font Stack**: Comprehensive fallback system for cross-platform consistency
+
+### Typography Scale
+- **Logo**: `text-lg` with custom letter spacing
+- **Headings**: `text-2xl` to `text-5xl` with appropriate font weights
+- **Body Text**: `text-base` to `text-lg` for optimal readability
+- **UI Elements**: `text-sm` to `text-base` for buttons and controls
+
 ## 📁 Project Structure
 
 ```

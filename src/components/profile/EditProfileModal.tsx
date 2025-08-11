@@ -75,7 +75,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
             <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
-                <h2 className="text-2xl font-bold mb-4 text-primary-blue">
+                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>
                     {canEditEndorsementOnly ? 'Edit Your Endorsement' : 'Edit Profile'}
                 </h2>
                 {canEditEndorsementOnly ? (

@@ -474,8 +474,8 @@ export default function PondPage() {
                         </button>
                         <div></div> {/* Spacer for centering */}
                     </div>
-                    <h1 className="text-4xl font-bold text-white mb-2">The Pond</h1>
-                    <p className="text-white">Find your single the perfect match!</p>
+                    <h1 className="text-4xl font-light text-white mb-2 tracking-[0.1em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>THE POND</h1>
+                    <p className="text-white">Find singles, message their sponsor</p>
                 </div>
 
                 {/* Search Filters */}

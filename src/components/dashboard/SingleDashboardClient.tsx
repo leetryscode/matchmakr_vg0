@@ -340,9 +340,9 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
             Invite someone to be my MatchMakr!
           </button>
           <InviteMatchMakrModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
-          <h2 className="text-xl font-bold text-white mt-8 mb-2 border-b border-white/20 pb-1 w-full">My Matches</h2>
+          <h2 className="text-xl font-light text-white mt-8 mb-2 border-b border-white/20 pb-1 w-full tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>MY MATCHES</h2>
           <div className="text-blue-100 mb-6 w-full text-center">No matches yet. Once your matchmakrs approve a match, you can chat here!</div>
-          <h2 className="text-xl font-bold text-white mt-6 mb-2 border-b border-white/20 pb-1 w-full">My Sneak Peaks</h2>
+          <h2 className="text-xl font-light text-white mt-6 mb-2 border-b border-white/20 pb-1 w-full tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>MY SNEAK PEAKS</h2>
           <div className="h-16" />
         </div>
       </>
@@ -354,7 +354,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
       <ProfileSection />
       <div className="flex flex-col gap-4 w-full">
         {/* My Sponsors Section */}
-        <h2 className="text-xl font-bold text-white mb-2 border-b border-white/20 pb-1">My Sponsors</h2>
+        <h2 className="text-xl font-light text-white mb-2 border-b border-white/20 pb-1 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>MY SPONSORS</h2>
         <ChatRow
           photo={sponsor.profile_pic_url}
           name={sponsor.name}
@@ -394,7 +394,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
           )}
         />
         {/* My Matches Section */}
-        <h2 className="text-xl font-bold text-white mt-6 mb-2 border-b border-white/20 pb-1">My Matches</h2>
+        <h2 className="text-xl font-light text-white mt-6 mb-2 border-b border-white/20 pb-1 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>MY MATCHES</h2>
         {singleChats.length === 0 ? (
           <div className="text-blue-100 mb-6">No matches yet. Once your matchmakrs approve a match, you can chat here!</div>
         ) : (
