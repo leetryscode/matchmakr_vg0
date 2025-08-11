@@ -638,7 +638,7 @@ export default function ForumPage() {
                       </button>
                       <button 
                         onClick={() => handleReplyClick(post.id)}
-                        className="flex items-center gap-2 text-white/60 hover:text-green-400 text-sm transition-colors"
+                        className="flex items-center gap-2 text-white/60 hover:text-primary-blue text-sm transition-colors"
                       >
                         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />

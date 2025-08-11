@@ -16,7 +16,7 @@ const SinglesPondButton = () => (
         <div className="bg-white/10 p-8 rounded-xl shadow-card border border-white/20">
             <div className="text-center">
                 <a href="/pond" className="inline-block">
-                    <button className="bg-gradient-to-br from-green-400 via-emerald-500 to-teal-500 text-white px-12 py-4 rounded-full font-semibold text-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-white">
+                    <button className="bg-gradient-to-br from-primary-blue to-primary-teal text-white px-12 py-4 rounded-full font-semibold text-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-white">
                         Singles Pond
                     </button>
                 </a>

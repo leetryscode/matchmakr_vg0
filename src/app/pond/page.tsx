@@ -458,7 +458,7 @@ export default function PondPage() {
     console.log('Pond page render state:', { loading, profilesCount: profiles.length, hasMore });
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-green via-primary-green-dark to-primary-green-darker p-4">
+        <div className="min-h-screen bg-gradient-to-br from-primary-blue to-primary-teal p-4">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">

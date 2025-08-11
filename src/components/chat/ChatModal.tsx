@@ -445,7 +445,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                 {canChatLoading ? (
                   <div className="text-gray-500">Checking if you can chat...</div>
                 ) : canChat ? (
-                  <div className="text-green-600 font-bold">✨ You can chat! Both sponsors have approved your match.</div>
+                  <div className="text-primary-blue font-bold">✨ You can chat! Both sponsors have approved your match.</div>
                 ) : (
                   <div className="text-yellow-600 font-semibold">⏳ Waiting for both sponsors to approve your match...</div>
                 )}
@@ -488,7 +488,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                 {matchLoading ? (
                   <div className="text-gray-500">Checking match status...</div>
                 ) : matchStatus === 'matched' ? (
-                  <div className="text-green-600 font-bold">It's a Match! Both sponsors have approved.</div>
+                  <div className="text-primary-blue font-bold">It's a Match! Both sponsors have approved.</div>
                 ) : matchStatus === 'pending' ? (
                   <div className="text-yellow-600 font-semibold">Pending approval from the other sponsor...</div>
                 ) : matchStatus === 'can-approve' ? (
@@ -540,12 +540,12 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                     </div>
                     <div className={`px-5 py-3 rounded-2xl ${isCurrentUser ? '' : ''} ${msg.optimistic ? 'opacity-60' : ''}`}
                       style={isCurrentUser ? {
-                        background: 'linear-gradient(45deg, #a7f3d0 0%, #bae6fd 100%)',
-                        color: '#065f46',
+                        background: 'linear-gradient(45deg, #0066FF 0%, #00C9A7 100%)',
+                        color: 'white',
                         fontWeight: 500
                       } : {
-                        background: 'linear-gradient(135deg, #F3E8FF, #E9D5FF)',
-                        color: '#7c3aed',
+                        background: 'linear-gradient(135deg, #4D9CFF, #4DDDCC)',
+                        color: 'white',
                         fontWeight: 500
                       }}
                     >
@@ -585,7 +585,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
               className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-primary-blue-light to-accent-teal-light shadow-md hover:scale-105 transition-transform"
               onClick={handleSendMessage}
               disabled={sending || (isSingleToSingle && !canChat)}
-              style={{ border: '2px solid', borderImage: 'linear-gradient(45deg, #3B82F6, #2DD4BF) 1' }}
+              style={{ border: '2px solid', borderImage: 'linear-gradient(45deg, #0066FF, #00C9A7) 1' }}
             >
               {/* SVG Arrow Icon, up and right, rotated 45deg */}
               <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(-45deg)' }}>
