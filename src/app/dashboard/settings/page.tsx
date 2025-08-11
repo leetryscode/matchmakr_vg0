@@ -1,112 +1,26 @@
 "use client";
 
-import EndSponsorshipSection from './EndSponsorshipSection';
-import { createClient } from '@/lib/supabase/client';
-import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
-  const { user, loading: authLoading, userType } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [profile, setProfile] = useState<any>(null);
-  const [sponsor, setSponsor] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadingTimeout, setLoadingTimeout] = useState(false);
-  const supabase = createClient();
 
-  useEffect(() => {
-    console.log('Settings page useEffect:', { authLoading, user: !!user, loading });
-    
-    // Redirect if not authenticated
-    if (!authLoading && !user) {
-      console.log('Settings: No user, redirecting to login');
-      router.push('/login');
-      return;
-    }
+  // Redirect if not authenticated
+  if (!authLoading && !user) {
+    router.push('/login');
+    return null;
+  }
 
-    const fetchProfile = async () => {
-      if (!user || !userType) return;
-      
-      console.log('Settings: Fetching profile for user:', user.id, 'userType:', userType);
-      
-      try {
-        // Use cached user type and only fetch additional profile data we need
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('name, sponsored_by_id, photos')
-          .eq('id', user.id)
-          .single();
-
-        console.log('Settings: Profile fetch result:', { profileData, error });
-
-        if (error) {
-          console.error('Settings: Error fetching profile:', error);
-          setLoading(false);
-          return;
-        }
-
-        // Create profile object with cached user type
-        const fullProfile = {
-          id: user.id,
-          user_type: userType,
-          name: profileData?.name,
-          sponsored_by_id: profileData?.sponsored_by_id,
-          photos: profileData?.photos
-        };
-
-        setProfile(fullProfile);
-
-        // Fetch sponsor if user is a SINGLE and has one
-        if (userType === 'SINGLE' && profileData?.sponsored_by_id) {
-          console.log('Settings: Fetching sponsor for single user');
-          try {
-            const { data: sponsorProfile, error: sponsorError } = await supabase
-              .from('profiles')
-              .select('id, name, photos')
-              .eq('id', profileData.sponsored_by_id)
-              .single();
-
-            console.log('Settings: Sponsor fetch result:', { sponsorProfile, sponsorError });
-
-            if (sponsorError) {
-              console.error('Settings: Error fetching sponsor:', sponsorError);
-            } else if (sponsorProfile) {
-              setSponsor({
-                ...sponsorProfile,
-                profile_pic_url: sponsorProfile.photos && sponsorProfile.photos.length > 0 ? sponsorProfile.photos[0] : null
-              });
-            }
-          } catch (sponsorError) {
-            console.error('Settings: Exception fetching sponsor:', sponsorError);
-          }
-        }
-      } catch (error) {
-        console.error('Settings: Error in settings:', error);
-      } finally {
-        console.log('Settings: Setting loading to false');
-        setLoading(false);
-      }
-    };
-
-    if (user && userType) {
-      console.log('Settings: User and userType available, fetching profile');
-      
-      // Set a timeout to prevent infinite loading
-      const timeout = setTimeout(() => {
-        console.log('Settings: Loading timeout reached, allowing access');
-        setLoadingTimeout(true);
-        setLoading(false);
-      }, 3000); // 3 second timeout
-      
-      fetchProfile();
-      
-      return () => clearTimeout(timeout);
-    } else if (user && !userType) {
-      console.log('Settings: User available but userType not cached yet, waiting...');
-      // Don't fetch yet, wait for userType to be cached
-    }
-  }, [user, userType, supabase, authLoading, router]);
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary-blue to-accent-teal-light p-6 text-white">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   const handleLogout = async () => {
     console.log('Logout button clicked');
@@ -140,95 +54,59 @@ export default function SettingsPage() {
     }
   };
 
-  // Show loading while auth is being checked
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary-blue to-accent-teal-light p-6 text-white">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
-
-  // Show loading while fetching profile
-  if (loading && !loadingTimeout) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary-blue to-accent-teal-light p-6 text-white">
-        <div className="text-lg">Loading settings...</div>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary-blue to-accent-teal-light p-6 text-white">
-        <div className="text-lg">Unable to load profile.</div>
-      </div>
-    );
-  }
-
-  // Render different content based on user type
-  const renderUserTypeContent = () => {
-    switch (profile.user_type) {
-      case 'SINGLE':
-        return (
-          <div className="flex flex-col items-center">
-            <h2 className="text-xl font-bold mb-6">Single Settings</h2>
-            {sponsor ? (
-              <EndSponsorshipSection sponsor={sponsor} />
-            ) : (
-              <div className="text-lg text-white/80">You do not currently have a Sponsor.</div>
-            )}
-          </div>
-        );
-      
-      case 'MATCHMAKR':
-        return (
-          <div className="flex flex-col items-center">
-            <h2 className="text-xl font-bold mb-6">MatchMakr Settings</h2>
-            <div className="text-lg text-white/80 mb-4">MatchMakr-specific settings coming soon!</div>
-            <div className="bg-white/10 p-6 rounded-xl border border-white/20">
-              <h3 className="text-lg font-semibold mb-3">Account Information</h3>
-              <p className="text-white/80">Name: {profile.name || 'Not set'}</p>
-              <p className="text-white/80">Email: {user?.email || 'Not set'}</p>
-            </div>
-          </div>
-        );
-      
-      case 'VENDOR':
-        return (
-          <div className="flex flex-col items-center">
-            <h2 className="text-xl font-bold mb-6">Vendor Settings</h2>
-            <div className="text-lg text-white/80 mb-4">Vendor-specific settings coming soon!</div>
-            <div className="bg-white/10 p-6 rounded-xl border border-white/20">
-              <h3 className="text-lg font-semibold mb-3">Account Information</h3>
-              <p className="text-white/80">Name: {profile.name || 'Not set'}</p>
-              <p className="text-white/80">Email: {user?.email || 'Not set'}</p>
-            </div>
-          </div>
-        );
-      
-      default:
-        return (
-          <div className="text-lg text-white/80">Unknown user type.</div>
-        );
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-b from-primary-blue to-accent-teal-light p-6 text-white">
-      <h1 className="text-2xl font-bold mb-6">Settings</h1>
+      {/* SETTINGS Header - positioned at top of content */}
+      <div className="w-full text-center mb-6">
+        <h1 className="text-2xl font-light tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>SETTINGS</h1>
+      </div>
       
-      {/* Prominent Logout Button */}
-      <div className="w-full max-w-md mb-8">
+      {/* Basic Account Information */}
+      <div className="w-full max-w-2xl mb-8">
+        <div className="bg-white/10 p-6 rounded-xl border border-white/20 mb-6">
+          <h2 className="text-xl font-light mb-4 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>ACCOUNT INFORMATION</h2>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between py-3 border-b border-white/10">
+              <span className="text-white/80 font-medium">Email:</span>
+              <span className="text-white">{user?.email || 'Not set'}</span>
+            </div>
+            
+            <div className="flex items-center justify-between py-3 border-b border-white/10">
+              <span className="text-white/80 font-medium">User ID:</span>
+              <span className="text-white font-mono text-sm">{user?.id}</span>
+            </div>
+            
+            <div className="flex items-center justify-between py-3">
+              <span className="text-white/80 font-medium">Account Status:</span>
+              <span className="text-white">Active</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Coming Soon Section */}
+        <div className="bg-white/10 p-6 rounded-xl border border-white/20">
+          <h3 className="text-lg font-light mb-4 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>COMING SOON</h3>
+          <div className="text-white/80 text-center">
+            <p className="mb-2">• Profile management</p>
+            <p className="mb-2">• Photo uploads</p>
+            <p className="mb-2">• Phone number management</p>
+            <p className="mb-2">• Password changes</p>
+            <p className="mb-2">• Notification preferences</p>
+            <p>• Privacy settings</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Sign Out Button - positioned at bottom of content */}
+      <div className="w-full max-w-md mt-auto">
         <button
           onClick={handleLogout}
-          className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-colors duration-200 mb-6"
+          className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-xl border border-white/20 transition-all duration-200 shadow-button hover:shadow-button-hover"
         >
           Sign Out
         </button>
       </div>
-
-      {renderUserTypeContent()}
     </div>
   );
 } 

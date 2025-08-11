@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
@@ -18,6 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [userType, setUserType] = useState<string | null>(null);
+  const userTypeRef = useRef<string | null>(null);
   const supabase = createClient();
   const router = useRouter();
 
@@ -41,6 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (profile?.user_type) {
         console.log('AuthContext: Cached user type:', profile.user_type);
         setUserType(profile.user_type);
+        userTypeRef.current = profile.user_type;
+        console.log('AuthContext: userType state updated to:', profile.user_type);
+        console.log('AuthContext: userTypeRef.current is now:', userTypeRef.current);
       } else {
         console.log('AuthContext: No user_type found in profile:', profile);
       }
@@ -73,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setUser(user);
           // Fetch user type when user is set
-          fetchUserType(user.id);
+          await fetchUserType(user.id);
         }
       } catch (err) {
         console.error('Session error:', err);
@@ -109,8 +113,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (event === 'SIGNED_IN' && session?.user) {
           // Fetch and cache user type, then redirect
           await fetchUserType(session.user.id);
-          if (userType) {
-            router.push(`/dashboard/${userType.toLowerCase()}`);
+          // Use the ref to get the current userType value
+          if (userTypeRef.current) {
+            router.push(`/dashboard/${userTypeRef.current.toLowerCase()}`);
           }
         }
       }
