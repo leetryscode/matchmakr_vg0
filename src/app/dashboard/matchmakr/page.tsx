@@ -6,7 +6,7 @@ import DashboardWrapper from '@/components/dashboard/DashboardWrapper';
 import React from 'react';
 import InviteSingle from '@/components/dashboard/InviteSingle';
 import InviteOtherMatchMakrs from '@/components/dashboard/InviteOtherMatchMakrs';
-import SponsoredSinglesList from '@/components/dashboard/SponsoredSinglesList';
+import SponsoredSinglesListClient from '@/components/dashboard/SponsoredSinglesListClient';
 import MatchMakrChatList from '@/components/dashboard/MatchMakrChatList';
 import AddSingleButton from '@/components/dashboard/AddSingleButton';
 
@@ -110,7 +110,7 @@ async function MatchMakrDashboardContent() {
             </div>
             <SinglesPondButton />
             <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
-            <SponsoredSinglesList 
+            <SponsoredSinglesListClient 
                 sponsoredSingles={processedSponsoredSingles} 
                 singleChats={singleChats} 
                 userId={user.id}

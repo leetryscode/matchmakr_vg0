@@ -6,6 +6,7 @@ import FlameUnreadIcon from './FlameUnreadIcon';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import InviteMatchMakrModal from '@/components/dashboard/InviteMatchMakrModal';
+import EndSponsorshipModal from './EndSponsorshipModal';
 
 interface SingleDashboardClientProps {
   userId: string;
@@ -27,6 +28,8 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
   const [sponsorTimestamp, setSponsorTimestamp] = useState<string>('');
   const [sponsorUnreadCount, setSponsorUnreadCount] = useState<number>(0);
   const [sponsorMenuOpen, setSponsorMenuOpen] = useState(false);
+  const [showEndSponsorshipModal, setShowEndSponsorshipModal] = useState(false);
+  const [endingSponsorship, setEndingSponsorship] = useState(false);
   const supabase = createClient();
   const menuRefs = useRef<(HTMLDivElement | null)[]>([]);
   const sponsorMenuRef = useRef<HTMLDivElement | null>(null);
@@ -238,6 +241,20 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
     }
   };
 
+  const handleEndSponsorship = async () => {
+    setEndingSponsorship(true);
+    try {
+      const { error } = await supabase.functions.invoke('end-sponsorship');
+      if (error) throw new Error(error.message);
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Error ending sponsorship:', error);
+      alert(`Error ending sponsorship: ${error.message}`);
+    } finally {
+      setEndingSponsorship(false);
+    }
+  };
+
   // Profile section at the top (matches schematic)
   const ProfileSection = () => (
     <div className="flex flex-col mb-4">
@@ -367,6 +384,12 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
               >
                 View MatchMakr
               </button>
+              <button
+                className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
+                onClick={e => { e.stopPropagation(); setShowEndSponsorshipModal(true); setSponsorMenuOpen(false); }}
+              >
+                End Sponsorship
+              </button>
             </div>
           )}
         />
@@ -450,24 +473,13 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
           />
         )}
         {/* End Sponsorship Modal */}
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-            <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
-              <h2 className="text-2xl font-bold mb-4 text-primary-blue">End Sponsorship with {sponsor.name || 'your MatchMakr'}?</h2>
-              <p className="text-gray-600 mb-6">
-                They will no longer be able to manage your profile or find matches on your behalf. This action cannot be undone, and you would need to invite them again to reconnect. This will also permanently delete your chat history.
-              </p>
-              <div className="flex justify-center gap-4">
-                <button onClick={() => setIsModalOpen(false)} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors">
-                  Cancel
-                </button>
-                <button onClick={handleRemoveSponsor} className="px-6 py-2 bg-gradient-primary text-white rounded-md hover:bg-gradient-light font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
-                  Yes, End Sponsorship
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <EndSponsorshipModal
+          isOpen={showEndSponsorshipModal}
+          onClose={() => setShowEndSponsorshipModal(false)}
+          onConfirm={handleEndSponsorship}
+          sponsorName={sponsor?.name || undefined}
+          isSponsorView={false}
+        />
         {/* Unmatch Confirmation Modal */}
         {showUnmatchModal && unmatchTarget && (
           <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">

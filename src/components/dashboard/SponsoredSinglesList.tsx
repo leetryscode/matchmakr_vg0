@@ -6,6 +6,7 @@ import InviteSingle from './InviteSingle';
 import Link from 'next/link';
 import FlameUnreadIcon from './FlameUnreadIcon';
 import { useRouter, usePathname } from 'next/navigation';
+import EndSponsorshipModal from './EndSponsorshipModal';
 
 interface SponsoredSingle {
     id: string;
@@ -19,6 +20,7 @@ interface SponsoredSinglesListProps {
     userId: string;
     userName: string;
     userProfilePic: string | null;
+    onSponsorshipEnded?: (singleId: string) => void;
 }
 
 // Modal for releasing a single
@@ -48,11 +50,14 @@ function ReleaseSingleModal({ single, onClose, onConfirm }: { single: SponsoredS
     );
 }
 
-function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName, userProfilePic }: SponsoredSinglesListProps) {
+function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName, userProfilePic, onSponsorshipEnded }: SponsoredSinglesListProps) {
     const supabase = createClient();
     const router = useRouter();
     const pathname = usePathname();
     const [releasingSingle, setReleasingSingle] = useState<SponsoredSingle | null>(null);
+    const [showEndSponsorshipModal, setShowEndSponsorshipModal] = useState(false);
+    const [endingSponsorship, setEndingSponsorship] = useState(false);
+    const [selectedSingleForEnd, setSelectedSingleForEnd] = useState<SponsoredSingle | null>(null);
     const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
     const [latestMessages, setLatestMessages] = useState<Record<string, { content: string; created_at: string }>>({});
 
@@ -128,6 +133,32 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
         }
     };
 
+    const handleEndSponsorship = async () => {
+        if (!selectedSingleForEnd) return;
+        
+        setEndingSponsorship(true);
+        try {
+            const { error } = await supabase.functions.invoke('end-sponsorship', {
+                body: { single_id: selectedSingleForEnd.id }
+            });
+
+            if (error) {
+                throw new Error(error.message);
+            }
+
+            // Notify parent component to update the sponsored singles list
+            if (onSponsorshipEnded) {
+                onSponsorshipEnded(selectedSingleForEnd.id);
+            }
+        } catch (error: any) {
+            console.error('Error ending sponsorship:', error);
+            alert(`Error ending sponsorship: ${error.message}`);
+        } finally {
+            setEndingSponsorship(false);
+            setSelectedSingleForEnd(null);
+        }
+    };
+
     return (
         <>
             {/* Section header, no container */}
@@ -142,8 +173,17 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                                 className="flex items-center gap-4 py-3 pl-3 w-full bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 shadow-md transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => router.push(`/dashboard/chat/single/${single.id}`)}
-                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/dashboard/chat/single/${single.id}`); } }}
+                                onClick={e => {
+                                    if ((e.target as HTMLElement).closest('button')) return;
+                                    router.push(`/dashboard/chat/single/${single.id}`);
+                                }}
+                                onKeyDown={e => { 
+                                    if ((e.target as HTMLElement).closest('button')) return;
+                                    if (e.key === 'Enter' || e.key === ' ') { 
+                                        e.preventDefault(); 
+                                        router.push(`/dashboard/chat/single/${single.id}`); 
+                                    } 
+                                }}
                             >
                                 <div className="w-14 h-14 rounded-full flex items-center justify-center bg-gradient-primary text-white font-bold text-xl shadow-avatar overflow-hidden">
                                     {single.profile_pic_url ? (
@@ -166,6 +206,25 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                                         <FlameUnreadIcon count={unreadCounts[single.id]} />
                                     </span>
                                 )}
+                                {/* Three dots menu */}
+                                <div className="relative menu-btn flex items-center justify-end ml-auto">
+                                    <button
+                                        className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
+                                        onClick={e => { 
+                                            e.stopPropagation(); 
+                                            setSelectedSingleForEnd(single);
+                                            setShowEndSponsorshipModal(true); 
+                                        }}
+                                        tabIndex={-1}
+                                        aria-label="Open menu"
+                                    >
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
+                                            <circle cx="12" cy="5" r="2" fill="#fff"/>
+                                            <circle cx="12" cy="12" r="2" fill="#fff"/>
+                                            <circle cx="12" cy="19" r="2" fill="#fff"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         );
                     })
@@ -178,6 +237,14 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                 single={releasingSingle}
                 onClose={() => setReleasingSingle(null)}
                 onConfirm={handleReleaseSingle}
+            />
+            {/* End Sponsorship Modal */}
+            <EndSponsorshipModal
+                isOpen={showEndSponsorshipModal}
+                onClose={() => setShowEndSponsorshipModal(false)}
+                onConfirm={handleEndSponsorship}
+                singleName={selectedSingleForEnd?.name || undefined}
+                isSponsorView={true}
             />
         </>
     );

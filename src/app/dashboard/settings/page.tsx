@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, userType } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [sponsor, setSponsor] = useState<any>(null);
@@ -26,15 +26,15 @@ export default function SettingsPage() {
     }
 
     const fetchProfile = async () => {
-      if (!user) return;
+      if (!user || !userType) return;
       
-      console.log('Settings: Fetching profile for user:', user.id);
+      console.log('Settings: Fetching profile for user:', user.id, 'userType:', userType);
       
       try {
-        // Fetch the user's profile
+        // Use cached user type and only fetch additional profile data we need
         const { data: profileData, error } = await supabase
           .from('profiles')
-          .select('*')
+          .select('name, sponsored_by_id, photos')
           .eq('id', user.id)
           .single();
 
@@ -46,24 +46,39 @@ export default function SettingsPage() {
           return;
         }
 
-        setProfile(profileData);
+        // Create profile object with cached user type
+        const fullProfile = {
+          id: user.id,
+          user_type: userType,
+          name: profileData?.name,
+          sponsored_by_id: profileData?.sponsored_by_id,
+          photos: profileData?.photos
+        };
+
+        setProfile(fullProfile);
 
         // Fetch sponsor if user is a SINGLE and has one
-        if (profileData.user_type === 'SINGLE' && profileData.sponsored_by_id) {
+        if (userType === 'SINGLE' && profileData?.sponsored_by_id) {
           console.log('Settings: Fetching sponsor for single user');
-          const { data: sponsorProfile } = await supabase
-            .from('profiles')
-            .select('id, name, photos')
-            .eq('id', profileData.sponsored_by_id)
-            .single();
+          try {
+            const { data: sponsorProfile, error: sponsorError } = await supabase
+              .from('profiles')
+              .select('id, name, photos')
+              .eq('id', profileData.sponsored_by_id)
+              .single();
 
-          console.log('Settings: Sponsor fetch result:', sponsorProfile);
+            console.log('Settings: Sponsor fetch result:', { sponsorProfile, sponsorError });
 
-          if (sponsorProfile) {
-            setSponsor({
-              ...sponsorProfile,
-              profile_pic_url: sponsorProfile.photos && sponsorProfile.photos.length > 0 ? sponsorProfile.photos[0] : null
-            });
+            if (sponsorError) {
+              console.error('Settings: Error fetching sponsor:', sponsorError);
+            } else if (sponsorProfile) {
+              setSponsor({
+                ...sponsorProfile,
+                profile_pic_url: sponsorProfile.photos && sponsorProfile.photos.length > 0 ? sponsorProfile.photos[0] : null
+              });
+            }
+          } catch (sponsorError) {
+            console.error('Settings: Exception fetching sponsor:', sponsorError);
           }
         }
       } catch (error) {
@@ -74,19 +89,24 @@ export default function SettingsPage() {
       }
     };
 
-    if (user) {
+    if (user && userType) {
+      console.log('Settings: User and userType available, fetching profile');
+      
       // Set a timeout to prevent infinite loading
       const timeout = setTimeout(() => {
         console.log('Settings: Loading timeout reached, allowing access');
         setLoadingTimeout(true);
         setLoading(false);
-      }, 5000); // 5 second timeout
+      }, 3000); // 3 second timeout
       
       fetchProfile();
       
       return () => clearTimeout(timeout);
+    } else if (user && !userType) {
+      console.log('Settings: User available but userType not cached yet, waiting...');
+      // Don't fetch yet, wait for userType to be cached
     }
-  }, [user, supabase, authLoading, router]);
+  }, [user, userType, supabase, authLoading, router]);
 
   const handleLogout = async () => {
     console.log('Logout button clicked');

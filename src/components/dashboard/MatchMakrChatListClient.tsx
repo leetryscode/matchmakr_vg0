@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import FlameUnreadIcon from './FlameUnreadIcon';
 import { useRouter, usePathname } from 'next/navigation';
 
+
 interface MatchMakrChatListClientProps {
   userId: string;
   conversations: any[];
@@ -53,6 +54,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const [clickedSingle, setClickedSingle] = useState<{ id: string; name: string; photo: string | null } | null>(null);
   const [openConversationId, setOpenConversationId] = useState<string | null>(null);
   const [lastUnreadFetch, setLastUnreadFetch] = useState<number>(0);
+
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
@@ -333,6 +335,8 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
 
 
 
+
+
   // Get sponsored single id (if any)
   const sponsoredSingleId = sponsoredSingles && sponsoredSingles.length > 0 ? sponsoredSingles[0].id : null;
 
@@ -445,15 +449,33 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           className="flex items-center gap-4 py-3 pl-3 w-full bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 shadow-md transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-2"
           role="button"
           tabIndex={0}
-          onClick={() => handleOpenChat({
-            id: sponsoredSingles[0].id,
-            name: sponsoredSingles[0].name,
-            profile_pic_url: sponsoredSingles[0].profile_pic_url || ''
-          }, {
-            id: sponsoredSingles[0].id,
-            name: sponsoredSingles[0].name,
-            profile_pic_url: sponsoredSingles[0].profile_pic_url || ''
-          })}
+          onClick={e => {
+            if ((e.target as HTMLElement).closest('button')) return;
+            handleOpenChat({
+              id: sponsoredSingles[0].id,
+              name: sponsoredSingles[0].name,
+              profile_pic_url: sponsoredSingles[0].profile_pic_url || ''
+            }, {
+              id: sponsoredSingles[0].id,
+              name: sponsoredSingles[0].name,
+              profile_pic_url: sponsoredSingles[0].profile_pic_url || ''
+            });
+          }}
+          onKeyDown={e => {
+            if ((e.target as HTMLElement).closest('button')) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleOpenChat({
+                id: sponsoredSingles[0].id,
+                name: sponsoredSingles[0].name,
+                profile_pic_url: sponsoredSingles[0].profile_pic_url || ''
+              }, {
+                id: sponsoredSingles[0].id,
+                name: sponsoredSingles[0].name,
+                profile_pic_url: sponsoredSingles[0].profile_pic_url || ''
+              });
+            }
+          }}
         >
           <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white bg-gray-100 flex-shrink-0">
             {sponsoredSingles[0].profile_pic_url ? (
@@ -474,6 +496,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
               <FlameUnreadIcon count={sponsoredSingleUnreadCount} />
             </div>
           )}
+
         </div>
       )}
       <button className="w-full bg-white/10 hover:bg-white/20 text-white py-3 px-6 rounded-full font-semibold text-lg border border-white/30 shadow-deep transition-all duration-300 hover:-translate-y-2">
@@ -556,6 +579,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           </div>
         </div>
       )}
+
     </div>
   );
 };

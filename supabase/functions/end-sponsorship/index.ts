@@ -78,6 +78,32 @@ Deno.serve(async (req) => {
       throw new Error('Could not end the sponsorship.');
     }
 
+    // Delete direct messages between the sponsor and single
+    // This includes messages where either the sponsor or single is sender/recipient
+    // Note: We preserve sponsor-sponsor conversations and messages to allow continued communication
+    // We also delete conversation records to ensure a clean slate when sponsorship is re-initiated
+    const { error: deleteMessagesError } = await supabaseAdmin
+      .from('messages')
+      .delete()
+      .or(`and(sender_id.eq.${user.id},recipient_id.eq.${targetSingleId}),and(sender_id.eq.${targetSingleId},recipient_id.eq.${user.id})`);
+
+    if (deleteMessagesError) {
+      console.error('Error deleting messages:', deleteMessagesError);
+      // Don't throw error here - sponsorship ending is more important than message cleanup
+    }
+
+    // Delete conversation records between the sponsor and single
+    // This ensures a clean slate when sponsorship is re-initiated
+    const { error: deleteConversationsError } = await supabaseAdmin
+      .from('conversations')
+      .delete()
+      .or(`and(initiator_matchmakr_id.eq.${user.id},about_single_id.eq.${targetSingleId}),and(recipient_matchmakr_id.eq.${user.id},about_single_id.eq.${targetSingleId})`);
+
+    if (deleteConversationsError) {
+      console.error('Error deleting conversations:', deleteConversationsError);
+      // Don't throw error here - sponsorship ending is more important than conversation cleanup
+    }
+
     return new Response(JSON.stringify({ message: 'Sponsorship ended successfully.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

@@ -112,9 +112,42 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
         }
     };
 
+    const handleLogout = async () => {
+        console.log('Logout button clicked');
+        try {
+            // Call server-side logout route
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            
+            if (response.ok) {
+                console.log('Server logout successful');
+                // Clear client-side storage
+                localStorage.clear();
+                sessionStorage.clear();
+                // Clear all cookies
+                document.cookie.split(';').forEach(function(c) {
+                    document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
+                });
+                // Redirect to login
+                window.location.href = '/login';
+            } else {
+                console.error('Server logout failed');
+                window.location.href = '/login';
+            }
+        } catch (err) {
+            console.error('Logout error:', err);
+            window.location.href = '/login';
+        }
+    };
+
     return (
         <nav className="fixed bottom-0 left-0 w-full bg-white/60 backdrop-blur-md shadow-card z-50 border-t border-white/30">
             <div className="flex justify-around items-center py-3">
+
                 {/* Settings Button */}
                 <button onClick={() => router.push('/dashboard/settings')} className="flex flex-col items-center text-gray-500 hover:text-primary-blue text-xs focus:outline-none">
                     {/* Simple Gear SVG */}
