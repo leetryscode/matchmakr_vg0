@@ -110,6 +110,14 @@ function formatRelativeTime(dateString: string): string {
   }
 }
 
+// Helper function to format user type for display
+function formatUserType(userType: string): string {
+  if (userType === 'MATCHMAKR') {
+    return 'SPONSOR';
+  }
+  return userType;
+}
+
 export default function ForumPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>('a5d6eff5-087b-47f1-b61d-28fd83324c24'); // Default to General Chatter
@@ -615,7 +623,7 @@ export default function ForumPage() {
                       <span className="text-white/60 text-sm">·</span>
                       <span className="text-white/60 text-sm">{formatRelativeTime(post.created_at)}</span>
                       <span className="text-white/60 text-sm">·</span>
-                      <span className="text-white/60 text-sm">{post.user_type}</span>
+                      <span className="text-white/60 text-sm">{formatUserType(post.user_type)}</span>
                     </div>
                     <div className="text-white text-sm leading-relaxed mb-3">{post.content}</div>
                     
@@ -736,7 +744,7 @@ export default function ForumPage() {
                                     <span className="text-white/60 text-sm">·</span>
                                     <span className="text-white/60 text-sm">{formatRelativeTime(reply.created_at)}</span>
                                     <span className="text-white/60 text-sm">·</span>
-                                    <span className="text-white/60 text-sm">{reply.profiles?.user_type}</span>
+                                    <span className="text-white/60 text-sm">{formatUserType(reply.profiles?.user_type || '')}</span>
                                   </div>
                                   <div className="text-white/90 text-sm leading-relaxed">{reply.content}</div>
                                   {user && reply.author_id === user.id && (
