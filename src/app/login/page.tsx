@@ -117,7 +117,7 @@ export default function LoginPage() {
           </button>
         </form>
         <a href="/" className="text-primary-blue underline mt-4 hover:text-primary-blue-light transition-colors font-light">
-          Back to Home
+          Back
         </a>
       </div>
     </main>

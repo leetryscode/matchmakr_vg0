@@ -60,14 +60,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error) {
           console.error('Auth error:', error);
-          // Only clear and redirect if it's a real auth error, not just no session
-          if (error.message !== 'Invalid JWT') {
+          // Don't redirect on common session errors - these are normal for unauthenticated users
+          const nonRedirectErrors = ['Invalid JWT', 'Auth session missing', 'JWT expired', 'No session'];
+          if (!nonRedirectErrors.some(msg => error.message.includes(msg))) {
             localStorage.clear();
             sessionStorage.clear();
             document.cookie.split(';').forEach(function(c) {
               document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
             });
-            router.push('/login');
+            router.push('/');
           }
           setUser(null);
         } else if (!user) {
@@ -81,14 +82,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (err) {
         console.error('Session error:', err);
-        // Only clear and redirect on actual errors, not just no session
-        if (err instanceof Error && err.message !== 'Invalid JWT') {
+        // Don't redirect on common session errors
+        const nonRedirectErrors = ['Invalid JWT', 'Auth session missing', 'JWT expired', 'No session'];
+        if (!(err instanceof Error) || !nonRedirectErrors.some(msg => err.message.includes(msg))) {
           localStorage.clear();
           sessionStorage.clear();
           document.cookie.split(';').forEach(function(c) {
             document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
           });
-          router.push('/login');
+          router.push('/');
         }
         setUser(null);
       } finally {
@@ -107,9 +109,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Handle auth state changes
         if (event === 'SIGNED_OUT') {
-          // Clear any cached data and redirect to login
+          // Clear any cached data and redirect to welcome page
           setUserType(null);
-          router.push('/login');
+          router.push('/');
         } else if (event === 'SIGNED_IN' && session?.user) {
           // Fetch and cache user type, then redirect
           await fetchUserType(session.user.id);

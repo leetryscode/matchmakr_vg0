@@ -63,11 +63,22 @@ export async function middleware(req: NextRequest) {
       return res;
     }
 
-    // If user is not signed in and the current path is not /login, redirect to /login
-    if (!user && req.nextUrl.pathname !== '/login' && !req.nextUrl.pathname.startsWith('/api/')) {
+    // If user is not signed in and trying to access protected routes, redirect to welcome page
+    if (!user) {
+      // Allow access to public routes (welcome page, login, API endpoints)
+      if (req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/' || req.nextUrl.pathname.startsWith('/api/')) {
+        return res;
+      }
+      
+      // Redirect to welcome page for all protected routes
       const redirectUrl = req.nextUrl.clone()
-      redirectUrl.pathname = '/login'
+      redirectUrl.pathname = '/'
       return NextResponse.redirect(redirectUrl)
+    }
+
+    // Debug logging
+    if (!user) {
+      console.log('Middleware: User not authenticated, path:', req.nextUrl.pathname, 'allowing access');
     }
 
     // If user is signed in and the current path is /login, redirect to appropriate dashboard

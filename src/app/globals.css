@@ -117,3 +117,22 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* Gradient border utility for buttons */
+.gradient-border-button {
+  position: relative;
+  background: white;
+}
+
+.gradient-border-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  background: linear-gradient(135deg, #0066FF, #00C9A7);
+  border-radius: 9999px;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+}

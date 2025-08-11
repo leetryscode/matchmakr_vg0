@@ -36,8 +36,8 @@ async function VendorDashboardContent() {
                 <p className="text-gray-600">This page is under construction. Your full vendor management tools will be available here soon!</p>
             </div>
             
-            {/* Settings Button - positioned normally in page flow */}
-            <div className="w-full flex justify-center mt-8 mb-4">
+            {/* Settings Button - positioned normally in page flow, bottom right */}
+            <div className="w-full flex justify-end mt-8 mb-4 pr-4">
                 <a 
                     href="/dashboard/settings"
                     className="flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur-md text-white text-sm font-medium rounded-xl border border-white/30 hover:bg-white/30 transition-all duration-200 shadow-lg hover:shadow-xl"

@@ -27,8 +27,8 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
     }
 
     if (!user) {
-      console.log('No user found, redirecting to login');
-      router.push('/login');
+      console.log('No user found, redirecting to welcome page');
+      router.push('/');
       return;
     }
 

@@ -9,7 +9,7 @@ export default function SettingsPage() {
 
   // Redirect if not authenticated
   if (!authLoading && !user) {
-    router.push('/login');
+    router.push('/');
     return null;
   }
 
@@ -42,15 +42,15 @@ export default function SettingsPage() {
         document.cookie.split(';').forEach(function(c) {
           document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
         });
-        // Redirect to login
-        window.location.href = '/login';
+        // Redirect to welcome page
+        window.location.href = '/';
       } else {
         console.error('Server logout failed');
-        window.location.href = '/login';
+        window.location.href = '/';
       }
     } catch (err) {
       console.error('Logout error:', err);
-      window.location.href = '/login';
+      window.location.href = '/';
     }
   };
 
