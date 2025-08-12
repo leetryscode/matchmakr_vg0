@@ -27,6 +27,8 @@ export type Database = {
           sex: string | null
           sponsored_by_id: string | null
           state: string | null
+          street_address: string | null
+          address_line_2: string | null
           user_type: Database["public"]["Enums"]["user_role"]
           zip_code: string | null
         }
@@ -47,6 +49,8 @@ export type Database = {
           sex?: string | null
           sponsored_by_id?: string | null
           state?: string | null
+          street_address?: string | null
+          address_line_2?: string | null
           user_type: Database["public"]["Enums"]["user_role"]
           zip_code?: string | null
         }
@@ -67,6 +71,8 @@ export type Database = {
           sex?: string | null
           sponsored_by_id?: string | null
           state?: string | null
+          street_address?: string | null
+          address_line_2?: string | null
           user_type?: Database["public"]["Enums"]["user_role"]
           zip_code?: string | null
         }
@@ -74,6 +80,92 @@ export type Database = {
           {
             foreignKeyName: "profiles_sponsored_by_id_fkey"
             columns: ["sponsored_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      },
+      offers: {
+        Row: {
+          id: string
+          vendor_id: string
+          title: string
+          description: string
+          duration_days: number
+          created_at: string
+          expires_at: string
+          claim_count: number
+          is_active: boolean
+          photos: string[]
+        }
+        Insert: {
+          id?: string
+          vendor_id: string
+          title: string
+          description: string
+          duration_days?: number
+          created_at?: string
+          expires_at?: string
+          claim_count?: number
+          is_active?: boolean
+          photos?: string[]
+        }
+        Update: {
+          id?: string
+          vendor_id?: string
+          title?: string
+          description?: string
+          duration_days?: number
+          created_at?: string
+          expires_at?: string
+          claim_count?: number
+          is_active?: boolean
+          photos?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      },
+      claimed_offers: {
+        Row: {
+          id: string
+          offer_id: string
+          user_id: string
+          claimed_at: string
+          redeemed_at: string | null
+        }
+        Insert: {
+          id?: string
+          offer_id: string
+          user_id: string
+          claimed_at?: string
+          redeemed_at?: string | null
+        }
+        Update: {
+          id?: string
+          offer_id?: string
+          user_id?: string
+          claimed_at?: string
+          redeemed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claimed_offers_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claimed_offers_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

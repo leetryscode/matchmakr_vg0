@@ -191,6 +191,18 @@ MatchMakr_v0/
 - **`conversation_summaries`**: Optimized view for dashboard performance
 - **`forum_posts_with_counts`**: Forum posts with aggregated like and reply counts
 
+## 🗄 Database & Deployment Fixes
+
+### Onboarding System (August 2025)
+- **Trigger Function Optimization**: Updated `handle_new_user()` trigger to properly handle all user types (SINGLE, MATCHMAKR, VENDOR)
+- **Complete Profile Creation**: Profiles are now created with all onboarding data (name, sex, birth_year) instead of null values
+- **User Type Handling**: Fixed hardcoded 'SINGLE' user type issue that was preventing Sponsor users from completing onboarding
+
+### Production Deployment (August 2025)
+- **CSS Build Fixes**: Resolved @import rule ordering issues that caused loading problems in Vercel production builds
+- **Font Loading**: Fixed Google Fonts import order to ensure proper loading in production environment
+- **Build Process**: CSS rules now follow proper order: @import → Tailwind → custom styles
+
 ## 🚦 Getting Started
 
 ### Prerequisites
@@ -291,6 +303,11 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 - ✅ **Excessive API calls**: Eliminated with rate limiting and intelligent caching
 - ✅ **Sponsorship management**: Implemented clean end sponsorship with chat cleanup
 
+### Recently Resolved (August 2025)
+- ✅ **Sponsor onboarding failure**: Fixed trigger function to properly handle MATCHMAKR users and save onboarding data
+- ✅ **CSS build issues in production**: Resolved @import rule ordering for Vercel deployment
+- ✅ **Profile creation with null data**: Trigger function now creates complete profiles with all onboarding information
+
 ### Current Considerations
 - **Forum RLS**: Temporarily disabled for development, will be re-enabled for production
 - **Migration consolidation**: Multiple small migrations exist, could be consolidated
@@ -352,6 +369,12 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 4. **UI Responsiveness**: Immediate feedback for user actions
 5. **Scroll Position Management**: Maintains user's place in conversations
 
+### Critical System Fixes (August 2025)
+1. **Sponsor User Onboarding**: Fixed critical issue preventing Sponsor users from completing signup
+2. **Profile Data Persistence**: Resolved issue where onboarding data was being lost during profile creation
+3. **Production Build Issues**: Fixed CSS @import ordering that caused loading failures in Vercel
+4. **Database Trigger Optimization**: Updated trigger function to handle all user types correctly
+
 ## 🤝 Contributing
 
 ### Development Workflow
@@ -391,6 +414,6 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
 ---
 
-**Last Updated**: January 2025  
-**Version**: v0 (Performance Optimized)  
+**Last Updated**: August 2025  
+**Version**: v0 (Performance Optimized + Onboarding Fixed)  
 **Status**: Active Development with Performance Focus 

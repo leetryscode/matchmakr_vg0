@@ -1,4 +1,5 @@
--- Migration: Optimize handle_new_user function for complete onboarding data
+-- Migration: Final working handle_new_user function for complete onboarding data
+-- This migration handles all user types (SINGLE, MATCHMAKR, VENDOR) with all required fields
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin

@@ -34,7 +34,7 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
       userTypeUpper = onboardingData.userType?.toUpperCase();
     }
     
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    const signUpPayload = {
       email,
       password,
       options: {
@@ -58,8 +58,10 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
           photos: [],
         },
       },
-    });
-
+    };
+    
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp(signUpPayload);
+    
     if (signUpError) {
       setError(signUpError.message);
       setLoading(false);
