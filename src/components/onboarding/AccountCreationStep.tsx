@@ -26,8 +26,13 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
     setLoading(true);
     setError(null);
 
-    // Convert userType to uppercase to match database enum
-    const userTypeUpper = onboardingData.userType?.toUpperCase();
+    // Convert userType to database enum values
+    let userTypeUpper;
+    if (onboardingData.userType === 'Sponsor') {
+      userTypeUpper = 'MATCHMAKR';
+    } else {
+      userTypeUpper = onboardingData.userType?.toUpperCase();
+    }
     
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
@@ -38,6 +43,19 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
           name: onboardingData.name,
           sex: onboardingData.sex,
           birth_year: onboardingData.birthYear,
+          // Include additional fields that might be useful for future onboarding steps
+          bio: null,
+          occupation: null,
+          city: null,
+          state: null,
+          zip_code: null,
+          business_name: null,
+          industry: null,
+          offer: null,
+          matchmakr_endorsement: null,
+          location: null,
+          sponsored_by_id: null,
+          photos: [],
         },
       },
     });
@@ -49,22 +67,24 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
     }
 
     if (signUpData.user) {
-      // Update the user's profile with onboarding data
+      // The trigger function will automatically create the profile with correct user_type
+      // Now we need to update the profile with the additional onboarding data
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
-          user_type: userTypeUpper,
           name: onboardingData.name,
           sex: onboardingData.sex,
           birth_year: onboardingData.birthYear,
           // Add other fields as needed
         })
         .eq('id', signUpData.user.id);
+      
       if (profileError) {
-        setError('Error saving profile data. Please try again.');
-        setLoading(false);
-        return;
+        console.error('Profile update error:', profileError);
+        // Don't fail the signup if profile update fails - user can still log in
+        // and complete their profile later
       }
+      
       alert('Sign up successful! Please check your email to confirm your account.');
       router.push('/login'); // Redirect to a login page after signup
     }

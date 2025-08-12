@@ -17,7 +17,7 @@ const NameStep: React.FC<NameStepProps> = ({ onNext }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full">
+    <div className="flex flex-col items-center justify-center h-full space-y-8">
       <div className="w-full max-w-md p-8 space-y-6 bg-background-card rounded-xl shadow-card text-center border border-gray-200">
         <h2 className="text-3xl font-light gradient-text leading-[1.1]">What's your name?</h2>
         <input
@@ -29,6 +29,7 @@ const NameStep: React.FC<NameStepProps> = ({ onNext }) => {
           placeholder="Enter your name"
         />
       </div>
+      
       <button
         onClick={handleNext}
         disabled={!name.trim()}
