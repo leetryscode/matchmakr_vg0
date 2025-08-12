@@ -71,6 +71,7 @@ interface PhotoGalleryProps {
 
 const MAX_PHOTOS_SINGLE = 6;
 const MAX_PHOTOS_MATCHMAKR = 1;
+const MAX_PHOTOS_VENDOR = 6;
 const ADD_PHOTO_SLOT = 'ADD_PHOTO_SLOT';
 
 export default function PhotoGallery({ userId, photos: initialPhotos, userType = 'SINGLE', canEdit = true }: PhotoGalleryProps) {
@@ -86,8 +87,10 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
     const menuRef = useRef<HTMLDivElement>(null);
 
     // Determine max photos based on user type
-    const maxPhotos = userType === 'MATCHMAKR' ? MAX_PHOTOS_MATCHMAKR : MAX_PHOTOS_SINGLE;
+    const maxPhotos = userType === 'MATCHMAKR' ? MAX_PHOTOS_MATCHMAKR : 
+                     userType === 'VENDOR' ? MAX_PHOTOS_VENDOR : MAX_PHOTOS_SINGLE;
     const isMatchMakr = userType === 'MATCHMAKR';
+    const isVendor = userType === 'VENDOR';
 
     const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
         initial: 0,

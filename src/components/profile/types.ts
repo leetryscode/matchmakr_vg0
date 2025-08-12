@@ -17,5 +17,7 @@ export interface Profile {
     offer: string | null;
     sponsored_by_id: string | null;
     matchmakr_endorsement: string | null;
+    street_address: string | null;
+    address_line_2: string | null;
     created_at: string;
 } 
