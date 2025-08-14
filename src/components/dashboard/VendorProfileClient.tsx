@@ -28,7 +28,7 @@ const VendorProfileClient: React.FC<VendorProfileClientProps> = ({ vendorProfile
         {/* Photo Gallery - Similar to single user profile */}
         <PhotoGallery 
           userId={vendorProfile.id} 
-          photos={[]} // Vendor profiles don't have photos yet, but we can add this later
+          photos={vendorProfile.photos || []}
           userType="VENDOR"
           canEdit={true}
         />

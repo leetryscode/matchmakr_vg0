@@ -30,5 +30,6 @@ export interface VendorProfile {
     city: string;
     state: string;
     zip_code: string;
+    photos: string[];
     created_at: string;
 } 
