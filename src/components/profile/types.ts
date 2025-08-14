@@ -32,4 +32,32 @@ export interface VendorProfile {
     zip_code: string;
     photos: string[];
     created_at: string;
+}
+
+export interface Offer {
+    id: string;
+    vendor_id: string;
+    title: string;
+    description: string;
+    duration_days: number;
+    created_at: string;
+    expires_at: string;
+    claim_count: number;
+    is_active: boolean;
+    photos: string[];
+}
+
+export interface CreateOfferData {
+    title: string;
+    description: string;
+    duration_days: number;
+    photos: string[];
+}
+
+export interface ClaimedOffer {
+    id: string;
+    offer_id: string;
+    user_id: string;
+    claimed_at: string;
+    redeemed_at: string | null;
 } 

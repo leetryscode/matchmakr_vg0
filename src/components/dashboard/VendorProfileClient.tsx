@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import PhotoGallery from '../profile/PhotoGallery';
 import Link from 'next/link';
 import { VendorProfile } from '../profile/types';
+import CreateOfferModal from './CreateOfferModal';
 
 interface VendorProfileClientProps {
   vendorProfile: VendorProfile;
@@ -105,21 +106,15 @@ const VendorProfileClient: React.FC<VendorProfileClientProps> = ({ vendorProfile
         </div>
       </div>
       
-      {/* Create Offer Modal - Placeholder for now */}
-      {showCreateOffer && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-light mb-4">Create New Offer</h3>
-            <p className="text-gray-600 mb-4 font-light">Offer creation functionality coming soon!</p>
-            <button
-              onClick={() => setShowCreateOffer(false)}
-              className="w-full bg-primary-blue text-white py-3 rounded-lg hover:bg-primary-blue-dark transition-colors font-light"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Create Offer Modal */}
+      <CreateOfferModal
+        isOpen={showCreateOffer}
+        onClose={() => setShowCreateOffer(false)}
+        onOfferCreated={() => {
+          // TODO: Refresh offers list when implemented
+          console.log('Offer created successfully!');
+        }}
+      />
     </>
   );
 };

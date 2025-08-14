@@ -198,7 +198,30 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                 updatedPhotos = [...photos, publicUrl];
             }
             
-            const { error: dbError } = await supabase.from('profiles').update({ photos: updatedPhotos }).eq('id', userId);
+            // Determine which table to update based on user type
+            let dbError;
+            console.log('PhotoGallery: Updating photos for user type:', userType, 'userId:', userId);
+            
+            if (userType === 'VENDOR') {
+                console.log('PhotoGallery: Updating vendor_profiles table with photos:', updatedPhotos);
+                const { error } = await supabase.from('vendor_profiles').update({ photos: updatedPhotos }).eq('id', userId);
+                dbError = error;
+                if (error) {
+                    console.error('PhotoGallery: Vendor profile update error:', error);
+                } else {
+                    console.log('PhotoGallery: Vendor profile updated successfully');
+                }
+            } else {
+                console.log('PhotoGallery: Updating profiles table with photos:', updatedPhotos);
+                const { error } = await supabase.from('profiles').update({ photos: updatedPhotos }).eq('id', userId);
+                dbError = error;
+                if (error) {
+                    console.error('PhotoGallery: Profile update error:', error);
+                } else {
+                    console.log('PhotoGallery: Profile updated successfully');
+                }
+            }
+            
             if (dbError) {
                 console.error('Database update error:', dbError);
                 console.error('Attempting to update profile ID:', userId);
@@ -233,8 +256,30 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
         try {
             const updatedPhotos = photos.filter(p => p !== photoUrlToDelete);
             
-            // Update database first
-            const { error: dbError } = await supabase.from('profiles').update({ photos: updatedPhotos }).eq('id', userId);
+            // Update database first - determine which table based on user type
+            let dbError;
+            console.log('PhotoGallery: Deleting photo for user type:', userType, 'userId:', userId);
+            
+            if (userType === 'VENDOR') {
+                console.log('PhotoGallery: Updating vendor_profiles table after photo deletion');
+                const { error } = await supabase.from('vendor_profiles').update({ photos: updatedPhotos }).eq('id', userId);
+                dbError = error;
+                if (error) {
+                    console.error('PhotoGallery: Vendor profile delete update error:', error);
+                } else {
+                    console.log('PhotoGallery: Vendor profile updated after photo deletion');
+                }
+            } else {
+                console.log('PhotoGallery: Updating profiles table after photo deletion');
+                const { error } = await supabase.from('profiles').update({ photos: updatedPhotos }).eq('id', userId);
+                dbError = error;
+                if (error) {
+                    console.error('PhotoGallery: Profile delete update error:', error);
+                } else {
+                    console.log('PhotoGallery: Profile updated after photo deletion');
+                }
+            }
+            
             if (dbError) {
                 console.error('Database delete error:', dbError);
                 console.error('Attempting to update profile ID:', userId);

@@ -2,155 +2,156 @@
 
 import React, { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { CreateOfferData } from '../profile/types';
 
 interface CreateOfferModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onOfferCreated: () => void;
-  vendorId: string;
+    isOpen: boolean;
+    onClose: () => void;
+    onOfferCreated: () => void;
 }
 
-export default function CreateOfferModal({ 
-  isOpen, 
-  onClose, 
-  onOfferCreated, 
-  vendorId 
-}: CreateOfferModalProps) {
-  const supabase = createClient();
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    duration_days: 30,
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export default function CreateOfferModal({ isOpen, onClose, onOfferCreated }: CreateOfferModalProps) {
+    const [formData, setFormData] = useState<CreateOfferData>({
+        title: '',
+        description: '',
+        duration_days: 30,
+        photos: []
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+    const supabase = createClient();
 
-    try {
-      const { error: insertError } = await supabase
-        .from('offers')
-        .insert({
-          vendor_id: vendorId,
-          title: formData.title,
-          description: formData.description,
-          duration_days: formData.duration_days,
-        });
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setError(null);
 
-      if (insertError) {
-        setError(insertError.message);
-        setLoading(false);
-        return;
-      }
+        try {
+            const response = await fetch('/api/offers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
 
-      // Reset form and close modal
-      setFormData({ title: '', description: '', duration_days: 30 });
-      onOfferCreated();
-      onClose();
-    } catch (error: any) {
-      setError(error.message || 'An unexpected error occurred');
-    }
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create offer');
+            }
 
-    setLoading(false);
-  };
+            // Reset form and close modal
+            setFormData({
+                title: '',
+                description: '',
+                duration_days: 30,
+                photos: []
+            });
+            onOfferCreated();
+            onClose();
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-  if (!isOpen) return null;
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: name === 'duration_days' ? parseInt(value) : value
+        }));
+    };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-gray-900">
-              Create New Offer
-            </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+    if (!isOpen) return null;
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                Offer Title *
-              </label>
-              <input
-                type="text"
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="e.g., Free Coffee, 20% Off Drinks"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
-                required
-              />
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-2xl font-light text-gray-900">Create New Offer</h3>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                            {error}
+                        </div>
+                    )}
+
+                    <div>
+                        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                            Offer Title *
+                        </label>
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            value={formData.title}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"
+                            placeholder="e.g., Romantic Dinner for Two"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                            Description *
+                        </label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            value={formData.description}
+                            onChange={handleInputChange}
+                            required
+                            rows={4}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"
+                            placeholder="Describe your offer in detail..."
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="duration_days" className="block text-sm font-medium text-gray-700 mb-2">
+                            Valid for (days) *
+                        </label>
+                        <select
+                            id="duration_days"
+                            name="duration_days"
+                            value={formData.duration_days}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"
+                        >
+                            <option value={7}>7 days</option>
+                            <option value={14}>14 days</option>
+                            <option value={30}>30 days</option>
+                            <option value={60}>60 days</option>
+                            <option value={90}>90 days</option>
+                        </select>
+                    </div>
+
+                    <div className="pt-4">
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-full bg-primary-blue text-white py-3 px-4 rounded-lg hover:bg-primary-blue-dark transition-colors font-light disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isSubmitting ? 'Creating...' : 'Create Offer'}
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
-              <textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe your offer in detail..."
-                rows={4}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
-                Duration (Days)
-              </label>
-              <select
-                id="duration"
-                value={formData.duration_days}
-                onChange={(e) => setFormData({ ...formData, duration_days: parseInt(e.target.value) })}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
-              >
-                <option value={7}>7 days</option>
-                <option value={14}>14 days</option>
-                <option value={30}>30 days (default)</option>
-                <option value={60}>60 days</option>
-                <option value={90}>90 days</option>
-              </select>
-            </div>
-
-            {error && (
-              <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">
-                {error}
-              </div>
-            )}
-
-            <div className="flex gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading || !formData.title || !formData.description}
-                className="flex-1 px-4 py-2 bg-gradient-primary text-white rounded-lg hover:bg-gradient-light transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Creating...' : 'Create Offer'}
-              </button>
-            </div>
-          </form>
         </div>
-      </div>
-    </div>
-  );
+    );
 } 
