@@ -20,4 +20,15 @@ export interface Profile {
     street_address: string | null;
     address_line_2: string | null;
     created_at: string;
+}
+
+export interface VendorProfile {
+    id: string;
+    business_name: string;
+    industry: string;
+    street_address: string;
+    city: string;
+    state: string;
+    zip_code: string;
+    created_at: string;
 } 

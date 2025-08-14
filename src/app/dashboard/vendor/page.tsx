@@ -17,19 +17,20 @@ async function VendorDashboardContent() {
         redirect('/login');
     }
 
-    const { data: profile } = await supabase
-        .from('profiles')
+    // Fetch vendor profile from the vendor_profiles table
+    const { data: vendorProfile } = await supabase
+        .from('vendor_profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-    if (!profile || profile.user_type !== 'VENDOR') {
-        // Redirect if not a vendor, or no profile found
+    if (!vendorProfile) {
+        // Redirect if no vendor profile found
         redirect('/');
     }
 
     return (
-        <VendorProfileClient profile={profile} />
+        <VendorProfileClient vendorProfile={vendorProfile} />
     );
 }
 

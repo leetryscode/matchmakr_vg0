@@ -13,6 +13,7 @@ A modern matchmaking platform that connects singles through Sponsors (matchmaker
 - **Pond Discovery**: Browse and connect with singles with intelligent caching and scroll position restoration
 - **Forum System**: Community discussion platform with categories, posts, replies, and likes
 - **Sponsorship Management**: End sponsorship functionality with clean slate for re-initiation
+- **Vendor Management**: Business profiles with dedicated onboarding and management systems
 
 ### Chat System
 - **Sponsor-to-Sponsor**: Conversations about specific singles
@@ -177,7 +178,8 @@ MatchMakr_v0/
 ## 🗄 Database Schema
 
 ### Core Tables
-- **`profiles`**: User accounts with types (MATCHMAKR, SINGLE, VENDOR) and sponsorship relationships
+- **`profiles`**: User accounts with types (MATCHMAKR, SINGLE) and sponsorship relationships
+- **`vendor_profiles`**: Business accounts (VENDOR) with business-specific fields and services
 - **`conversations`**: Chat threads between users with single references
 - **`messages`**: Individual messages with read status and conversation linking
 - **`matches`**: Approved connections between singles with approval tracking
@@ -186,10 +188,32 @@ MatchMakr_v0/
 - **`forum_posts`**: Forum posts with reply functionality and like counts
 - **`forum_replies`**: Nested replies to forum posts
 - **`forum_likes`**: Like system for posts and replies
+- **`offers`**: Vendor business offers and advertisements
 
 ### Performance Views
 - **`conversation_summaries`**: Optimized view for dashboard performance
 - **`forum_posts_with_counts`**: Forum posts with aggregated like and reply counts
+
+### User Type Architecture
+MatchMakr uses a **clean separation strategy** for different user types:
+
+#### **Personal Users (profiles table):**
+- **SINGLE users**: People looking for matches, can be sponsored by MATCHMAKR users
+- **MATCHMAKR/SPONSOR users**: Professional matchmakers who sponsor singles
+- **Shared fields**: name, sex, birth_year, bio, occupation, location, photos
+- **Relationships**: Connected via `sponsored_by_id` for sponsor-single connections
+
+#### **Business Users (vendor_profiles table):**
+- **VENDOR users**: Businesses offering services/products to the community
+- **Business fields**: business_name, industry, street_address, city, state, zip_code
+- **Independence**: No sponsor relationships, operate as independent business entities
+- **Services**: Create offers and advertisements through the offers table
+
+#### **Benefits of Separation:**
+- **Clean data model**: No NULL fields for non-applicable data
+- **Better performance**: Smaller, focused tables for faster queries
+- **Easier maintenance**: Changes to business logic don't affect personal users
+- **Type safety**: Clear separation prevents data mixing between user types
 
 ## 🗄 Database & Deployment Fixes
 
@@ -197,6 +221,8 @@ MatchMakr_v0/
 - **Trigger Function Optimization**: Updated `handle_new_user()` trigger to properly handle all user types (SINGLE, MATCHMAKR, VENDOR)
 - **Complete Profile Creation**: Profiles are now created with all onboarding data (name, sex, birth_year) instead of null values
 - **User Type Handling**: Fixed hardcoded 'SINGLE' user type issue that was preventing Sponsor users from completing onboarding
+- **Vendor Profile Separation**: Implemented clean separation with dedicated `vendor_profiles` table and trigger system
+- **Migration Cleanup**: Resolved conflicting trigger migrations and restored clean, working onboarding system
 
 ### Production Deployment (August 2025)
 - **CSS Build Fixes**: Resolved @import rule ordering issues that caused loading problems in Vercel production builds
@@ -361,6 +387,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 3. **Enhanced Chat**: Auto-scroll, typing indicators, and scroll-to-bottom
 4. **Improved Navigation**: Faster dashboard loading and navigation
 5. **Better UX**: Reduced loading times and improved responsiveness
+6. **Vendor Management**: Dedicated business profiles with separate onboarding system
 
 ### Chat System Improvements
 1. **Auto-scroll Behavior**: Intelligent scroll management with user control
@@ -374,6 +401,15 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 2. **Profile Data Persistence**: Resolved issue where onboarding data was being lost during profile creation
 3. **Production Build Issues**: Fixed CSS @import ordering that caused loading failures in Vercel
 4. **Database Trigger Optimization**: Updated trigger function to handle all user types correctly
+5. **Vendor Onboarding System**: Implemented clean separation with dedicated vendor_profiles table
+6. **Migration Conflict Resolution**: Cleaned up conflicting trigger migrations and restored stable system
+
+### Architecture Improvements (August 2025)
+1. **User Type Separation**: Clean separation between personal users (profiles) and business users (vendor_profiles)
+2. **Dedicated Vendor System**: Independent business profiles with business-specific fields
+3. **Trigger System Optimization**: Separate triggers for different user types prevent conflicts
+4. **Clean Data Model**: No more NULL fields for non-applicable data across user types
+5. **Maintainable Structure**: Changes to business logic don't affect personal user functionality
 
 ## 🤝 Contributing
 
@@ -397,6 +433,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 - **User type caching is critical** - never bypass the global cache
 - **Performance views are essential** - use them for complex queries
 - **Rate limiting prevents abuse** - implement for new API endpoints
+- **User type separation is critical** - SINGLE/SPONSOR use profiles table, VENDOR use vendor_profiles table
 
 ### Performance Tips
 - Use `useAuth()` hook for cached user data
@@ -404,6 +441,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 - Use performance views for complex database queries
 - Clean up real-time subscriptions properly
 - Implement intelligent loading states with timeouts
+- Leverage user type separation for optimized queries
 
 ### Architecture Decisions
 - **Global user type caching** in AuthContext for performance
@@ -411,9 +449,11 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 - **Performance views** for complex database operations
 - **Edge functions** for sensitive operations like sponsorship management
 - **Rate limiting** for API endpoints to prevent abuse
+- **User type separation** for clean data models and better performance
+- **Dedicated vendor system** for business users independent of personal users
 
 ---
 
 **Last Updated**: August 2025  
-**Version**: v0 (Performance Optimized + Onboarding Fixed)  
-**Status**: Active Development with Performance Focus 
+**Version**: v0 (Performance Optimized + Onboarding Fixed + Vendor System Implemented)  
+**Status**: Active Development with Performance Focus and Clean Architecture 

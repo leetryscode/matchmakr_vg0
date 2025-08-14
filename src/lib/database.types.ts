@@ -86,6 +86,47 @@ export type Database = {
           },
         ]
       },
+      vendor_profiles: {
+        Row: {
+          id: string
+          business_name: string
+          industry: string
+          street_address: string
+          city: string
+          state: string
+          zip_code: string
+          created_at: string
+        }
+        Insert: {
+          id: string
+          business_name: string
+          industry: string
+          street_address: string
+          city: string
+          state: string
+          zip_code: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          business_name?: string
+          industry?: string
+          street_address?: string
+          city?: string
+          state?: string
+          zip_code?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "auth.users"
+            referencedColumns: ["id"]
+          },
+        ]
+      },
       offers: {
         Row: {
           id: string
@@ -128,7 +169,7 @@ export type Database = {
             foreignKeyName: "offers_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "vendor_profiles"
             referencedColumns: ["id"]
           },
         ]
