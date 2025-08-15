@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { CreateOfferData } from '../profile/types';
 
@@ -19,8 +19,11 @@ export default function CreateOfferModal({ isOpen, onClose, onOfferCreated }: Cr
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
     const supabase = createClient();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,12 +31,42 @@ export default function CreateOfferModal({ isOpen, onClose, onOfferCreated }: Cr
         setError(null);
 
         try {
+            // If there's a photo, upload it first
+            let photoUrls: string[] = [];
+            if (selectedPhoto) {
+                const fileName = `${Date.now()}.jpg`;
+                const filePath = `offers/${fileName}`;
+                
+                const { error: uploadError } = await supabase.storage
+                    .from('profile_pictures') // Using same bucket for now
+                    .upload(filePath, selectedPhoto, {
+                        contentType: 'image/jpeg',
+                        upsert: false,
+                    });
+                
+                if (uploadError) {
+                    throw new Error(`Photo upload failed: ${uploadError.message}`);
+                }
+                
+                const { data: { publicUrl } } = supabase.storage
+                    .from('profile_pictures')
+                    .getPublicUrl(filePath);
+                
+                photoUrls = [publicUrl];
+            }
+            
+            // Create offer with photo URLs
+            const offerData = {
+                ...formData,
+                photos: photoUrls
+            };
+            
             const response = await fetch('/api/offers', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(offerData),
             });
 
             if (!response.ok) {
@@ -48,6 +81,8 @@ export default function CreateOfferModal({ isOpen, onClose, onOfferCreated }: Cr
                 duration_days: 30,
                 photos: []
             });
+            setSelectedPhoto(null);
+            setPhotoPreview(null);
             onOfferCreated();
             onClose();
         } catch (err: any) {
@@ -63,6 +98,41 @@ export default function CreateOfferModal({ isOpen, onClose, onOfferCreated }: Cr
             ...prev,
             [name]: name === 'duration_days' ? parseInt(value) : value
         }));
+    };
+
+    const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                setError('Please select an image file');
+                return;
+            }
+            
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setError('Image must be less than 5MB');
+                return;
+            }
+            
+            setSelectedPhoto(file);
+            setError(null);
+            
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = () => {
+                setPhotoPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removePhoto = () => {
+        setSelectedPhoto(null);
+        setPhotoPreview(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     if (!isOpen) return null;
@@ -139,6 +209,49 @@ export default function CreateOfferModal({ isOpen, onClose, onOfferCreated }: Cr
                             <option value={60}>60 days</option>
                             <option value={90}>90 days</option>
                         </select>
+                    </div>
+
+                    <div>
+                        <label htmlFor="photo" className="block text-sm font-medium text-gray-700 mb-2">
+                            Offer Photo (Optional)
+                        </label>
+                        <div className="space-y-3">
+                            {photoPreview ? (
+                                <div className="relative">
+                                    <img 
+                                        src={photoPreview} 
+                                        alt="Preview" 
+                                        className="w-32 h-32 object-cover rounded-lg border border-gray-300"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={removePhoto}
+                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-full px-3 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-primary-blue hover:text-primary-blue transition-colors"
+                                >
+                                    + Add Photo
+                                </button>
+                            )}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                id="photo"
+                                accept="image/*"
+                                onChange={handlePhotoSelect}
+                                className="hidden"
+                            />
+                            <p className="text-xs text-gray-500">
+                                JPEG, PNG, or WebP. Max 5MB.
+                            </p>
+                        </div>
                     </div>
 
                     <div className="pt-4">

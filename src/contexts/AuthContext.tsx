@@ -26,11 +26,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserType = async (userId: string) => {
     console.log('AuthContext: Fetching user type for userId:', userId);
     try {
-      const { data: profile, error } = await supabase
+      // First try to get user type from profiles table (SINGLE/SPONSOR users)
+      let { data: profile, error } = await supabase
         .from('profiles')
         .select('user_type')
         .eq('id', userId)
         .single();
+
+      // If no profile found, check if it's a vendor user
+      if (error && error.code === 'PGRST116') {
+        console.log('AuthContext: No profile found, checking if vendor...');
+        const { data: vendorProfile, error: vendorError } = await supabase
+          .from('vendor_profiles')
+          .select('id')
+          .eq('id', userId)
+          .single();
+        
+        if (vendorProfile && !vendorError) {
+          console.log('AuthContext: Vendor profile found, setting user type to VENDOR');
+          setUserType('VENDOR');
+          userTypeRef.current = 'VENDOR';
+          return;
+        }
+      }
 
       console.log('AuthContext: Profile fetch result:', { profile, error });
 

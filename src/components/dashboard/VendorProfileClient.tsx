@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PhotoGallery from '../profile/PhotoGallery';
 import Link from 'next/link';
-import { VendorProfile } from '../profile/types';
+import { VendorProfile, Offer } from '../profile/types';
 import CreateOfferModal from './CreateOfferModal';
+import OfferList from './OfferList';
+import { createClient } from '@/lib/supabase/client';
 
 interface VendorProfileClientProps {
   vendorProfile: VendorProfile;
@@ -12,6 +14,9 @@ interface VendorProfileClientProps {
 
 const VendorProfileClient: React.FC<VendorProfileClientProps> = ({ vendorProfile }) => {
   const [showCreateOffer, setShowCreateOffer] = useState(false);
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
   
   // Debug: Log vendor profile data to see what we're working with
   console.log('Vendor Profile Data:', {
@@ -22,6 +27,105 @@ const VendorProfileClient: React.FC<VendorProfileClientProps> = ({ vendorProfile
     state: vendorProfile.state,
     zip_code: vendorProfile.zip_code
   });
+
+  // Fetch offers for this vendor
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('offers')
+          .select('*')
+          .eq('vendor_id', vendorProfile.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching offers:', error);
+          return;
+        }
+
+        setOffers(data || []);
+      } catch (error) {
+        console.error('Exception fetching offers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOffers();
+  }, [vendorProfile.id, supabase]);
+
+  // Handle offer actions
+  const handleOfferCreated = () => {
+    // Refresh offers list
+    const fetchOffers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('offers')
+          .select('*')
+          .eq('vendor_id', vendorProfile.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching offers:', error);
+          return;
+        }
+
+        setOffers(data || []);
+      } catch (error) {
+        console.error('Exception fetching offers:', error);
+      }
+    };
+
+    fetchOffers();
+    setShowCreateOffer(false);
+  };
+
+  const handleDeleteOffer = async (offerId: string) => {
+    if (!confirm('Are you sure you want to delete this offer? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/offers?id=${offerId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error deleting offer:', errorData.error);
+        return;
+      }
+
+      // Remove from local state
+      setOffers(offers.filter(offer => offer.id !== offerId));
+    } catch (error) {
+      console.error('Exception deleting offer:', error);
+    }
+  };
+
+  const handleToggleOfferActive = async (offerId: string) => {
+    try {
+      const offer = offers.find(o => o.id === offerId);
+      if (!offer) return;
+
+      const { error } = await supabase
+        .from('offers')
+        .update({ is_active: !offer.is_active })
+        .eq('id', offerId);
+
+      if (error) {
+        console.error('Error updating offer:', error);
+        return;
+      }
+
+      // Update local state
+      setOffers(offers.map(o => 
+        o.id === offerId ? { ...o, is_active: !o.is_active } : o
+      ));
+    } catch (error) {
+      console.error('Exception updating offer:', error);
+    }
+  };
 
   return (
     <>
@@ -60,16 +164,22 @@ const VendorProfileClient: React.FC<VendorProfileClientProps> = ({ vendorProfile
             <h2 className="text-2xl font-light text-white mb-4">Business Overview</h2>
             <div className="grid grid-cols-3 gap-6 text-center">
               <div>
-                <div className="text-3xl font-light text-primary-teal">0</div>
+                <div className="text-3xl font-light text-primary-teal">
+                  {offers.filter(o => o.is_active).length}
+                </div>
                 <div className="text-sm font-light text-white/80 mt-1">Active Offers</div>
               </div>
               <div>
-                <div className="text-3xl font-light text-primary-blue">0</div>
+                <div className="text-3xl font-light text-primary-blue">
+                  {offers.reduce((sum, o) => sum + o.claim_count, 0)}
+                </div>
                 <div className="text-sm font-light text-white/80 mt-1">Total Claims</div>
               </div>
               <div>
-                <div className="text-3xl font-light text-green-400">0</div>
-                <div className="text-sm font-light text-white/80 mt-1">New Customers</div>
+                <div className="text-3xl font-light text-green-400">
+                  {offers.length}
+                </div>
+                <div className="text-sm font-light text-white/80 mt-1">Total Offers</div>
               </div>
             </div>
           </div>
@@ -86,12 +196,19 @@ const VendorProfileClient: React.FC<VendorProfileClientProps> = ({ vendorProfile
               </button>
             </div>
             
-            {/* Placeholder for offers - similar to single user interests */}
-            <div className="bg-white/10 p-8 rounded-xl border border-white/20 text-center">
-              <div className="text-6xl text-white/30 mb-4">📋</div>
-              <p className="text-lg font-light text-white/70 mb-2">No offers yet</p>
-              <p className="text-base font-light text-white/50">Create your first offer to start attracting customers</p>
-            </div>
+            {/* Offers List */}
+            {loading ? (
+              <div className="bg-white/10 p-8 rounded-xl border border-white/20 text-center">
+                <div className="text-6xl text-white/30 mb-4">⏳</div>
+                <p className="text-lg font-light text-white/70">Loading offers...</p>
+              </div>
+            ) : (
+              <OfferList
+                offers={offers}
+                onDeleteOffer={handleDeleteOffer}
+                onToggleOfferActive={handleToggleOfferActive}
+              />
+            )}
           </div>
           
           {/* Account Settings Button - Positioned at bottom left */}
@@ -110,10 +227,7 @@ const VendorProfileClient: React.FC<VendorProfileClientProps> = ({ vendorProfile
       <CreateOfferModal
         isOpen={showCreateOffer}
         onClose={() => setShowCreateOffer(false)}
-        onOfferCreated={() => {
-          // TODO: Refresh offers list when implemented
-          console.log('Offer created successfully!');
-        }}
+        onOfferCreated={handleOfferCreated}
       />
     </>
   );

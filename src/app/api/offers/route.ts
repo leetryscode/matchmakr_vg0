@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         // Parse request body
         const body = await request.json();
         
-        const { title, description, duration_days } = body;
+        const { title, description, duration_days, photos } = body;
 
         // Validate required fields
         if (!title || !description || !duration_days) {
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
                 title: title.trim(),
                 description: description.trim(),
                 duration_days,
-                photos: [],
+                photos: photos || [], // Use photos from request or default to empty array
                 is_active: true
             })
             .select()
@@ -56,6 +56,59 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json({ offer }, { status: 201 });
+    } catch (error) {
+        console.error('Unexpected error:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+}
+
+// DELETE /api/offers/[id] - Delete an offer
+export async function DELETE(request: NextRequest) {
+    try {
+        const supabase = createClient();
+        
+        // Check if user is authenticated
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        
+        if (authError || !user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Get offer ID from URL
+        const url = new URL(request.url);
+        const offerId = url.searchParams.get('id');
+        
+        if (!offerId) {
+            return NextResponse.json({ error: 'Offer ID is required' }, { status: 400 });
+        }
+
+        // Verify user owns this offer
+        const { data: offer, error: offerError } = await supabase
+            .from('offers')
+            .select('vendor_id')
+            .eq('id', offerId)
+            .single();
+
+        if (offerError || !offer) {
+            return NextResponse.json({ error: 'Offer not found' }, { status: 404 });
+        }
+
+        if (offer.vendor_id !== user.id) {
+            return NextResponse.json({ error: 'Not authorized to delete this offer' }, { status: 403 });
+        }
+
+        // Delete the offer
+        const { error: deleteError } = await supabase
+            .from('offers')
+            .delete()
+            .eq('id', offerId);
+
+        if (deleteError) {
+            console.error('Error deleting offer:', deleteError);
+            return NextResponse.json({ error: 'Failed to delete offer' }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true }, { status: 200 });
     } catch (error) {
         console.error('Unexpected error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
