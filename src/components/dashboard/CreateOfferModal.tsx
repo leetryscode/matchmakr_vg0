@@ -31,12 +31,16 @@ export default function CreateOfferModal({ isOpen, onClose, onOfferCreated }: Cr
         setError(null);
 
         try {
+            console.log('🔄 Starting offer creation...');
+            
             // If there's a photo, upload it first
             let photoUrls: string[] = [];
             if (selectedPhoto) {
+                console.log('📸 Photo selected, starting upload...');
                 const fileName = `${Date.now()}.jpg`;
                 const filePath = `offers/${fileName}`;
                 
+                console.log('📤 Uploading to path:', filePath);
                 const { error: uploadError } = await supabase.storage
                     .from('profile_pictures') // Using same bucket for now
                     .upload(filePath, selectedPhoto, {
@@ -45,14 +49,20 @@ export default function CreateOfferModal({ isOpen, onClose, onOfferCreated }: Cr
                     });
                 
                 if (uploadError) {
+                    console.error('❌ Photo upload failed:', uploadError);
                     throw new Error(`Photo upload failed: ${uploadError.message}`);
                 }
+                
+                console.log('✅ Photo uploaded successfully');
                 
                 const { data: { publicUrl } } = supabase.storage
                     .from('profile_pictures')
                     .getPublicUrl(filePath);
                 
                 photoUrls = [publicUrl];
+                console.log('🔗 Photo URL generated:', publicUrl);
+            } else {
+                console.log('📸 No photo selected');
             }
             
             // Create offer with photo URLs
@@ -61,6 +71,9 @@ export default function CreateOfferModal({ isOpen, onClose, onOfferCreated }: Cr
                 photos: photoUrls
             };
             
+            console.log('📤 Sending offer data to API:', offerData);
+            console.log('🌐 Making API call to /api/offers...');
+            
             const response = await fetch('/api/offers', {
                 method: 'POST',
                 headers: {
@@ -68,6 +81,8 @@ export default function CreateOfferModal({ isOpen, onClose, onOfferCreated }: Cr
                 },
                 body: JSON.stringify(offerData),
             });
+            
+            console.log('📥 API response received:', response.status, response.statusText);
 
             if (!response.ok) {
                 const errorData = await response.json();
