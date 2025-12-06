@@ -1,6 +1,6 @@
 # MatchMakr
 
-A modern matchmaking platform that connects singles through Sponsors (matchmakers). Sponsors can sponsor singles, discover other singles in the pond, and facilitate conversations between singles through an approval system. Built with performance and user experience as top priorities.
+A modern matchmaking/dating/introduction platform that connects singles through Sponsors (matchmakers). Sponsors can sponsor singles, discover other singles in the pond, and facilitate conversations between singles through an approval system. Vendors are a third usertype - they generate date ideas/advertisements/coupons for Singles and Sponsors to use. Built with performance and user experience as top priorities.
 
 ## 🚀 Features
 
@@ -8,7 +8,7 @@ A modern matchmaking platform that connects singles through Sponsors (matchmaker
 - **User Types**: Sponsors (MATCHMAKR), Singles (SINGLE), Vendors (VENDOR)
 - **Authentication**: Supabase Auth with role-based access and global user type caching
 - **Real-time Chat**: Instant messaging between Sponsors and Singles with auto-scroll and typing indicators
-- **Match Approval**: Two-step approval system for matches between singles
+- **Match Approval**: Two-step approval system for matches between singles: Both Sponsors (usertype) must approve the match before a chat modal is opened for singles to chat.
 - **Profile Management**: Photo uploads, interests, location-based discovery
 - **Pond Discovery**: Browse and connect with singles with intelligent caching and scroll position restoration
 - **Forum System**: Community discussion platform with categories, posts, replies, and likes
@@ -16,8 +16,8 @@ A modern matchmaking platform that connects singles through Sponsors (matchmaker
 - **Vendor Management**: Business profiles with dedicated onboarding and management systems
 
 ### Chat System
-- **Sponsor-to-Sponsor**: Conversations about specific singles
-- **Single-to-Sponsor**: Direct messaging between sponsored singles and their sponsors
+- **Sponsor-to-Sponsor**: Conversations about specific singles, if a sponsor hsa mulitple singles: sponsor must select which single the chat is about.
+- **Single-to-Sponsor**: Direct messaging between sponsored singles and their sponsors only.  
 - **Real-time Updates**: Live message delivery and read status via Supabase Realtime
 - **Unread Counts**: Per-conversation unread message tracking with optimized fetching
 - **Message History**: Persistent chat history with optimistic updates and immediate UI feedback
