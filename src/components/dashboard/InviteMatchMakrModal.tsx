@@ -44,7 +44,7 @@ const InviteMatchMakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center border border-gray-200">
-                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>INVITE A MATCHMAKR</h2>
+                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>INVITE A SPONSOR</h2>
                 <p className="text-gray-600 mb-6">
                     This person will be responsible for managing your profile and finding your matches!
                 </p>
@@ -52,7 +52,7 @@ const InviteMatchMakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="MatchMakr's email address"
+                    placeholder="Sponsor's email address"
                     className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
                     disabled={isLoading}
                 />

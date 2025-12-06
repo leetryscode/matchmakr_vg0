@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
+import { orbitConfig } from '@/config/orbitConfig';
 
 interface BottomNavigationProps {
     userId: string;
@@ -174,17 +175,19 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
                     <span>Dashboard</span>
                 </button>
 
-                {/* Green Room Button */}
-                <Link
-                    href="/forum"
-                    className="flex flex-col items-center text-gray-500 hover:text-primary-blue text-xs focus:outline-none"
-                >
-                    {/* Chat/Forum SVG */}
-                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                    <span>Green Room</span>
-                </Link>
+                {/* Green Room Button - Hidden when forum is disabled */}
+                {orbitConfig.enableForum && (
+                    <Link
+                        href="/forum"
+                        className="flex flex-col items-center text-gray-500 hover:text-primary-blue text-xs focus:outline-none"
+                    >
+                        {/* Chat/Forum SVG */}
+                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                        <span>Green Room</span>
+                    </Link>
+                )}
 
                 {/* Bell Notification Icon (functional, with unread count) */}
                 <div className="relative flex flex-col items-center">

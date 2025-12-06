@@ -19,7 +19,7 @@ function EndSponsorshipModal({ isOpen, onClose, onConfirm, sponsorName }: { isOp
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
             <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
-                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>END SPONSORSHIP WITH {sponsorName || 'YOUR MATCHMAKR'}?</h2>
+                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>END SPONSORSHIP WITH {sponsorName || 'YOUR SPONSOR'}?</h2>
                 <p className="text-gray-600 mb-6">
                     They will no longer be able to manage your profile or find matches on your behalf. This action cannot be undone, and you would need to invite them again to reconnect.
                 </p>
@@ -48,7 +48,7 @@ export default function SponsorDisplay({ sponsor }: SponsorDisplayProps) {
                 throw new Error(error.message);
             }
 
-            alert('MatchMakr removed successfully.');
+            alert('Sponsor removed successfully.');
             window.location.reload();
         } catch (error: any) {
             alert(`Error: ${error.message}`);
@@ -59,7 +59,7 @@ export default function SponsorDisplay({ sponsor }: SponsorDisplayProps) {
         <>
             <div className="bg-background-card p-6 rounded-lg shadow-card mt-8 text-center border border-gray-200">
                 <Link href={`/profile/${sponsor.id}`} className="group">
-                    <h2 className="text-2xl font-light mb-4 group-hover:text-primary-blue transition-colors tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>YOUR MATCHMAKR</h2>
+                    <h2 className="text-2xl font-light mb-4 group-hover:text-primary-blue transition-colors tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>YOUR SPONSOR</h2>
                     <div className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-primary-blue group-hover:border-primary-blue-light transition-colors flex items-center justify-center bg-gray-200">
                         {sponsor.profile_pic_url ? (
                             <img src={sponsor.profile_pic_url} alt={sponsor.name || 'Sponsor'} className="w-full h-full rounded-full object-cover" />
@@ -72,7 +72,7 @@ export default function SponsorDisplay({ sponsor }: SponsorDisplayProps) {
                     <p className="text-xl font-semibold text-gray-800 group-hover:text-primary-blue transition-colors">{sponsor.name}</p>
                 </Link>
                 <button className="mt-4 w-full bg-gradient-primary text-white py-3 rounded-lg hover:bg-gradient-light font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
-                    Chat with your MatchMakr
+                    Chat with your Sponsor
                 </button>
                 <button
                     onClick={() => setIsModalOpen(true)}

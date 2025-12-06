@@ -1,0 +1,37 @@
+refactor: rebrand to Orbit and simplify role system to two active roles
+
+Rebrand MatchMakr/GREENLIGHT to Orbit with simplified two-role system (SINGLE and MATCHMAKR/Sponsor).
+
+BREAKING: Product name "GREENLIGHT" → "Orbit", "MatchMakr" → "Sponsor" in UI
+- Landing page, dashboard header, and metadata updated
+- All user-facing "MatchMakr" references changed to "Sponsor"
+
+FEATURES:
+- Created Orbit role type system (src/types/orbit.ts) with normalization
+- Added orbitConfig.ts feature flags to hide Vendor and Forum from UI
+- Vendor users automatically routed to MATCHMAKR dashboard
+
+UI HIDDEN (via orbitConfig):
+- Vendor option removed from onboarding
+- Green Room/Forum button removed from navigation
+
+ROLE SYSTEM:
+- New OrbitUserRole type: 'SINGLE' | 'MATCHMAKR' only
+- AuthContext tracks both database userType and normalized orbitRole
+- DashboardWrapper/DashboardLayout use OrbitUserRole
+- Middleware normalizes vendor → matchmakr for routing
+
+FILES ADDED:
+- src/config/orbitConfig.ts
+- src/types/orbit.ts
+- CONTEXT.md
+- ORBIT_REFACTOR_MAP.md
+
+FILES MODIFIED:
+- src/app/page.tsx, layout.tsx
+- src/components/dashboard/* (multiple files)
+- src/contexts/AuthContext.tsx
+- middleware.ts
+
+NOTE: Database schema unchanged. Vendor/Forum code preserved but hidden.
+

@@ -6,6 +6,7 @@ import NameStep from '@/components/onboarding/NameStep';
 import SexStep from '@/components/onboarding/SexStep';
 import AgeStep from '@/components/onboarding/AgeStep';
 import AccountCreationStep from '@/components/onboarding/AccountCreationStep';
+import { orbitConfig } from '@/config/orbitConfig';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -42,7 +43,7 @@ export default function OnboardingPage() {
             <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] gradient-text leading-[1.1]">
               Select User Type
             </h1>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-8">
+            <div className={`grid grid-cols-1 gap-4 ${orbitConfig.enableVendors ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} md:gap-8`}>
               <button
                 onClick={() => handleUserTypeSelect('Single')}
                 className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-gray-800 hover:bg-gray-50 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-gray-200"
@@ -61,15 +62,17 @@ export default function OnboardingPage() {
                   I want to find matches for my friends.
                 </div>
               </button>
-              <button
-                onClick={() => handleUserTypeSelect('Vendor')}
-                className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-gray-800 hover:bg-gray-50 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-gray-200"
-              >
-                <h3 className="text-2xl font-light gradient-text">Vendor →</h3>
-                <div className="text-lg font-light">
-                  I want to promote my business for dates.
-                </div>
-              </button>
+              {orbitConfig.enableVendors && (
+                <button
+                  onClick={() => handleUserTypeSelect('Vendor')}
+                  className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-gray-800 hover:bg-gray-50 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-gray-200"
+                >
+                  <h3 className="text-2xl font-light gradient-text">Vendor →</h3>
+                  <div className="text-lg font-light">
+                    I want to promote my business for dates.
+                  </div>
+                </button>
+              )}
             </div>
           </>
         );

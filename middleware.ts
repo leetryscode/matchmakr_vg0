@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { orbitConfig } from '@/config/orbitConfig'
+import { normalizeToOrbitRole } from '@/types/orbit'
 
 export async function middleware(req: NextRequest) {
   let res = NextResponse.next()
@@ -93,7 +95,12 @@ export async function middleware(req: NextRequest) {
 
         let redirectUrl = '/dashboard/matchmakr' // default
         if (profile?.user_type) {
-          redirectUrl = `/dashboard/${profile.user_type.toLowerCase()}`
+          // Normalize to Orbit role (vendor becomes matchmakr)
+          const orbitRole = normalizeToOrbitRole(profile.user_type)
+          if (orbitRole) {
+            redirectUrl = `/dashboard/${orbitRole.toLowerCase()}`
+          }
+          // If normalization fails, use default
         }
 
         const redirectUrlObj = req.nextUrl.clone()

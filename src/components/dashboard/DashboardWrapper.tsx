@@ -3,14 +3,15 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { OrbitUserRole, normalizeToOrbitRole } from '@/types/orbit';
 
 interface DashboardWrapperProps {
   children: React.ReactNode;
-  expectedUserType?: 'SINGLE' | 'MATCHMAKR' | 'VENDOR';
+  expectedUserType?: OrbitUserRole; // Only Orbit roles (SINGLE | MATCHMAKR)
 }
 
 export default function DashboardWrapper({ children, expectedUserType }: DashboardWrapperProps) {
-  const { user, loading, userType } = useAuth();
+  const { user, loading, orbitRole } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -18,7 +19,7 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
       loading, 
       user: !!user, 
       expectedUserType, 
-      userType
+      orbitRole
     });
 
     if (loading) {
@@ -32,13 +33,13 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
       return;
     }
 
-    // If we have an expected user type, verify it matches the cached user type
-    if (expectedUserType && userType && userType !== expectedUserType) {
-      console.log(`User type mismatch. Expected: ${expectedUserType}, Got: ${userType}`);
-      router.push(`/dashboard/${userType.toLowerCase()}`);
+    // If we have an expected user type, verify it matches the Orbit role
+    if (expectedUserType && orbitRole && orbitRole !== expectedUserType) {
+      console.log(`Orbit role mismatch. Expected: ${expectedUserType}, Got: ${orbitRole}`);
+      router.push(`/dashboard/${orbitRole.toLowerCase()}`);
       return;
     }
-  }, [user, loading, expectedUserType, userType, router]);
+  }, [user, loading, expectedUserType, orbitRole, router]);
 
   if (loading) {
     console.log('Showing loading state: Auth still loading');
@@ -49,10 +50,10 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
     );
   }
 
-  // If we have an expected user type but no cached user type, allow access anyway
+  // If we have an expected user type but no cached Orbit role, allow access anyway
   // This prevents infinite loading when the cache hasn't populated yet
-  if (expectedUserType && !userType) {
-    console.log('No cached user type, but allowing access to prevent infinite loading');
+  if (expectedUserType && !orbitRole) {
+    console.log('No cached Orbit role, but allowing access to prevent infinite loading');
     // Don't show loading screen, just render the children
   }
 

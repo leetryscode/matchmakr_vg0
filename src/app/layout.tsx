@@ -5,7 +5,7 @@ import { AuthProvider } from '../contexts/AuthContext';
 import GlobalLayout from '../components/dashboard/GlobalLayout';
 
 export const metadata: Metadata = {
-  title: 'GREENLIGHT',
+  title: 'Orbit',
   description: 'A matchmaking platform that connects singles through Sponsors',
 }
 

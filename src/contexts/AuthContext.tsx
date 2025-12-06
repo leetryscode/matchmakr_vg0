@@ -4,11 +4,14 @@ import React, { createContext, useContext, useEffect, useState, useRef } from 'r
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
+import { orbitConfig } from '@/config/orbitConfig';
+import { normalizeToOrbitRole, OrbitUserRole } from '@/types/orbit';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  userType: string | null;
+  userType: string | null; // Database user type (can include VENDOR)
+  orbitRole: OrbitUserRole | null; // Normalized Orbit role (SINGLE | MATCHMAKR only)
   signOut: () => Promise<void>;
 }
 
@@ -17,8 +20,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userType, setUserType] = useState<string | null>(null);
+  const [userType, setUserType] = useState<string | null>(null); // Database user type
+  const [orbitRole, setOrbitRole] = useState<OrbitUserRole | null>(null); // Normalized Orbit role
   const userTypeRef = useRef<string | null>(null);
+  const orbitRoleRef = useRef<OrbitUserRole | null>(null);
   const supabase = createClient();
   const router = useRouter();
 
@@ -46,6 +51,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log('AuthContext: Vendor profile found, setting user type to VENDOR');
           setUserType('VENDOR');
           userTypeRef.current = 'VENDOR';
+          // Normalize vendor to MATCHMAKR for Orbit routing
+          const normalized = normalizeToOrbitRole('VENDOR');
+          setOrbitRole(normalized);
+          orbitRoleRef.current = normalized;
           return;
         }
       }
@@ -61,7 +70,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('AuthContext: Cached user type:', profile.user_type);
         setUserType(profile.user_type);
         userTypeRef.current = profile.user_type;
+        // Normalize to Orbit role
+        const normalized = normalizeToOrbitRole(profile.user_type);
+        setOrbitRole(normalized);
+        orbitRoleRef.current = normalized;
         console.log('AuthContext: userType state updated to:', profile.user_type);
+        console.log('AuthContext: orbitRole updated to:', normalized);
         console.log('AuthContext: userTypeRef.current is now:', userTypeRef.current);
       } else {
         console.log('AuthContext: No user_type found in profile:', profile);
@@ -93,6 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // No user but no error - this is normal for unauthenticated users
           setUser(null);
           setUserType(null);
+          setOrbitRole(null);
         } else {
           setUser(user);
           // Fetch user type when user is set
@@ -129,13 +144,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (event === 'SIGNED_OUT') {
           // Clear any cached data and redirect to welcome page
           setUserType(null);
+          setOrbitRole(null);
           router.push('/');
         } else if (event === 'SIGNED_IN' && session?.user) {
           // Fetch and cache user type, then redirect
           await fetchUserType(session.user.id);
-          // Use the ref to get the current userType value
-          if (userTypeRef.current) {
-            router.push(`/dashboard/${userTypeRef.current.toLowerCase()}`);
+          // Use the orbitRoleRef to get the normalized Orbit role for routing
+          if (orbitRoleRef.current) {
+            const role = orbitRoleRef.current.toLowerCase();
+            router.push(`/dashboard/${role}`);
+          } else if (userTypeRef.current) {
+            // Fallback: normalize and redirect
+            const normalized = normalizeToOrbitRole(userTypeRef.current);
+            if (normalized) {
+              router.push(`/dashboard/${normalized.toLowerCase()}`);
+            } else {
+              router.push('/dashboard/matchmakr'); // Default fallback
+            }
           }
         }
       }
@@ -149,7 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, userType, signOut }}>
+    <AuthContext.Provider value={{ user, loading, userType, orbitRole, signOut }}>
       {children}
     </AuthContext.Provider>
   );
