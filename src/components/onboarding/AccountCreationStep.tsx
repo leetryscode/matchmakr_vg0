@@ -94,14 +94,27 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
     setLoading(false);
   };
 
+  const isSingle = onboardingData.userType === 'Single';
+  
   return (
     <div className="flex flex-col items-center justify-center gap-8 text-center">
       <h1 className="text-4xl font-light gradient-text leading-[1.1] tracking-tight sm:text-[4rem]">
         Create your account
       </h1>
-      <p className="text-xl text-gray-600 font-light">
-        Almost there! Just a few more details to get you started.
-      </p>
+      {isSingle ? (
+        <>
+          <p className="text-xl text-gray-600 font-light max-w-md">
+            Your Sponsor will create your Orbit profile. You just need an account to get started.
+          </p>
+          <p className="text-lg text-gray-500 font-light max-w-md">
+            Once you're signed up, your Sponsor can invite you and set up your profile for matching.
+          </p>
+        </>
+      ) : (
+        <p className="text-xl text-gray-600 font-light">
+          Almost there! Just a few more details to get you started.
+        </p>
+      )}
       <div className="flex flex-col gap-4 w-full max-w-md">
         <input
           type="email"

@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import ProfileClient from '@/components/profile/ProfileClient';
 import { Profile } from '@/components/profile/types';
+import { normalizeToOrbitRole } from '@/types/orbit';
 
 export default async function ProfilePage({ params }: { params: { id: string } }) {
     const cookieStore = cookies();
@@ -53,8 +54,9 @@ export default async function ProfilePage({ params }: { params: { id: string } }
     const isOwnProfile = currentUser?.id === profile.id;
     const isSponsorViewing = currentUser?.id === profile.sponsored_by_id;
 
-    // Fetch current user's profile for user_type
+    // Fetch current user's profile for user_type and normalize to Orbit role
     let currentUserProfile: { user_type: string } | null = null;
+    let currentUserOrbitRole: 'SINGLE' | 'MATCHMAKR' | null = null;
     if (currentUser?.id) {
         const { data } = await supabase
             .from('profiles')
@@ -63,6 +65,17 @@ export default async function ProfilePage({ params }: { params: { id: string } }
             .single();
         if (data) {
             currentUserProfile = { user_type: data.user_type };
+            currentUserOrbitRole = normalizeToOrbitRole(data.user_type);
+        } else {
+            // Check if vendor
+            const { data: vendorData } = await supabase
+                .from('vendor_profiles')
+                .select('id')
+                .eq('id', currentUser.id)
+                .single();
+            if (vendorData) {
+                currentUserOrbitRole = normalizeToOrbitRole('VENDOR');
+            }
         }
     }
 

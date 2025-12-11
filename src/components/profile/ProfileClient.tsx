@@ -8,6 +8,7 @@ import { Profile } from './types';
 import InterestsInput from './InterestsInput';
 import SelectSingleModal from '../dashboard/SelectSingleModal';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Types for sponsored singles and matchmakr
 interface SponsoredSingle {
@@ -68,6 +69,21 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   const age = calculateAge(profile.birth_year);
   const firstName = profile.name?.split(' ')[0] || '';
   const router = useRouter();
+  const { orbitRole } = useAuth();
+  
+  // In Orbit, only MATCHMAKR (Sponsors) can edit profiles
+  // Singles viewing their own profile should see read-only view
+  const canEditProfile = orbitRole === 'MATCHMAKR' && (isOwnProfile || isSponsorViewing);
+
+  // Structure sponsors as an array to support multiple sponsors in the future
+  // Currently, the schema only supports one sponsor, but this structure makes it easy to extend
+  const sponsors = matchmakrProfile ? [{
+    id: matchmakrProfile.id,
+    name: matchmakrProfile.name,
+    profile_pic_url: matchmakrProfile.profile_pic_url,
+    endorsement: profile.matchmakr_endorsement, // Currently one endorsement field, but could be per-sponsor in future
+    isCurrentSponsor: isSponsorViewing
+  }] : [];
 
   // Fetch interests for this profile on mount
   React.useEffect(() => {
@@ -113,7 +129,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           userId={profile.id} 
           photos={profile.photos}
           userType={profile.user_type}
-          canEdit={isOwnProfile || isSponsorViewing}
+          canEdit={canEditProfile}
         />
         <div className="p-0">
           <div className="flex justify-between items-start">
@@ -129,9 +145,16 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 {[profile.occupation, age ? age : null].filter(Boolean).join(', ')}
               </p>
             </div>
-            {isOwnProfile && (
-              <EditProfileButton profile={profile} />
-            )}
+            <div className="flex flex-col items-end gap-2">
+              {canEditProfile && (
+                <EditProfileButton profile={profile} />
+              )}
+              {isOwnProfile && profile.user_type === 'SINGLE' && orbitRole === 'SINGLE' && (
+                <div className="text-sm text-white/70 italic max-w-xs text-right">
+                  Your Sponsor manages your Orbit profile. If something looks off, chat with them.
+                </div>
+              )}
+            </div>
           </div>
           {profile.user_type === 'SINGLE' && (profile.city || profile.state || profile.zip_code) && (
             <>
@@ -146,7 +169,8 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 {profile.zip_code && ` ${profile.zip_code}`}
               </p>
               {/* Add Interest Button and Interests Badges */}
-              {(isOwnProfile || isSponsorViewing) && (
+              {/* Only Sponsors can edit interests */}
+              {canEditProfile && (
                 <div className="mt-2">
                   <button
                     className="bg-white/10 text-white px-4 py-1 rounded-full border border-white/20 hover:bg-white/20 transition-colors text-sm font-semibold"
@@ -177,7 +201,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                       {interests.slice(0, 8).map(interest => (
                         <span key={interest.id} className="bg-white/20 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
                           {interest.name}
-                          {(isOwnProfile || isSponsorViewing) && (
+                          {canEditProfile && (
                             <button
                               type="button"
                               className="ml-1 text-white/70 hover:text-red-400"
@@ -206,24 +230,24 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
               )}
             </>
           )}
-          <div className="mt-6">
-            <div className="bg-white/10 rounded-xl border border-white/20 shadow-card p-4">
-              <h2 className="text-lg font-semibold text-white">About {firstName}</h2>
-              <p className="mt-2 text-sm text-white/90">{profile.bio || 'No bio yet.'}</p>
-            </div>
-          </div>
-          {profile.user_type === 'SINGLE' && (
-            <div className="mt-6">
-              <div className="bg-white/10 rounded-xl border border-white/20 shadow-card p-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold text-white">What their Sponsor says</h2>
-                  {isSponsorViewing && (
-                    <EditProfileButton profile={profile} canEditEndorsementOnly={true} />
-                  )}
+          {profile.user_type === 'SINGLE' && sponsors.length > 0 && (
+            <>
+              {sponsors.map((sponsor) => (
+                <div key={sponsor.id} className="mt-6">
+                  <div className="bg-white/10 rounded-xl border border-white/20 shadow-card p-4">
+                    <div className="flex justify-between items-center">
+                      <h2 className="text-lg font-semibold text-white">
+                        What {sponsor.name || 'their Sponsor'} says about {firstName || profile.name || 'them'}
+                      </h2>
+                      {sponsor.isCurrentSponsor && (
+                        <EditProfileButton profile={profile} canEditEndorsementOnly={true} />
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm text-white/90">{sponsor.endorsement || 'This is where your sponsor writes about you...'}</p>
+                  </div>
                 </div>
-                <p className="mt-2 text-sm text-white/90">{profile.matchmakr_endorsement || 'This is where your sponsor writes about you...'}</p>
-              </div>
-            </div>
+              ))}
+            </>
           )}
           {profile.user_type === 'MATCHMAKR' && (
             <div className="mt-6 border-t border-white/30 pt-4">

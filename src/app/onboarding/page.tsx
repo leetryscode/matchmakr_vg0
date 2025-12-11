@@ -25,7 +25,12 @@ export default function OnboardingPage() {
       // Handle Vendor flow separately if needed
       // For now, let's assume it follows a different path
       router.push('/onboarding/vendor'); // Example redirect
+    } else if (type === 'Single') {
+      // Singles skip detailed profile building - their Sponsor will create their profile
+      // Just collect minimal info (name, sex, age) for account creation
+      setStep(2);
     } else {
+      // Sponsors go through full profile building
       setStep(2);
     }
   };
