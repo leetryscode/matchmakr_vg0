@@ -4,12 +4,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { useConfetti } from '@/components/GlobalConfettiBlast';
 
 export default function SingleChatPage() {
   const router = useRouter();
   const { singleId } = useParams();
-  const { triggerConfetti } = useConfetti();
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
   const [messageText, setMessageText] = useState('');
@@ -101,8 +99,6 @@ export default function SingleChatPage() {
         const conversationKey = `firstChat_${currentUserId}_${singleId}`;
         const hasOpenedBefore = localStorage.getItem(conversationKey);
         if (!hasOpenedBefore) {
-          // Trigger confetti for first-time chat open with another single
-          triggerConfetti();
           localStorage.setItem(conversationKey, 'true');
         }
       }

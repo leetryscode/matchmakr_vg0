@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { useConfetti } from '@/components/GlobalConfettiBlast';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -27,7 +26,6 @@ export default function ChatPage() {
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [approvalLoading, setApprovalLoading] = useState(false);
   const prevMatchStatus = useRef<string>('');
-  const { triggerConfetti } = useConfetti();
 
   // Realtime subscription for new messages
   useEffect(() => {
@@ -223,11 +221,6 @@ export default function ChatPage() {
       });
       if (response.ok) {
         const data = await response.json();
-        
-        // Trigger confetti for first approval or match completion
-        if (data.wasFirstApproval || data.isMatchCompletion) {
-          triggerConfetti();
-        }
         
         // Refetch the match status to get the correct state
         await fetchMatchStatus();

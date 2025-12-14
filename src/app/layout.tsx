@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import GlobalConfettiBlast from '../components/GlobalConfettiBlast';
 import { AuthProvider } from '../contexts/AuthContext';
 import GlobalLayout from '../components/dashboard/GlobalLayout';
 
@@ -18,11 +17,9 @@ export default function RootLayout({
     <html lang="en">
       <body className="font-source-sans text-gray-800 leading-relaxed text-lg">
         <AuthProvider>
-          <GlobalConfettiBlast>
-            <GlobalLayout>
-              {children}
-            </GlobalLayout>
-          </GlobalConfettiBlast>
+          <GlobalLayout>
+            {children}
+          </GlobalLayout>
         </AuthProvider>
       </body>
     </html>

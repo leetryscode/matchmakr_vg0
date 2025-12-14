@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { useConfetti } from '../GlobalConfettiBlast';
 
 interface ChatModalProps {
   open: boolean;
@@ -32,7 +31,6 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   const [canChat, setCanChat] = useState(false);
   const [canChatLoading, setCanChatLoading] = useState(false);
   const prevMatchStatus = useRef<string>('');
-  const { triggerConfetti } = useConfetti();
   const [chatContext, setChatContext] = useState<{
     currentUserSingle: { id: string; name: string; photo: string | null } | null;
     otherUserSingle: { id: string; name: string; photo: string | null } | null;
@@ -231,11 +229,6 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
       if (response.ok) {
         const data = await response.json();
         setMatchStatus('matched');
-        
-        // Trigger confetti for first approval or match completion
-        if (data.wasFirstApproval || data.isMatchCompletion) {
-          triggerConfetti();
-        }
       } else {
         setMatchError('Failed to approve match');
       }
