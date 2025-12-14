@@ -148,19 +148,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           router.push('/');
         } else if (event === 'SIGNED_IN' && session?.user) {
           // Fetch and cache user type, then redirect
-          await fetchUserType(session.user.id);
+          // Add timeout to prevent hanging
+          const fetchPromise = fetchUserType(session.user.id);
+          const timeoutPromise = new Promise(resolve => setTimeout(resolve, 3000)); // 3 second timeout
+          
+          await Promise.race([fetchPromise, timeoutPromise]);
+          
           // Use the orbitRoleRef to get the normalized Orbit role for routing
           if (orbitRoleRef.current) {
             const role = orbitRoleRef.current.toLowerCase();
+            console.log('[AuthContext] Redirecting to dashboard:', role);
             router.push(`/dashboard/${role}`);
           } else if (userTypeRef.current) {
             // Fallback: normalize and redirect
             const normalized = normalizeToOrbitRole(userTypeRef.current);
             if (normalized) {
+              console.log('[AuthContext] Redirecting to dashboard (normalized):', normalized.toLowerCase());
               router.push(`/dashboard/${normalized.toLowerCase()}`);
             } else {
+              console.log('[AuthContext] No normalized role, redirecting to default dashboard');
               router.push('/dashboard/matchmakr'); // Default fallback
             }
+          } else {
+            console.warn('[AuthContext] SIGNED_IN but no user type found after fetch - redirecting to default dashboard');
+            // Redirect to default dashboard if profile fetch fails/times out
+            router.push('/dashboard/matchmakr');
           }
         }
       }

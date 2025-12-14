@@ -78,20 +78,21 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(redirectUrl)
     }
 
-    // Debug logging
-    if (!user) {
-      console.log('Middleware: User not authenticated, path:', req.nextUrl.pathname, 'allowing access');
-    }
-
     // If user is signed in and the current path is /login, redirect to appropriate dashboard
     if (user && req.nextUrl.pathname === '/login') {
       // Get the user's profile to determine their user type
       try {
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('user_type')
           .eq('id', user.id)
           .single()
+
+        // If profile fetch fails, don't redirect to default dashboard - let client handle it
+        if (profileError || !profile) {
+          console.log('[Middleware] Profile fetch failed for user', user.id, 'on path', req.nextUrl.pathname, 'error:', profileError?.message || 'No profile found');
+          return res; // Let the client handle the error
+        }
 
         let redirectUrl = '/dashboard/matchmakr' // default
         if (profile?.user_type) {
@@ -107,11 +108,9 @@ export async function middleware(req: NextRequest) {
         redirectUrlObj.pathname = redirectUrl
         return NextResponse.redirect(redirectUrlObj)
       } catch (error) {
-        console.error('Error fetching profile in middleware:', error);
-        // If we can't fetch the profile, just redirect to the default dashboard
-        const redirectUrlObj = req.nextUrl.clone()
-        redirectUrlObj.pathname = '/dashboard/matchmakr'
-        return NextResponse.redirect(redirectUrlObj)
+        console.log('[Middleware] Profile fetch exception for user', user.id, 'on path', req.nextUrl.pathname, 'error:', error instanceof Error ? error.message : 'Unknown error');
+        // If we can't fetch the profile, return res to let client handle it (preferred over redirecting)
+        return res;
       }
     }
 

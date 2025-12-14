@@ -14,32 +14,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loadingSignIn, setLoadingSignIn] = useState(false);
 
-  // Redirect if already logged in
-  useEffect(() => {
-    console.log('AuthContext user:', user, 'loading:', loading);
-    if (!loading && user) {
-      // User is already logged in, redirect to appropriate dashboard
-      const redirectToDashboard = async () => {
-        try {
-          console.log('Attempting profile fetch for user.id:', user.id);
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('user_type')
-            .eq('id', user.id)
-            .single();
-          console.log('Fetched profile:', profile, 'error:', profileError);
-          if (profile?.user_type) {
-            router.push(`/dashboard/${profile.user_type.toLowerCase()}`);
-          } else {
-            router.push('/');
-          }
-        } catch (err) {
-          console.error('Error in redirectToDashboard:', err);
-        }
-      };
-      redirectToDashboard();
-    }
-  }, [user, loading, router, supabase]);
+  // Don't check for cached users or redirect - just show the login form
+  // The AuthContext will handle redirects after successful sign-in
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,27 +35,17 @@ export default function LoginPage() {
 
     if (signInData.user) {
       // The auth context will handle the redirect
+      // Reset loading state - if redirect fails, user can see the form
       setLoadingSignIn(false);
+      console.log('[LoginPage] Sign-in successful, waiting for AuthContext redirect');
+    } else {
+      // No user returned - shouldn't happen but handle it
+      setLoadingSignIn(false);
+      setError('Sign in completed but no user data returned');
     }
   };
 
-  // Show loading while checking auth state
-  if (loading) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
-        <div className="text-lg">Loading...</div>
-      </main>
-    );
-  }
-
-  // Don't show login form if user is already logged in
-  if (user) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
-        <div className="text-lg">Redirecting...</div>
-      </main>
-    );
-  }
+  // Always show the login form - no redirects, no cached user checks
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
