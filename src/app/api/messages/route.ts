@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 export async function POST(req: NextRequest) {
   const supabase = createClient();
   const body = await req.json();
-  const { sender_id, recipient_id, content, about_single_id, clicked_single_id } = body;
+  const { sender_id, recipient_id, content, about_single_id, clicked_single_id, conversation_id } = body;
 
   // Check authentication
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -74,7 +74,32 @@ export async function POST(req: NextRequest) {
 
   // Insert message
   let conversationId = null;
-  if (senderProfile.user_type === 'MATCHMAKR' && recipientProfile.user_type === 'MATCHMAKR' && about_single_id && clicked_single_id) {
+  
+  // If conversation_id is provided, validate it exists and user is authorized
+  if (conversation_id) {
+    const { data: conversation, error: convError } = await supabase
+      .from('conversations')
+      .select('id, initiator_matchmakr_id, recipient_matchmakr_id')
+      .eq('id', conversation_id)
+      .maybeSingle();
+    
+    if (convError) {
+      return NextResponse.json({ error: convError.message || 'Failed to validate conversation' }, { status: 500 });
+    }
+    
+    if (!conversation) {
+      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+    }
+    
+    // Verify the sender is part of this conversation
+    if (conversation.initiator_matchmakr_id !== sender_id && conversation.recipient_matchmakr_id !== sender_id) {
+      return NextResponse.json({ error: 'Unauthorized: sender is not part of this conversation' }, { status: 403 });
+    }
+    
+    conversationId = conversation.id;
+  }
+  // If conversation_id is not provided, find or create one (for matchmakr-to-matchmakr chats)
+  else if (senderProfile.user_type === 'MATCHMAKR' && recipientProfile.user_type === 'MATCHMAKR' && about_single_id && clicked_single_id) {
     // Use unordered pair for singles
     let aId = about_single_id;
     let bId = clicked_single_id;
