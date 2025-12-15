@@ -212,13 +212,21 @@ export default function PondPage() {
         setCurrentUserProfilePic(currentUserProfilePic);
 
         // Check if user is a matchmakr
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('user_type')
             .eq('id', user.id)
             .single();
 
-        if (profile?.user_type !== 'MATCHMAKR') {
+        // If profile fetch fails, log error and don't redirect (let user see the page)
+        if (profileError || !profile) {
+            console.error('Error fetching profile for pond access:', profileError);
+            setLoading(false);
+            return; // Don't redirect on fetch failure
+        }
+
+        // Only redirect if profile exists AND user_type is explicitly not MATCHMAKR
+        if (profile.user_type !== 'MATCHMAKR') {
             window.location.href = '/dashboard/single';
             return;
         }
