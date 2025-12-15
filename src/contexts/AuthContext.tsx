@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { orbitConfig } from '@/config/orbitConfig';
 import { normalizeToOrbitRole, OrbitUserRole } from '@/types/orbit';
 
@@ -26,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const orbitRoleRef = useRef<OrbitUserRole | null>(null);
   const supabase = createClient();
   const router = useRouter();
+  const pathname = usePathname();
 
   // Function to fetch and cache user type
   const fetchUserType = async (userId: string) => {
@@ -147,10 +148,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setOrbitRole(null);
           router.push('/');
         } else if (event === 'SIGNED_IN' && session?.user) {
-          // Fetch and cache user type, then redirect
-          // Add timeout to prevent hanging
+          // Check current path FIRST before doing anything else
+          // Use window.location.pathname for accurate current path in async callback
+          const currentPath = typeof window !== 'undefined' ? window.location.pathname : pathname || '/';
+          
+          // Valid pages that should NOT trigger redirects
+          const isValidPage = 
+            currentPath === '/pond' ||
+            currentPath.startsWith('/profile/') ||
+            currentPath.match(/^\/dashboard\/(matchmakr|single|vendor|settings|chat)/);
+          
+          // Only redirect from login/welcome/auth pages, or invalid dashboard routes
+          const shouldRedirect = !isValidPage && (
+            currentPath === '/' || 
+            currentPath === '/login' || 
+            currentPath.startsWith('/auth/') ||
+            (currentPath.startsWith('/dashboard/') && !currentPath.match(/^\/dashboard\/(matchmakr|single|vendor|settings|chat)/))
+          );
+          
+          // If we're on a valid page, don't redirect at all - just fetch user type in background
+          if (!shouldRedirect) {
+            console.log('[AuthContext] User already on valid page, skipping redirect and fetching user type in background:', currentPath);
+            // Still fetch user type in background for the page to use
+            fetchUserType(session.user.id).catch(err => {
+              console.error('[AuthContext] Error fetching user type in background:', err);
+            });
+            return;
+          }
+          
+          // Only fetch and redirect if we're on a page that should redirect
           const fetchPromise = fetchUserType(session.user.id);
-          const timeoutPromise = new Promise(resolve => setTimeout(resolve, 3000)); // 3 second timeout
+          const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5000)); // 5 second timeout
           
           await Promise.race([fetchPromise, timeoutPromise]);
           
@@ -171,7 +199,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           } else {
             console.warn('[AuthContext] SIGNED_IN but no user type found after fetch - redirecting to default dashboard');
-            // Redirect to default dashboard if profile fetch fails/times out
             router.push('/dashboard/matchmakr');
           }
         }
@@ -179,7 +206,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     return () => subscription.unsubscribe();
-  }, [supabase, router]);
+  }, [supabase, router, pathname]);
 
   const signOut = async () => {
     await supabase.auth.signOut();

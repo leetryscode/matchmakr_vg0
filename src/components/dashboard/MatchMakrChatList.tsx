@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/client';
 import MatchMakrChatListClient from './MatchMakrChatListClient';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef, memo } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 interface MatchMakrChatListProps {
@@ -13,19 +13,20 @@ interface MatchMakrChatListProps {
 }
 
 const MatchMakrChatList = ({ userId, currentUserName, currentUserProfilePic }: MatchMakrChatListProps) => {
-  console.log('[MatchMakrChatList] Component mounted. userId:', userId);
+  // Removed console.log to reduce noise - only log when actually fetching
   const [conversations, setConversations] = useState<any[]>([]);
   const [otherProfiles, setOtherProfiles] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
-  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
+  const lastFetchTimeRef = useRef<number>(0); // Use ref instead of state to avoid dependency issues
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const fetchConversations = useCallback(async (forceRefresh = false) => {
     // Prevent excessive API calls - only fetch if forced or if it's been more than 5 seconds
+    // Use ref to track last fetch time to avoid dependency issues
     const now = Date.now();
-    if (!forceRefresh && now - lastFetchTime < 5000) {
+    if (!forceRefresh && now - lastFetchTimeRef.current < 5000) {
       console.log('[MatchMakrChatList] Skipping fetch - too recent');
       return;
     }
@@ -62,28 +63,29 @@ const MatchMakrChatList = ({ userId, currentUserName, currentUserProfilePic }: M
 
       setConversations(data.conversations);
       setOtherProfiles(otherProfilesData);
-      setLastFetchTime(now);
+      lastFetchTimeRef.current = now; // Update ref instead of state
       setLoading(false);
     } catch (error) {
       console.error('[MatchMakrChatList] Error fetching conversations:', error);
       setLoading(false);
     }
-  }, [userId, lastFetchTime]);
+  }, [userId]); // Stable dependency - callback won't be recreated unless userId changes
 
   // Single consolidated useEffect to handle all fetch scenarios
   useEffect(() => {
     if (!userId) return;
 
-    let shouldFetch = false;
     let forceRefresh = false;
 
     // Check for refresh parameter
     const refreshParam = searchParams.get('refresh');
     if (refreshParam === 'true') {
       console.log('[MatchMakrChatList] Detected refresh parameter, clearing URL and refreshing data');
-      router.replace('/dashboard/matchmakr');
+      // Use replace without causing re-render
+      const url = new URL(window.location.href);
+      url.searchParams.delete('refresh');
+      window.history.replaceState({}, '', url.toString());
       forceRefresh = true;
-      shouldFetch = true;
     }
 
     // Check for chat page visit flag
@@ -93,20 +95,13 @@ const MatchMakrChatList = ({ userId, currentUserName, currentUserProfilePic }: M
         console.log('[MatchMakrChatList] Detected return from chat page, refreshing data');
         sessionStorage.removeItem('chatPageVisited');
         forceRefresh = true;
-        shouldFetch = true;
       }
     }
 
-    // Always fetch on initial mount or when userId changes
-    if (!shouldFetch) {
-      shouldFetch = true;
-      forceRefresh = false;
-    }
-
-    if (shouldFetch) {
-      fetchConversations(forceRefresh);
-    }
-  }, [userId, pathname, searchParams, router]);
+    // Fetch conversations (will check rate limit internally)
+    fetchConversations(forceRefresh);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]); // Only depend on userId - pathname/searchParams changes handled inside
 
   if (loading) {
     return (
@@ -139,4 +134,5 @@ const MatchMakrChatList = ({ userId, currentUserName, currentUserProfilePic }: M
   />;
 };
 
-export default MatchMakrChatList; 
+// Memoize component to prevent re-renders when props haven't changed
+export default memo(MatchMakrChatList); 

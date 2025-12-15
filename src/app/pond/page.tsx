@@ -8,6 +8,7 @@ import InterestsInput from '@/components/profile/InterestsInput';
 import SelectSingleModal from '@/components/dashboard/SelectSingleModal';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PondProfile extends Profile {
     profile_pic_url: string | null;
@@ -31,6 +32,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export default function PondPage() {
     const supabase = createClient();
+    const { user, loading: authLoading, orbitRole } = useAuth();
     const [profiles, setProfiles] = useState<PondProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchCity, setSearchCity] = useState('');
@@ -127,7 +129,33 @@ export default function PondPage() {
         }
     };
 
+    // Wait for auth to load, then check authorization and load data
     useEffect(() => {
+        // Don't do anything while auth is still loading
+        if (authLoading) {
+            return;
+        }
+
+        // If no user, redirect to login
+        if (!user) {
+            router.push('/login');
+            return;
+        }
+
+        // Wait for orbitRole to be determined (not null) before checking authorization
+        // If orbitRole is null, it means user type is still being fetched
+        if (orbitRole === null) {
+            console.log('Pond page: Waiting for user type to load...');
+            return;
+        }
+
+        // Check authorization - only MATCHMAKR users can access pond
+        if (orbitRole !== 'MATCHMAKR') {
+            console.log('Pond page: User is not MATCHMAKR, redirecting');
+            router.push('/dashboard/single');
+            return;
+        }
+
         console.log('Pond page useEffect triggered');
         
         // Try to load from cache first
@@ -150,9 +178,9 @@ export default function PondPage() {
             console.log('No cache found, loading fresh data');
             setLoading(true);
             setShowingCachedData(false);
-            checkUserAndLoadProfiles();
+            loadUserDataAndProfiles();
         }
-    }, []); // Only run on mount
+    }, [authLoading, user, orbitRole, router]); // Run when auth state changes
 
     // Save to cache when data changes
     useEffect(() => {
@@ -188,73 +216,48 @@ export default function PondPage() {
         console.log('Pond page loading state changed:', { loading, profilesCount: profiles.length });
     }, [loading, profiles.length]);
 
-    // Remove the complex pathname-based useEffect that was causing issues
-
-    const checkUserAndLoadProfiles = async () => {
-        console.log('Pond page checkUserAndLoadProfiles started');
+    // Load user profile data and sponsored singles, then load profiles
+    const loadUserDataAndProfiles = async () => {
+        if (!user) return;
+        
+        console.log('Pond page loadUserDataAndProfiles started');
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                window.location.href = '/login';
-                return;
+            // Fetch current user's name and profile picture
+            const { data: userProfile } = await supabase
+                .from('profiles')
+                .select('name, photos')
+                .eq('id', user.id)
+                .single();
+            
+            // Store user profile data
+            const currentUserName = userProfile?.name || '';
+            const currentUserProfilePic = userProfile?.photos && userProfile.photos.length > 0 ? userProfile.photos[0] : null;
+            setCurrentUserName(currentUserName);
+            setCurrentUserProfilePic(currentUserProfilePic);
+            setCurrentUser({ ...user, name: currentUserName, photos: userProfile?.photos });
+
+            // Fetch the current user's sponsored singles
+            const { data: singles } = await supabase
+                .from('profiles')
+                .select('id, name, photos')
+                .eq('sponsored_by_id', user.id)
+                .eq('user_type', 'SINGLE');
+            
+            const sponsoredSingles = singles ? singles.map(single => ({
+                id: single.id,
+                name: single.name || '',
+                photo: single.photos && single.photos.length > 0 ? single.photos[0] : null
+            })) : [];
+            
+            setSponsoredSingles(sponsoredSingles);
+            if (sponsoredSingles.length > 0) {
+                setCurrentSponsoredSingle(sponsoredSingles[0]);
             }
 
-        // Fetch current user's name and profile picture
-        const { data: userProfile } = await supabase
-            .from('profiles')
-            .select('name, photos')
-            .eq('id', user.id)
-            .single();
-        // Store user profile data
-        const currentUserName = userProfile?.name || '';
-        const currentUserProfilePic = userProfile?.photos && userProfile.photos.length > 0 ? userProfile.photos[0] : null;
-        setCurrentUserName(currentUserName);
-        setCurrentUserProfilePic(currentUserProfilePic);
-
-        // Check if user is a matchmakr
-        const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('user_type')
-            .eq('id', user.id)
-            .single();
-
-        // If profile fetch fails, log error and don't redirect (let user see the page)
-        if (profileError || !profile) {
-            console.error('Error fetching profile for pond access:', profileError);
-            setLoading(false);
-            return; // Don't redirect on fetch failure
-        }
-
-        // Only redirect if profile exists AND user_type is explicitly not MATCHMAKR
-        if (profile.user_type !== 'MATCHMAKR') {
-            window.location.href = '/dashboard/single';
-            return;
-        }
-
-        setCurrentUser({ ...user, name: currentUserName, photos: userProfile?.photos });
-
-        // Fetch the current user's sponsored singles
-        const { data: singles } = await supabase
-            .from('profiles')
-            .select('id, name, photos')
-            .eq('sponsored_by_id', user.id)
-            .eq('user_type', 'SINGLE');
-        
-        const sponsoredSingles = singles ? singles.map(single => ({
-            id: single.id,
-            name: single.name || '',
-            photo: single.photos && single.photos.length > 0 ? single.photos[0] : null
-        })) : [];
-        
-        setSponsoredSingles(sponsoredSingles);
-        if (sponsoredSingles.length > 0) {
-            setCurrentSponsoredSingle(sponsoredSingles[0]);
-        }
-
-        console.log('Pond page calling loadProfiles');
-        await loadProfiles(false, 1);
+            console.log('Pond page calling loadProfiles');
+            await loadProfiles(false, 1);
         } catch (error) {
-            console.error('Error in checkUserAndLoadProfiles:', error);
+            console.error('Error in loadUserDataAndProfiles:', error);
             setLoading(false);
             setLoadingMore(false);
         }
@@ -463,7 +466,19 @@ export default function PondPage() {
         setPendingChatProfile(null);
     };
 
-    console.log('Pond page render state:', { loading, profilesCount: profiles.length, hasMore });
+    console.log('Pond page render state:', { loading: loading || authLoading, profilesCount: profiles.length, hasMore });
+
+    // Show loading while auth is loading or if we're still loading data
+    if (authLoading || (loading && profiles.length === 0 && !showingCachedData)) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-primary-blue to-primary-teal p-4 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+                    <p className="mt-4 text-white">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-primary-blue to-primary-teal p-4">
