@@ -1,37 +1,92 @@
-refactor: rebrand to Orbit and simplify role system to two active roles
+Fix pond chat initiation with top selector and mystery single
 
-Rebrand MatchMakr/GREENLIGHT to Orbit with simplified two-role system (SINGLE and MATCHMAKR/Sponsor).
+GOALS:
+- Fix race conditions causing chat initiation failures
+- Always use correct about_single_id (never wrong fallback)
+- Add clear UX showing which single sponsor is shopping for
+- Support sponsors with no singles via "mystery single"
+- Ensure selector appears on every navigation (not just first load)
 
-BREAKING: Product name "GREENLIGHT" → "Orbit", "MatchMakr" → "Sponsor" in UI
-- Landing page, dashboard header, and metadata updated
-- All user-facing "MatchMakr" references changed to "Sponsor"
+PROBLEMS FIXED:
+1. Race condition: currentUser.id was null when chat initiated before data loaded
+2. Wrong about_single_id: fell back to profile.id (clicked single) instead of sponsor's single
+3. Top selector disappeared when navigating back from chat/dashboard
+4. No support for sponsors with zero sponsored singles
 
-FEATURES:
-- Created Orbit role type system (src/types/orbit.ts) with normalization
-- Added orbitConfig.ts feature flags to hide Vendor and Forum from UI
-- Vendor users automatically routed to MATCHMAKR dashboard
+CHANGES MADE:
 
-UI HIDDEN (via orbitConfig):
-- Vendor option removed from onboarding
-- Green Room/Forum button removed from navigation
+1. Created Mystery Single Constant
+   - Added MYSTERY_SINGLE constant (id: 'MYSTERY_SINGLE', name: 'Mystery Single')
+   - Defined in both pond page and SelectSingleModal
+   - Allows chat initiation even without sponsored singles
 
-ROLE SYSTEM:
-- New OrbitUserRole type: 'SINGLE' | 'MATCHMAKR' only
-- AuthContext tracks both database userType and normalized orbitRole
-- DashboardWrapper/DashboardLayout use OrbitUserRole
-- Middleware normalizes vendor → matchmakr for routing
+2. Added Top Single Selector UI
+   - Always-visible selector at top of pond page
+   - Shows current selected single with photo/name
+   - Multiple singles: buttons to switch + "Someone Else" option
+   - One single: shows that single + "Someone Else" button
+   - No singles: shows only "Mystery Single"
+   - Provides clear context of which single sponsor is shopping for
 
-FILES ADDED:
-- src/config/orbitConfig.ts
-- src/types/orbit.ts
-- CONTEXT.md
-- ORBIT_REFACTOR_MAP.md
+3. Fixed Race Condition (currentUser.id → user.id)
+   - Replaced all currentUser.id with user.id from useAuth()
+   - user.id is always available immediately after auth loads
+   - Added null check for user at function start
+   - Eliminates "Cannot read properties of null" errors
+
+4. Fixed about_single_id Logic
+   - Removed fallback to profile.id (wrong value)
+   - Always uses currentSponsoredSingle.id (correct value)
+   - If singleId provided from modal, uses that; otherwise uses currentSponsoredSingle
+   - No more "Noel and Noel" conversations
+
+5. Updated Single Loading Logic
+   - Split loadUserDataAndProfiles() into loadUserData() and profile loading
+   - loadUserData() always called on every page load (regardless of cache)
+   - Ensures sponsoredSingles and currentSponsoredSingle are always set
+   - Preserves user's selection when navigating back (if still valid)
+
+6. Updated SelectSingleModal
+   - Added showMysterySingle and currentSelectedSingleId props
+   - Shows "Someone Else" option when one single exists
+   - Shows "Mystery Single" when no singles
+   - Highlights currently selected single with checkmark
+   - Always shows modal (no conditional logic for single selection)
+
+7. Simplified handleOpenChat
+   - Always shows modal (allows selection even with one single)
+   - Removed complex conditional logic
+   - Cleaner, more predictable flow
+
+BENEFITS:
+- Chat initiation works reliably every time (no race conditions)
+- Correct about_single_id always used (never wrong fallback)
+- Clear UX showing shopping context
+- Supports all scenarios (0, 1, or multiple singles)
+- Selector appears consistently on every navigation
+- Simple, maintainable code
+- Fast performance (no unnecessary waits)
 
 FILES MODIFIED:
-- src/app/page.tsx, layout.tsx
-- src/components/dashboard/* (multiple files)
-- src/contexts/AuthContext.tsx
-- middleware.ts
+- src/app/pond/page.tsx
+  - Added MYSTERY_SINGLE constant
+  - Added top selector UI component
+  - Split loadUserDataAndProfiles into loadUserData (always called)
+  - Fixed currentUser.id → user.id in openChatWithSingle
+  - Fixed about_single_id to use currentSponsoredSingle.id
+  - Updated handleOpenChat to always show modal
+  - Updated handleSingleSelected to update currentSponsoredSingle
 
-NOTE: Database schema unchanged. Vendor/Forum code preserved but hidden.
+- src/components/dashboard/SelectSingleModal.tsx
+  - Added MYSTERY_SINGLE constant
+  - Added showMysterySingle and currentSelectedSingleId props
+  - Added "Someone Else" and "Mystery Single" options
+  - Added visual indicator for currently selected single
 
+TESTING:
+- Verified selector appears on first load
+- Verified selector appears when navigating back from chat
+- Verified selector appears when navigating back from dashboard
+- Verified chat initiation works with 0, 1, and multiple singles
+- Verified mystery single works for sponsors with no singles
+- Verified about_single_id is always correct (not clicked profile)

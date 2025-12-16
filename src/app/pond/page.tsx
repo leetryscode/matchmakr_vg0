@@ -30,6 +30,13 @@ interface PondCache {
 const CACHE_KEY = 'pond_cache';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+// Mystery Single - placeholder for sponsors with no singles or when shopping for "someone else"
+const MYSTERY_SINGLE = {
+    id: 'MYSTERY_SINGLE',
+    name: 'Mystery Single',
+    photo: null
+};
+
 export default function PondPage() {
     const supabase = createClient();
     const { user, loading: authLoading, orbitRole } = useAuth();
@@ -46,6 +53,7 @@ export default function PondPage() {
     const [currentUserProfilePic, setCurrentUserProfilePic] = useState<string | null>(null);
     const [selectedInterests, setSelectedInterests] = useState<{ id: number; name: string }[]>([]);
     const [showSelectSingleModal, setShowSelectSingleModal] = useState(false);
+    const [showTailorSearchModal, setShowTailorSearchModal] = useState(false);
     const [pendingChatProfile, setPendingChatProfile] = useState<PondProfile | null>(null);
     const [selectedSingleForChat, setSelectedSingleForChat] = useState<string | null>(null);
     const [clickedSingleForChat, setClickedSingleForChat] = useState<{ id: string, name: string, photo: string | null } | null>(null);
@@ -158,7 +166,11 @@ export default function PondPage() {
 
         console.log('Pond page useEffect triggered');
         
-        // Try to load from cache first
+        // Always load user data (sponsored singles) - this is needed for the selector
+        // This should run every time the page loads, regardless of cache
+        loadUserData();
+        
+        // Try to load from cache first for profile data
         const cached = loadFromCache();
         if (cached) {
             console.log('Using cached data');
@@ -178,7 +190,7 @@ export default function PondPage() {
             console.log('No cache found, loading fresh data');
             setLoading(true);
             setShowingCachedData(false);
-            loadUserDataAndProfiles();
+            loadProfiles(false, 1);
         }
     }, [authLoading, user, orbitRole, router]); // Run when auth state changes
 
@@ -216,11 +228,11 @@ export default function PondPage() {
         console.log('Pond page loading state changed:', { loading, profilesCount: profiles.length });
     }, [loading, profiles.length]);
 
-    // Load user profile data and sponsored singles, then load profiles
-    const loadUserDataAndProfiles = async () => {
+    // Load user profile data and sponsored singles (separate from profile loading)
+    const loadUserData = async () => {
         if (!user) return;
         
-        console.log('Pond page loadUserDataAndProfiles started');
+        console.log('Pond page loadUserData started');
         try {
             // Fetch current user's name and profile picture
             const { data: userProfile } = await supabase
@@ -250,16 +262,18 @@ export default function PondPage() {
             })) : [];
             
             setSponsoredSingles(sponsoredSingles);
-            if (sponsoredSingles.length > 0) {
-                setCurrentSponsoredSingle(sponsoredSingles[0]);
-            }
-
-            console.log('Pond page calling loadProfiles');
-            await loadProfiles(false, 1);
+            // Always set currentSponsoredSingle - use first single if available, otherwise mystery single
+            // Only update if not already set (preserve user's selection when navigating back)
+            setCurrentSponsoredSingle(prev => {
+                // If already set and still valid, keep it
+                if (prev && (sponsoredSingles.some(s => s.id === prev.id) || prev.id === MYSTERY_SINGLE.id)) {
+                    return prev;
+                }
+                // Otherwise set to first single or mystery
+                return sponsoredSingles.length > 0 ? sponsoredSingles[0] : MYSTERY_SINGLE;
+            });
         } catch (error) {
-            console.error('Error in loadUserDataAndProfiles:', error);
-            setLoading(false);
-            setLoadingMore(false);
+            console.error('Error in loadUserData:', error);
         }
     };
 
@@ -374,7 +388,14 @@ export default function PondPage() {
         setSearchCity('');
         setSearchState('');
         setSearchZip('');
+        setSelectedInterests([]);
         setPage(1);
+        loadProfiles(false, 1);
+    };
+
+    const handleSearchFromModal = () => {
+        setPage(1);
+        setShowTailorSearchModal(false);
         loadProfiles(false, 1);
     };
 
@@ -386,51 +407,51 @@ export default function PondPage() {
 
     // Handler to open chat modal and fetch matchmakr info
     const handleOpenChat = async (profile: PondProfile) => {
-        if (!profile.sponsored_by_id) return;
+        if (!profile.sponsored_by_id || !currentSponsoredSingle) return;
         
-        // Check if user has multiple sponsored singles
-        if (sponsoredSingles.length > 1) {
-            // Show single selection modal
-            setPendingChatProfile(profile);
-            setShowSelectSingleModal(true);
-            return;
-        }
-        
-        // If only one sponsored single, use it directly
-        const singleId = sponsoredSingles.length === 1 ? sponsoredSingles[0].id : null;
-        await openChatWithSingle(profile, singleId);
+        // Always show modal to allow selection (even if only one single, they might want "Someone Else")
+        // Modal will show all options including mystery single if applicable
+        setPendingChatProfile(profile);
+        setShowSelectSingleModal(true);
     };
 
     const openChatWithSingle = async (profile: PondProfile, singleId: string | null) => {
-        if (!profile.sponsored_by_id) return;
+        if (!profile.sponsored_by_id || !user || !currentSponsoredSingle) return;
         
         // Fetch the matchmakr's info
-        const { data: matchmakr } = await supabase
+        const { data: matchmakr, error: matchmakrError } = await supabase
             .from('profiles')
             .select('id, name, photos')
             .eq('id', profile.sponsored_by_id)
             .single();
         
-        if (matchmakr) {
-            setSelectedSingleForChat(profile.id);
-            setClickedSingleForChat({
-                id: matchmakr.id,
-                name: matchmakr.name,
-                photo: matchmakr.photos && matchmakr.photos.length > 0 ? matchmakr.photos[0] : null
-            });
-            
-            // Set aboutSingleForChat to the selected single
-            const aboutSingleObj = sponsoredSingles.find(s => s.id === (singleId || profile.id)) || { id: singleId || profile.id, name: '', photo: null };
-            setAboutSingleForChat({ id: aboutSingleObj.id, name: aboutSingleObj.name, photo: aboutSingleObj.photo });
+        if (matchmakrError || !matchmakr) {
+            console.error('Error fetching matchmakr info:', matchmakrError);
+            return;
         }
         
+        setSelectedSingleForChat(profile.id);
+        setClickedSingleForChat({
+            id: matchmakr.id,
+            name: matchmakr.name,
+            photo: matchmakr.photos && matchmakr.photos.length > 0 ? matchmakr.photos[0] : null
+        });
+        
+        // Use currentSponsoredSingle.id for about_single_id (always set, no fallbacks)
+        // If singleId was provided from modal, use that; otherwise use currentSponsoredSingle
+        const aboutSingleId = singleId || currentSponsoredSingle.id;
+        const aboutSingleObj = sponsoredSingles.find(s => s.id === aboutSingleId) || 
+            (aboutSingleId === MYSTERY_SINGLE.id ? MYSTERY_SINGLE : { id: aboutSingleId, name: '', photo: null });
+        setAboutSingleForChat({ id: aboutSingleObj.id, name: aboutSingleObj.name, photo: aboutSingleObj.photo });
+        
         // Create or find conversation
+        // Use user.id from useAuth() instead of currentUser.id to avoid race condition
         const { data: conversation } = await supabase
             .from('conversations')
             .select('id')
-            .eq('initiator_matchmakr_id', currentUser.id < profile.sponsored_by_id ? currentUser.id : profile.sponsored_by_id)
-            .eq('recipient_matchmakr_id', currentUser.id < profile.sponsored_by_id ? profile.sponsored_by_id : currentUser.id)
-            .eq('about_single_id', singleId || profile.id)
+            .eq('initiator_matchmakr_id', user.id < profile.sponsored_by_id ? user.id : profile.sponsored_by_id)
+            .eq('recipient_matchmakr_id', user.id < profile.sponsored_by_id ? profile.sponsored_by_id : user.id)
+            .eq('about_single_id', aboutSingleId)
             .eq('clicked_single_id', profile.id)
             .maybeSingle();
         
@@ -441,9 +462,9 @@ export default function PondPage() {
             const { data } = await supabase
                 .from('conversations')
                 .insert({
-                    initiator_matchmakr_id: currentUser.id < profile.sponsored_by_id ? currentUser.id : profile.sponsored_by_id,
-                    recipient_matchmakr_id: currentUser.id < profile.sponsored_by_id ? profile.sponsored_by_id : currentUser.id,
-                    about_single_id: singleId || profile.id,
+                    initiator_matchmakr_id: user.id < profile.sponsored_by_id ? user.id : profile.sponsored_by_id,
+                    recipient_matchmakr_id: user.id < profile.sponsored_by_id ? profile.sponsored_by_id : user.id,
+                    about_single_id: aboutSingleId,
                     clicked_single_id: profile.id
                 })
                 .select('id')
@@ -457,6 +478,15 @@ export default function PondPage() {
 
     const handleSingleSelected = async (singleId: string) => {
         if (pendingChatProfile) {
+            // Update currentSponsoredSingle if a real single was selected (not mystery)
+            if (singleId !== MYSTERY_SINGLE.id) {
+                const selectedSingle = sponsoredSingles.find(s => s.id === singleId);
+                if (selectedSingle) {
+                    setCurrentSponsoredSingle(selectedSingle);
+                }
+            } else {
+                setCurrentSponsoredSingle(MYSTERY_SINGLE);
+            }
             await openChatWithSingle(pendingChatProfile, singleId);
         }
     };
@@ -484,89 +514,95 @@ export default function PondPage() {
         <div className="min-h-screen bg-gradient-to-br from-primary-blue to-primary-teal p-4">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
-                <div className="text-center mb-8">
-                    <div className="flex justify-between items-center mb-4">
-                        <button
-                            onClick={() => router.push('/dashboard/matchmakr?refresh=true')}
-                            className="flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 hover:bg-white/20 transition-colors"
-                        >
-                            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                                <path d="M19 12H5M12 19l-7-7 7-7"/>
-                            </svg>
-                            Back to Dashboard
-                        </button>
-                        <div></div> {/* Spacer for centering */}
-                    </div>
+                <div className="text-center mb-6">
                     <h1 className="text-4xl font-light text-white mb-2 tracking-[0.1em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>THE POND</h1>
                     <p className="text-white">Find singles, message their sponsor</p>
                 </div>
 
-                {/* Search Filters */}
-                <div className="bg-white/10 rounded-xl p-3 mb-6 shadow-deep border border-white/20">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                        <div>
-                            <label htmlFor="city" className="block text-sm font-medium text-white mb-1">City</label>
-                            <input
-                                type="text"
-                                id="city"
-                                value={searchCity}
-                                onChange={(e) => setSearchCity(e.target.value)}
-                                className="w-full border border-white/20 rounded-md px-3 py-2 bg-white/10 text-white placeholder-white/60 focus:border-accent-teal-light focus:outline-none focus:ring-2 focus:ring-accent-teal-light focus:ring-opacity-50 shadow-inner"
-                                placeholder="e.g., New York"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="state" className="block text-sm font-medium text-white mb-1">State</label>
-                            <input
-                                type="text"
-                                id="state"
-                                value={searchState}
-                                onChange={(e) => setSearchState(e.target.value)}
-                                className="w-full border border-white/20 rounded-md px-3 py-2 bg-white/10 text-white placeholder-white/60 focus:border-accent-teal-light focus:outline-none focus:ring-2 focus:ring-accent-teal-light focus:ring-opacity-50 shadow-inner"
-                                placeholder="e.g., NY"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="zip" className="block text-sm font-medium text-white mb-1">ZIP Code</label>
-                            <input
-                                type="text"
-                                id="zip"
-                                value={searchZip}
-                                onChange={(e) => setSearchZip(e.target.value)}
-                                className="w-full border border-white/20 rounded-md px-3 py-2 bg-white/10 text-white placeholder-white/60 focus:border-accent-teal-light focus:outline-none focus:ring-2 focus:ring-accent-teal-light focus:ring-opacity-50 shadow-inner"
-                                placeholder="e.g., 10001"
-                            />
+                {/* Top Single Selector - Always visible */}
+                {currentSponsoredSingle && (
+                    <div className="mb-6 bg-white/10 rounded-xl p-4 shadow-deep border border-white/20">
+                        <div className="flex items-center justify-between flex-wrap gap-4">
+                            <div className="flex items-center gap-3">
+                                <span className="text-white font-medium">Shopping for:</span>
+                                <div className="flex items-center gap-2">
+                                    {currentSponsoredSingle.photo ? (
+                                        <img 
+                                            src={currentSponsoredSingle.photo} 
+                                            alt={currentSponsoredSingle.name} 
+                                            className="w-10 h-10 rounded-full object-cover border-2 border-white"
+                                        />
+                                    ) : (
+                                        <div className="w-10 h-10 rounded-full bg-white/20 border-2 border-white flex items-center justify-center">
+                                            <span className="text-white font-bold text-sm">
+                                                {currentSponsoredSingle.name === MYSTERY_SINGLE.name ? '?' : currentSponsoredSingle.name?.charAt(0).toUpperCase() || '?'}
+                                            </span>
+                                        </div>
+                                    )}
+                                    <span className="text-white font-semibold">{currentSponsoredSingle.name}</span>
+                                </div>
+                            </div>
+                            
+                            {/* Show selector buttons if multiple singles or one single (with "Someone Else" option) */}
+                            {sponsoredSingles.length > 1 && (
+                                <div className="flex gap-2 flex-wrap">
+                                    {sponsoredSingles.map((single) => (
+                                        <button
+                                            key={single.id}
+                                            onClick={() => setCurrentSponsoredSingle(single)}
+                                            className={`px-3 py-1 rounded-lg border transition-colors text-sm ${
+                                                currentSponsoredSingle.id === single.id
+                                                    ? 'bg-white/20 border-white text-white'
+                                                    : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/15'
+                                            }`}
+                                        >
+                                            {single.name}
+                                        </button>
+                                    ))}
+                                    {/* "Someone Else" option */}
+                                    <button
+                                        onClick={() => setCurrentSponsoredSingle(MYSTERY_SINGLE)}
+                                        className={`px-3 py-1 rounded-lg border transition-colors text-sm ${
+                                            currentSponsoredSingle.id === MYSTERY_SINGLE.id
+                                                ? 'bg-white/20 border-white text-white'
+                                                : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/15'
+                                        }`}
+                                    >
+                                        Someone Else
+                                    </button>
+                                </div>
+                            )}
+                            
+                            {/* If only one single, show "Someone Else" option */}
+                            {sponsoredSingles.length === 1 && (
+                                <button
+                                    onClick={() => setCurrentSponsoredSingle(MYSTERY_SINGLE)}
+                                    className={`px-3 py-1 rounded-lg border transition-colors text-sm ${
+                                        currentSponsoredSingle.id === MYSTERY_SINGLE.id
+                                            ? 'bg-white/20 border-white text-white'
+                                            : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/15'
+                                    }`}
+                                >
+                                    Someone Else
+                                </button>
+                            )}
+                            
+                            {/* If no singles, only show mystery single (no selector needed) */}
+                            {sponsoredSingles.length === 0 && (
+                                <span className="text-white/70 text-sm italic">No sponsored singles</span>
+                            )}
                         </div>
                     </div>
-                    <div className="flex gap-2 mb-2">
-                        <button
-                            onClick={handleSearch}
-                            className="px-6 py-2 bg-white/20 text-white rounded-md border border-white/20 hover:bg-white/30 font-semibold transition-colors shadow-inner"
-                        >
-                            Search
-                        </button>
-                        <button
-                            onClick={handleClearSearch}
-                            className="px-6 py-2 bg-white/10 text-white rounded-md border border-white/20 hover:bg-white/20 font-semibold transition-colors"
-                        >
-                            Clear
-                        </button>
-                    </div>
-                    {/* Interest filter */}
-                    <div className="mt-2">
-                        <label className="block text-sm font-medium text-white mb-1">Filter by Interests</label>
-                        <InterestsInput
-                            value={selectedInterests}
-                            onChange={setSelectedInterests}
-                        />
-                    </div>
-                </div>
+                )}
 
                 {/* Results */}
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold text-white">
-                        {loading ? 'Loading...' : `${profiles.length} singles found`}
-                    </h2>
+                    <button
+                        onClick={() => setShowTailorSearchModal(true)}
+                        className="px-3 py-1 bg-white/10 text-white rounded-md border border-white/20 hover:bg-white/20 text-sm transition-colors"
+                    >
+                        Tailor Search
+                    </button>
                     <button
                         onClick={() => {
                             clearCache();
@@ -683,10 +719,89 @@ export default function PondPage() {
                 otherMatchmakrName={pendingChatProfile?.sponsored_by_id ?
                   (profiles.find(p => p.id === pendingChatProfile.id)?.name || 'this Sponsor') :
                   'this Sponsor'}
-                currentUserId={currentUser?.id}
+                currentUserId={user?.id}
                 otherUserId={pendingChatProfile?.sponsored_by_id || undefined}
                 clickedSingleId={pendingChatProfile?.id || undefined}
+                showMysterySingle={true}
+                currentSelectedSingleId={currentSponsoredSingle?.id}
             />
+
+            {/* Tailor Search Modal */}
+            {showTailorSearchModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowTailorSearchModal(false)}>
+                    <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900">Tailor Search</h2>
+                            <button
+                                onClick={() => setShowTailorSearchModal(false)}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {/* Location fields */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label htmlFor="modal-city" className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                    <input
+                                        type="text"
+                                        id="modal-city"
+                                        value={searchCity}
+                                        onChange={(e) => setSearchCity(e.target.value)}
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900 placeholder-gray-400 focus:border-accent-teal-light focus:outline-none focus:ring-2 focus:ring-accent-teal-light focus:ring-opacity-50"
+                                        placeholder="e.g., New York"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="modal-state" className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                    <input
+                                        type="text"
+                                        id="modal-state"
+                                        value={searchState}
+                                        onChange={(e) => setSearchState(e.target.value)}
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900 placeholder-gray-400 focus:border-accent-teal-light focus:outline-none focus:ring-2 focus:ring-accent-teal-light focus:ring-opacity-50"
+                                        placeholder="e.g., NY"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Interest filter */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Interests</label>
+                                <div className="bg-gradient-to-br from-primary-blue to-primary-teal rounded-md p-3">
+                                    <InterestsInput
+                                        value={selectedInterests}
+                                        onChange={setSelectedInterests}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Action buttons */}
+                            <div className="flex gap-2 pt-2">
+                                <button
+                                    onClick={handleSearchFromModal}
+                                    className="flex-1 px-6 py-2 bg-primary-blue text-white rounded-md hover:bg-primary-blue/90 font-semibold transition-colors"
+                                >
+                                    Search
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        handleClearSearch();
+                                        setShowTailorSearchModal(false);
+                                    }}
+                                    className="flex-1 px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors"
+                                >
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
