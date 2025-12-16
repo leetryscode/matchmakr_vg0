@@ -6,6 +6,7 @@ import { Profile } from '@/components/profile/types';
 import Link from 'next/link';
 import InterestsInput from '@/components/profile/InterestsInput';
 import SelectSingleModal from '@/components/dashboard/SelectSingleModal';
+import InviteSingleModal from '@/components/dashboard/InviteSingleModal';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,13 +31,6 @@ interface PondCache {
 const CACHE_KEY = 'pond_cache';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-// Mystery Single - placeholder for sponsors with no singles or when shopping for "someone else"
-const MYSTERY_SINGLE = {
-    id: 'MYSTERY_SINGLE',
-    name: 'Mystery Single',
-    photo: null
-};
-
 export default function PondPage() {
     const supabase = createClient();
     const { user, loading: authLoading, orbitRole } = useAuth();
@@ -53,6 +47,7 @@ export default function PondPage() {
     const [currentUserProfilePic, setCurrentUserProfilePic] = useState<string | null>(null);
     const [selectedInterests, setSelectedInterests] = useState<{ id: number; name: string }[]>([]);
     const [showSelectSingleModal, setShowSelectSingleModal] = useState(false);
+    const [showInviteSingleModal, setShowInviteSingleModal] = useState(false);
     const [showTailorSearchModal, setShowTailorSearchModal] = useState(false);
     const [pendingChatProfile, setPendingChatProfile] = useState<PondProfile | null>(null);
     const [selectedSingleForChat, setSelectedSingleForChat] = useState<string | null>(null);
@@ -262,15 +257,15 @@ export default function PondPage() {
             })) : [];
             
             setSponsoredSingles(sponsoredSingles);
-            // Always set currentSponsoredSingle - use first single if available, otherwise mystery single
+            // Always set currentSponsoredSingle - use first single if available, otherwise null
             // Only update if not already set (preserve user's selection when navigating back)
             setCurrentSponsoredSingle(prev => {
                 // If already set and still valid, keep it
-                if (prev && (sponsoredSingles.some(s => s.id === prev.id) || prev.id === MYSTERY_SINGLE.id)) {
+                if (prev && sponsoredSingles.some(s => s.id === prev.id)) {
                     return prev;
                 }
-                // Otherwise set to first single or mystery
-                return sponsoredSingles.length > 0 ? sponsoredSingles[0] : MYSTERY_SINGLE;
+                // Otherwise set to first single or null
+                return sponsoredSingles.length > 0 ? sponsoredSingles[0] : null;
             });
         } catch (error) {
             console.error('Error in loadUserData:', error);
@@ -407,16 +402,26 @@ export default function PondPage() {
 
     // Handler to open chat modal and fetch matchmakr info
     const handleOpenChat = async (profile: PondProfile) => {
-        if (!profile.sponsored_by_id || !currentSponsoredSingle) return;
+        if (!profile.sponsored_by_id) return;
         
-        // Always show modal to allow selection (even if only one single, they might want "Someone Else")
-        // Modal will show all options including mystery single if applicable
+        // Always show modal to allow selection
+        // If no singles, modal will show "You have no singles yet" and "Someone Else!" option
         setPendingChatProfile(profile);
         setShowSelectSingleModal(true);
     };
 
     const openChatWithSingle = async (profile: PondProfile, singleId: string | null) => {
         if (!profile.sponsored_by_id || !user || !currentSponsoredSingle) return;
+        
+        // Ensure singleId is a valid sponsored single
+        const aboutSingleId = singleId || currentSponsoredSingle.id;
+        const aboutSingleObj = sponsoredSingles.find(s => s.id === aboutSingleId);
+        
+        // Guard: only proceed if aboutSingleId is a valid sponsored single
+        if (!aboutSingleObj) {
+            console.error('Invalid single ID:', aboutSingleId);
+            return;
+        }
         
         // Fetch the matchmakr's info
         const { data: matchmakr, error: matchmakrError } = await supabase
@@ -437,11 +442,6 @@ export default function PondPage() {
             photo: matchmakr.photos && matchmakr.photos.length > 0 ? matchmakr.photos[0] : null
         });
         
-        // Use currentSponsoredSingle.id for about_single_id (always set, no fallbacks)
-        // If singleId was provided from modal, use that; otherwise use currentSponsoredSingle
-        const aboutSingleId = singleId || currentSponsoredSingle.id;
-        const aboutSingleObj = sponsoredSingles.find(s => s.id === aboutSingleId) || 
-            (aboutSingleId === MYSTERY_SINGLE.id ? MYSTERY_SINGLE : { id: aboutSingleId, name: '', photo: null });
         setAboutSingleForChat({ id: aboutSingleObj.id, name: aboutSingleObj.name, photo: aboutSingleObj.photo });
         
         // Create or find conversation
@@ -477,18 +477,23 @@ export default function PondPage() {
     };
 
     const handleSingleSelected = async (singleId: string) => {
-        if (pendingChatProfile) {
-            // Update currentSponsoredSingle if a real single was selected (not mystery)
-            if (singleId !== MYSTERY_SINGLE.id) {
-                const selectedSingle = sponsoredSingles.find(s => s.id === singleId);
-                if (selectedSingle) {
-                    setCurrentSponsoredSingle(selectedSingle);
-                }
-            } else {
-                setCurrentSponsoredSingle(MYSTERY_SINGLE);
-            }
-            await openChatWithSingle(pendingChatProfile, singleId);
+        if (!pendingChatProfile) return;
+        
+        // Only proceed if singleId is a valid sponsored single
+        const selectedSingle = sponsoredSingles.find(s => s.id === singleId);
+        if (!selectedSingle) {
+            console.error('Invalid single ID selected:', singleId);
+            return;
         }
+        
+        // Update currentSponsoredSingle with the selected single
+        setCurrentSponsoredSingle(selectedSingle);
+        await openChatWithSingle(pendingChatProfile, singleId);
+    };
+
+    const handleInviteSingle = () => {
+        setShowSelectSingleModal(false);
+        setShowInviteSingleModal(true);
     };
 
     const handleCloseChat = () => {
@@ -520,80 +525,68 @@ export default function PondPage() {
                 </div>
 
                 {/* Top Single Selector - Always visible */}
-                {currentSponsoredSingle && (
-                    <div className="mb-6 bg-white/10 rounded-xl p-4 shadow-deep border border-white/20">
-                        <div className="flex items-center justify-between flex-wrap gap-4">
-                            <div className="flex items-center gap-3">
-                                <span className="text-white font-medium">Shopping for:</span>
-                                <div className="flex items-center gap-2">
-                                    {currentSponsoredSingle.photo ? (
-                                        <img 
-                                            src={currentSponsoredSingle.photo} 
-                                            alt={currentSponsoredSingle.name} 
-                                            className="w-10 h-10 rounded-full object-cover border-2 border-white"
-                                        />
-                                    ) : (
-                                        <div className="w-10 h-10 rounded-full bg-white/20 border-2 border-white flex items-center justify-center">
-                                            <span className="text-white font-bold text-sm">
-                                                {currentSponsoredSingle.name === MYSTERY_SINGLE.name ? '?' : currentSponsoredSingle.name?.charAt(0).toUpperCase() || '?'}
-                                            </span>
+                <div className="mb-6 bg-white/10 rounded-xl p-4 shadow-deep border border-white/20">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <span className="text-white font-medium">Shopping for:</span>
+                            {currentSponsoredSingle ? (
+                                <>
+                                    <div className="flex items-center gap-2">
+                                        {currentSponsoredSingle.photo ? (
+                                            <img 
+                                                src={currentSponsoredSingle.photo} 
+                                                alt={currentSponsoredSingle.name} 
+                                                className="w-10 h-10 rounded-full object-cover border-2 border-white"
+                                            />
+                                        ) : (
+                                            <div className="w-10 h-10 rounded-full bg-white/20 border-2 border-white flex items-center justify-center">
+                                                <span className="text-white font-bold text-sm">
+                                                    {currentSponsoredSingle.name?.charAt(0).toUpperCase() || '?'}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <span className="text-white font-semibold">{currentSponsoredSingle.name}</span>
+                                    </div>
+                                    {/* Show selector buttons if multiple singles */}
+                                    {sponsoredSingles.length > 1 && (
+                                        <div className="flex gap-2 flex-wrap items-center">
+                                            {sponsoredSingles.map((single) => (
+                                                <button
+                                                    key={single.id}
+                                                    onClick={() => setCurrentSponsoredSingle(single)}
+                                                    className={`px-3 py-1 rounded-lg border transition-colors text-sm ${
+                                                        currentSponsoredSingle.id === single.id
+                                                            ? 'bg-white/20 border-white text-white'
+                                                            : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/15'
+                                                    }`}
+                                                >
+                                                    {single.name}
+                                                </button>
+                                            ))}
                                         </div>
                                     )}
-                                    <span className="text-white font-semibold">{currentSponsoredSingle.name}</span>
-                                </div>
-                            </div>
-                            
-                            {/* Show selector buttons if multiple singles or one single (with "Someone Else" option) */}
-                            {sponsoredSingles.length > 1 && (
-                                <div className="flex gap-2 flex-wrap">
-                                    {sponsoredSingles.map((single) => (
-                                        <button
-                                            key={single.id}
-                                            onClick={() => setCurrentSponsoredSingle(single)}
-                                            className={`px-3 py-1 rounded-lg border transition-colors text-sm ${
-                                                currentSponsoredSingle.id === single.id
-                                                    ? 'bg-white/20 border-white text-white'
-                                                    : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/15'
-                                            }`}
-                                        >
-                                            {single.name}
-                                        </button>
-                                    ))}
-                                    {/* "Someone Else" option */}
-                                    <button
-                                        onClick={() => setCurrentSponsoredSingle(MYSTERY_SINGLE)}
-                                        className={`px-3 py-1 rounded-lg border transition-colors text-sm ${
-                                            currentSponsoredSingle.id === MYSTERY_SINGLE.id
-                                                ? 'bg-white/20 border-white text-white'
-                                                : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/15'
-                                        }`}
-                                    >
-                                        Someone Else
-                                    </button>
-                                </div>
-                            )}
-                            
-                            {/* If only one single, show "Someone Else" option */}
-                            {sponsoredSingles.length === 1 && (
+                                </>
+                            ) : (
                                 <button
-                                    onClick={() => setCurrentSponsoredSingle(MYSTERY_SINGLE)}
-                                    className={`px-3 py-1 rounded-lg border transition-colors text-sm ${
-                                        currentSponsoredSingle.id === MYSTERY_SINGLE.id
-                                            ? 'bg-white/20 border-white text-white'
-                                            : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/15'
-                                    }`}
+                                    onClick={() => setShowInviteSingleModal(true)}
+                                    className="px-3 py-1 rounded-lg border border-white/20 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white transition-colors text-sm"
                                 >
-                                    Someone Else
+                                    Invite a single
                                 </button>
                             )}
-                            
-                            {/* If no singles, only show mystery single (no selector needed) */}
-                            {sponsoredSingles.length === 0 && (
-                                <span className="text-white/70 text-sm italic">No sponsored singles</span>
-                            )}
                         </div>
+                        
+                        {/* Show "Invite a single" button on the right when a single is selected */}
+                        {currentSponsoredSingle && (
+                            <button
+                                onClick={() => setShowInviteSingleModal(true)}
+                                className="px-3 py-1 rounded-lg border border-white/20 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white transition-colors text-sm"
+                            >
+                                Invite a single
+                            </button>
+                        )}
                     </div>
-                )}
+                </div>
 
                 {/* Results */}
                 <div className="flex justify-between items-center mb-6">
@@ -722,8 +715,14 @@ export default function PondPage() {
                 currentUserId={user?.id}
                 otherUserId={pendingChatProfile?.sponsored_by_id || undefined}
                 clickedSingleId={pendingChatProfile?.id || undefined}
-                showMysterySingle={true}
                 currentSelectedSingleId={currentSponsoredSingle?.id}
+                onInviteSingle={handleInviteSingle}
+            />
+
+            {/* Invite Single Modal */}
+            <InviteSingleModal
+                open={showInviteSingleModal}
+                onClose={() => setShowInviteSingleModal(false)}
             />
 
             {/* Tailor Search Modal */}

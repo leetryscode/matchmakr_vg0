@@ -19,15 +19,9 @@ interface SelectSingleModalProps {
     currentUserId?: string;
     otherUserId?: string;
     clickedSingleId?: string;
-    showMysterySingle?: boolean;
     currentSelectedSingleId?: string;
+    onInviteSingle?: () => void;
 }
-
-const MYSTERY_SINGLE = {
-    id: 'MYSTERY_SINGLE',
-    name: 'Mystery Single',
-    photo: null
-};
 
 export default function SelectSingleModal({
     open,
@@ -38,8 +32,8 @@ export default function SelectSingleModal({
     currentUserId,
     otherUserId,
     clickedSingleId,
-    showMysterySingle = false,
-    currentSelectedSingleId
+    currentSelectedSingleId,
+    onInviteSingle
 }: SelectSingleModalProps) {
     const router = useRouter();
 
@@ -115,53 +109,38 @@ export default function SelectSingleModal({
                         </button>
                     ))}
                     
-                    {/* Show "Someone Else" option if only one single, or "Mystery Single" if showMysterySingle is true */}
-                    {(showMysterySingle || sponsoredSingles.length === 1) && (
-                        <button
-                            onClick={() => handleSingleSelected(MYSTERY_SINGLE.id)}
-                            className={`w-full p-4 border rounded-xl hover:border-accent-teal-light hover:bg-accent-teal-light/5 transition-all duration-200 flex items-center space-x-3 ${
-                                currentSelectedSingleId === MYSTERY_SINGLE.id
-                                    ? 'border-accent-teal-light bg-accent-teal-light/10'
-                                    : 'border-gray-200'
-                            }`}
-                        >
+                    {/* Show "You have no singles yet" message if no singles */}
+                    {sponsoredSingles.length === 0 && (
+                        <div className="w-full p-4 border rounded-xl border-gray-200 bg-gray-50 opacity-50 flex items-center space-x-3">
                             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100">
-                                <span className="text-lg font-bold text-gray-500">?</span>
+                                <span className="text-lg font-bold text-gray-400">?</span>
                             </div>
                             <div className="flex-1 text-left">
-                                <div className="font-semibold text-gray-900">
-                                    {sponsoredSingles.length === 1 ? 'Someone Else' : MYSTERY_SINGLE.name}
+                                <div className="font-semibold text-gray-500">
+                                    You have no singles yet
                                 </div>
                             </div>
-                            {currentSelectedSingleId === MYSTERY_SINGLE.id && (
-                                <div className="text-accent-teal-light">✓</div>
-                            )}
-                        </button>
+                        </div>
                     )}
                     
-                    {/* If no singles, only show mystery single */}
-                    {sponsoredSingles.length === 0 && showMysterySingle && (
-                        <button
-                            onClick={() => handleSingleSelected(MYSTERY_SINGLE.id)}
-                            className={`w-full p-4 border rounded-xl hover:border-accent-teal-light hover:bg-accent-teal-light/5 transition-all duration-200 flex items-center space-x-3 ${
-                                currentSelectedSingleId === MYSTERY_SINGLE.id
-                                    ? 'border-accent-teal-light bg-accent-teal-light/10'
-                                    : 'border-gray-200'
-                            }`}
-                        >
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100">
-                                <span className="text-lg font-bold text-gray-500">?</span>
+                    {/* Always show "Someone Else!" option - triggers invite flow */}
+                    <button
+                        onClick={() => {
+                            if (onInviteSingle) {
+                                onInviteSingle();
+                            }
+                        }}
+                        className="w-full p-4 border rounded-xl hover:border-accent-teal-light hover:bg-accent-teal-light/5 transition-all duration-200 flex items-center space-x-3 border-gray-200"
+                    >
+                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100">
+                            <span className="text-lg font-bold text-gray-500">?</span>
+                        </div>
+                        <div className="flex-1 text-left">
+                            <div className="font-semibold text-gray-900">
+                                Someone Else!
                             </div>
-                            <div className="flex-1 text-left">
-                                <div className="font-semibold text-gray-900">
-                                    {MYSTERY_SINGLE.name}
-                                </div>
-                            </div>
-                            {currentSelectedSingleId === MYSTERY_SINGLE.id && (
-                                <div className="text-accent-teal-light">✓</div>
-                            )}
-                        </button>
-                    )}
+                        </div>
+                    </button>
                 </div>
 
                 <div className="flex justify-end">

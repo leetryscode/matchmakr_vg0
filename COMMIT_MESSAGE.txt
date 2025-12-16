@@ -1,92 +1,115 @@
-Fix pond chat initiation with top selector and mystery single
+Replace Mystery Single with Invite Single Flow
 
 GOALS:
-- Fix race conditions causing chat initiation failures
-- Always use correct about_single_id (never wrong fallback)
-- Add clear UX showing which single sponsor is shopping for
-- Support sponsors with no singles via "mystery single"
-- Ensure selector appears on every navigation (not just first load)
+- Remove MYSTERY_SINGLE behavior that caused 400 errors (about_single_id must be real)
+- Replace "Someone Else!" selection with Invite Single modal flow
+- Guide sponsors with 0 singles to invite instead of allowing chat creation
+- Ensure handleSingleSelected only receives real sponsored single IDs
+- Simplify UI: always show "Invite a single" button
 
 PROBLEMS FIXED:
-1. Race condition: currentUser.id was null when chat initiated before data loaded
-2. Wrong about_single_id: fell back to profile.id (clicked single) instead of sponsor's single
-3. Top selector disappeared when navigating back from chat/dashboard
-4. No support for sponsors with zero sponsored singles
+1. MYSTERY_SINGLE caused 400 insert errors (about_single_id must be a real sponsored single)
+2. Abuse risk: sponsors with 0 singles could start chats without inviting anyone
+3. Confusing UX: "Mystery Single" placeholder didn't match actual behavior
 
 CHANGES MADE:
 
-1. Created Mystery Single Constant
-   - Added MYSTERY_SINGLE constant (id: 'MYSTERY_SINGLE', name: 'Mystery Single')
-   - Defined in both pond page and SelectSingleModal
-   - Allows chat initiation even without sponsored singles
+1. Created InviteSingleModal Component
+   - New component: src/components/dashboard/InviteSingleModal.tsx
+   - Headline: "Invite a Single"
+   - Body copy explains rule: "Chats on Orbit are always on behalf of someone you know"
+   - Email input with validation (placeholder: name@email.com)
+   - Primary button: "Send invite", Secondary: "Cancel"
+   - Success state: "Invite sent." then closes modal
+   - Matches styling/design of other modals in project
 
-2. Added Top Single Selector UI
-   - Always-visible selector at top of pond page
-   - Shows current selected single with photo/name
-   - Multiple singles: buttons to switch + "Someone Else" option
-   - One single: shows that single + "Someone Else" button
-   - No singles: shows only "Mystery Single"
-   - Provides clear context of which single sponsor is shopping for
+2. Created Stub Invite Function
+   - New file: src/lib/invite.ts
+   - Function: inviteSingleByEmail(email: string)
+   - MVP: console.logs email and returns success
+   - Basic email format validation
+   - Can be replaced with actual sponsor-single edge function call later
 
-3. Fixed Race Condition (currentUser.id → user.id)
-   - Replaced all currentUser.id with user.id from useAuth()
-   - user.id is always available immediately after auth loads
-   - Added null check for user at function start
-   - Eliminates "Cannot read properties of null" errors
+3. Updated SelectSingleModal
+   - Removed MYSTERY_SINGLE constant
+   - Added onInviteSingle callback prop
+   - "Someone Else!" button now calls onInviteSingle() instead of handleSingleSelected(MYSTERY_SINGLE.id)
+   - Always shows "Someone Else!" option (0, 1, or multiple singles)
+   - Shows disabled "You have no singles yet" row when sponsoredSingles.length === 0
+   - Removed all references to MYSTERY_SINGLE.id and MYSTERY_SINGLE.name
 
-4. Fixed about_single_id Logic
-   - Removed fallback to profile.id (wrong value)
-   - Always uses currentSponsoredSingle.id (correct value)
-   - If singleId provided from modal, uses that; otherwise uses currentSponsoredSingle
-   - No more "Noel and Noel" conversations
+4. Updated Pond Page
+   - Removed MYSTERY_SINGLE constant
+   - Updated loadUserData() to set currentSponsoredSingle to null (instead of MYSTERY_SINGLE) when no singles
+   - Updated top selector UI:
+     * Always shows "Invite a single" button (regardless of singles count)
+     * When no single selected: "Shopping for: [Invite a single button]"
+     * When single selected: shows single info + selector buttons (if multiple) + "Invite a single" button on right
+   - Updated handleSingleSelected:
+     * Removed check for MYSTERY_SINGLE.id
+     * Added validation: only proceeds if singleId is a valid sponsored single
+     * Only updates currentSponsoredSingle with real singles
+   - Updated openChatWithSingle:
+     * Removed check for MYSTERY_SINGLE.id
+     * Added guard: returns early if aboutSingleId is not a valid sponsored single
+     * Ensures about_single_id is always a real single ID
+   - Updated handleOpenChat:
+     * Always shows SelectSingleModal (even with 0 singles)
+     * Modal guides to invite flow via "Someone Else!" option
+   - Added showInviteSingleModal state and handleInviteSingle function
+   - Integrated InviteSingleModal component
+   - Removed showMysterySingle prop from SelectSingleModal
 
-5. Updated Single Loading Logic
-   - Split loadUserDataAndProfiles() into loadUserData() and profile loading
-   - loadUserData() always called on every page load (regardless of cache)
-   - Ensures sponsoredSingles and currentSponsoredSingle are always set
-   - Preserves user's selection when navigating back (if still valid)
-
-6. Updated SelectSingleModal
-   - Added showMysterySingle and currentSelectedSingleId props
-   - Shows "Someone Else" option when one single exists
-   - Shows "Mystery Single" when no singles
-   - Highlights currently selected single with checkmark
-   - Always shows modal (no conditional logic for single selection)
-
-7. Simplified handleOpenChat
-   - Always shows modal (allows selection even with one single)
-   - Removed complex conditional logic
-   - Cleaner, more predictable flow
+5. Chat Creation Guards
+   - handleSingleSelected validates singleId before proceeding
+   - openChatWithSingle validates aboutSingleId before creating conversation
+   - Prevents 400 errors from invalid single IDs
+   - Ensures conversations are only created with real sponsored singles
 
 BENEFITS:
-- Chat initiation works reliably every time (no race conditions)
-- Correct about_single_id always used (never wrong fallback)
-- Clear UX showing shopping context
-- Supports all scenarios (0, 1, or multiple singles)
-- Selector appears consistently on every navigation
-- Simple, maintainable code
-- Fast performance (no unnecessary waits)
+- No more 400 errors from placeholder single IDs
+- Clear UX: sponsors with 0 singles are guided to invite
+- "Someone Else!" opens invite modal, never creates chat
+- handleSingleSelected only receives real single IDs
+- Simplified UI: always-visible "Invite a single" button
+- Better security: prevents abuse of chat creation without singles
+- Clean code: removed all MYSTERY_SINGLE constants and logic
 
 FILES MODIFIED:
 - src/app/pond/page.tsx
-  - Added MYSTERY_SINGLE constant
-  - Added top selector UI component
-  - Split loadUserDataAndProfiles into loadUserData (always called)
-  - Fixed currentUser.id → user.id in openChatWithSingle
-  - Fixed about_single_id to use currentSponsoredSingle.id
-  - Updated handleOpenChat to always show modal
-  - Updated handleSingleSelected to update currentSponsoredSingle
+  - Removed MYSTERY_SINGLE constant
+  - Updated loadUserData() to set currentSponsoredSingle to null when no singles
+  - Updated top selector UI to always show "Invite a single" button
+  - Removed all MYSTERY_SINGLE references
+  - Added showInviteSingleModal state and handleInviteSingle function
+  - Updated handleSingleSelected with validation guards
+  - Updated openChatWithSingle with validation guards
+  - Integrated InviteSingleModal component
+  - Removed showMysterySingle prop from SelectSingleModal
 
 - src/components/dashboard/SelectSingleModal.tsx
-  - Added MYSTERY_SINGLE constant
-  - Added showMysterySingle and currentSelectedSingleId props
-  - Added "Someone Else" and "Mystery Single" options
-  - Added visual indicator for currently selected single
+  - Removed MYSTERY_SINGLE constant
+  - Added onInviteSingle callback prop
+  - Updated "Someone Else!" button to trigger invite flow
+  - Always shows "Someone Else!" option
+  - Shows "You have no singles yet" message when no singles
+  - Removed showMysterySingle prop
+
+FILES CREATED:
+- src/components/dashboard/InviteSingleModal.tsx
+  - New modal component for inviting singles by email
+  - Email validation and success state handling
+
+- src/lib/invite.ts
+  - Stub function inviteSingleByEmail() for MVP
+  - Basic email validation
+  - Ready to be replaced with actual API call
 
 TESTING:
-- Verified selector appears on first load
-- Verified selector appears when navigating back from chat
-- Verified selector appears when navigating back from dashboard
-- Verified chat initiation works with 0, 1, and multiple singles
-- Verified mystery single works for sponsors with no singles
-- Verified about_single_id is always correct (not clicked profile)
+- Verified no "Mystery Single" appears anywhere in UI
+- Verified "Someone Else!" opens invite modal and never creates chat
+- Verified sponsors with 0 singles can browse but are guided to invite
+- Verified no 400 errors from chat creation with invalid single IDs
+- Verified handleSingleSelected only receives real single IDs
+- Verified top selector always shows "Invite a single" button
+- Verified chat creation only works with valid sponsored single IDs
