@@ -42,6 +42,27 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
+    // Fetch sponsor info for all profiles in a single batch query (no N+1)
+    const sponsorIds = [...new Set((profiles || []).map((p: any) => p.sponsored_by_id).filter(Boolean))];
+    let sponsorMap = new Map();
+    
+    if (sponsorIds.length > 0) {
+      const { data: sponsors } = await supabase
+        .from('profiles')
+        .select('id, name, photos')
+        .in('id', sponsorIds);
+      
+      sponsorMap = new Map(
+        sponsors?.map(s => [
+          s.id,
+          {
+            name: s.name || 'Sponsor',
+            photo_url: s.photos && s.photos.length > 0 ? s.photos[0] : null
+          }
+        ]) || []
+      );
+    }
+
     // Transform data to match expected format
     const transformedProfiles = (profiles || []).map(profile => ({
       ...profile,
@@ -49,7 +70,9 @@ export async function GET(req: NextRequest) {
       interests: profile.interest_names ? profile.interest_names.map((name: string, index: number) => ({
         id: profile.interest_ids[index],
         name: name
-      })) : []
+      })) : [],
+      sponsor_name: sponsorMap.get(profile.sponsored_by_id)?.name || null,
+      sponsor_photo_url: sponsorMap.get(profile.sponsored_by_id)?.photo_url || null
     }));
 
     // Rank profiles: those matching selected interests first, then the rest

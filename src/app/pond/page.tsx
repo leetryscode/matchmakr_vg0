@@ -14,6 +14,8 @@ import { useAuth } from '@/contexts/AuthContext';
 interface PondProfile extends Profile {
     profile_pic_url: string | null;
     interests?: { id: number; name: string }[];
+    sponsor_name?: string | null;
+    sponsor_photo_url?: string | null;
 }
 
 interface PondCache {
@@ -669,14 +671,16 @@ export default function PondPage() {
                     </div>
                 ) : (
                     <div>
-                        <div key={`profiles-${profiles.length}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div key={`profiles-${profiles.length}`} className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:gap-6">
                             {profiles.map((profile) => {
                                 const age = calculateAge(profile.birth_year);
+                                const sponsorName = profile.sponsor_name || 'Sponsor';
+                                const sponsorPhotoUrl = profile.sponsor_photo_url;
                                 return (
-                                    <Link href={`/profile/${profile.id}`} key={profile.id} className="group block">
-                                        <div className="bg-white/10 rounded-2xl p-4 shadow-card hover:shadow-card-hover border border-white/20 transition-all duration-300 group-hover:scale-105">
-                                            {/* Profile Picture - large square, rounded-2xl */}
-                                            <div className="w-full aspect-square max-w-xs mx-auto mb-4 overflow-hidden rounded-2xl border-2 border-white group-hover:border-accent-teal-light transition-all duration-300 flex items-center justify-center bg-gray-200">
+                                    <Link href={`/profile/${profile.id}`} key={profile.id} className="block">
+                                        <div className="rounded-2xl overflow-hidden border border-white/15 bg-white/5">
+                                            {/* Image with overlay */}
+                                            <div className="relative w-full aspect-[4/5] md:aspect-[1/1]">
                                                 {profile.profile_pic_url ? (
                                                     <img 
                                                         src={profile.profile_pic_url} 
@@ -684,31 +688,53 @@ export default function PondPage() {
                                                         className="w-full h-full object-cover" 
                                                     />
                                                 ) : (
-                                                    <span className="text-2xl font-bold text-white">{profile.name?.charAt(0).toUpperCase() || '?'}</span>
-                                                )}
-                                            </div>
-                                            {/* Name and Age only */}
-                                            <div className="text-center">
-                                                <div className="flex items-center justify-center mb-1">
-                                                    <span className="text-2xl font-bold text-white">{profile.name}{age ? ',' : ''}</span>
-                                                    {age && (
-                                                        <span className="text-2xl font-bold text-white ml-2 align-middle">{age}</span>
-                                                    )}
-                                                </div>
-                                                {/* Interests badges */}
-                                                {profile.interests && profile.interests.length > 0 && (
-                                                    <div className="flex flex-wrap justify-center gap-2 mb-2">
-                                                        {profile.interests.slice(0, 5).map(interest => (
-                                                            <span key={interest.id} className="bg-white/20 text-white px-3 py-1 rounded-full text-xs">
-                                                                {interest.name}
-                                                            </span>
-                                                        ))}
+                                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-blue/50 to-primary-teal/50">
+                                                        <span className="text-6xl font-bold text-white">{profile.name?.charAt(0).toUpperCase() || '?'}</span>
                                                     </div>
                                                 )}
-                                                {/* Message Sponsor Button */}
+                                                {/* Gradient overlay */}
+                                                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
+                                                {/* Name/Age overlay */}
+                                                <div className="absolute bottom-4 left-4 z-10">
+                                                    <div className="text-white font-semibold text-xl mb-2">
+                                                        {profile.name}{age ? `, ${age}` : ''}
+                                                    </div>
+                                                    {/* Interest chips */}
+                                                    {profile.interests && profile.interests.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {profile.interests.slice(0, 3).map(interest => (
+                                                                <span 
+                                                                    key={interest.id} 
+                                                                    className="bg-white/20 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs"
+                                                                >
+                                                                    {interest.name}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {/* Footer with sponsor info */}
+                                            <div className="flex items-center justify-between px-4 py-3">
+                                                <div className="flex items-center gap-2">
+                                                    {sponsorPhotoUrl ? (
+                                                        <img 
+                                                            src={sponsorPhotoUrl} 
+                                                            alt={sponsorName} 
+                                                            className="w-9 h-9 rounded-full object-cover border border-white/20" 
+                                                        />
+                                                    ) : (
+                                                        <div className="w-9 h-9 rounded-full bg-white/20 border border-white/20 flex items-center justify-center">
+                                                            <span className="text-white font-bold text-xs">
+                                                                {sponsorName.charAt(0).toUpperCase()}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    <span className="text-white/70 text-sm">{sponsorName}</span>
+                                                </div>
                                                 {profile.sponsored_by_id && (
                                                     <button
-                                                        className="mt-2 px-4 py-2 rounded-full border border-accent-teal-light bg-white/10 hover:bg-white/20 text-white font-medium transition-colors"
+                                                        className="px-4 py-1.5 rounded-full border border-accent-teal-light bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors"
                                                         onClick={e => { e.preventDefault(); handleOpenChat(profile); }}
                                                     >
                                                         Message Sponsor
