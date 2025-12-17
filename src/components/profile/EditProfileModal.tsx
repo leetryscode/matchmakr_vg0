@@ -69,6 +69,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
             alert(error.message);
             return;
         }
+        // Invalidate pond cache after successful save
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('pond_cache');
+        }
         onSave();
     };
 

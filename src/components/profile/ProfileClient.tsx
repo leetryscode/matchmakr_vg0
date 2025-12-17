@@ -100,11 +100,17 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
   const handleSaveInterests = async (newInterests: Interest[]) => {
     setSavingInterests(true);
-    await fetch(`/api/profiles/${profile.id}/interests`, {
+    const response = await fetch(`/api/profiles/${profile.id}/interests`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ interestIds: newInterests.map(i => i.id) })
     });
+    if (response.ok) {
+      // Invalidate pond cache after successful interests save
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('pond_cache');
+      }
+    }
     setInterests(newInterests);
     setShowInterestsInput(false);
     setSavingInterests(false);
@@ -220,11 +226,17 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                               onClick={async () => {
                                 const newInterests = interests.filter(i => i.id !== interest.id);
                                 setSavingInterests(true);
-                                await fetch(`/api/profiles/${profile.id}/interests`, {
+                                const response = await fetch(`/api/profiles/${profile.id}/interests`, {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ interestIds: newInterests.map(i => i.id) })
                                 });
+                                if (response.ok) {
+                                  // Invalidate pond cache after successful interests deletion
+                                  if (typeof window !== 'undefined') {
+                                    localStorage.removeItem('pond_cache');
+                                  }
+                                }
                                 setInterests(newInterests);
                                 setSavingInterests(false);
                               }}

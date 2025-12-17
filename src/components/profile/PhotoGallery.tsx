@@ -229,6 +229,11 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                 throw dbError;
             }
 
+            // Invalidate pond cache after successful photo update
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('pond_cache');
+            }
+
             setPhotos(updatedPhotos);
             setEditingPhotoUrl(null);
             if (updatedPhotos.length < maxPhotos) {
@@ -285,6 +290,11 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                 console.error('Attempting to update profile ID:', userId);
                 console.error('Current user context:', await supabase.auth.getUser());
                 throw dbError;
+            }
+
+            // Invalidate pond cache after successful photo deletion
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('pond_cache');
             }
 
             // Delete from storage
