@@ -30,6 +30,7 @@ interface PondCache {
 
 const CACHE_KEY = 'pond_cache';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const DEBUG = false; // Set to true to enable console logging
 
 export default function PondPage() {
     const supabase = createClient();
@@ -73,7 +74,7 @@ export default function PondPage() {
                 timestamp: Date.now()
             };
             localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-            console.log('Saved to cache:', cacheData);
+            if (DEBUG) console.log('Saved to cache:', cacheData);
         } catch (error) {
             console.error('Error saving to cache:', error);
         }
@@ -92,7 +93,7 @@ export default function PondPage() {
                 return null;
             }
             
-            console.log('Loaded from cache:', cacheData);
+            if (DEBUG) console.log('Loaded from cache:', cacheData);
             return cacheData;
         } catch (error) {
             console.error('Error loading from cache:', error);
@@ -103,7 +104,7 @@ export default function PondPage() {
     const clearCache = () => {
         try {
             localStorage.removeItem(CACHE_KEY);
-            console.log('Cache cleared');
+            if (DEBUG) console.log('Cache cleared');
         } catch (error) {
             console.error('Error clearing cache:', error);
         }
@@ -117,7 +118,7 @@ export default function PondPage() {
         requestAnimationFrame(() => {
             setTimeout(() => {
                 window.scrollTo(0, position);
-                console.log('Restored scroll position:', position);
+                if (DEBUG) console.log('Restored scroll position:', position);
             }, 0);
         });
     };
@@ -156,18 +157,18 @@ export default function PondPage() {
         // Wait for orbitRole to be determined (not null) before checking authorization
         // If orbitRole is null, it means user type is still being fetched
         if (orbitRole === null) {
-            console.log('Pond page: Waiting for user type to load...');
+            if (DEBUG) console.log('Pond page: Waiting for user type to load...');
             return;
         }
 
         // Check authorization - only MATCHMAKR users can access pond
         if (orbitRole !== 'MATCHMAKR') {
-            console.log('Pond page: User is not MATCHMAKR, redirecting');
+            if (DEBUG) console.log('Pond page: User is not MATCHMAKR, redirecting');
             router.push('/dashboard/single');
             return;
         }
 
-        console.log('Pond page useEffect triggered');
+        if (DEBUG) console.log('Pond page useEffect triggered');
         
         // Always load user data (sponsored singles) - this is needed for the selector
         // This should run every time the page loads, regardless of cache
@@ -176,7 +177,7 @@ export default function PondPage() {
         // Try to load from cache first for profile data
         const cached = loadFromCache();
         if (cached) {
-            console.log('Using cached data');
+            if (DEBUG) console.log('Using cached data');
             setProfiles(cached.profiles);
             setPage(cached.page);
             setHasMore(cached.hasMore);
@@ -190,7 +191,7 @@ export default function PondPage() {
             // Restore scroll position after a short delay
             restoreScrollPosition(cached.scrollPosition);
         } else {
-            console.log('No cache found, loading fresh data');
+            if (DEBUG) console.log('No cache found, loading fresh data');
             setLoading(true);
             setShowingCachedData(false);
             loadProfiles(false, 1);
@@ -244,14 +245,14 @@ export default function PondPage() {
 
     // Debug loading state changes
     useEffect(() => {
-        console.log('Pond page loading state changed:', { loading, profilesCount: profiles.length });
+        if (DEBUG) console.log('Pond page loading state changed:', { loading, profilesCount: profiles.length });
     }, [loading, profiles.length]);
 
     // Load user profile data and sponsored singles (separate from profile loading)
     const loadUserData = async () => {
         if (!user) return;
         
-        console.log('Pond page loadUserData started');
+        if (DEBUG) console.log('Pond page loadUserData started');
         try {
             // Fetch current user's name and profile picture
             const { data: userProfile } = await supabase
@@ -297,13 +298,13 @@ export default function PondPage() {
     };
 
     const loadProfiles = async (isLoadMore = false, currentPage = page, forceRefresh = false) => {
-        console.log('Pond page loadProfiles called with:', { isLoadMore, currentPage, page, forceRefresh });
+        if (DEBUG) console.log('Pond page loadProfiles called with:', { isLoadMore, currentPage, page, forceRefresh });
         
         // If we have cached data and this isn't a forced refresh, show cached data immediately
         if (!forceRefresh && !isLoadMore) {
             const cached = loadFromCache();
             if (cached && cached.profiles.length > 0) {
-                console.log('Showing cached data immediately');
+                if (DEBUG) console.log('Showing cached data immediately');
                 setProfiles(cached.profiles);
                 setPage(cached.page);
                 setHasMore(cached.hasMore);
@@ -313,8 +314,8 @@ export default function PondPage() {
                 setSelectedInterests(cached.selectedInterests);
                 setLoading(false);
                 
-                // Restore scroll position
-                restoreScrollPosition(cached.scrollPosition);
+                // REMOVED: restoreScrollPosition(cached.scrollPosition);
+                // Scroll restoration only happens in main useEffect (line 191) to avoid double restore
                 
                 // Load fresh data in background using requestIdleCallback for better performance
                 // Fallback to immediate execution if requestIdleCallback is not available
@@ -360,7 +361,7 @@ export default function PondPage() {
             clearTimeout(timeoutId);
             const data = await response.json();
 
-            console.log('Pond page received data:', { success: data.success, profilesCount: data.profiles?.length || 0, error: data.error });
+            if (DEBUG) console.log('Pond page received data:', { success: data.success, profilesCount: data.profiles?.length || 0, error: data.error });
 
             if (!data.success) {
                 console.error('Error loading profiles:', data.error);
@@ -381,7 +382,7 @@ export default function PondPage() {
                 setShowingCachedData(false);
             }
             
-            console.log('Pond page profiles updated:', { profilesCount: data.profiles?.length || 0, loading: false });
+            if (DEBUG) console.log('Pond page profiles updated:', { profilesCount: data.profiles?.length || 0, loading: false });
         } catch (error) {
             console.error('Error loading profiles:', error);
             if (isLoadMore) {
@@ -443,10 +444,23 @@ export default function PondPage() {
     };
 
     const openChatWithSingle = async (profile: PondProfile, singleId: string | null) => {
-        if (!profile.sponsored_by_id || !user || !currentSponsoredSingle) return;
+        if (!profile.sponsored_by_id || !user) return;
         
-        // Ensure singleId is a valid sponsored single
-        const aboutSingleId = singleId || currentSponsoredSingle.id;
+        // Ensure singleId is provided or we have at least one sponsored single
+        // We'll validate the specific singleId against sponsoredSingles below
+        if (!singleId && sponsoredSingles.length === 0) {
+            console.error('No sponsored singles available and no singleId provided');
+            return;
+        }
+        
+        // Use provided singleId, or fall back to first sponsored single if available
+        const aboutSingleId = singleId || (sponsoredSingles.length > 0 ? sponsoredSingles[0].id : null);
+        
+        if (!aboutSingleId) {
+            console.error('No valid single ID available');
+            return;
+        }
+        
         const aboutSingleObj = sponsoredSingles.find(s => s.id === aboutSingleId);
         
         // Guard: only proceed if aboutSingleId is a valid sponsored single
@@ -533,7 +547,7 @@ export default function PondPage() {
         setPendingChatProfile(null);
     };
 
-    console.log('Pond page render state:', { loading: loading || authLoading, profilesCount: profiles.length, hasMore });
+    if (DEBUG) console.log('Pond page render state:', { loading: loading || authLoading, profilesCount: profiles.length, hasMore });
 
     // Show loading while auth is loading or if we're still loading data
     if (authLoading || (loading && profiles.length === 0 && !showingCachedData)) {
@@ -738,9 +752,7 @@ export default function PondPage() {
                 }}
                 sponsoredSingles={sponsoredSingles}
                 onSelectSingle={handleSingleSelected}
-                otherMatchmakrName={pendingChatProfile?.sponsored_by_id ?
-                  (profiles.find(p => p.id === pendingChatProfile.id)?.name || 'this Sponsor') :
-                  'this Sponsor'}
+                otherMatchmakrName="this Sponsor"
                 currentUserId={user?.id}
                 otherUserId={pendingChatProfile?.sponsored_by_id || undefined}
                 clickedSingleId={pendingChatProfile?.id || undefined}
