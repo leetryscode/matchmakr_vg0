@@ -10,6 +10,7 @@ import InviteSingleModal from '@/components/dashboard/InviteSingleModal';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
 interface PondProfile extends Profile {
     profile_pic_url: string | null;
@@ -61,6 +62,7 @@ export default function PondPage() {
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [showingCachedData, setShowingCachedData] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
     const ITEMS_PER_PAGE = 20;
 
     const router = useRouter();
@@ -192,6 +194,10 @@ export default function PondPage() {
             
             // Restore scroll position after a short delay
             restoreScrollPosition(cached.scrollPosition);
+            // Update isScrolled based on cached scroll position
+            if (cached.scrollPosition > 0) {
+                setIsScrolled(true);
+            }
         } else {
             if (DEBUG) console.log('No cache found, loading fresh data');
             setLoading(true);
@@ -227,6 +233,7 @@ export default function PondPage() {
             if (rafId === null) {
                 rafId = requestAnimationFrame(() => {
                     updateScrollPositionRef();
+                    setIsScrolled(window.scrollY > 0);
                     rafId = null;
                 });
             }
@@ -570,45 +577,60 @@ export default function PondPage() {
         );
     }
 
+    // Handler for single selection that resets feed and scrolls to top
+    const handleSingleSelect = (single: { id: string, name: string, photo: string | null }) => {
+        setCurrentSponsoredSingle(single);
+        setPage(1);
+        loadProfiles(false, 1);
+        window.scrollTo(0, 0);
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-primary-blue to-primary-teal px-0 md:px-4">
             <div className="max-w-none md:max-w-6xl md:mx-auto">
-                {/* Header */}
-                <div className="text-center mb-6 px-4 md:px-0">
-                    <h1 className="text-4xl font-light text-white mb-2 tracking-[0.1em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>THE POND</h1>
-                    <p className="text-white">Find singles, message their sponsor</p>
-                </div>
-
-                {/* Top Single Selector - Always visible */}
-                <div className="mb-6 bg-white/10 rounded-xl p-4 shadow-deep border border-white/20 mx-4 md:mx-0">
-                    <div className="flex items-center justify-between flex-wrap gap-4">
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <span className="text-white font-medium">Shopping for:</span>
-                            {currentSponsoredSingle ? (
-                                <>
+                {/* Sticky Banner */}
+                <div className="sticky top-0 z-50 bg-black/35 backdrop-blur-md border-b border-white/10 shadow-sm shadow-black/20">
+                    <div className="px-4 md:px-0">
+                        <div className="max-w-none md:max-w-6xl md:mx-auto">
+                            {/* Row 1: Always visible - "Here for:" + selected single */}
+                            <div className="flex items-center gap-3 py-3">
+                                <span className="text-white font-semibold text-base tracking-wide uppercase">Here for:</span>
+                                {currentSponsoredSingle ? (
                                     <div className="flex items-center gap-2">
                                         {currentSponsoredSingle.photo ? (
                                             <img 
                                                 src={currentSponsoredSingle.photo} 
                                                 alt={currentSponsoredSingle.name} 
-                                                className="w-10 h-10 rounded-full object-cover border-2 border-white"
+                                                className="w-8 h-8 rounded-full object-cover border border-white/30"
                                             />
                                         ) : (
-                                            <div className="w-10 h-10 rounded-full bg-white/20 border-2 border-white flex items-center justify-center">
-                                                <span className="text-white font-bold text-sm">
+                                            <div className="w-8 h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center">
+                                                <span className="text-white font-bold text-xs">
                                                     {currentSponsoredSingle.name?.charAt(0).toUpperCase() || '?'}
                                                 </span>
                                             </div>
                                         )}
-                                        <span className="text-white font-semibold">{currentSponsoredSingle.name}</span>
+                                        <span className="text-white font-medium text-sm">{currentSponsoredSingle.name}</span>
                                     </div>
-                                    {/* Show selector buttons if multiple singles */}
+                                ) : (
+                                    <button
+                                        onClick={() => setShowInviteSingleModal(true)}
+                                        className="px-3 py-1 rounded-lg border border-white/20 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white transition-colors text-sm"
+                                    >
+                                        Invite a single
+                                    </button>
+                                )}
+                            </div>
+                            {/* Row 2: Only visible at top - Other singles + Invite button */}
+                            {!isScrolled && currentSponsoredSingle && (
+                                <div className="flex items-center gap-2 mt-3 flex-wrap">
+                                    {/* Other single pills */}
                                     {sponsoredSingles.length > 1 && (
-                                        <div className="flex gap-2 flex-wrap items-center">
+                                        <>
                                             {sponsoredSingles.map((single) => (
                                                 <button
                                                     key={single.id}
-                                                    onClick={() => setCurrentSponsoredSingle(single)}
+                                                    onClick={() => handleSingleSelect(single)}
                                                     className={`px-3 py-1 rounded-lg border transition-colors text-sm ${
                                                         currentSponsoredSingle.id === single.id
                                                             ? 'bg-white/20 border-white text-white'
@@ -618,33 +640,23 @@ export default function PondPage() {
                                                     {single.name}
                                                 </button>
                                             ))}
-                                        </div>
+                                        </>
                                     )}
-                                </>
-                            ) : (
-                                <button
-                                    onClick={() => setShowInviteSingleModal(true)}
-                                    className="px-3 py-1 rounded-lg border border-white/20 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white transition-colors text-sm"
-                                >
-                                    Invite a single
-                                </button>
+                                    {/* Invite button */}
+                                    <button
+                                        onClick={() => setShowInviteSingleModal(true)}
+                                        className="px-3 py-1 rounded-lg border border-white/20 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white transition-colors text-sm"
+                                    >
+                                        Invite a single
+                                    </button>
+                                </div>
                             )}
                         </div>
-                        
-                        {/* Show "Invite a single" button on the right when a single is selected */}
-                        {currentSponsoredSingle && (
-                            <button
-                                onClick={() => setShowInviteSingleModal(true)}
-                                className="px-3 py-1 rounded-lg border border-white/20 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white transition-colors text-sm"
-                            >
-                                Invite a single
-                            </button>
-                        )}
                     </div>
                 </div>
 
                 {/* Results */}
-                <div className="flex justify-between items-center mb-6 px-4 md:px-0">
+                <div className="flex justify-between items-center mb-6 px-4 md:px-0 mt-6">
                     <button
                         onClick={() => setShowTailorSearchModal(true)}
                         className="px-3 py-1 bg-white/10 text-white rounded-md border border-white/20 hover:bg-white/20 text-sm transition-colors"
@@ -690,6 +702,18 @@ export default function PondPage() {
                                         <div className="md:rounded-2xl overflow-hidden border-0 md:border border-white/15 bg-white/5 md:bg-white/5">
                                             {/* Image with overlay */}
                                             <div className="relative w-full aspect-[4/5] md:aspect-[1/1]">
+                                                {/* Sneak Peek Button */}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        alert('Sneak Peek coming soon — this will let your single preview profiles before you message.');
+                                                    }}
+                                                    className="absolute top-4 right-4 z-20 w-11 h-11 rounded-full flex items-center justify-center bg-transparent border border-white/70 hover:border-white hover:bg-white/5 active:scale-95 text-white shadow-md shadow-black/30 transition-transform duration-150 ease-out hover:scale-105"
+                                                    aria-label="Sneak Peek (coming soon)"
+                                                >
+                                                    <PaperAirplaneIcon className="w-5 h-5 -rotate-45" />
+                                                </button>
                                                 {profile.profile_pic_url ? (
                                                     <img 
                                                         src={profile.profile_pic_url} 
