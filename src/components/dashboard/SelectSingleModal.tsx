@@ -48,11 +48,23 @@ export default function SelectSingleModal({
                 bId = temp;
             }
             // Navigate to the new chat page
-            const res = await fetch(`/api/messages/chat-context?userId=${currentUserId}&otherId=${otherUserId}&about_single_id=${aId}&clicked_single_id=${bId}`);
-            const data = await res.json();
-            if (data && data.conversation_id) {
-                router.push(`/dashboard/chat/${data.conversation_id}`);
-                onClose();
+            try {
+                const res = await fetch(`/api/messages/chat-context?userId=${currentUserId}&otherId=${otherUserId}&about_single_id=${aId}&clicked_single_id=${bId}`);
+                const data = await res.json();
+                if (data && data.conversation_id) {
+                    router.push(`/dashboard/chat/${data.conversation_id}`);
+                    onClose();
+                    return;
+                } else {
+                    // API call succeeded but no conversation_id returned
+                    console.error('Chat context API did not return conversation_id:', data);
+                    alert('Failed to create or find conversation. Please try again.');
+                    return;
+                }
+            } catch (error) {
+                // API call failed
+                console.error('Error calling chat-context API:', error);
+                alert('Failed to create or find conversation. Please try again.');
                 return;
             }
         }

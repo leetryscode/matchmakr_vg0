@@ -51,6 +51,8 @@ export async function GET(req: NextRequest) {
       otherId = resolvedOtherId;
       console.log('Chat context: Found conversation with singles:', { foundAboutSingleId, foundClickedSingleId, initiatorId, recipientId });
     } else if (aboutSingleId && clickedSingleId) {
+      // MVP assumption: each SINGLE has exactly one sponsor (profiles.sponsored_by_id).
+      // Multi-sponsor support will require revisiting sponsor selection UI + conversation uniqueness.
       // If singles are provided, look for the specific conversation
       console.log('Chat context: Looking for conversation with specific singles:', { aboutSingleId, clickedSingleId });
       // Always use the lower/higher of the two single IDs for uniqueness

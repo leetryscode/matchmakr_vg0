@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Profile } from './types';
 import InterestsInput from './InterestsInput';
 import SelectSingleModal from '../dashboard/SelectSingleModal';
+import InviteSingleModal from '../dashboard/InviteSingleModal';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -66,6 +67,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   const [interests, setInterests] = useState<Interest[]>([]);
   const [loadingInterests, setLoadingInterests] = useState(false);
   const [showSelectSingleModal, setShowSelectSingleModal] = useState(false);
+  const [showInviteSingleModal, setShowInviteSingleModal] = useState(false);
   const age = calculateAge(profile.birth_year);
   const firstName = profile.name?.split(' ')[0] || '';
   const router = useRouter();
@@ -108,18 +110,28 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
     setSavingInterests(false);
   };
 
-  // Handler to open chat with single selection if needed
+  // MVP assumption: each SINGLE has exactly one sponsor (profiles.sponsored_by_id).
+  // Multi-sponsor support will require revisiting sponsor selection UI + conversation uniqueness.
+  
+  // Handler to open chat with single selection modal (matches pond flow)
   const handleOpenChat = () => {
     if (matchmakrProfile?.id) {
-      router.push(`/dashboard/chat/single/${matchmakrProfile.id}`);
+      // Show SelectSingleModal to allow user to choose which single the chat is about
+      setShowSelectSingleModal(true);
     }
   };
 
-  // Handler for when a single is selected from the modal
+  // Handler for when "Someone Else!" is clicked in SelectSingleModal - triggers invite flow
+  const handleInviteSingle = () => {
+    setShowSelectSingleModal(false);
+    setShowInviteSingleModal(true);
+  };
+
+  // Fallback handler (should not be called if SelectSingleModal props are correct)
+  // SelectSingleModal handles chat creation internally when currentUserId, otherUserId, clickedSingleId are provided
   const handleSingleSelected = (singleId: string) => {
-    if (matchmakrProfile?.id) {
-      router.push(`/dashboard/chat/single/${matchmakrProfile.id}`);
-    }
+    // This should not be reached in normal flow since SelectSingleModal handles navigation internally
+    console.warn('handleSingleSelected called - this indicates SelectSingleModal props may be missing');
   };
 
   return (
@@ -305,9 +317,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                   </button>
                 )}
               </Link>
-              {/* Chat functionality is now handled by SelectSingleModal */}
-
-              {/* Select Single Modal */}
+              {/* Select Single Modal - handles chat creation via chat-context API */}
               <SelectSingleModal
                 open={showSelectSingleModal}
                 onClose={() => setShowSelectSingleModal(false)}
@@ -317,6 +327,13 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 currentUserId={currentUserId}
                 otherUserId={matchmakrProfile?.id}
                 clickedSingleId={profile.id}
+                onInviteSingle={handleInviteSingle}
+              />
+
+              {/* Invite Single Modal - shown when "Someone Else!" is selected */}
+              <InviteSingleModal
+                open={showInviteSingleModal}
+                onClose={() => setShowInviteSingleModal(false)}
               />
             </div>
           )}

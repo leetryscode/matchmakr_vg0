@@ -62,7 +62,8 @@ export default function PondPage() {
 
     const router = useRouter();
     const pathname = usePathname();
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    // Store scroll position in a ref to avoid re-renders
+    const scrollPositionRef = useRef<number>(0);
 
     // Cache management functions
     const saveToCache = (data: Omit<PondCache, 'timestamp'>) => {
@@ -108,27 +109,34 @@ export default function PondPage() {
         }
     };
 
-    // Restore scroll position
+    // Restore scroll position using window scroll
+    // Use requestAnimationFrame + setTimeout to ensure DOM is painted before restoration
     const restoreScrollPosition = (position: number) => {
-        setTimeout(() => {
-            if (scrollContainerRef.current) {
-                scrollContainerRef.current.scrollTop = position;
+        // Initialize ref with the position we're restoring to
+        scrollPositionRef.current = position;
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                window.scrollTo(0, position);
                 console.log('Restored scroll position:', position);
-            }
-        }, 100);
+            }, 0);
+        });
     };
 
-    // Save scroll position
-    const saveScrollPosition = () => {
-        if (scrollContainerRef.current) {
-            const position = scrollContainerRef.current.scrollTop;
-            const currentCache = loadFromCache();
-            if (currentCache) {
-                saveToCache({
-                    ...currentCache,
-                    scrollPosition: position
-                });
-            }
+    // Update scroll position ref (called on scroll events)
+    // This does not trigger re-renders or localStorage writes
+    const updateScrollPositionRef = () => {
+        scrollPositionRef.current = window.scrollY;
+    };
+
+    // Save scroll position to localStorage (only called on unmount or when saving cache)
+    const saveScrollPositionToCache = () => {
+        const position = scrollPositionRef.current;
+        const currentCache = loadFromCache();
+        if (currentCache) {
+            saveToCache({
+                ...currentCache,
+                scrollPosition: position
+            });
         }
     };
 
@@ -189,7 +197,8 @@ export default function PondPage() {
         }
     }, [authLoading, user, orbitRole, router]); // Run when auth state changes
 
-    // Save to cache when data changes
+    // Save to cache when data changes (not on scroll events)
+    // Read current scroll position from ref at save time
     useEffect(() => {
         if (!loading && profiles.length > 0) {
             saveToCache({
@@ -200,22 +209,37 @@ export default function PondPage() {
                 searchState,
                 searchZip,
                 selectedInterests,
-                scrollPosition: scrollContainerRef.current?.scrollTop || 0
+                scrollPosition: scrollPositionRef.current
             });
         }
     }, [profiles, page, hasMore, searchCity, searchState, searchZip, selectedInterests, loading]);
 
-    // Save scroll position on scroll
+    // Update scroll position ref on scroll (throttled for performance)
+    // Save to localStorage only on unmount to avoid churn
     useEffect(() => {
+        let rafId: number | null = null;
+        
         const handleScroll = () => {
-            saveScrollPosition();
+            // Use requestAnimationFrame to throttle updates
+            if (rafId === null) {
+                rafId = requestAnimationFrame(() => {
+                    updateScrollPositionRef();
+                    rafId = null;
+                });
+            }
         };
 
-        const container = scrollContainerRef.current;
-        if (container) {
-            container.addEventListener('scroll', handleScroll);
-            return () => container.removeEventListener('scroll', handleScroll);
-        }
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        
+        // Save scroll position on unmount
+        return () => {
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+            }
+            window.removeEventListener('scroll', handleScroll);
+            // Persist scroll position to cache on unmount
+            saveScrollPositionToCache();
+        };
     }, []);
 
     // Debug loading state changes
@@ -292,10 +316,18 @@ export default function PondPage() {
                 // Restore scroll position
                 restoreScrollPosition(cached.scrollPosition);
                 
-                // Load fresh data in background
-                setTimeout(() => {
-                    loadProfiles(false, 1, true);
-                }, 1000);
+                // Load fresh data in background using requestIdleCallback for better performance
+                // Fallback to immediate execution if requestIdleCallback is not available
+                if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+                    requestIdleCallback(() => {
+                        loadProfiles(false, 1, true);
+                    }, { timeout: 2000 });
+                } else {
+                    // Fallback: use setTimeout with 0 delay to run after current execution
+                    setTimeout(() => {
+                        loadProfiles(false, 1, true);
+                    }, 0);
+                }
                 return;
             }
         }
@@ -622,10 +654,7 @@ export default function PondPage() {
                         <p className="text-white mt-2">Try adjusting your search filters.</p>
                     </div>
                 ) : (
-                    <div 
-                        ref={scrollContainerRef}
-                        className="max-h-[calc(70vh-5rem)] overflow-y-auto"
-                    >
+                    <div>
                         <div key={`profiles-${profiles.length}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {profiles.map((profile) => {
                                 const age = calculateAge(profile.birth_year);
