@@ -435,6 +435,13 @@ export default function PondPage() {
         return currentYear - birthYear;
     };
 
+    // Helper function to truncate text for endorsement captions
+    const truncateEndorsement = (text: string | null, maxLength: number = 140): string | null => {
+        if (!text) return null;
+        if (text.length <= maxLength) return text;
+        return text.slice(0, maxLength).trim() + '...';
+    };
+
     // Handler to open chat modal and fetch matchmakr info
     const handleOpenChat = async (profile: PondProfile) => {
         if (!profile.sponsored_by_id) return;
@@ -564,16 +571,16 @@ export default function PondPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-blue to-primary-teal p-4">
-            <div className="max-w-6xl mx-auto">
+        <div className="min-h-screen bg-gradient-to-br from-primary-blue to-primary-teal px-0 md:px-4">
+            <div className="max-w-none md:max-w-6xl md:mx-auto">
                 {/* Header */}
-                <div className="text-center mb-6">
+                <div className="text-center mb-6 px-4 md:px-0">
                     <h1 className="text-4xl font-light text-white mb-2 tracking-[0.1em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>THE POND</h1>
                     <p className="text-white">Find singles, message their sponsor</p>
                 </div>
 
                 {/* Top Single Selector - Always visible */}
-                <div className="mb-6 bg-white/10 rounded-xl p-4 shadow-deep border border-white/20">
+                <div className="mb-6 bg-white/10 rounded-xl p-4 shadow-deep border border-white/20 mx-4 md:mx-0">
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div className="flex items-center gap-3 flex-wrap">
                             <span className="text-white font-medium">Shopping for:</span>
@@ -637,7 +644,7 @@ export default function PondPage() {
                 </div>
 
                 {/* Results */}
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex justify-between items-center mb-6 px-4 md:px-0">
                     <button
                         onClick={() => setShowTailorSearchModal(true)}
                         className="px-3 py-1 bg-white/10 text-white rounded-md border border-white/20 hover:bg-white/20 text-sm transition-colors"
@@ -676,9 +683,11 @@ export default function PondPage() {
                                 const age = calculateAge(profile.birth_year);
                                 const sponsorName = profile.sponsor_name || 'Sponsor';
                                 const sponsorPhotoUrl = profile.sponsor_photo_url;
+                                const truncatedEndorsement = truncateEndorsement(profile.matchmakr_endorsement);
+                                const isEndorsementTruncated = profile.matchmakr_endorsement && profile.matchmakr_endorsement.length > 140;
                                 return (
                                     <Link href={`/profile/${profile.id}`} key={profile.id} className="block">
-                                        <div className="rounded-2xl overflow-hidden border border-white/15 bg-white/5">
+                                        <div className="md:rounded-2xl overflow-hidden border-0 md:border border-white/15 bg-white/5 md:bg-white/5">
                                             {/* Image with overlay */}
                                             <div className="relative w-full aspect-[4/5] md:aspect-[1/1]">
                                                 {profile.profile_pic_url ? (
@@ -714,6 +723,17 @@ export default function PondPage() {
                                                     )}
                                                 </div>
                                             </div>
+                                            {/* Endorsement caption */}
+                                            {truncatedEndorsement && (
+                                                <div className="px-4 py-3">
+                                                    <p className="text-white/80 text-sm leading-relaxed line-clamp-2">
+                                                        <span className="font-semibold">{sponsorName} says:</span> {truncatedEndorsement}
+                                                        {isEndorsementTruncated && (
+                                                            <span className="text-white/60"> More...</span>
+                                                        )}
+                                                    </p>
+                                                </div>
+                                            )}
                                             {/* Footer with sponsor info */}
                                             <div className="flex items-center justify-between px-4 py-3">
                                                 <div className="flex items-center gap-2">
@@ -751,7 +771,7 @@ export default function PondPage() {
                 
                 {/* Load More Button */}
                 {!loading && hasMore && (
-                    <div className="text-center mt-8">
+                    <div className="text-center mt-8 px-4 md:px-0">
                         <button
                             onClick={loadMore}
                             disabled={loadingMore}
