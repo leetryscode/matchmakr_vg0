@@ -76,6 +76,9 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   // In Orbit, only MATCHMAKR (Sponsors) can edit profiles
   // Singles viewing their own profile should see read-only view
   const canEditProfile = orbitRole === 'MATCHMAKR' && (isOwnProfile || isSponsorViewing);
+  
+  // Singles can edit their own basic info (name, occupation, location) but not bio
+  const canEditBasicInfo = orbitRole === 'SINGLE' && isOwnProfile && profile.user_type === 'SINGLE';
 
   // Structure sponsors as an array to support multiple sponsors in the future
   // Currently, the schema only supports one sponsor, but this structure makes it easy to extend
@@ -149,45 +152,95 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           userType={profile.user_type}
           canEdit={canEditProfile}
         />
-        <div className="p-0">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-white">{profile.name}</h1>
-              <p className="text-lg text-white flex items-center">
-                <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                    <path d="M6.5 1h3a1 1 0 0 1 1 1v1h2.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.5V2a1 1 0 0 1 1-1z" fill="#fff"/>
-                    <path d="M6.5 3h3v1h-3V3z" fill="white"/>
-                  </svg>
-                </span>
-                {[profile.occupation, age ? age : null].filter(Boolean).join(', ')}
-              </p>
-            </div>
-            <div className="flex flex-col items-end gap-2">
-              {canEditProfile && (
-                <EditProfileButton profile={profile} />
-              )}
-              {isOwnProfile && profile.user_type === 'SINGLE' && orbitRole === 'SINGLE' && (
-                <div className="text-sm text-white/70 italic max-w-xs text-right">
-                  Your Sponsor manages your Orbit profile. If something looks off, chat with them.
+        <div className="space-y-6">
+          {/* Primary Identity Block */}
+          <div className="relative">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-white">{profile.name}</h1>
+                {age && (
+                  <p className="text-lg text-white mt-1">{age}</p>
+                )}
+                {profile.user_type === 'SINGLE' && (profile.city || profile.state || profile.zip_code) && (
+                  <p className="text-white mt-1 flex items-center">
+                    <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
+                      <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
+                        <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="#fff" stroke="none"/>
+                        <circle cx="8" cy="6" r="2" fill="white"/>
+                      </svg>
+                    </span>
+                    {[profile.city, profile.state].filter(Boolean).join(', ')}
+                    {profile.zip_code && ` ${profile.zip_code}`}
+                  </p>
+                )}
+                {profile.occupation && (
+                  <p className="text-lg text-white mt-1 flex items-center">
+                    <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
+                      <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
+                        <path d="M6.5 1h3a1 1 0 0 1 1 1v1h2.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.5V2a1 1 0 0 1 1-1z" fill="#fff"/>
+                        <path d="M6.5 3h3v1h-3V3z" fill="white"/>
+                      </svg>
+                    </span>
+                    {profile.occupation}
+                  </p>
+                )}
+              </div>
+              {canEditBasicInfo && (
+                <div className="ml-4">
+                  <EditProfileButton profile={profile} singleBasicInfoOnly={true} />
                 </div>
               )}
             </div>
           </div>
-          {profile.user_type === 'SINGLE' && (profile.city || profile.state || profile.zip_code) && (
-            <>
-              <p className="text-white mt-1 flex items-center">
-                <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                    <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="#fff" stroke="none"/>
-                    <circle cx="8" cy="6" r="2" fill="white"/>
-                  </svg>
-                </span>
-                {[profile.city, profile.state].filter(Boolean).join(', ')}
-                {profile.zip_code && ` ${profile.zip_code}`}
-              </p>
-              {/* Add Interest Button and Interests Badges */}
-              {/* Only Sponsors can edit interests */}
+
+          {/* Helper Note - only for single viewing own profile */}
+          {isOwnProfile && profile.user_type === 'SINGLE' && orbitRole === 'SINGLE' && (
+            <div className="text-sm text-white/70 italic">
+              Your Sponsor manages your Orbit profile. If something looks off, chat with them.
+            </div>
+          )}
+
+          {/* Interests Block */}
+          {profile.user_type === 'SINGLE' && (
+            <div>
+              {/* Interest chips - always visible if interests exist */}
+              {interests.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {interests.slice(0, 8).map(interest => (
+                    <span key={interest.id} className="bg-white/20 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
+                      {interest.name}
+                      {canEditProfile && (
+                        <button
+                          type="button"
+                          className="ml-1 text-white/70 hover:text-red-400"
+                          onClick={async () => {
+                            const newInterests = interests.filter(i => i.id !== interest.id);
+                            setSavingInterests(true);
+                            const response = await fetch(`/api/profiles/${profile.id}/interests`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ interestIds: newInterests.map(i => i.id) })
+                            });
+                            if (response.ok) {
+                              // Invalidate pond cache after successful interests deletion
+                              if (typeof window !== 'undefined') {
+                                localStorage.removeItem('pond_cache');
+                              }
+                            }
+                            setInterests(newInterests);
+                            setSavingInterests(false);
+                          }}
+                          disabled={savingInterests}
+                          aria-label={`Remove ${interest.name}`}
+                        >
+                          &times;
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* Add Interest Button - only when canEditProfile */}
               {canEditProfile && (
                 <div className="mt-2">
                   <button
@@ -213,51 +266,16 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                       </button>
                     </div>
                   )}
-                  {/* Show current interests as badges */}
-                  {!showInterestsInput && interests.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {interests.slice(0, 8).map(interest => (
-                        <span key={interest.id} className="bg-white/20 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
-                          {interest.name}
-                          {canEditProfile && (
-                            <button
-                              type="button"
-                              className="ml-1 text-white/70 hover:text-red-400"
-                              onClick={async () => {
-                                const newInterests = interests.filter(i => i.id !== interest.id);
-                                setSavingInterests(true);
-                                const response = await fetch(`/api/profiles/${profile.id}/interests`, {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ interestIds: newInterests.map(i => i.id) })
-                                });
-                                if (response.ok) {
-                                  // Invalidate pond cache after successful interests deletion
-                                  if (typeof window !== 'undefined') {
-                                    localStorage.removeItem('pond_cache');
-                                  }
-                                }
-                                setInterests(newInterests);
-                                setSavingInterests(false);
-                              }}
-                              disabled={savingInterests}
-                              aria-label={`Remove ${interest.name}`}
-                            >
-                              &times;
-                            </button>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
               )}
-            </>
+            </div>
           )}
+
+          {/* Endorsement Block - only for SINGLE profiles with sponsors */}
           {profile.user_type === 'SINGLE' && sponsors.length > 0 && (
             <>
               {sponsors.map((sponsor) => (
-                <div key={sponsor.id} className="mt-6">
+                <div key={sponsor.id}>
                   <div className="bg-white/10 rounded-xl border border-white/20 shadow-card p-4">
                     <div className="flex justify-between items-center">
                       <h2 className="text-lg font-semibold text-white">
@@ -273,8 +291,10 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
               ))}
             </>
           )}
+
+          {/* Sponsored Singles Section - only for MATCHMAKR profiles */}
           {profile.user_type === 'MATCHMAKR' && (
-            <div className="mt-6 border-t border-white/30 pt-4">
+            <div className="border-t border-white/30 pt-4">
               <h2 className="text-lg font-semibold text-white">Sponsored Singles</h2>
               {sponsoredSingles && sponsoredSingles.length > 0 ? (
                 <div className="mt-4 grid grid-cols-3 gap-4">
@@ -300,8 +320,10 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
               )}
             </div>
           )}
+
+          {/* Sponsor Block - only for SINGLE profiles with matchmakrProfile */}
           {profile.user_type === 'SINGLE' && matchmakrProfile && (
-            <div className="mt-6 border-t border-white/30 pt-4">
+            <div className="border-t border-white/30 pt-4">
               <h2 className="text-lg font-semibold text-white mb-2">Their Sponsor</h2>
               <Link href={`/profile/${matchmakrProfile.id}`} className="flex items-center gap-4 p-3 rounded-lg bg-white/10 shadow-card hover:shadow-card-hover border border-white/20 hover:border-primary-blue transition-all duration-300">
                 <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white">

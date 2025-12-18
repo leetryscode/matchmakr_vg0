@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import EditProfileModal from './EditProfileModal';
 import { type Profile } from './types'; // Assuming you have a types file
 
-export default function EditProfileButton({ profile, canEditEndorsementOnly = false, onSave }: { profile: Profile, canEditEndorsementOnly?: boolean, onSave?: () => void }) {
+export default function EditProfileButton({ profile, canEditEndorsementOnly = false, singleBasicInfoOnly = false, onSave }: { profile: Profile, canEditEndorsementOnly?: boolean, singleBasicInfoOnly?: boolean, onSave?: () => void }) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const handleSave = () => {
@@ -30,6 +30,7 @@ export default function EditProfileButton({ profile, canEditEndorsementOnly = fa
                     onClose={() => setIsEditModalOpen(false)}
                     onSave={handleSave}
                     canEditEndorsementOnly={canEditEndorsementOnly}
+                    singleBasicInfoOnly={singleBasicInfoOnly}
                 />
             )}
         </>

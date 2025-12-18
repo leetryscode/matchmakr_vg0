@@ -7,9 +7,10 @@ interface EditProfileModalProps {
     onClose: () => void;
     onSave: () => void;
     canEditEndorsementOnly?: boolean;
+    singleBasicInfoOnly?: boolean;
 }
 
-const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, onSave, canEditEndorsementOnly = false }) => {
+const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, onSave, canEditEndorsementOnly = false, singleBasicInfoOnly = false }) => {
     const supabase = createClient();
     const [name, setName] = useState('');
     const [occupation, setOccupation] = useState('');
@@ -49,12 +50,25 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
             const cleanCity = city.trim() === '' ? null : city;
             const cleanState = state.trim() === '' ? null : state;
             const cleanZip = zipCode.trim() === '' ? null : zipCode;
-            const payload = { 
+            
+            // Build payload based on mode
+            let payload: Record<string, any> = { 
                 name, 
-                occupation, 
-                bio,
-                ...(profile.user_type === 'SINGLE' && { city: cleanCity, state: cleanState, zip_code: cleanZip })
+                occupation,
             };
+            
+            // Only include bio if not in singleBasicInfoOnly mode
+            if (!singleBasicInfoOnly) {
+                payload.bio = bio;
+            }
+            
+            // Include location fields for SINGLE profiles
+            if (profile.user_type === 'SINGLE') {
+                payload.city = cleanCity;
+                payload.state = cleanState;
+                payload.zip_code = cleanZip;
+            }
+            
             console.log('Attempting to update profile:', profile);
             console.log('Payload:', payload);
             const result = await supabase
@@ -115,16 +129,18 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
                                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-background-card text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
                                 />
                             </div>
-                            <div>
-                                <label htmlFor="bio" className="block text-sm font-medium text-gray-700">About Me</label>
-                                <textarea
-                                    id="bio"
-                                    rows={4}
-                                    value={bio}
-                                    onChange={(e) => setBio(e.target.value)}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-background-card text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
-                                />
-                            </div>
+                            {!singleBasicInfoOnly && (
+                                <div>
+                                    <label htmlFor="bio" className="block text-sm font-medium text-gray-700">About Me</label>
+                                    <textarea
+                                        id="bio"
+                                        rows={4}
+                                        value={bio}
+                                        onChange={(e) => setBio(e.target.value)}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-background-card text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
+                                    />
+                                </div>
+                            )}
                             {profile.user_type === 'SINGLE' && (
                                 <>
                                     <div className="grid grid-cols-2 gap-4">
