@@ -10,6 +10,7 @@ import SelectSingleModal from '../dashboard/SelectSingleModal';
 import InviteSingleModal from '../dashboard/InviteSingleModal';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { PencilIcon } from '@heroicons/react/24/solid';
 
 // Types for sponsored singles and matchmakr
 interface SponsoredSingle {
@@ -68,6 +69,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   const [loadingInterests, setLoadingInterests] = useState(false);
   const [showSelectSingleModal, setShowSelectSingleModal] = useState(false);
   const [showInviteSingleModal, setShowInviteSingleModal] = useState(false);
+  const [isEndorsementEditOpen, setIsEndorsementEditOpen] = useState(false);
   const age = calculateAge(profile.birth_year);
   const firstName = profile.name?.split(' ')[0] || '';
   const router = useRouter();
@@ -210,69 +212,66 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           {/* Interests Block */}
           {profile.user_type === 'SINGLE' && (
             <div>
-              {/* Interest chips - always visible if interests exist */}
-              {interests.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {interests.slice(0, 8).map(interest => (
-                    <span key={interest.id} className="bg-white/20 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
-                      {interest.name}
-                      {canEditProfile && (
-                        <button
-                          type="button"
-                          className="ml-1 text-white/70 hover:text-red-400"
-                          onClick={async () => {
-                            const newInterests = interests.filter(i => i.id !== interest.id);
-                            setSavingInterests(true);
-                            const response = await fetch(`/api/profiles/${profile.id}/interests`, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ interestIds: newInterests.map(i => i.id) })
-                            });
-                            if (response.ok) {
-                              // Invalidate pond cache after successful interests deletion
-                              if (typeof window !== 'undefined') {
-                                localStorage.removeItem('pond_cache');
-                              }
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Interest chips - hide when input is open to avoid duplication */}
+                {!showInterestsInput && interests.slice(0, 8).map(interest => (
+                  <span key={interest.id} className="bg-white/20 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
+                    {interest.name}
+                    {canEditProfile && (
+                      <button
+                        type="button"
+                        className="ml-1 text-white/70 hover:text-red-400"
+                        onClick={async () => {
+                          const newInterests = interests.filter(i => i.id !== interest.id);
+                          setSavingInterests(true);
+                          const response = await fetch(`/api/profiles/${profile.id}/interests`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ interestIds: newInterests.map(i => i.id) })
+                          });
+                          if (response.ok) {
+                            // Invalidate pond cache after successful interests deletion
+                            if (typeof window !== 'undefined') {
+                              localStorage.removeItem('pond_cache');
                             }
-                            setInterests(newInterests);
-                            setSavingInterests(false);
-                          }}
-                          disabled={savingInterests}
-                          aria-label={`Remove ${interest.name}`}
-                        >
-                          &times;
-                        </button>
-                      )}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {/* Add Interest Button - only when canEditProfile */}
-              {canEditProfile && (
-                <div className="mt-2">
+                          }
+                          setInterests(newInterests);
+                          setSavingInterests(false);
+                        }}
+                        disabled={savingInterests}
+                        aria-label={`Remove ${interest.name}`}
+                      >
+                        &times;
+                      </button>
+                    )}
+                  </span>
+                ))}
+                {/* Add Interest chip */}
+                {canEditProfile && (
                   <button
-                    className="bg-white/10 text-white px-4 py-1 rounded-full border border-white/20 hover:bg-white/20 transition-colors text-sm font-semibold"
+                    className="px-3 py-1 rounded-full border border-white/20 bg-white/5 text-white/80 text-xs font-semibold hover:bg-white/10"
                     onClick={() => setShowInterestsInput(v => !v)}
                     disabled={loadingInterests || savingInterests}
                   >
-                    {showInterestsInput ? 'Cancel' : 'Add Interest'}
+                    {showInterestsInput ? 'Cancel' : '+ Add'}
                   </button>
-                  {showInterestsInput && (
-                    <div className="mt-2">
-                      <InterestsInput
-                        value={interests}
-                        onChange={handleSaveInterests}
-                        disabled={savingInterests}
-                      />
-                      <button
-                        className="mt-2 px-4 py-1 rounded-full bg-accent-teal-light text-white font-semibold hover:bg-accent-teal transition-colors"
-                        onClick={() => handleSaveInterests(interests)}
-                        disabled={savingInterests}
-                      >
-                        Save Interests
-                      </button>
-                    </div>
-                  )}
+                )}
+              </div>
+              {/* InterestsInput when expanded */}
+              {showInterestsInput && canEditProfile && (
+                <div className="mt-2">
+                  <InterestsInput
+                    value={interests}
+                    onChange={handleSaveInterests}
+                    disabled={savingInterests}
+                  />
+                  <button
+                    className="mt-2 px-4 py-1 rounded-full bg-accent-teal-light text-white font-semibold hover:bg-accent-teal transition-colors"
+                    onClick={() => handleSaveInterests(interests)}
+                    disabled={savingInterests}
+                  >
+                    Save Interests
+                  </button>
                 </div>
               )}
             </div>
@@ -283,20 +282,39 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
             <>
               {sponsors.map((sponsor) => (
                 <div key={sponsor.id}>
-                  <div className="bg-white/10 rounded-xl border border-white/20 shadow-card p-4">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                     <div className="flex justify-between items-center">
-                      <h2 className="text-lg font-semibold text-white">
+                      <h2 className="text-white/90 font-semibold">
                         What {sponsor.name || 'their Sponsor'} says about {firstName || profile.name || 'them'}
                       </h2>
                       {sponsor.isCurrentSponsor && (
-                        <EditProfileButton profile={profile} canEditEndorsementOnly={true} />
+                        <button
+                          onClick={() => setIsEndorsementEditOpen(true)}
+                          className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/15 bg-white/5 text-white/80 hover:bg-white/10"
+                          aria-label="Edit endorsement"
+                        >
+                          <PencilIcon className="w-4 h-4" />
+                        </button>
                       )}
                     </div>
-                    <p className="mt-2 text-sm text-white/90">{sponsor.endorsement || 'This is where your sponsor writes about you...'}</p>
+                    <p className="mt-2 text-white/80 text-sm leading-relaxed">{sponsor.endorsement || 'This is where your sponsor writes about you...'}</p>
                   </div>
                 </div>
               ))}
             </>
+          )}
+
+          {/* Endorsement Edit Modal */}
+          {isEndorsementEditOpen && (
+            <EditProfileModal
+              profile={profile}
+              onClose={() => setIsEndorsementEditOpen(false)}
+              onSave={() => {
+                setIsEndorsementEditOpen(false);
+                window.location.reload();
+              }}
+              canEditEndorsementOnly={true}
+            />
           )}
 
           {/* Sponsored Singles Section - only for MATCHMAKR profiles */}
@@ -330,34 +348,43 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
           {/* Sponsor Block - only for SINGLE profiles with matchmakrProfile */}
           {profile.user_type === 'SINGLE' && matchmakrProfile && (
-            <div className="border-t border-white/30 pt-4">
-              <h2 className="text-lg font-semibold text-white mb-2">Their Sponsor</h2>
-              <Link href={`/profile/${matchmakrProfile.id}`} className="flex items-center gap-4 p-3 rounded-lg bg-white/10 shadow-card hover:shadow-card-hover border border-white/20 hover:border-primary-blue transition-all duration-300">
-                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white">
-                  {matchmakrProfile.profile_pic_url ? (
-                    <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'Sponsor'} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-background-main flex items-center justify-center">
-                      <span className="text-2xl font-bold text-white/80">
-                        {matchmakrProfile.name?.charAt(0).toUpperCase() || '?'}
-                      </span>
+            <div className="border-t border-white/10 mt-6">
+              <div className="px-4 py-4">
+                <div className="text-white/90 font-semibold mb-3">Their Sponsor</div>
+                <div className="mt-3 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {/* Avatar */}
+                    <div className="w-12 h-12 rounded-full overflow-hidden border border-white/20 shrink-0">
+                      {matchmakrProfile.profile_pic_url ? (
+                        <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'Sponsor'} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-background-main flex items-center justify-center">
+                          <span className="text-xl font-bold text-white/80">
+                            {matchmakrProfile.name?.charAt(0).toUpperCase() || '?'}
+                          </span>
+                        </div>
+                      )}
                     </div>
+                    <div className="min-w-0">
+                      <div className="text-white font-semibold text-base leading-tight truncate">{matchmakrProfile.name}</div>
+                      <Link href={`/profile/${matchmakrProfile.id}`} className="text-white/60 text-xs hover:text-white/80 whitespace-nowrap">
+                        View profile
+                      </Link>
+                    </div>
+                  </div>
+                  {/* Show Message button only if current user is a matchmakr */}
+                  {currentUserProfile?.user_type === 'MATCHMAKR' && (
+                    <button
+                      className="shrink-0 px-5 py-2 text-sm rounded-full bg-white text-primary-blue font-semibold hover:bg-white/90 active:scale-95 transition shadow-md shadow-black/20"
+                      onClick={e => { e.preventDefault(); handleOpenChat(); }}
+                    >
+                      Message
+                    </button>
                   )}
+                  </div>
                 </div>
-                <div>
-                  <p className="text-base font-semibold text-white">{matchmakrProfile.name}</p>
-                  <p className="text-xs text-white/80">View Sponsor Profile</p>
-                </div>
-                {/* Show Message button only if current user is a matchmakr */}
-                {currentUserProfile?.user_type === 'MATCHMAKR' && (
-                  <button
-                    className="ml-4 px-4 py-2 rounded-md border border-white/20 bg-white/10 hover:bg-white/20 text-white font-semibold transition-colors"
-                    onClick={e => { e.preventDefault(); handleOpenChat(); }}
-                  >
-                    Message
-                  </button>
-                )}
-              </Link>
+              </div>
               {/* Select Single Modal - handles chat creation via chat-context API */}
               <SelectSingleModal
                 open={showSelectSingleModal}

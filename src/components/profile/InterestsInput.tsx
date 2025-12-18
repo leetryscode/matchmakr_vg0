@@ -105,12 +105,12 @@ const InterestsInput: React.FC<InterestsInputProps> = ({ value, onChange, disabl
           disabled={disabled || adding}
         />
         {input && suggestions.length > 0 && (
-          <div className="absolute left-0 right-0 mt-1 bg-background-main rounded-md shadow-lg z-10 border border-white/20">
+          <div className="absolute left-0 right-0 mt-1 bg-white rounded-md shadow-lg z-10 border border-gray-200">
             {suggestions.map(s => (
               <button
                 key={s.id}
                 type="button"
-                className="block w-full text-left px-4 py-2 text-white hover:bg-accent-teal-light/20"
+                className="block w-full text-left px-4 py-2 text-gray-900 hover:bg-gray-100"
                 onClick={() => handleAdd(s)}
                 disabled={disabled}
               >
@@ -120,12 +120,12 @@ const InterestsInput: React.FC<InterestsInputProps> = ({ value, onChange, disabl
           </div>
         )}
         {input && suggestions.length === 0 && !adding && (
-          <div className="absolute left-0 right-0 mt-1 bg-background-main rounded-md shadow-lg z-10 border border-white/20 px-4 py-2 text-white/70">
+          <div className="absolute left-0 right-0 mt-1 bg-white rounded-md shadow-lg z-10 border border-gray-200 px-4 py-2 text-gray-600">
             Press Enter to add "{input}"
           </div>
         )}
         {adding && (
-          <div className="absolute left-0 right-0 mt-1 bg-background-main rounded-md shadow-lg z-10 border border-white/20 px-4 py-2 text-white/70">
+          <div className="absolute left-0 right-0 mt-1 bg-white rounded-md shadow-lg z-10 border border-gray-200 px-4 py-2 text-gray-600">
             Adding...
           </div>
         )}
