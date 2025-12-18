@@ -68,6 +68,9 @@ interface PhotoGalleryProps {
     userType?: 'SINGLE' | 'MATCHMAKR' | 'VENDOR';
     canEdit?: boolean;
     profileName?: string | null;
+    name?: string | null;
+    age?: number | null;
+    interests?: Array<{id: number, name: string}>;
 }
 
 const MAX_PHOTOS_SINGLE = 6;
@@ -75,7 +78,7 @@ const MAX_PHOTOS_MATCHMAKR = 1;
 const MAX_PHOTOS_VENDOR = 6;
 const ADD_PHOTO_SLOT = 'ADD_PHOTO_SLOT';
 
-export default function PhotoGallery({ userId, photos: initialPhotos, userType = 'SINGLE', canEdit = true, profileName = null }: PhotoGalleryProps) {
+export default function PhotoGallery({ userId, photos: initialPhotos, userType = 'SINGLE', canEdit = true, profileName = null, name = null, age = null, interests = [] }: PhotoGalleryProps) {
     const supabase = createClient();
     const router = useRouter();
     const [photos, setPhotos] = useState(initialPhotos ? initialPhotos.filter((p): p is string => typeof p === 'string' && p.trim() !== '') : []);
@@ -324,8 +327,8 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
     const isCarousel = !isMatchMakr && displayItems.length > 1;
 
     return (
-        <div className="relative mb-6 px-2 sm:px-0">
-            <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-card mx-auto max-w-md mt-6">
+        <div className="relative mb-6 px-0">
+            <div className="relative w-full aspect-[4/5] rounded-none md:rounded-2xl overflow-hidden shadow-card sm:mx-auto sm:max-w-md">
                 {isCarousel ? (
                     <div ref={sliderRef} className="keen-slider w-full h-full">
                         {displayItems.map((item, idx) => (
@@ -363,7 +366,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                             alt={`Profile photo ${idx + 1}`}
                                             fill
                                             sizes="100vw"
-                                            className="object-cover rounded-2xl"
+                                            className="object-cover rounded-none md:rounded-2xl"
                                             priority={idx === 0}
                                         />
                                         {/* Three dot menu for delete/edit */}
@@ -428,7 +431,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                     alt="Profile photo"
                                     fill
                                     sizes="100vw"
-                                    className="object-cover rounded-2xl"
+                                    className="object-cover rounded-none md:rounded-2xl"
                                     priority
                                 />
                                 {/* Three dot menu for delete/edit */}
@@ -457,18 +460,27 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                         )}
                     </>
                 )}
+                {/* Gradient overlay */}
+                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/70 to-transparent z-10" />
+                {/* Name + Age overlay */}
+                {name && (
+                    <div className="absolute bottom-4 left-4 z-20 text-white">
+                        <div className="text-2xl font-semibold">{name}</div>
+                        {age && <div className="text-sm opacity-90">{age}</div>}
+                    </div>
+                )}
+                {/* Photo indicator dots overlay for carousel */}
+                {isCarousel && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+                        {displayItems.map((item, idx) => (
+                            <span
+                                key={idx}
+                                className={`inline-block w-2 h-2 rounded-full ${idx === currentIndex ? 'bg-white' : 'bg-white/40'} transition-all`}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
-            {/* Photo indicator dots for carousel and add slot */}
-            {isCarousel && (
-                <div className="flex justify-center mt-2 gap-2">
-                    {displayItems.map((item, idx) => (
-                        <span
-                            key={idx}
-                            className={`inline-block w-2 h-2 rounded-full ${idx === currentIndex ? 'bg-accent-teal-light' : 'bg-gray-300'} transition-all`}
-                        />
-                    ))}
-                </div>
-            )}
             <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} className="hidden" accept="image/*" />
             {/* Image Cropper Modal */}
             {imageToCrop && (
