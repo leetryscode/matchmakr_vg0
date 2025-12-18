@@ -91,18 +91,27 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-            <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
-                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>
-                    {canEditEndorsementOnly ? 'Edit Your Endorsement' : 'Edit Profile'}
-                </h2>
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+            <div className="bg-white/95 rounded-2xl p-6 w-full max-w-md mx-4 max-h-[85vh] overflow-y-auto text-center shadow-xl border border-white/20">
+                {canEditEndorsementOnly ? (
+                    <div className="flex items-start justify-between mb-6">
+                        <div>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-1">Edit endorsement</h2>
+                            <p className="text-sm text-gray-500">Help others understand why you're vouching.</p>
+                        </div>
+                    </div>
+                ) : (
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Edit Profile</h2>
+                )}
                 {canEditEndorsementOnly ? (
                     <>
+                        <div className="mb-3 text-sm text-gray-600 max-w-md">
+                            <p>Share what makes {profile.name || 'them'} a great person to date. A specific trait or example works better than a general compliment.</p>
+                        </div>
                         <textarea
                             value={endorsement}
                             onChange={e => setEndorsement(e.target.value)}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
-                            rows={5}
+                            className="w-full min-h-[220px] md:min-h-[260px] rounded-xl border border-gray-200 bg-white px-4 py-3 mb-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-teal-light resize-none"
                             placeholder="Write your endorsement..."
                         />
                     </>
@@ -183,11 +192,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
                         </div>
                     </>
                 )}
-                <div className="flex justify-center gap-4 mt-4">
-                    <button onClick={onClose} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors">
+                <div className="flex justify-end gap-3 mt-6">
+                    <button onClick={onClose} className="px-5 py-2 bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-full font-semibold transition-colors">
                         Cancel
                     </button>
-                    <button onClick={handleSave} className="px-6 py-2 bg-primary-blue text-white rounded-md hover:bg-primary-blue-light font-semibold transition-colors">
+                    <button onClick={handleSave} className="px-5 py-2 bg-primary-blue text-white hover:bg-primary-blue/90 rounded-full font-semibold transition-colors">
                         Save
                     </button>
                 </div>

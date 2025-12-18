@@ -212,9 +212,10 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           {/* Interests Block */}
           {profile.user_type === 'SINGLE' && (
             <div>
+              <div className="text-white/70 text-sm font-semibold tracking-wide mb-2">Interests and <span className="italic">vibe</span></div>
               <div className="flex flex-wrap items-center gap-2">
                 {/* Interest chips - hide when input is open to avoid duplication */}
-                {!showInterestsInput && interests.slice(0, 8).map(interest => (
+                {!showInterestsInput && interests.slice(0, 6).map(interest => (
                   <span key={interest.id} className="bg-white/20 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
                     {interest.name}
                     {canEditProfile && (
@@ -285,7 +286,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                   <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                     <div className="flex justify-between items-center">
                       <h2 className="text-white/90 font-semibold">
-                        What {sponsor.name || 'their Sponsor'} says about {firstName || profile.name || 'them'}
+                        Why {sponsor.name || 'their sponsor'} recommends {firstName || profile.name || 'them'}
                       </h2>
                       {sponsor.isCurrentSponsor && (
                         <button
@@ -350,7 +351,8 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           {profile.user_type === 'SINGLE' && matchmakrProfile && (
             <div className="border-t border-white/10 mt-6">
               <div className="px-4 py-4">
-                <div className="text-white/90 font-semibold mb-3">Their Sponsor</div>
+                <div className="text-white/90 font-semibold mb-1">Profile managed by</div>
+                <div className="text-white/60 text-xs mb-3">Trusted contact for this profile</div>
                 <div className="mt-3 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
