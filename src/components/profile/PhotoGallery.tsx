@@ -67,6 +67,7 @@ interface PhotoGalleryProps {
     photos: (string | null)[] | null;
     userType?: 'SINGLE' | 'MATCHMAKR' | 'VENDOR';
     canEdit?: boolean;
+    profileName?: string | null;
 }
 
 const MAX_PHOTOS_SINGLE = 6;
@@ -74,7 +75,7 @@ const MAX_PHOTOS_MATCHMAKR = 1;
 const MAX_PHOTOS_VENDOR = 6;
 const ADD_PHOTO_SLOT = 'ADD_PHOTO_SLOT';
 
-export default function PhotoGallery({ userId, photos: initialPhotos, userType = 'SINGLE', canEdit = true }: PhotoGalleryProps) {
+export default function PhotoGallery({ userId, photos: initialPhotos, userType = 'SINGLE', canEdit = true, profileName = null }: PhotoGalleryProps) {
     const supabase = createClient();
     const router = useRouter();
     const [photos, setPhotos] = useState(initialPhotos ? initialPhotos.filter((p): p is string => typeof p === 'string' && p.trim() !== '') : []);
@@ -324,12 +325,27 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
 
     return (
         <div className="relative mb-6 px-2 sm:px-0">
-            <div className="relative w-full aspect-[4/5] bg-gray-200 rounded-2xl overflow-hidden flex items-center justify-center shadow-card mx-auto max-w-md mt-6">
+            <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-card mx-auto max-w-md mt-6">
                 {isCarousel ? (
                     <div ref={sliderRef} className="keen-slider w-full h-full">
                         {displayItems.map((item, idx) => (
                             <div className="keen-slider__slide flex items-center justify-center relative" key={idx}>
-                                {item === ADD_PHOTO_SLOT ? (
+                                {item === ADD_PHOTO_SLOT && photos.length === 0 ? (
+                                    <div className="relative w-full h-full bg-gradient-to-br from-primary-blue/50 to-primary-teal/50 flex items-center justify-center">
+                                        <span className="text-6xl font-bold text-white">
+                                            {profileName?.charAt(0).toUpperCase() || '?'}
+                                        </span>
+                                        {canEdit && (
+                                            <button
+                                                className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full border border-white/30 hover:bg-white/30 transition-colors"
+                                                onClick={() => fileInputRef.current?.click()}
+                                                type="button"
+                                            >
+                                                Add photo
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : item === ADD_PHOTO_SLOT ? (
                                     canEdit && (
                                         <button
                                             className="flex flex-col items-center justify-center w-full h-full text-white/80 hover:text-accent-teal-light transition-colors"
@@ -379,7 +395,22 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                     </div>
                 ) : (
                     <>
-                        {displayItems[0] === ADD_PHOTO_SLOT ? (
+                        {photos.length === 0 ? (
+                            <div className="relative w-full h-full bg-gradient-to-br from-primary-blue/50 to-primary-teal/50 flex items-center justify-center">
+                                <span className="text-6xl font-bold text-white">
+                                    {profileName?.charAt(0).toUpperCase() || '?'}
+                                </span>
+                                {canEdit && (
+                                    <button
+                                        className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full border border-white/30 hover:bg-white/30 transition-colors"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        type="button"
+                                    >
+                                        Add photo
+                                    </button>
+                                )}
+                            </div>
+                        ) : displayItems[0] === ADD_PHOTO_SLOT ? (
                             canEdit && (
                                 <button
                                     className="flex flex-col items-center justify-center w-full h-full text-white/80 hover:text-accent-teal-light transition-colors"

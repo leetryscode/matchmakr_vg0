@@ -151,6 +151,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           photos={profile.photos}
           userType={profile.user_type}
           canEdit={canEditProfile}
+          profileName={profile.name}
         />
         <div className="space-y-6">
           {/* Primary Identity Block */}
