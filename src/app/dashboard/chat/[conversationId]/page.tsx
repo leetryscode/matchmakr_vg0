@@ -5,6 +5,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
+const BOTTOM_NAV_HEIGHT_PX = 72; // Bottom tab bar height
+
 export default function ChatPage() {
   const router = useRouter();
   const { conversationId } = useParams();
@@ -437,7 +439,7 @@ export default function ChatPage() {
         </div>
         
         {/* Scrollable chat area */}
-        <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto px-2 py-4 text-left bg-white relative">
+        <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto px-2 py-4 pb-[96px] text-left bg-white relative">
           {chatLoading ? (
             <div className="text-center text-gray-400 py-4">Loading chat...</div>
           ) : chatMessages.length === 0 ? (
@@ -540,7 +542,7 @@ export default function ChatPage() {
           )}
         </div>
         {/* Input Section */}
-        <div className="px-4 py-5 pb-4 border-t border-border-light flex items-center gap-3 bg-white/80 rounded-none">
+        <div className="sticky bottom-0 z-10 bg-white border-t border-border-light px-4 py-5 pb-[72px] flex items-center gap-3 rounded-none">
           <input
             type="text"
             className="flex-1 border border-gray-300 rounded-2xl px-4 py-4 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 placeholder:text-gray-400 placeholder:italic text-base bg-white/90"

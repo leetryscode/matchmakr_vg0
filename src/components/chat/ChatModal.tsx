@@ -503,7 +503,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
           )}
         </div>
         {/* Chat History Section */}
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto bg-background-main px-6 py-4 text-left">
+        <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto bg-background-main px-6 py-4 pb-20 text-left">
           {showSpinner ? (
             <div className="text-center text-gray-400 py-4">Loading chat...</div>
           ) : chatMessages.length === 0 ? (
@@ -563,7 +563,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
           )}
         </div>
         {/* Input Section */}
-        <div className="p-6 border-t border-border-light flex items-center gap-3">
+        <div className="sticky bottom-0 z-10 bg-white border-t border-border-light p-6 flex items-center gap-3">
           <input
             type="text"
             className="flex-1 border border-gray-300 rounded-2xl px-4 py-3 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 placeholder:text-gray-400 placeholder:italic text-base"
