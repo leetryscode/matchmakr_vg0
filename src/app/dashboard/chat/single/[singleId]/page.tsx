@@ -198,6 +198,15 @@ export default function SingleChatPage() {
     }
   };
 
+  // Helper to get the other user's name for the header
+  function getOtherUserName() {
+    if (currentUserType === 'SINGLE') {
+      return sponsorInfo?.name || 'Sponsor';
+    } else {
+      return singleInfo?.name || 'Single';
+    }
+  }
+
   // Helper: get the other user info for chat
   let otherUserInfo = null;
   if (currentUserType === 'SINGLE') {
@@ -209,60 +218,47 @@ export default function SingleChatPage() {
   return (
     <div className="min-h-screen flex flex-col p-0 sm:p-2 bg-white">
       <div className="flex-1 w-full bg-white/80 rounded-none shadow-2xl flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 sticky top-0 bg-white/80 z-10 rounded-none">
-          <button 
-            onClick={() => {
-              // Check if we can go back in history
-              if (window.history.length > 1) {
-                router.back();
-              } else {
-                // Fallback to dashboard
-                router.push('/dashboard/matchmakr');
-              }
-            }} 
-            className="text-primary-blue font-semibold text-base"
-          >
-            &larr; Back
-          </button>
-          <div></div>
-          <div></div>
+        {/* Sticky top bar */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <button 
+              onClick={() => {
+                // Check if we can go back in history
+                if (window.history.length > 1) {
+                  router.back();
+                } else {
+                  // Fallback to dashboard
+                  router.push('/dashboard/matchmakr');
+                }
+              }} 
+              className="text-primary-blue font-semibold text-base"
+            >
+              &larr; Back
+            </button>
+            {/* Avatar + Name + Subtitle */}
+            {otherUserInfo && (
+              <>
+                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-accent-teal-light flex-shrink-0">
+                  {otherUserInfo.photo ? (
+                    <img src={otherUserInfo.photo} alt={otherUserInfo.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-background-main flex items-center justify-center">
+                      <span className="text-sm font-bold text-text-light">{otherUserInfo.name?.charAt(0).toUpperCase() || '?'}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-gray-900 truncate">
+                    {otherUserInfo.name || 'Chat'}
+                  </div>
+                  <div className="text-xs text-gray-500 truncate">
+                    {currentUserType === 'SINGLE' ? 'Your sponsor' : 'Your sponsored single'}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-        {/* Chat header with single or sponsor info */}
-        {(currentUserType === 'SINGLE' && sponsorInfo) ? (
-          <div className="flex items-center justify-center px-4 py-4 border-b border-gray-100 bg-white/70">
-            <div className="text-center">
-              <div className="text-lg font-medium text-text-light mb-2">
-                Chat with your sponsor: <span className="font-bold text-primary-blue">{sponsorInfo.name}</span>
-              </div>
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light mx-auto">
-                {sponsorInfo.photo ? (
-                  <img src={sponsorInfo.photo} alt={sponsorInfo.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-background-main flex items-center justify-center">
-                    <span className="text-2xl font-bold text-text-light">{sponsorInfo.name?.charAt(0).toUpperCase() || '?'}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ) : singleInfo && (
-          <div className="flex items-center justify-center px-4 py-4 border-b border-gray-100 bg-white/70">
-            <div className="text-center">
-              <div className="text-lg font-medium text-text-light mb-2">
-                Chat with your sponsored single: <span className="font-bold text-primary-blue">{singleInfo.name}</span>
-              </div>
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light mx-auto">
-                {singleInfo.photo ? (
-                  <img src={singleInfo.photo} alt={singleInfo.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-background-main flex items-center justify-center">
-                    <span className="text-2xl font-bold text-text-light">{singleInfo.name?.charAt(0).toUpperCase() || '?'}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
         {/* Chat history */}
         <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto px-2 py-4 pb-[96px] text-left">
           {chatLoading ? (

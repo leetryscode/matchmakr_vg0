@@ -400,48 +400,47 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
-      <div className="bg-white rounded-2xl p-0 shadow-xl w-[600px] h-[800px] flex flex-col text-center relative">
+      <div 
+        className="bg-white rounded-2xl p-0 shadow-xl w-[600px] h-[100dvh] flex flex-col text-center relative overflow-hidden"
+        style={{
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
+      >
         {/* Header/About Section */}
-        <div className="p-8 border-b border-border-light">
+        <div className={isSingleToSingle ? "border-b border-border-light" : "p-8 border-b border-border-light"}>
           {isSingleToSingle ? (
             <>
-              <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>YOUR CONVERSATION WITH <span className="italic text-primary-blue-light">{otherUserName}</span></div>
-              <div className="flex items-center justify-center gap-8">
-                <div className="flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
-                    {aboutSingle.photo ? (
-                      <img src={aboutSingle.photo} alt={aboutSingle.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-background-main flex items-center justify-center">
-                        <span className="text-2xl font-bold text-text-light">{aboutSingle.name?.charAt(0).toUpperCase() || '?'}</span>
+              {/* Compact sticky header for single-to-single */}
+              <div className="sticky top-0 z-10 bg-white border-b border-gray-100 min-h-[56px]">
+                <div className="flex items-center gap-3 px-4 py-2">
+                  <button
+                    onClick={onClose}
+                    className="h-9 w-9 flex items-center justify-center text-primary-blue font-semibold text-base flex-shrink-0"
+                    aria-label="Close"
+                  >
+                    &larr; Back
+                  </button>
+                  {/* Avatar + Name */}
+                  {clickedSingle && (
+                    <>
+                      <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-accent-teal-light flex-shrink-0">
+                        {clickedSingle.photo ? (
+                          <img src={clickedSingle.photo} alt={clickedSingle.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-background-main flex items-center justify-center">
+                            <span className="text-sm font-bold text-text-light">{clickedSingle.name?.charAt(0).toUpperCase() || '?'}</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="mt-2 text-sm font-medium text-text-dark">{aboutSingle.name}</div>
-                </div>
-                <div className="text-lg font-medium text-text-light">and</div>
-                <div className="flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
-                    {clickedSingle.photo ? (
-                      <img src={clickedSingle.photo} alt={clickedSingle.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-background-main flex items-center justify-center">
-                        <span className="text-2xl font-bold text-text-light">{clickedSingle.name?.charAt(0).toUpperCase() || '?'}</span>
+                      <div className="flex-1 min-w-0 flex flex-col leading-tight">
+                        <div className="font-semibold text-gray-900 truncate text-[16px]">
+                          {clickedSingle.name || 'Chat'}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  <div className="mt-2 text-sm font-medium text-text-dark">{clickedSingle.name}</div>
+                    </>
+                  )}
                 </div>
-              </div>
-              {/* Single-to-Single Chat Status */}
-              <div className="mt-6">
-                {canChatLoading ? (
-                  <div className="text-gray-500">Checking if you can chat...</div>
-                ) : canChat ? (
-                  <div className="text-primary-blue font-bold">✨ You can chat! Both sponsors have approved your match.</div>
-                ) : (
-                  <div className="text-yellow-600 font-semibold">⏳ Waiting for both sponsors to approve your match...</div>
-                )}
               </div>
             </>
           ) : (
@@ -506,10 +505,42 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
         <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto bg-background-main px-6 py-4 pb-20 text-left">
           {showSpinner ? (
             <div className="text-center text-gray-400 py-4">Loading chat...</div>
-          ) : chatMessages.length === 0 ? (
-            <div className="text-center text-gray-400 py-4">No messages yet.</div>
           ) : (
-            chatMessages.map(msg => {
+            <>
+              {/* Scroll-away intro panel for single-to-single chats */}
+              {isSingleToSingle && canChat && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                  <div className="font-semibold text-gray-900 mb-1">You can chat</div>
+                  <div className="text-sm text-gray-600 mb-2">Both sponsors approved this match.</div>
+                  <div className="text-xs text-gray-500">Be kind and take it slow — this intro came through sponsors.</div>
+                  {/* Optional: small avatars */}
+                  <div className="flex items-center justify-center gap-4 mt-3">
+                    <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300">
+                      {aboutSingle.photo ? (
+                        <img src={aboutSingle.photo} alt={aboutSingle.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-background-main flex items-center justify-center">
+                          <span className="text-xs font-bold text-text-light">{aboutSingle.name?.charAt(0).toUpperCase() || '?'}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-400">and</div>
+                    <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300">
+                      {clickedSingle.photo ? (
+                        <img src={clickedSingle.photo} alt={clickedSingle.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-background-main flex items-center justify-center">
+                          <span className="text-xs font-bold text-text-light">{clickedSingle.name?.charAt(0).toUpperCase() || '?'}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {chatMessages.length === 0 ? (
+                <div className="text-center text-gray-400 py-4">No messages yet.</div>
+              ) : (
+                chatMessages.map(msg => {
               const isCurrentUser = msg.sender_id === currentUserId;
               const senderName = isCurrentUser ? currentUserName : otherUserName;
               const senderPic = isCurrentUser ? currentUserProfilePic : otherUserProfilePic;
@@ -559,7 +590,9 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                   )}
                 </div>
               );
-            })
+                })
+              )}
+            </>
           )}
         </div>
         {/* Input Section */}
@@ -587,31 +620,35 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
             </button>
           )}
         </div>
-        {/* Responsive Close/Back Button */}
-        {/* Top left back arrow for mobile */}
-        <button
-          className="absolute top-4 left-4 block sm:hidden bg-white/80 rounded-full p-2 shadow focus:outline-none"
-          onClick={onClose}
-          aria-label="Back"
-          disabled={sending}
-        >
-          {/* Heroicons chevron-left */}
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-gray-700">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-          </svg>
-        </button>
-        {/* Top right X for desktop */}
-        <button
-          className="absolute top-4 right-4 hidden sm:block bg-white/80 rounded-full p-2 shadow focus:outline-none"
-          onClick={onClose}
-          aria-label="Close"
-          disabled={sending}
-        >
-          {/* Heroicons X-mark */}
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-gray-700">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        {/* Responsive Close/Back Button - only show for MatchMakr↔MatchMakr chats */}
+        {!isSingleToSingle && (
+          <>
+            {/* Top left back arrow for mobile */}
+            <button
+              className="absolute top-4 left-4 block sm:hidden bg-white/80 rounded-full p-2 shadow focus:outline-none"
+              onClick={onClose}
+              aria-label="Back"
+              disabled={sending}
+            >
+              {/* Heroicons chevron-left */}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-gray-700">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+            {/* Top right X for desktop */}
+            <button
+              className="absolute top-4 right-4 hidden sm:block bg-white/80 rounded-full p-2 shadow focus:outline-none"
+              onClick={onClose}
+              aria-label="Close"
+              disabled={sending}
+            >
+              {/* Heroicons X-mark */}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-gray-700">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </>
+        )}
       </div>
     </div>,
     document.body

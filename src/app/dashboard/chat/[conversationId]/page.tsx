@@ -278,6 +278,16 @@ export default function ChatPage() {
     }
   }
 
+  // Helper to get the other sponsor's profile (for avatar)
+  function getOtherMatchmakrProfile() {
+    if (!chatContext || !currentUserId) return null;
+    if (chatContext.initiatorProfile?.id === currentUserId) {
+      return chatContext.recipientProfile;
+    } else {
+      return chatContext.initiatorProfile;
+    }
+  }
+
   // Send message
   const handleSendMessage = async () => {
     if (!messageText.trim() || !chatContext?.conversation_id || !currentUserId) return;
@@ -347,7 +357,7 @@ export default function ChatPage() {
         <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-sm">
           {/* New sticky top bar */}
           <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
-            <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3 px-4 py-3">
               <button 
                 onClick={() => {
                   // Check if we can go back in history
@@ -362,13 +372,30 @@ export default function ChatPage() {
               >
                 &larr; Back
               </button>
-              <div className="flex-1 text-center">
-                <div className="text-lg font-semibold text-gray-900">
-                  {chatContext ? getOtherMatchmakrName() : 'Sponsor Chat'}
-                </div>
-                <div className="text-xs text-gray-500 mt-0.5">Sponsor</div>
-              </div>
-              <div className="w-16"></div> {/* Spacer for centering */}
+              {/* Avatar + Name + Subtitle */}
+              {(() => {
+                const otherProfile = getOtherMatchmakrProfile();
+                if (!otherProfile) return null;
+                return (
+                  <>
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-accent-teal-light flex-shrink-0">
+                      {otherProfile.photo ? (
+                        <img src={otherProfile.photo} alt={otherProfile.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-background-main flex items-center justify-center">
+                          <span className="text-sm font-bold text-text-light">{otherProfile.name?.charAt(0).toUpperCase() || '?'}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-900 truncate">
+                        {otherProfile.name || 'Sponsor Chat'}
+                      </div>
+                      <div className="text-xs text-gray-500 truncate">Sponsor</div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
           {/* Navigation header */}
