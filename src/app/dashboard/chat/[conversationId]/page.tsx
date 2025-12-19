@@ -17,6 +17,8 @@ export default function ChatPage() {
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const fallbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const shouldAutoScrollRef = useRef<boolean>(true);
+  const didInitialScrollRef = useRef(false);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
   const supabase = createClient();
   
   // Match approval states
@@ -101,19 +103,38 @@ export default function ChatPage() {
     });
   }, [chatContext, currentUserId]);
 
-  // Scroll to bottom when chat loads or new messages arrive
+  // Helper to scroll to bottom
+  const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
+    bottomRef.current?.scrollIntoView({ behavior, block: 'end' });
+  };
+
+  // Reset initial scroll flag when conversation changes
   useEffect(() => {
-    if (!chatLoading && chatMessages.length > 0) {
-      const container = chatContainerRef.current;
-      if (container) {
-        // Use a longer delay to ensure all content is rendered
-        setTimeout(() => {
-          container.scrollTop = container.scrollHeight;
+    didInitialScrollRef.current = false;
+  }, [conversationId]);
+
+  // A) Initial load (force scroll once)
+  useEffect(() => {
+    if (!chatLoading && chatMessages.length > 0 && !didInitialScrollRef.current) {
+      // Use two requestAnimationFrames to handle layout shifts
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollToBottom();
+          didInitialScrollRef.current = true;
           shouldAutoScrollRef.current = true;
-        }, 300);
-      }
+        });
+      });
     }
   }, [chatLoading, chatMessages.length]);
+
+  // B) New messages (respect shouldAutoScrollRef)
+  useEffect(() => {
+    if (didInitialScrollRef.current && shouldAutoScrollRef.current && chatMessages.length > 0) {
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    }
+  }, [chatMessages.length]);
 
   // Handle scroll events to determine if we should auto-scroll
   useEffect(() => {
@@ -245,6 +266,16 @@ export default function ChatPage() {
     }
   }
 
+  // Helper to get the other MatchMakr's name
+  function getOtherMatchmakrName() {
+    if (!chatContext || !currentUserId) return 'Sponsor Chat';
+    if (chatContext.initiatorProfile?.id === currentUserId) {
+      return chatContext.recipientProfile?.name || 'Sponsor Chat';
+    } else {
+      return chatContext.initiatorProfile?.name || 'Sponsor Chat';
+    }
+  }
+
   // Send message
   const handleSendMessage = async () => {
     if (!messageText.trim() || !chatContext?.conversation_id || !currentUserId) return;
@@ -308,26 +339,39 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-0 sm:p-2 bg-white">
-      <div className="flex-1 w-full bg-white/80 rounded-none shadow-2xl flex flex-col">
+    <div className="h-[100dvh] flex flex-col p-0 sm:p-2 bg-white">
+      <div className="flex-1 min-h-0 w-full bg-white/80 rounded-none shadow-2xl flex flex-col">
         {/* Fixed header section */}
         <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-sm">
+          {/* New sticky top bar */}
+          <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
+            <div className="flex items-center justify-between px-4 py-3">
+              <button 
+                onClick={() => {
+                  // Check if we can go back in history
+                  if (window.history.length > 1) {
+                    router.back();
+                  } else {
+                    // Fallback to dashboard with refresh parameter
+                    router.push('/dashboard/matchmakr?refresh=true');
+                  }
+                }} 
+                className="text-primary-blue font-semibold text-base"
+              >
+                &larr; Back
+              </button>
+              <div className="flex-1 text-center">
+                <div className="text-lg font-semibold text-gray-900">
+                  {chatContext ? getOtherMatchmakrName() : 'Sponsor Chat'}
+                </div>
+                <div className="text-xs text-gray-500 mt-0.5">Sponsor</div>
+              </div>
+              <div className="w-16"></div> {/* Spacer for centering */}
+            </div>
+          </div>
           {/* Navigation header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-            <button 
-              onClick={() => {
-                // Check if we can go back in history
-                if (window.history.length > 1) {
-                  router.back();
-                } else {
-                  // Fallback to dashboard with refresh parameter
-                  router.push('/dashboard/matchmakr?refresh=true');
-                }
-              }} 
-              className="text-primary-blue font-semibold text-base"
-            >
-              &larr; Back
-            </button>
+            <div></div>
             <div></div>
             <div></div>
           </div>
@@ -393,7 +437,7 @@ export default function ChatPage() {
         </div>
         
         {/* Scrollable chat area */}
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-2 py-4 text-left bg-white relative" style={{ minHeight: 400 }}>
+        <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto px-2 py-4 text-left bg-white relative">
           {chatLoading ? (
             <div className="text-center text-gray-400 py-4">Loading chat...</div>
           ) : chatMessages.length === 0 ? (
@@ -458,6 +502,7 @@ export default function ChatPage() {
               );
             })
           )}
+          <div ref={bottomRef} />
           {/* Typing indicator - show on right side for current user */}
           {isTyping && (
             <div className="flex justify-end items-center my-4">
@@ -481,12 +526,9 @@ export default function ChatPage() {
           {showScrollToBottom && (
             <button
               onClick={() => {
-                const container = chatContainerRef.current;
-                if (container) {
-                  container.scrollTop = container.scrollHeight;
-                  shouldAutoScrollRef.current = true;
-                  setShowScrollToBottom(false);
-                }
+                scrollToBottom('smooth');
+                shouldAutoScrollRef.current = true;
+                setShowScrollToBottom(false);
               }}
               className="absolute bottom-4 right-4 bg-primary-blue text-white rounded-full p-3 shadow-lg hover:bg-primary-blue-dark transition-all duration-200 z-10"
               title="Scroll to bottom"
