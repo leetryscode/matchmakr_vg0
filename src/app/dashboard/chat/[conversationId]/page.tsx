@@ -402,7 +402,7 @@ export default function ChatPage() {
           
           {/* Compact singles context row - sticky below top bar */}
           {chatContext && (
-            <div className="px-4 py-2 border-b bg-white flex items-center gap-3">
+            <div className="px-4 py-1.5 border-b bg-white flex items-center gap-3">
               {/* Left: Overlapping avatars */}
               <div className="flex items-center">
                 <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-accent-teal-light ring-2 ring-white flex-shrink-0">
@@ -427,7 +427,7 @@ export default function ChatPage() {
               
               {/* Middle: Singles names */}
               <div className="flex-1 min-w-0">
-                <div className="text-xs text-gray-500">Discussing</div>
+                <div className="text-[11px] text-gray-400">Discussing</div>
                 <div className="text-sm font-medium text-gray-900 truncate">
                   {chatContext.otherUserSingle?.name || 'Unknown'} • {chatContext.currentUserSingle?.name || 'Unknown'}
                 </div>
@@ -443,7 +443,7 @@ export default function ChatPage() {
                   <div className="text-xs text-yellow-600 font-semibold whitespace-nowrap">⏳ Pending other sponsor</div>
                 ) : matchStatus === 'can-approve' ? (
                   <button
-                    className="h-9 px-4 text-sm bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    className="h-8 px-4 text-sm bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     onClick={() => setShowApprovalModal(true)}
                     disabled={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id || matchLoading}
                     title={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id ? 'Both singles must be present to approve a match.' : ''}
@@ -483,7 +483,6 @@ export default function ChatPage() {
                 }
                 return null;
               }}
-              showSenderNames={true}
             />
           )}
           <div ref={bottomRef} />

@@ -286,7 +286,6 @@ export default function SingleChatPage() {
                 }
                 return null;
               }}
-              showSenderNames={false}
             />
           )}
           {/* Typing indicator - show on right side for current user */}

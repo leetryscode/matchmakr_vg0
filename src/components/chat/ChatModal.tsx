@@ -560,7 +560,6 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                     }
                     return null;
                   }}
-                  showSenderNames={false}
                 />
               )}
             </>

@@ -15,7 +15,6 @@ export type GroupedMessageListProps = {
   currentUserId: string;
   getAvatarUrl?: (userId: string) => string | null;
   getDisplayName?: (userId: string) => string | null;
-  showSenderNames?: boolean; // default false
 };
 
 export default function GroupedMessageList({
@@ -23,7 +22,6 @@ export default function GroupedMessageList({
   currentUserId,
   getAvatarUrl,
   getDisplayName,
-  showSenderNames = false,
 }: GroupedMessageListProps) {
   if (!messages || messages.length === 0) {
     return null;
@@ -43,37 +41,30 @@ export default function GroupedMessageList({
         const initials = displayName?.charAt(0).toUpperCase() || '?';
 
         // Spacing: tight within group, larger between groups
-        const spacingClass = prevSameSender ? 'mt-1' : 'mt-4';
+        const spacingClass = prevSameSender ? 'mt-0.5' : 'mt-3';
 
         return (
-          <div key={msg.id} className={`${spacingClass} flex ${isMine ? 'justify-end' : 'justify-start'} items-center`}>
+          <div key={msg.id} className={`${spacingClass} flex ${isMine ? 'justify-end' : 'justify-start'} items-end`}>
             {/* Left avatar for incoming messages (only on last message in group) */}
             {!isMine && isLastInGroup && (
-              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light mr-4 flex-shrink-0 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-accent-teal-light mr-2.5 flex-shrink-0 flex items-center justify-center self-end">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt={displayName || 'User'} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-background-main flex items-center justify-center">
-                    <span className="text-lg font-bold text-text-light">{initials}</span>
+                    <span className="text-xs font-bold text-text-light">{initials}</span>
                   </div>
                 )}
               </div>
             )}
             {/* Spacer for incoming messages when avatar is not shown */}
-            {!isMine && !isLastInGroup && <div className="w-14 mr-4 flex-shrink-0" />}
+            {!isMine && !isLastInGroup && <div className="w-8 mr-2.5 flex-shrink-0" />}
 
             {/* Message content */}
-            <div className={`max-w-[70%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
-              {/* Sender name (only at group start, incoming only, when enabled) */}
-              {showSenderNames && !isMine && isFirstInGroup && displayName && (
-                <div className={`font-semibold text-primary-blue text-xs mb-1 ${isMine ? 'text-right' : 'text-left'}`}>
-                  {displayName}
-                </div>
-              )}
-
+            <div className={`max-w-[72%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
               {/* Message bubble */}
               <div
-                className={`px-5 py-3 rounded-2xl ${msg.optimistic ? 'opacity-60' : ''}`}
+                className={`px-4 py-2.5 rounded-xl ${msg.optimistic ? 'opacity-60' : ''}`}
                 style={
                   isMine
                     ? {
@@ -93,7 +84,7 @@ export default function GroupedMessageList({
 
               {/* Timestamp (only on last message in group) */}
               {isLastInGroup && (
-                <div className={`text-[11px] text-gray-400 mt-1 ${isMine ? 'text-right' : 'text-left'}`}>
+                <div className={`text-[10px] text-gray-400 mt-0.5 ${isMine ? 'text-right' : 'text-left'}`}>
                   {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
               )}
@@ -101,18 +92,18 @@ export default function GroupedMessageList({
 
             {/* Right avatar for outgoing messages (only on last message in group) */}
             {isMine && isLastInGroup && (
-              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light ml-4 flex-shrink-0 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-accent-teal-light ml-2.5 flex-shrink-0 flex items-center justify-center self-end">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt={displayName || 'User'} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-background-main flex items-center justify-center">
-                    <span className="text-lg font-bold text-text-light">{initials}</span>
+                    <span className="text-xs font-bold text-text-light">{initials}</span>
                   </div>
                 )}
               </div>
             )}
             {/* Spacer for outgoing messages when avatar is not shown */}
-            {isMine && !isLastInGroup && <div className="w-14 ml-4 flex-shrink-0" />}
+            {isMine && !isLastInGroup && <div className="w-8 ml-2.5 flex-shrink-0" />}
           </div>
         );
       })}
