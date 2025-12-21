@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import GroupedMessageList from '@/components/chat/GroupedMessageList';
 
 const BOTTOM_NAV_HEIGHT_PX = 72; // Bottom tab bar height
 
@@ -439,7 +440,7 @@ export default function ChatPage() {
                 ) : matchStatus === 'matched' ? (
                   <div className="text-xs text-primary-blue font-semibold whitespace-nowrap">🎉 Match!</div>
                 ) : matchStatus === 'pending' ? (
-                  <div className="text-xs text-yellow-600 font-semibold whitespace-nowrap">⏳ Pending...</div>
+                  <div className="text-xs text-yellow-600 font-semibold whitespace-nowrap">⏳ Pending other sponsor</div>
                 ) : matchStatus === 'can-approve' ? (
                   <button
                     className="h-9 px-4 text-sm bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
@@ -447,7 +448,7 @@ export default function ChatPage() {
                     disabled={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id || matchLoading}
                     title={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id ? 'Both singles must be present to approve a match.' : ''}
                   >
-                    Approve Match
+                    Approve Intro
                   </button>
                 ) : null}
                 {matchError && <div className="text-xs text-red-500 mt-1 whitespace-nowrap">{matchError}</div>}
@@ -463,64 +464,27 @@ export default function ChatPage() {
           ) : chatMessages.length === 0 ? (
             <div className="text-center text-gray-400 py-4">No messages yet.</div>
           ) : (
-            // Show messages in chronological order (oldest to newest)
-            chatMessages.map(msg => {
-              const isCurrentUser = msg.sender_id === currentUserId;
-              // Determine sender profile
-              let senderProfile = null;
-              if (msg.sender_id === chatContext.initiatorProfile?.id) {
-                senderProfile = chatContext.initiatorProfile;
-              } else if (msg.sender_id === chatContext.recipientProfile?.id) {
-                senderProfile = chatContext.recipientProfile;
-              }
-              const senderName = senderProfile?.name || 'Unknown';
-              const senderPic = senderProfile?.photo || null;
-              return (
-                <div key={msg.id} className={`my-8 flex ${isCurrentUser ? 'justify-end' : 'justify-start'} items-center`} >
-                  {!isCurrentUser && (
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light mr-4 flex-shrink-0 flex items-center justify-center">
-                      {senderPic ? (
-                        <img src={senderPic} alt={senderName} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-background-main flex items-center justify-center">
-                          <span className="text-lg font-bold text-text-light">{senderName?.charAt(0).toUpperCase() || '?'}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className={`max-w-[70%] flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
-                    <div className={`font-semibold text-primary-blue text-xs mb-1 ${isCurrentUser ? 'text-right' : 'text-left'}`}>
-                      {!isCurrentUser ? senderName : ''}
-                    </div>
-                    <div className={`px-5 py-3 rounded-2xl ${isCurrentUser ? '' : ''} ${msg.optimistic ? 'opacity-60' : ''}`}
-                      style={isCurrentUser ? {
-                        background: 'linear-gradient(45deg, #0066FF 0%, #00C9A7 100%)',
-                        color: 'white',
-                        fontWeight: 500
-                      } : {
-                        background: 'linear-gradient(135deg, #4D9CFF, #4DDDCC)',
-                        color: 'white',
-                        fontWeight: 500
-                      }}
-                    >
-                      {msg.content}
-                    </div>
-                    <div className={`text-xs text-gray-400 mt-1 ${isCurrentUser ? 'text-right' : 'text-left'}`}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                  </div>
-                  {isCurrentUser && (
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light ml-4 flex-shrink-0 flex items-center justify-center">
-                      {senderPic ? (
-                        <img src={senderPic} alt={senderName} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-background-main flex items-center justify-center">
-                          <span className="text-lg font-bold text-text-light">{senderName?.charAt(0).toUpperCase() || '?'}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })
+            <GroupedMessageList
+              messages={chatMessages}
+              currentUserId={currentUserId || ''}
+              getAvatarUrl={(userId) => {
+                if (userId === chatContext?.initiatorProfile?.id) {
+                  return chatContext.initiatorProfile?.photo || null;
+                } else if (userId === chatContext?.recipientProfile?.id) {
+                  return chatContext.recipientProfile?.photo || null;
+                }
+                return null;
+              }}
+              getDisplayName={(userId) => {
+                if (userId === chatContext?.initiatorProfile?.id) {
+                  return chatContext.initiatorProfile?.name || null;
+                } else if (userId === chatContext?.recipientProfile?.id) {
+                  return chatContext.recipientProfile?.name || null;
+                }
+                return null;
+              }}
+              showSenderNames={true}
+            />
           )}
           <div ref={bottomRef} />
           {/* Typing indicator - show on right side for current user */}

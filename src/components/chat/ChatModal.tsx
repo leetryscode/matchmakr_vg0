@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
+import GroupedMessageList from './GroupedMessageList';
 
 interface ChatModalProps {
   open: boolean;
@@ -540,57 +541,27 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
               {chatMessages.length === 0 ? (
                 <div className="text-center text-gray-400 py-4">No messages yet.</div>
               ) : (
-                chatMessages.map(msg => {
-              const isCurrentUser = msg.sender_id === currentUserId;
-              const senderName = isCurrentUser ? currentUserName : otherUserName;
-              const senderPic = isCurrentUser ? currentUserProfilePic : otherUserProfilePic;
-              return (
-                <div key={msg.id} className={`my-6 flex ${isCurrentUser ? 'justify-end' : 'justify-start'} items-center`} >
-                  {/* Left avatar for other user, right avatar for current user */}
-                  {!isCurrentUser && (
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light mr-4 flex-shrink-0 flex items-center justify-center">
-                      {senderPic ? (
-                        <img src={senderPic} alt={senderName} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-background-main flex items-center justify-center">
-                          <span className="text-lg font-bold text-text-light">{senderName?.charAt(0).toUpperCase() || '?'}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className={`max-w-[70%] flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
-                    <div className={`font-semibold text-primary-blue text-xs mb-1 ${isCurrentUser ? 'text-right' : 'text-left'}`}>
-                      {!isCurrentUser ? senderName : ''}
-                    </div>
-                    <div className={`px-5 py-3 rounded-2xl ${isCurrentUser ? '' : ''} ${msg.optimistic ? 'opacity-60' : ''}`}
-                      style={isCurrentUser ? {
-                        background: 'linear-gradient(45deg, #0066FF 0%, #00C9A7 100%)',
-                        color: 'white',
-                        fontWeight: 500
-                      } : {
-                        background: 'linear-gradient(135deg, #4D9CFF, #4DDDCC)',
-                        color: 'white',
-                        fontWeight: 500
-                      }}
-                    >
-                      {msg.content}
-                    </div>
-                    <div className={`text-xs text-gray-400 mt-1 ${isCurrentUser ? 'text-right' : 'text-left'}`}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                  </div>
-                  {isCurrentUser && (
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light ml-4 flex-shrink-0 flex items-center justify-center">
-                      {senderPic ? (
-                        <img src={senderPic} alt={senderName} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-background-main flex items-center justify-center">
-                          <span className="text-lg font-bold text-text-light">{senderName?.charAt(0).toUpperCase() || '?'}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-                })
+                <GroupedMessageList
+                  messages={chatMessages}
+                  currentUserId={currentUserId}
+                  getAvatarUrl={(userId) => {
+                    if (userId === currentUserId) {
+                      return currentUserProfilePic || null;
+                    } else if (userId === otherUserId) {
+                      return otherUserProfilePic || null;
+                    }
+                    return null;
+                  }}
+                  getDisplayName={(userId) => {
+                    if (userId === currentUserId) {
+                      return currentUserName || null;
+                    } else if (userId === otherUserId) {
+                      return otherUserName || null;
+                    }
+                    return null;
+                  }}
+                  showSenderNames={false}
+                />
               )}
             </>
           )}

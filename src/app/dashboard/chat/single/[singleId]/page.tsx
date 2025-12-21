@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import GroupedMessageList from '@/components/chat/GroupedMessageList';
 
 const BOTTOM_NAV_HEIGHT_PX = 72; // Bottom tab bar height
 
@@ -266,57 +267,27 @@ export default function SingleChatPage() {
           ) : chatMessages.length === 0 ? (
             <div className="text-center text-gray-400 py-4">No messages yet.</div>
           ) : (
-            // Show messages in chronological order (oldest to newest)
-            chatMessages.map(msg => {
-              const isCurrentUser = msg.sender_id === currentUserId;
-              const leftProfile = otherUserInfo;
-              const rightProfile = currentUserInfo;
-              return (
-                <div key={msg.id} className={`my-8 flex ${isCurrentUser ? 'justify-end' : 'justify-start'} items-center`} >
-                  {!isCurrentUser && (
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light mr-4 flex-shrink-0 flex items-center justify-center">
-                      {leftProfile?.photo ? (
-                        <img src={leftProfile.photo} alt={leftProfile.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-background-main flex items-center justify-center">
-                          <span className="text-lg font-bold text-text-light">{leftProfile?.name?.charAt(0).toUpperCase() || '?'}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className={`max-w-[70%] flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
-                    <div className={`font-semibold text-primary-blue text-xs mb-1 ${isCurrentUser ? 'text-right' : 'text-left'}`}>
-                      {!isCurrentUser ? leftProfile?.name || '' : ''}
-                    </div>
-                    <div className={`px-5 py-3 rounded-2xl ${isCurrentUser ? '' : ''} ${msg.optimistic ? 'opacity-60' : ''}`}
-                      style={isCurrentUser ? {
-                        background: 'linear-gradient(45deg, #0066FF 0%, #00C9A7 100%)',
-                        color: 'white',
-                        fontWeight: 500
-                      } : {
-                        background: 'linear-gradient(135deg, #4D9CFF, #4DDDCC)',
-                        color: 'white',
-                        fontWeight: 500
-                      }}
-                    >
-                      {msg.content}
-                    </div>
-                    <div className={`text-xs text-gray-400 mt-1 ${isCurrentUser ? 'text-right' : 'text-left'}`}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                  </div>
-                  {isCurrentUser && (
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light ml-4 flex-shrink-0 flex items-center justify-center">
-                      {rightProfile?.photo ? (
-                        <img src={rightProfile.photo} alt={rightProfile.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-background-main flex items-center justify-center">
-                          <span className="text-lg font-bold text-text-light">{rightProfile?.name?.charAt(0).toUpperCase() || 'M'}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })
+            <GroupedMessageList
+              messages={chatMessages}
+              currentUserId={currentUserId || ''}
+              getAvatarUrl={(userId) => {
+                if (userId === currentUserInfo?.id) {
+                  return currentUserInfo?.photo || null;
+                } else if (userId === otherUserInfo?.id) {
+                  return otherUserInfo?.photo || null;
+                }
+                return null;
+              }}
+              getDisplayName={(userId) => {
+                if (userId === currentUserInfo?.id) {
+                  return currentUserInfo?.name || null;
+                } else if (userId === otherUserInfo?.id) {
+                  return otherUserInfo?.name || null;
+                }
+                return null;
+              }}
+              showSenderNames={false}
+            />
           )}
           {/* Typing indicator - show on right side for current user */}
           {isTyping && (
