@@ -398,69 +398,60 @@ export default function ChatPage() {
               })()}
             </div>
           </div>
-          {/* Navigation header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
           
-          {/* Chat header with singles' photos and names */}
+          {/* Compact singles context row - sticky below top bar */}
           {chatContext && (
-            <div className="flex items-center justify-center gap-8 px-4 py-4 border-b border-gray-100">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
+            <div className="px-4 py-2 border-b bg-white flex items-center gap-3">
+              {/* Left: Overlapping avatars */}
+              <div className="flex items-center">
+                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-accent-teal-light ring-2 ring-white flex-shrink-0">
                   {chatContext.otherUserSingle?.photo ? (
                     <img src={chatContext.otherUserSingle.photo} alt={chatContext.otherUserSingle.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-background-main flex items-center justify-center">
-                      <span className="text-2xl font-bold text-text-light">{chatContext.otherUserSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
+                      <span className="text-sm font-bold text-text-light">{chatContext.otherUserSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
                     </div>
                   )}
                 </div>
-                <div className="text-xs text-gray-500">{chatContext.otherUserSingle?.name || 'Unknown'}</div>
-              </div>
-              <div className="text-lg font-medium text-text-light">and</div>
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
+                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-accent-teal-light ring-2 ring-white -ml-2 flex-shrink-0">
                   {chatContext.currentUserSingle?.photo ? (
                     <img src={chatContext.currentUserSingle.photo} alt={chatContext.currentUserSingle.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-background-main flex items-center justify-center">
-                      <span className="text-2xl font-bold text-text-light">{chatContext.currentUserSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
+                      <span className="text-sm font-bold text-text-light">{chatContext.currentUserSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
                     </div>
                   )}
                 </div>
-                <div className="text-xs text-gray-500">{chatContext.currentUserSingle?.name || 'Unknown'}</div>
               </div>
-            </div>
-          )}
-          
-          {/* Approve Match UI for matchmakrs in chats about two singles */}
-          {chatContext && (
-            <div className="px-4 py-4 border-b border-gray-100">
-              {matchLoading ? (
-                <div className="text-center text-gray-500">Checking match status...</div>
-              ) : matchStatus === 'matched' ? (
-                <div className="text-center text-primary-blue font-bold">🎉 It's a Match! Both sponsors have approved.</div>
-              ) : matchStatus === 'pending' ? (
-                <div className="text-center text-yellow-600 font-semibold">⏳ Pending approval from the other sponsor...</div>
-              ) : matchStatus === 'can-approve' ? (
-                <div className="text-center">
+              
+              {/* Middle: Singles names */}
+              <div className="flex-1 min-w-0">
+                <div className="text-xs text-gray-500">Discussing</div>
+                <div className="text-sm font-medium text-gray-900 truncate">
+                  {chatContext.otherUserSingle?.name || 'Unknown'} • {chatContext.currentUserSingle?.name || 'Unknown'}
+                </div>
+              </div>
+              
+              {/* Right: Approve Match button/status */}
+              <div className="flex-shrink-0">
+                {matchLoading ? (
+                  <div className="text-xs text-gray-500 whitespace-nowrap">Checking...</div>
+                ) : matchStatus === 'matched' ? (
+                  <div className="text-xs text-primary-blue font-semibold whitespace-nowrap">🎉 Match!</div>
+                ) : matchStatus === 'pending' ? (
+                  <div className="text-xs text-yellow-600 font-semibold whitespace-nowrap">⏳ Pending...</div>
+                ) : matchStatus === 'can-approve' ? (
                   <button
-                    className="px-6 py-2 bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-9 px-4 text-sm bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     onClick={() => setShowApprovalModal(true)}
                     disabled={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id || matchLoading}
                     title={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id ? 'Both singles must be present to approve a match.' : ''}
                   >
                     Approve Match
                   </button>
-                  {(!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id) && (
-                    <div className="text-gray-400 text-xs mt-2">Both singles must be present to approve a match.</div>
-                  )}
-                </div>
-              ) : null}
-              {matchError && <div className="text-center text-red-500 mt-2">{matchError}</div>}
+                ) : null}
+                {matchError && <div className="text-xs text-red-500 mt-1 whitespace-nowrap">{matchError}</div>}
+              </div>
             </div>
           )}
         </div>
