@@ -353,9 +353,8 @@ export default function ChatPage() {
 
   return (
     <div className="h-[100dvh] flex flex-col p-0 sm:p-2 bg-white">
-      <div className="flex-1 min-h-0 w-full bg-white/80 rounded-none shadow-2xl flex flex-col">
-        {/* Fixed header section */}
-        <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-sm">
+      {/* Fixed header section */}
+      <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-sm w-full bg-white/80 rounded-none shadow-2xl">
           {/* New sticky top bar */}
           <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
             <div className="flex items-center gap-3 px-4 py-3">
@@ -455,10 +454,10 @@ export default function ChatPage() {
               </div>
             </div>
           )}
-        </div>
-        
-        {/* Scrollable chat area */}
-        <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto px-2 py-4 pb-[96px] text-left bg-white relative">
+      </div>
+      
+      {/* Scrollable chat area */}
+      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto px-2 py-4 pb-[140px] text-left bg-white relative">
           {chatLoading ? (
             <div className="text-center text-gray-400 py-4">Loading chat...</div>
           ) : chatMessages.length === 0 ? (
@@ -521,9 +520,10 @@ export default function ChatPage() {
               </svg>
             </button>
           )}
-        </div>
-        {/* Input Section */}
-        <div className="sticky bottom-0 z-10 bg-white border-t border-border-light px-4 py-5 pb-[72px] flex items-center gap-3 rounded-none">
+      </div>
+      
+      {/* Input Section */}
+      <div className="fixed left-0 right-0 bottom-[72px] z-30 bg-white border-t border-border-light px-4 py-4 flex items-center gap-3">
           <input
             type="text"
             className="flex-1 border border-gray-300 rounded-2xl px-4 py-4 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 placeholder:text-gray-400 placeholder:italic text-base bg-white/90"
@@ -545,8 +545,10 @@ export default function ChatPage() {
               </svg>
             </button>
           )}
-        </div>
       </div>
+      
+      {/* Bottom spacer for bottom nav */}
+      <div className="h-[72px]" aria-hidden="true" />
       
       {/* Approval Confirmation Modal */}
       {showApprovalModal && (
