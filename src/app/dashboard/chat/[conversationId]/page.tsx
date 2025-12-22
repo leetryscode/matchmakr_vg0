@@ -458,32 +458,30 @@ export default function ChatPage() {
       
       {/* Scrollable chat area */}
       <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto px-2 py-4 pb-[140px] text-left bg-white relative">
-          {chatLoading ? (
-            <div className="text-center text-gray-400 py-4">Loading chat...</div>
-          ) : chatMessages.length === 0 ? (
-            <div className="text-center text-gray-400 py-4">No messages yet.</div>
-          ) : (
-            <GroupedMessageList
-              messages={chatMessages}
-              currentUserId={currentUserId || ''}
-              getAvatarUrl={(userId) => {
-                if (userId === chatContext?.initiatorProfile?.id) {
-                  return chatContext.initiatorProfile?.photo || null;
-                } else if (userId === chatContext?.recipientProfile?.id) {
-                  return chatContext.recipientProfile?.photo || null;
-                }
-                return null;
-              }}
-              getDisplayName={(userId) => {
-                if (userId === chatContext?.initiatorProfile?.id) {
-                  return chatContext.initiatorProfile?.name || null;
-                } else if (userId === chatContext?.recipientProfile?.id) {
-                  return chatContext.recipientProfile?.name || null;
-                }
-                return null;
-              }}
-            />
-          )}
+          <div className="flex flex-col">
+            {chatMessages.length > 0 && (
+              <GroupedMessageList
+                messages={chatMessages}
+                currentUserId={currentUserId || ''}
+                getAvatarUrl={(userId) => {
+                  if (userId === chatContext?.initiatorProfile?.id) {
+                    return chatContext.initiatorProfile?.photo || null;
+                  } else if (userId === chatContext?.recipientProfile?.id) {
+                    return chatContext.recipientProfile?.photo || null;
+                  }
+                  return null;
+                }}
+                getDisplayName={(userId) => {
+                  if (userId === chatContext?.initiatorProfile?.id) {
+                    return chatContext.initiatorProfile?.name || null;
+                  } else if (userId === chatContext?.recipientProfile?.id) {
+                    return chatContext.recipientProfile?.name || null;
+                  }
+                  return null;
+                }}
+              />
+            )}
+          </div>
           <div ref={bottomRef} />
           {/* Typing indicator - show on right side for current user */}
           {isTyping && (

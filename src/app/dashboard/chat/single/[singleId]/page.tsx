@@ -262,32 +262,30 @@ export default function SingleChatPage() {
       
       {/* Chat history */}
       <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto px-2 py-4 pb-[140px] text-left">
-          {chatLoading ? (
-            <div className="text-center text-gray-400 py-4">Loading chat...</div>
-          ) : chatMessages.length === 0 ? (
-            <div className="text-center text-gray-400 py-4">No messages yet.</div>
-          ) : (
-            <GroupedMessageList
-              messages={chatMessages}
-              currentUserId={currentUserId || ''}
-              getAvatarUrl={(userId) => {
-                if (userId === currentUserInfo?.id) {
-                  return currentUserInfo?.photo || null;
-                } else if (userId === otherUserInfo?.id) {
-                  return otherUserInfo?.photo || null;
-                }
-                return null;
-              }}
-              getDisplayName={(userId) => {
-                if (userId === currentUserInfo?.id) {
-                  return currentUserInfo?.name || null;
-                } else if (userId === otherUserInfo?.id) {
-                  return otherUserInfo?.name || null;
-                }
-                return null;
-              }}
-            />
-          )}
+          <div className="flex flex-col">
+            {chatMessages.length > 0 && (
+              <GroupedMessageList
+                messages={chatMessages}
+                currentUserId={currentUserId || ''}
+                getAvatarUrl={(userId) => {
+                  if (userId === currentUserInfo?.id) {
+                    return currentUserInfo?.photo || null;
+                  } else if (userId === otherUserInfo?.id) {
+                    return otherUserInfo?.photo || null;
+                  }
+                  return null;
+                }}
+                getDisplayName={(userId) => {
+                  if (userId === currentUserInfo?.id) {
+                    return currentUserInfo?.name || null;
+                  } else if (userId === otherUserInfo?.id) {
+                    return otherUserInfo?.name || null;
+                  }
+                  return null;
+                }}
+              />
+            )}
+          </div>
           {/* Typing indicator - show on right side for current user */}
           {isTyping && (
             <div className="flex justify-end items-center my-4">

@@ -504,66 +504,60 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
         </div>
         {/* Chat History Section */}
         <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto bg-background-main px-6 py-4 pb-20 text-left">
-          {showSpinner ? (
-            <div className="text-center text-gray-400 py-4">Loading chat...</div>
-          ) : (
-            <>
-              {/* Scroll-away intro panel for single-to-single chats */}
-              {isSingleToSingle && canChat && (
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
-                  <div className="font-semibold text-gray-900 mb-1">You can chat</div>
-                  <div className="text-sm text-gray-600 mb-2">Both sponsors approved this match.</div>
-                  <div className="text-xs text-gray-500">Be kind and take it slow — this intro came through sponsors.</div>
-                  {/* Optional: small avatars */}
-                  <div className="flex items-center justify-center gap-4 mt-3">
-                    <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300">
-                      {aboutSingle.photo ? (
-                        <img src={aboutSingle.photo} alt={aboutSingle.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-background-main flex items-center justify-center">
-                          <span className="text-xs font-bold text-text-light">{aboutSingle.name?.charAt(0).toUpperCase() || '?'}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-xs text-gray-400">and</div>
-                    <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300">
-                      {clickedSingle.photo ? (
-                        <img src={clickedSingle.photo} alt={clickedSingle.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-background-main flex items-center justify-center">
-                          <span className="text-xs font-bold text-text-light">{clickedSingle.name?.charAt(0).toUpperCase() || '?'}</span>
-                        </div>
-                      )}
-                    </div>
+          <div className="flex flex-col">
+            {/* Scroll-away intro panel for single-to-single chats */}
+            {isSingleToSingle && canChat && (
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                <div className="font-semibold text-gray-900 mb-1">You can chat</div>
+                <div className="text-sm text-gray-600 mb-2">Both sponsors approved this match.</div>
+                <div className="text-xs text-gray-500">Be kind and take it slow — this intro came through sponsors.</div>
+                {/* Optional: small avatars */}
+                <div className="flex items-center justify-center gap-4 mt-3">
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300">
+                    {aboutSingle.photo ? (
+                      <img src={aboutSingle.photo} alt={aboutSingle.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-background-main flex items-center justify-center">
+                        <span className="text-xs font-bold text-text-light">{aboutSingle.name?.charAt(0).toUpperCase() || '?'}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-400">and</div>
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300">
+                    {clickedSingle.photo ? (
+                      <img src={clickedSingle.photo} alt={clickedSingle.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-background-main flex items-center justify-center">
+                        <span className="text-xs font-bold text-text-light">{clickedSingle.name?.charAt(0).toUpperCase() || '?'}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
-              {chatMessages.length === 0 ? (
-                <div className="text-center text-gray-400 py-4">No messages yet.</div>
-              ) : (
-                <GroupedMessageList
-                  messages={chatMessages}
-                  currentUserId={currentUserId}
-                  getAvatarUrl={(userId) => {
-                    if (userId === currentUserId) {
-                      return currentUserProfilePic || null;
-                    } else if (userId === otherUserId) {
-                      return otherUserProfilePic || null;
-                    }
-                    return null;
-                  }}
-                  getDisplayName={(userId) => {
-                    if (userId === currentUserId) {
-                      return currentUserName || null;
-                    } else if (userId === otherUserId) {
-                      return otherUserName || null;
-                    }
-                    return null;
-                  }}
-                />
-              )}
-            </>
-          )}
+              </div>
+            )}
+            {chatMessages.length > 0 && (
+              <GroupedMessageList
+                messages={chatMessages}
+                currentUserId={currentUserId}
+                getAvatarUrl={(userId) => {
+                  if (userId === currentUserId) {
+                    return currentUserProfilePic || null;
+                  } else if (userId === otherUserId) {
+                    return otherUserProfilePic || null;
+                  }
+                  return null;
+                }}
+                getDisplayName={(userId) => {
+                  if (userId === currentUserId) {
+                    return currentUserName || null;
+                  } else if (userId === otherUserId) {
+                    return otherUserName || null;
+                  }
+                  return null;
+                }}
+              />
+            )}
+          </div>
         </div>
         {/* Input Section */}
         <div className="sticky bottom-0 z-10 bg-white border-t border-border-light p-6 flex items-center gap-3">
