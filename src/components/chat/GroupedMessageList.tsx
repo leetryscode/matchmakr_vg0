@@ -27,6 +27,44 @@ export default function GroupedMessageList({
     return null;
   }
 
+  // Helper function to determine bubble corner radius based on position in group
+  function getBubbleRadiusClass(isMine: boolean, isFirst: boolean, isLast: boolean): string {
+    const baseRadius = 'rounded-2xl';
+    
+    // Single message (both first and last)
+    if (isFirst && isLast) {
+      return baseRadius;
+    }
+    
+    if (isMine) {
+      // Outgoing messages (right-aligned)
+      if (isFirst && !isLast) {
+        // First in group: flatten bottom-right
+        return `${baseRadius} rounded-br-lg`;
+      } else if (!isFirst && !isLast) {
+        // Middle in group: flatten top-right and bottom-right
+        return `${baseRadius} rounded-tr-lg rounded-br-lg`;
+      } else if (!isFirst && isLast) {
+        // Last in group: flatten top-right only
+        return `${baseRadius} rounded-tr-lg`;
+      }
+    } else {
+      // Incoming messages (left-aligned) - mirror the logic
+      if (isFirst && !isLast) {
+        // First in group: flatten bottom-left
+        return `${baseRadius} rounded-bl-lg`;
+      } else if (!isFirst && !isLast) {
+        // Middle in group: flatten top-left and bottom-left
+        return `${baseRadius} rounded-tl-lg rounded-bl-lg`;
+      } else if (!isFirst && isLast) {
+        // Last in group: flatten top-left only
+        return `${baseRadius} rounded-tl-lg`;
+      }
+    }
+    
+    return baseRadius; // Fallback
+  }
+
   return (
     <>
       {messages.map((msg, i) => {
@@ -41,7 +79,7 @@ export default function GroupedMessageList({
         const initials = displayName?.charAt(0).toUpperCase() || '?';
 
         // Spacing: tight within group, larger between groups
-        const spacingClass = prevSameSender ? 'mt-0.5' : 'mt-3';
+        const spacingClass = prevSameSender ? 'mt-[2px]' : 'mt-2.5';
 
         return (
           <div key={msg.id} className={`${spacingClass} flex ${isMine ? 'justify-end' : 'justify-start'} items-end`}>
@@ -64,7 +102,7 @@ export default function GroupedMessageList({
             <div className={`max-w-[72%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
               {/* Message bubble */}
               <div
-                className={`px-4 py-2.5 rounded-xl ${msg.optimistic ? 'opacity-60' : ''}`}
+                className={`px-4 py-2.5 ${getBubbleRadiusClass(isMine, isFirstInGroup, isLastInGroup)} ${msg.optimistic ? 'opacity-60' : ''}`}
                 style={
                   isMine
                     ? {
@@ -84,7 +122,7 @@ export default function GroupedMessageList({
 
               {/* Timestamp (only on last message in group) */}
               {isLastInGroup && (
-                <div className={`text-[10px] text-gray-400 mt-0.5 ${isMine ? 'text-right' : 'text-left'}`}>
+                <div className={`text-[10px] text-gray-400 mt-0.5 px-4 ${isMine ? 'text-right' : 'text-left'}`}>
                   {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
               )}
