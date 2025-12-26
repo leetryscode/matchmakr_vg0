@@ -405,7 +405,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                 </span>
                                 {canEdit && (
                                     <button
-                                        className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full border border-white/30 hover:bg-white/30 transition-colors"
+                                        className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-text-dark text-sm rounded-full border border-white/30 hover:bg-white transition-colors"
                                         onClick={() => fileInputRef.current?.click()}
                                         type="button"
                                     >

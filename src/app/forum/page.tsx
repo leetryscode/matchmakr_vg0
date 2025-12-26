@@ -509,7 +509,7 @@ export default function ForumPage() {
               key={cat.id}
               className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-colors ${
                 selectedCategory === cat.id 
-                  ? 'bg-blue-500 text-white border-blue-500' 
+                  ? 'bg-primary-blue text-white border-primary-blue' 
                   : 'bg-white/10 text-white/80 border-white/20 hover:bg-white/20'
               }`}
               onClick={() => setSelectedCategory(cat.id)}
@@ -570,7 +570,7 @@ export default function ForumPage() {
               Please log in to create posts.
             </p>
             <div className="flex space-x-2">
-              <a href="/login" className="text-blue-300 underline font-semibold text-sm">Log In</a>
+              <a href="/login" className="text-primary-blue-light underline font-semibold text-sm">Log In</a>
             </div>
           </div>
         )}
@@ -579,7 +579,7 @@ export default function ForumPage() {
         <div className="space-y-0">
           {loading ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-300 mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-blue-light mx-auto"></div>
               <p className="mt-2 text-white/80">Loading posts...</p>
             </div>
           ) : posts.length === 0 ? (
@@ -648,7 +648,7 @@ export default function ForumPage() {
                       {post.reply_count > 0 && (
                         <button 
                           onClick={() => toggleReplies(post.id)}
-                          className="flex items-center gap-2 text-white/60 hover:text-blue-400 text-sm transition-colors"
+                          className="flex items-center gap-2 text-white/60 hover:text-primary-blue text-sm transition-colors"
                         >
                           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path d="M7 8l4-4 4 4M7 16l4 4 4-4" />
@@ -767,7 +767,7 @@ export default function ForumPage() {
                           ))
                         ) : (
                           <div className="text-center py-4 text-white/60">
-                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-300 mx-auto mb-2"></div>
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-blue-light mx-auto mb-2"></div>
                             Loading replies...
                           </div>
                         )}

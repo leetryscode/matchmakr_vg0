@@ -219,7 +219,7 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
                             ) : (
                                 <ul className="max-h-80 overflow-y-auto divide-y divide-gray-100">
                                     {notifications.map((n) => (
-                                        <li key={n.id} className={`p-4 ${!n.read ? 'bg-blue-50' : ''}`}>
+                                        <li key={n.id} className={`p-4 ${!n.read ? 'bg-primary-blue/10' : ''}`}>
                                             <div className="font-medium text-sm mb-1">
                                                 {n.type === 'matchmakr_chat' ? 'Your sponsor messaged another sponsor about you!' : n.type}
                                             </div>
