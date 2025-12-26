@@ -97,7 +97,7 @@ export default function OfferCard({ offer, onEdit, onDelete, onToggleActive }: O
           {onEdit && (
             <button
               onClick={onEdit}
-              className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+              className="flex-1 px-3 py-2 text-sm font-medium text-primary-blue bg-primary-blue/10 rounded-md hover:bg-primary-blue/20 transition-colors"
             >
               Edit
             </button>

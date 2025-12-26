@@ -629,7 +629,7 @@ export default function ForumPage() {
                     
                     {/* Action buttons */}
                     <div className="flex items-center justify-between max-w-md">
-                      <button className="flex items-center gap-2 text-white/60 hover:text-blue-400 text-sm transition-colors">
+                      <button className="flex items-center gap-2 text-white/60 hover:text-primary-blue text-sm transition-colors">
                         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path d="M14 9V5a3 3 0 0 0-6 0v4" />
                           <rect x="2" y="9" width="20" height="12" rx="2" ry="2" />

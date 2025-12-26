@@ -572,13 +572,13 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
           />
           {messageText.trim() && (
             <button
-              className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-primary-blue-light to-accent-teal-light shadow-md hover:scale-105 transition-transform border-2 border-border-light"
+              className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-primary-blue-light to-accent-teal-light shadow-md hover:scale-105 transition-transform border-2 border-border-light text-white"
               onClick={handleSendMessage}
               disabled={sending || (isSingleToSingle && !canChat)}
             >
               {/* SVG Arrow Icon, up and right, rotated 45deg */}
               <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(-45deg)' }}>
-                <path d="M8 24L24 16L8 8V14L20 16L8 18V24Z" fill="white"/>
+                <path d="M8 24L24 16L8 8V14L20 16L8 18V24Z" fill="currentColor"/>
               </svg>
             </button>
           )}

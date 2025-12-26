@@ -85,10 +85,10 @@ const InterestsInput: React.FC<InterestsInputProps> = ({ value, onChange, disabl
     <div className="w-full">
       <div className="flex flex-wrap gap-2 mb-2">
         {value.map(interest => (
-          <span key={interest.id} className="bg-white/20 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
+          <span key={interest.id} className="bg-primary-blue/10 text-primary-blue px-3 py-1 rounded-full text-xs flex items-center gap-1">
             {interest.name}
             {!disabled && (
-              <button type="button" className="ml-1 text-white/70 hover:text-red-400" onClick={() => handleRemove(interest.id)}>&times;</button>
+              <button type="button" className="ml-1 text-text-light hover:text-red-500" onClick={() => handleRemove(interest.id)}>&times;</button>
             )}
           </span>
         ))}
@@ -97,7 +97,7 @@ const InterestsInput: React.FC<InterestsInputProps> = ({ value, onChange, disabl
         <input
           ref={inputRef}
           type="text"
-          className="w-full bg-white/10 text-white px-3 py-2 rounded-md border border-white/20 focus:outline-none focus:ring-2 focus:ring-accent-teal-light"
+          className="w-full bg-white text-text-dark px-3 py-2 rounded-md border border-border-light focus:outline-none focus:ring-2 focus:ring-primary-blue"
           placeholder="Add interest..."
           value={input}
           onChange={e => setInput(e.target.value)}

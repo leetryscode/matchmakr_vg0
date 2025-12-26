@@ -165,16 +165,16 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
             <div className="relative">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-white">{profile.name}</h1>
+                  <h1 className="text-3xl font-bold text-text-dark">{profile.name}</h1>
                   {age && (
-                    <p className="text-lg text-white mt-1">{age}</p>
+                    <p className="text-lg text-text-dark mt-1">{age}</p>
                   )}
                   {profile.user_type === 'SINGLE' && (profile.city || profile.state || profile.zip_code) && (
-                    <p className="text-white mt-1 flex items-center">
+                    <p className="text-text-dark mt-1 flex items-center">
                       <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
                         <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                          <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="#fff" stroke="none"/>
-                          <circle cx="8" cy="6" r="2" fill="white"/>
+                          <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="currentColor" stroke="none"/>
+                          <circle cx="8" cy="6" r="2" fill="currentColor"/>
                         </svg>
                       </span>
                       {[profile.city, profile.state].filter(Boolean).join(', ')}
@@ -182,11 +182,11 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                     </p>
                   )}
                   {profile.occupation && (
-                    <p className="text-lg text-white mt-1 flex items-center">
+                    <p className="text-lg text-text-dark mt-1 flex items-center">
                       <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
                         <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                          <path d="M6.5 1h3a1 1 0 0 1 1 1v1h2.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.5V2a1 1 0 0 1 1-1z" fill="#fff"/>
-                          <path d="M6.5 3h3v1h-3V3z" fill="white"/>
+                          <path d="M6.5 1h3a1 1 0 0 1 1 1v1h2.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.5V2a1 1 0 0 1 1-1z" fill="currentColor"/>
+                          <path d="M6.5 3h3v1h-3V3z" fill="currentColor"/>
                         </svg>
                       </span>
                       {profile.occupation}
@@ -204,7 +204,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
           {/* Helper Note - only for single viewing own profile */}
           {isOwnProfile && profile.user_type === 'SINGLE' && orbitRole === 'SINGLE' && (
-            <div className="text-sm text-white/70 italic">
+            <div className="text-sm text-text-light italic">
               Your Sponsor manages your Orbit profile. If something looks off, chat with them.
             </div>
           )}
@@ -212,16 +212,16 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           {/* Interests Block */}
           {profile.user_type === 'SINGLE' && (
             <div>
-              <div className="text-white/70 text-sm font-semibold tracking-wide mb-2">Interests and <span className="italic">vibe</span></div>
+              <div className="text-text-light text-sm font-semibold tracking-wide mb-2">Interests and <span className="italic">vibe</span></div>
               <div className="flex flex-wrap items-center gap-2">
                 {/* Interest chips - hide when input is open to avoid duplication */}
                 {!showInterestsInput && interests.slice(0, 6).map(interest => (
-                  <span key={interest.id} className="bg-white/20 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
+                  <span key={interest.id} className="bg-primary-blue/10 text-primary-blue px-3 py-1 rounded-full text-xs flex items-center gap-1">
                     {interest.name}
                     {canEditProfile && (
                       <button
                         type="button"
-                        className="ml-1 text-white/70 hover:text-red-400"
+                        className="ml-1 text-text-light hover:text-red-500"
                         onClick={async () => {
                           const newInterests = interests.filter(i => i.id !== interest.id);
                           setSavingInterests(true);
@@ -250,7 +250,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 {/* Add Interest chip */}
                 {canEditProfile && (
                   <button
-                    className="px-3 py-1 rounded-full border border-white/20 bg-white/5 text-white/80 text-xs font-semibold hover:bg-white/10"
+                    className="px-3 py-1 rounded-full border border-border-light bg-gray-100 text-text-dark text-xs font-semibold hover:bg-gray-200"
                     onClick={() => setShowInterestsInput(v => !v)}
                     disabled={loadingInterests || savingInterests}
                   >
@@ -267,7 +267,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                     disabled={savingInterests}
                   />
                   <button
-                    className="mt-2 px-4 py-1 rounded-full bg-accent-teal-light text-white font-semibold hover:bg-accent-teal transition-colors"
+                    className="mt-2 px-4 py-1 rounded-full bg-gradient-primary text-white font-semibold hover:bg-gradient-light transition-colors"
                     onClick={() => handleSaveInterests(interests)}
                     disabled={savingInterests}
                   >
@@ -283,22 +283,22 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
             <>
               {sponsors.map((sponsor) => (
                 <div key={sponsor.id}>
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <div className="rounded-xl border border-border-light bg-background-card p-4">
                     <div className="flex justify-between items-center">
-                      <h2 className="text-white/90 font-semibold">
+                      <h2 className="text-text-dark font-semibold">
                         Why {sponsor.name || 'their sponsor'} recommends {firstName || profile.name || 'them'}
                       </h2>
                       {sponsor.isCurrentSponsor && (
                         <button
                           onClick={() => setIsEndorsementEditOpen(true)}
-                          className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/15 bg-white/5 text-white/80 hover:bg-white/10"
+                          className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full border border-border-light bg-gray-100 text-text-dark hover:bg-gray-200"
                           aria-label="Edit endorsement"
                         >
                           <PencilIcon className="w-4 h-4" />
                         </button>
                       )}
                     </div>
-                    <p className="mt-2 text-white/80 text-sm leading-relaxed">{sponsor.endorsement || 'This is where your sponsor writes about you...'}</p>
+                    <p className="mt-2 text-text-light text-sm leading-relaxed">{sponsor.endorsement || 'This is where your sponsor writes about you...'}</p>
                   </div>
                 </div>
               ))}
@@ -320,57 +320,57 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
           {/* Sponsored Singles Section - only for MATCHMAKR profiles */}
           {profile.user_type === 'MATCHMAKR' && (
-            <div className="border-t border-white/30 pt-4">
-              <h2 className="text-lg font-semibold text-white">Sponsored Singles</h2>
+            <div className="border-t border-border-light pt-4">
+              <h2 className="text-lg font-semibold text-text-dark">Sponsored Singles</h2>
               {sponsoredSingles && sponsoredSingles.length > 0 ? (
                 <div className="mt-4 grid grid-cols-3 gap-4">
                   {sponsoredSingles.map(single => (
                     <Link href={`/profile/${single.id}`} key={single.id} className="text-center group">
-                      <div className="w-20 h-20 rounded-full mx-auto overflow-hidden border-2 border-white group-hover:border-primary-blue transition-all duration-300">
+                      <div className="w-20 h-20 rounded-full mx-auto overflow-hidden border-2 border-border-light group-hover:border-primary-blue transition-all duration-300">
                         {single.profile_pic_url ? (
                           <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full bg-background-main flex items-center justify-center">
-                            <span className="text-2xl font-bold text-white/80">
+                            <span className="text-2xl font-bold text-text-dark">
                               {single.name?.charAt(0).toUpperCase() || '?'}
                             </span>
                           </div>
                         )}
                       </div>
-                      <p className="mt-2 text-sm font-semibold text-white truncate">{single.name}</p>
+                      <p className="mt-2 text-sm font-semibold text-text-dark truncate">{single.name}</p>
                     </Link>
                   ))}
                 </div>
               ) : (
-                <p className="mt-2 text-sm text-white/80">Not currently sponsoring any singles.</p>
+                <p className="mt-2 text-sm text-text-light">Not currently sponsoring any singles.</p>
               )}
             </div>
           )}
 
           {/* Sponsor Block - only for SINGLE profiles with matchmakrProfile */}
           {profile.user_type === 'SINGLE' && matchmakrProfile && (
-            <div className="border-t border-white/10 mt-6">
+            <div className="border-t border-border-light mt-6">
               <div className="px-4 py-4">
-                <div className="text-white/90 font-semibold mb-1">Profile managed by</div>
-                <div className="text-white/60 text-xs mb-3">Trusted contact for this profile</div>
-                <div className="mt-3 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm px-4 py-3">
+                <div className="text-text-dark font-semibold mb-1">Profile managed by</div>
+                <div className="text-text-light text-xs mb-3">Trusted contact for this profile</div>
+                <div className="mt-3 rounded-xl border border-border-light bg-background-card px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     {/* Avatar */}
-                    <div className="w-12 h-12 rounded-full overflow-hidden border border-white/20 shrink-0">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border border-border-light shrink-0">
                       {matchmakrProfile.profile_pic_url ? (
                         <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'Sponsor'} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full bg-background-main flex items-center justify-center">
-                          <span className="text-xl font-bold text-white/80">
+                          <span className="text-xl font-bold text-text-dark">
                             {matchmakrProfile.name?.charAt(0).toUpperCase() || '?'}
                           </span>
                         </div>
                       )}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-white font-semibold text-base leading-tight truncate">{matchmakrProfile.name}</div>
-                      <Link href={`/profile/${matchmakrProfile.id}`} className="text-white/60 text-xs hover:text-white/80 whitespace-nowrap">
+                      <div className="text-text-dark font-semibold text-base leading-tight truncate">{matchmakrProfile.name}</div>
+                      <Link href={`/profile/${matchmakrProfile.id}`} className="text-primary-blue text-xs hover:text-primary-teal whitespace-nowrap">
                         View profile
                       </Link>
                     </div>

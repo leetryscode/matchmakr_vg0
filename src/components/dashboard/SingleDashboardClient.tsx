@@ -297,7 +297,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
         {photo ? (
           <Image src={photo} alt={name} width={48} height={48} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-200">
+          <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-primary-blue">
             {name?.charAt(0).toUpperCase() || '?'}
           </div>
         )}
