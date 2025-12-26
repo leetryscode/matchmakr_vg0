@@ -10,27 +10,27 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          blue: '#0066FF',
-          teal: '#00C9A7',
-          'blue-light': '#4D9CFF',
-          'teal-light': '#4DDDCC',
+          blue: '#4A5D7C',
+          teal: '#5B7396',
+          'blue-light': '#8E99A8',
+          'teal-light': '#A5B0C2',
         },
         accent: {
-          'blue-light': '#4D9CFF',
-          'teal-light': '#4DDDCC',
+          'blue-light': '#8E99A8',
+          'teal-light': '#A5B0C2',
         },
         background: {
-          main: '#F8FAFC',
+          main: '#FAFAFA',
           card: '#FFFFFF',
-          'gradient-start': '#0066FF',
-          'gradient-end': '#00C9A7',
+          'gradient-start': '#4A5D7C',
+          'gradient-end': '#5B7396',
         },
         text: {
-          dark: '#1E293B',
-          light: '#64748B',
+          dark: '#1F2937',
+          light: '#6B7280',
         },
         border: {
-          light: '#E2E8F0',
+          light: '#E5E7EB',
         },
       },
       fontFamily: {
@@ -39,11 +39,11 @@ const config: Config = {
         'raleway': ['Raleway', 'sans-serif'],
       },
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #0066FF, #00C9A7)',
-        'gradient-light': 'linear-gradient(135deg, #4D9CFF, #4DDDCC)',
-        'gradient-card': 'linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%)',
-        'gradient-radial': 'radial-gradient(ellipse at center, #0066FF 0%, #00C9A7 100%)',
-        'gradient-diagonal': 'linear-gradient(45deg, #0066FF 0%, #00C9A7 100%)',
+        'gradient-primary': 'linear-gradient(135deg, #4A5D7C, #5B7396)',
+        'gradient-light': 'linear-gradient(135deg, #8E99A8, #A5B0C2)',
+        'gradient-card': 'linear-gradient(135deg, #FAFAFA 0%, #FFFFFF 100%)',
+        'gradient-radial': 'radial-gradient(ellipse at center, #4A5D7C 0%, #5B7396 100%)',
+        'gradient-diagonal': 'linear-gradient(45deg, #4A5D7C 0%, #5B7396 100%)',
       },
       boxShadow: {
         'card': '0 8px 32px rgba(15, 23, 42, 0.08)',
