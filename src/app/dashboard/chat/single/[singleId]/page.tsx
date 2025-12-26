@@ -311,7 +311,7 @@ export default function SingleChatPage() {
           <input
             type="text"
             className="flex-1 border border-gray-300 rounded-2xl px-4 py-4 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 placeholder:text-gray-400 placeholder:italic text-base bg-white/90"
-            placeholder={`Send a message to ${singleInfo?.name || 'your single'}...`}
+            placeholder={`Send a message to ${singleInfo?.name || 'your single'}`}
             value={messageText}
             onChange={e => setMessageText(e.target.value)}
             disabled={sending}

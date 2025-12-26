@@ -190,10 +190,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
       });
       const data = await res.json();
       if (!data.success) {
-        alert(data.error || 'Failed to send message');
+        alert(data.error || 'This message couldn\'t be sent. Please try again.');
       }
     } catch (err) {
-      alert('Failed to send message');
+      alert('This message couldn\'t be sent. Please try again.');
     }
     setSending(false);
   };
@@ -213,7 +213,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
       }
       
       if (!singleAId || !singleBId) {
-        setMatchError('Both singles must be present to approve a match.');
+        setMatchError('Both singles must be present to make the introduction.');
         setMatchLoading(false);
         return;
       }
@@ -231,10 +231,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
         const data = await response.json();
         setMatchStatus('matched');
       } else {
-        setMatchError('Failed to approve match');
+        setMatchError('The introduction couldn\'t be made. Please try again.');
       }
     } catch (error) {
-      setMatchError('Failed to approve match');
+      setMatchError('The introduction couldn\'t be made. Please try again.');
     } finally {
       setMatchLoading(false);
     }
@@ -268,7 +268,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
         setMatchStatus('can-approve');
       }
     } catch (e) {
-      setMatchError('Failed to fetch match status');
+      setMatchError('Match status couldn\'t be loaded. Please try again.');
     }
     setMatchLoading(false);
   };
@@ -314,7 +314,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     return (
       <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
         <div className="bg-white rounded-2xl p-8 shadow-xl w-[400px] text-center">
-                          <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>LOADING...</div>
+                          <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Loading...</div>
           <div className="flex justify-center items-center mt-4">
             <svg className="animate-spin h-8 w-8 text-primary-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -446,7 +446,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
             </>
           ) : (
             <>
-              <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>YOUR CONVERSATION WITH <span className="italic text-primary-blue-light">{otherUserName}</span></div>
+              <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Your conversation with <span className="italic text-primary-blue-light">{otherUserName}</span></div>
               <div className="flex items-center justify-center gap-8">
                 <div className="flex flex-col items-center">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
@@ -481,21 +481,21 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                 {matchLoading ? (
                   <div className="text-gray-500">Checking match status...</div>
                 ) : matchStatus === 'matched' ? (
-                  <div className="text-primary-blue font-bold">It's a Match! Both sponsors have approved.</div>
+                  <div className="text-primary-blue font-bold">Both sponsors agreed to the introduction</div>
                 ) : matchStatus === 'pending' ? (
-                  <div className="text-yellow-600 font-semibold">Pending approval from the other sponsor...</div>
+                  <div className="text-yellow-600 font-semibold">Waiting for the other sponsor</div>
                 ) : matchStatus === 'can-approve' ? (
                   <button
                     className="px-6 py-2 bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleApproveMatch}
                     disabled={!ourSingle?.id || !theirSingle?.id || matchLoading}
-                    title={!ourSingle?.id || !theirSingle?.id ? 'Both singles must be present to approve a match.' : ''}
+                    title={!ourSingle?.id || !theirSingle?.id ? 'Both singles must be present to make the introduction.' : ''}
                   >
-                    Approve Match
+                    Make the introduction
                   </button>
                 ) : null}
                 {(!ourSingle?.id || !theirSingle?.id) && !isSingleToSingle && (
-                  <div className="text-gray-400 text-xs mt-2">Both singles must be present to approve a match.</div>
+                  <div className="text-gray-400 text-xs mt-2">Both singles must be present to make the introduction.</div>
                 )}
                 {matchError && <div className="text-red-500 mt-2">{matchError}</div>}
               </div>
@@ -508,9 +508,9 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
             {/* Scroll-away intro panel for single-to-single chats */}
             {isSingleToSingle && canChat && (
               <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
-                <div className="font-semibold text-gray-900 mb-1">You can chat</div>
-                <div className="text-sm text-gray-600 mb-2">Both sponsors approved this match.</div>
-                <div className="text-xs text-gray-500">Be kind and take it slow — this intro came through sponsors.</div>
+                <div className="font-semibold text-gray-900 mb-1">You're now connected</div>
+                <div className="text-sm text-gray-600 mb-2">Your sponsors agreed to introduce you</div>
+                <div className="text-xs text-gray-500">This conversation is visible to sponsors</div>
                 {/* Optional: small avatars */}
                 <div className="flex items-center justify-center gap-4 mt-3">
                   <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300">

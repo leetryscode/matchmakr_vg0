@@ -215,7 +215,7 @@ export default function ChatPage() {
         setMatchStatus('can-approve');
       }
     } catch (e) {
-      setMatchError('Failed to fetch match status');
+      setMatchError('Match status couldn\'t be loaded. Please try again.');
     }
     setMatchLoading(false);
   };
@@ -229,7 +229,7 @@ export default function ChatPage() {
       const singleBId = chatContext.otherUserSingle.id;
       
       if (!singleAId || !singleBId) {
-        setMatchError('Both singles must be present to approve a match.');
+        setMatchError('Both singles must be present to make the introduction.');
         setApprovalLoading(false);
         return;
       }
@@ -250,10 +250,10 @@ export default function ChatPage() {
         await fetchMatchStatus();
         setShowApprovalModal(false);
       } else {
-        setMatchError('Failed to approve match');
+        setMatchError('The introduction couldn\'t be made. Please try again.');
       }
     } catch (error) {
-      setMatchError('Failed to approve match');
+      setMatchError('The introduction couldn\'t be made. Please try again.');
     } finally {
       setApprovalLoading(false);
     }
@@ -437,17 +437,17 @@ export default function ChatPage() {
                 {matchLoading ? (
                   <div className="text-xs text-gray-500 whitespace-nowrap">Checking...</div>
                 ) : matchStatus === 'matched' ? (
-                  <div className="text-xs text-primary-blue font-semibold whitespace-nowrap">🎉 Match!</div>
+                  <div className="text-xs text-primary-blue font-semibold whitespace-nowrap">Both sponsors agreed to the introduction</div>
                 ) : matchStatus === 'pending' ? (
-                  <div className="text-xs text-yellow-600 font-semibold whitespace-nowrap">⏳ Pending other sponsor</div>
+                  <div className="text-xs text-yellow-600 font-semibold whitespace-nowrap">Waiting for the other sponsor</div>
                 ) : matchStatus === 'can-approve' ? (
                   <button
                     className="h-8 px-4 text-sm bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     onClick={() => setShowApprovalModal(true)}
                     disabled={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id || matchLoading}
-                    title={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id ? 'Both singles must be present to approve a match.' : ''}
+                    title={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id ? 'Both singles must be present to make the introduction.' : ''}
                   >
-                    Approve Intro
+                    Make the introduction
                   </button>
                 ) : null}
                 {matchError && <div className="text-xs text-red-500 mt-1 whitespace-nowrap">{matchError}</div>}
@@ -525,7 +525,7 @@ export default function ChatPage() {
           <input
             type="text"
             className="flex-1 border border-gray-300 rounded-2xl px-4 py-4 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 placeholder:text-gray-400 placeholder:italic text-base bg-white/90"
-            placeholder={`Send a message...`}
+            placeholder={`Send a message`}
             value={messageText}
             onChange={e => setMessageText(e.target.value)}
             disabled={sending}
@@ -551,8 +551,8 @@ export default function ChatPage() {
       {showApprovalModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
           <div className="bg-white rounded-2xl p-8 shadow-xl max-w-md w-full mx-4 text-center">
-            <h3 className="text-xl font-bold mb-4 text-primary-blue">Approve Match?</h3>
-            <p className="mb-6 text-gray-600">Are you sure? When both Sponsors approve, the singles will chat!</p>
+            <h3 className="text-xl font-bold mb-4 text-primary-blue">Make the introduction?</h3>
+            <p className="mb-6 text-gray-600">When both sponsors agree, the singles will be connected.</p>
             <div className="flex gap-4 justify-center">
               <button
                 className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300"
@@ -566,7 +566,7 @@ export default function ChatPage() {
                 onClick={handleApproveMatch}
                 disabled={approvalLoading}
               >
-                {approvalLoading ? 'Approving...' : 'Yes, Approve'}
+                {approvalLoading ? 'Making the introduction...' : 'Make the introduction'}
               </button>
             </div>
           </div>
