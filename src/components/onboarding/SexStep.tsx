@@ -9,7 +9,7 @@ interface SexStepProps {
 export default function SexStep({ onNext }: SexStepProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-8">
-      <h1 className="text-4xl font-light gradient-text leading-[1.1] tracking-tight sm:text-[4rem]">
+      <h1 className="text-4xl font-light bg-gradient-primary bg-clip-text text-transparent leading-[1.1] tracking-tight sm:text-[4rem]">
         Select your sex
       </h1>
       <div className="flex gap-4">

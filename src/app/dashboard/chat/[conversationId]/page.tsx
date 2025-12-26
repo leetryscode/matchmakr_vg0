@@ -536,7 +536,7 @@ export default function ChatPage() {
               className="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-primary-blue-light to-accent-teal-light shadow-md hover:scale-105 transition-transform"
               onClick={handleSendMessage}
               disabled={sending}
-              style={{ border: '2px solid', borderImage: 'linear-gradient(45deg, #0066FF, #00C9A7) 1' }}
+              className="border-2 border-border-light"
             >
               <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(-45deg)' }}>
                 <path d="M8 24L24 16L8 8V14L20 16L8 18V24Z" fill="white"/>

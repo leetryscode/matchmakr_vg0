@@ -45,7 +45,7 @@ export default function OnboardingPage() {
       case 1:
         return (
           <>
-            <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] gradient-text leading-[1.1]">
+            <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] bg-gradient-primary bg-clip-text text-transparent leading-[1.1]">
               Select User Type
             </h1>
             <div className={`grid grid-cols-1 gap-4 ${orbitConfig.enableVendors ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} md:gap-8`}>
@@ -53,7 +53,7 @@ export default function OnboardingPage() {
                 onClick={() => handleUserTypeSelect('Single')}
                 className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-gray-800 hover:bg-gray-50 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-gray-200"
               >
-                <h3 className="text-2xl font-light gradient-text">Single →</h3>
+                <h3 className="text-2xl font-light bg-gradient-primary bg-clip-text text-transparent">Single →</h3>
                 <div className="text-lg font-light">
                   I'm a single looking for a match.
                 </div>
@@ -62,7 +62,7 @@ export default function OnboardingPage() {
                 onClick={() => handleUserTypeSelect('Sponsor')}
                 className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-gray-800 hover:bg-gray-50 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-gray-200"
               >
-                <h3 className="text-2xl font-light gradient-text">Sponsor →</h3>
+                <h3 className="text-2xl font-light bg-gradient-primary bg-clip-text text-transparent">Sponsor →</h3>
                 <div className="text-lg font-light">
                   I want to find matches for my friends.
                 </div>
@@ -72,7 +72,7 @@ export default function OnboardingPage() {
                   onClick={() => handleUserTypeSelect('Vendor')}
                   className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-gray-800 hover:bg-gray-50 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-gray-200"
                 >
-                  <h3 className="text-2xl font-light gradient-text">Vendor →</h3>
+                  <h3 className="text-2xl font-light bg-gradient-primary bg-clip-text text-transparent">Vendor →</h3>
                   <div className="text-lg font-light">
                     I want to promote my business for dates.
                   </div>

@@ -10,43 +10,16 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 248, 250, 252;
   --background-end-rgb: 255, 255, 255;
+  /* Legacy CSS vars - not currently referenced. Color tokens are managed via tailwind.config.ts */
   --primary-blue: 0, 102, 255;
   --primary-teal: 0, 201, 167;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(135deg, #0066FF 0%, #00C9A7 100%);
+  background: #FAFAFA;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   line-height: 1.5;
-}
-
-/* Gradient text utility */
-.gradient-text {
-  background: linear-gradient(135deg, #0066FF, #00C9A7);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Gradient border utility */
-.gradient-border {
-  position: relative;
-  background: white;
-  border-radius: 0.75rem;
-}
-
-.gradient-border::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 2px;
-  background: linear-gradient(135deg, #0066FF, #00C9A7);
-  border-radius: 0.75rem;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
 }
 
 /* Smooth transitions for all interactive elements */
@@ -57,7 +30,7 @@ body {
 /* Enhanced focus states */
 .focus-ring:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
 }
 
 /* Custom scrollbar */
@@ -70,12 +43,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #0066FF, #00C9A7);
+  background: rgba(15, 23, 42, 0.3);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #4D9CFF, #4DDDCC);
+  background: rgba(15, 23, 42, 0.5);
 }
 
 /* Line clamp utility for text truncation */
@@ -86,53 +59,3 @@ body {
   overflow: hidden;
 }
 
-/* Additional gradient utilities */
-.bg-gradient-primary {
-  background: linear-gradient(135deg, #0066FF, #00C9A7);
-}
-
-.bg-gradient-light {
-  background: linear-gradient(135deg, #4D9CFF, #4DDDCC);
-}
-
-.bg-gradient-radial {
-  background: radial-gradient(ellipse at center, #0066FF 0%, #00C9A7 100%);
-}
-
-.bg-gradient-diagonal {
-  background: linear-gradient(45deg, #0066FF 0%, #00C9A7 100%);
-}
-
-/* Text gradient utilities */
-.text-gradient-primary {
-  background: linear-gradient(135deg, #0066FF, #00C9A7);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-light {
-  background: linear-gradient(135deg, #4D9CFF, #4DDDCC);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Gradient border utility for buttons */
-.gradient-border-button {
-  position: relative;
-  background: white;
-}
-
-.gradient-border-button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 2px;
-  background: linear-gradient(135deg, #0066FF, #00C9A7);
-  border-radius: 9999px;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-}

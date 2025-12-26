@@ -8,6 +8,7 @@ export interface ConfettiBlastProps {
   style?: React.CSSProperties;
 }
 
+// decorative-only, excluded from theme tokens
 const CONFETTI_COLORS = [
   '#0066FF', // primary blue
   '#00C9A7', // primary blue-light

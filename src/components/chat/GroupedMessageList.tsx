@@ -102,20 +102,11 @@ export default function GroupedMessageList({
             <div className={`max-w-[72%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
               {/* Message bubble */}
               <div
-                className={`px-4 py-2.5 ${getBubbleRadiusClass(isMine, isFirstInGroup, isLastInGroup)} ${msg.optimistic ? 'opacity-60' : ''}`}
-                style={
+                className={`px-4 py-2.5 ${getBubbleRadiusClass(isMine, isFirstInGroup, isLastInGroup)} ${msg.optimistic ? 'opacity-60' : ''} ${
                   isMine
-                    ? {
-                        background: 'linear-gradient(45deg, #0066FF 0%, #00C9A7 100%)',
-                        color: 'white',
-                        fontWeight: 500,
-                      }
-                    : {
-                        background: 'linear-gradient(135deg, #4D9CFF, #4DDDCC)',
-                        color: 'white',
-                        fontWeight: 500,
-                      }
-                }
+                    ? 'bg-gradient-diagonal text-white font-medium'
+                    : 'bg-gradient-light text-white font-medium'
+                }`}
               >
                 {msg.content}
               </div>

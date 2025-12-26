@@ -16,7 +16,7 @@ const FlameUnreadIcon: React.FC<FlameUnreadIconProps> = ({ count, size = 36, cla
       viewBox="0 0 36 36"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
+      className={`text-primary-teal ${className}`}
       style={{ display: 'block' }}
       aria-label={`Unread messages: ${displayCount}`}
     >
@@ -32,7 +32,7 @@ const FlameUnreadIcon: React.FC<FlameUnreadIconProps> = ({ count, size = 36, cla
         textAnchor="middle"
         fontSize="15"
         fontWeight="bold"
-        fill="#00C9A7"
+        fill="currentColor"
         style={{ fontFamily: 'Inter, sans-serif', pointerEvents: 'none', userSelect: 'none' }}
         dominantBaseline="middle"
       >

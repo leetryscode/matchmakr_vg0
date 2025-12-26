@@ -229,7 +229,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                         );
                     })
                 ) : (
-                    <div className="text-blue-100 mb-6 w-full text-center">You are not sponsoring any singles yet.</div>
+                    <div className="text-white/90 mb-6 w-full text-center">You are not sponsoring any singles yet.</div>
                 )}
             </div>
             <InviteSingle />

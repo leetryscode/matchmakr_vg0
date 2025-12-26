@@ -50,7 +50,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
       <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 text-center">
-        <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] gradient-text leading-[1.1]">
+        <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] bg-gradient-primary bg-clip-text text-transparent leading-[1.1]">
           Login
         </h1>
         <form

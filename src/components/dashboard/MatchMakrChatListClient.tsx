@@ -353,7 +353,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           // Only show chats with other matchmakrs
           return !sponsoredSingles.some(s => s.id === otherId);
         }).length === 0 ? (
-        <div className="text-blue-100 mb-6">You have no more chats with Sponsors.</div>
+        <div className="text-white/90 mb-6">You have no more chats with Sponsors.</div>
       ) : (
         <div className="mb-6 flex flex-col gap-3">
           {localConversations
@@ -396,17 +396,17 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                     {profile?.profile_pic_url ? (
                       <img src={profile.profile_pic_url} alt={profile.name || 'Sponsor'} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-200">
+                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-white">
                         {profile?.name?.charAt(0).toUpperCase() || '?'}
                       </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-white truncate drop-shadow">{profile?.name || 'Unknown Sponsor'}</div>
-                    <div className="text-xs text-blue-200 truncate mb-1">{singlesInfo}</div>
-                    <div className="text-sm text-blue-100 truncate">{msg.content}</div>
+                    <div className="text-xs text-white/80 truncate mb-1">{singlesInfo}</div>
+                    <div className="text-sm text-white/90 truncate">{msg.content}</div>
                   </div>
-                  <div className="text-xs text-blue-100 ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  <div className="text-xs text-white/70 ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                   {/* Unread icon, only show if unreadCount > 0 */}
                   {unreadCount > 0 && (
                     <div className="ml-2 flex items-center">
@@ -481,14 +481,14 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             {sponsoredSingles[0].profile_pic_url ? (
               <img src={sponsoredSingles[0].profile_pic_url} alt={sponsoredSingles[0].name || 'Single'} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-200">
+              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-white">
                 {sponsoredSingles[0].name?.charAt(0).toUpperCase() || '?'}
               </div>
             )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-medium text-white truncate drop-shadow">{sponsoredSingles[0].name}</div>
-            <div className="text-sm text-blue-100 truncate">Chat with your sponsored single</div>
+            <div className="text-sm text-white/90 truncate">Chat with your sponsored single</div>
           </div>
           {/* Unread icon, only show if unreadCount > 0 */}
           {sponsoredSingleUnreadCount > 0 && (

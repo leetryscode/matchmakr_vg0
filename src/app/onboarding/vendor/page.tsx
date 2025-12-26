@@ -141,7 +141,7 @@ export default function VendorOnboardingPage() {
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 text-center">
         {step === 1 && (
           <div className="flex flex-col items-center justify-center gap-8">
-            <h1 className="text-4xl font-light gradient-text leading-[1.1] tracking-tight sm:text-[4rem]">
+            <h1 className="text-4xl font-light bg-gradient-primary bg-clip-text text-transparent leading-[1.1] tracking-tight sm:text-[4rem]">
               Tell us about your business
             </h1>
             <input
@@ -170,7 +170,7 @@ export default function VendorOnboardingPage() {
         
         {step === 2 && (
           <div className="flex flex-col items-center justify-center gap-8">
-            <h1 className="text-4xl font-light gradient-text leading-[1.1] tracking-tight sm:text-[4rem]">
+            <h1 className="text-4xl font-light bg-gradient-primary bg-clip-text text-transparent leading-[1.1] tracking-tight sm:text-[4rem]">
               Business Address
             </h1>
             <div className="flex flex-col gap-4 w-full max-w-md">
@@ -227,7 +227,7 @@ export default function VendorOnboardingPage() {
         
         {step === 3 && (
           <div className="flex flex-col items-center justify-center gap-8">
-            <h1 className="text-4xl font-light gradient-text leading-[1.1] tracking-tight sm:text-[4rem]">
+            <h1 className="text-4xl font-light bg-gradient-primary bg-clip-text text-transparent leading-[1.1] tracking-tight sm:text-[4rem]">
               Create your account
             </h1>
             <p className="text-xl text-gray-600 font-light">
