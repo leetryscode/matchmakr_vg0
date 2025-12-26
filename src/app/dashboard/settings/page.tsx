@@ -58,13 +58,13 @@ export default function SettingsPage() {
     <div className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-b from-primary-blue to-accent-teal-light p-6 text-white">
       {/* SETTINGS Header - positioned at top of content */}
       <div className="w-full text-center mb-6">
-        <h1 className="text-2xl font-light tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>SETTINGS</h1>
+        <h1 className="text-2xl font-light tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Settings</h1>
       </div>
       
       {/* Basic Account Information */}
       <div className="w-full max-w-2xl mb-8">
         <div className="bg-white/10 p-6 rounded-xl border border-white/20 mb-6">
-          <h2 className="text-xl font-light mb-4 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>ACCOUNT INFORMATION</h2>
+          <h2 className="text-xl font-light mb-4 tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Account information</h2>
           
           <div className="space-y-4">
             <div className="flex items-center justify-between py-3 border-b border-white/10">
@@ -78,7 +78,7 @@ export default function SettingsPage() {
             </div>
             
             <div className="flex items-center justify-between py-3">
-              <span className="text-white/80 font-medium">Account Status:</span>
+              <span className="text-white/80 font-medium">Account status:</span>
               <span className="text-white">Active</span>
             </div>
           </div>
@@ -86,7 +86,7 @@ export default function SettingsPage() {
 
         {/* Coming Soon Section */}
         <div className="bg-white/10 p-6 rounded-xl border border-white/20">
-          <h3 className="text-lg font-light mb-4 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>COMING SOON</h3>
+          <h3 className="text-lg font-light mb-4 tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Coming soon</h3>
           <div className="text-white/80 text-center">
             <p className="mb-2">• Profile management</p>
             <p className="mb-2">• Photo uploads</p>

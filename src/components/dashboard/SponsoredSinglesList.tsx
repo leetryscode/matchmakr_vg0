@@ -30,7 +30,7 @@ function ReleaseSingleModal({ single, onClose, onConfirm }: { single: SponsoredS
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
             <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-gray-200">
-                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>RELEASE {single.name || 'THIS SINGLE'}?</h2>
+                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Release {single.name || 'this single'}?</h2>
                 <p className="text-gray-600 mb-6 leading-relaxed">
                     You will no longer be able to manage their profile or find matches for them. This action cannot be undone, and they would need to invite you again to reconnect.
                 </p>
@@ -42,7 +42,7 @@ function ReleaseSingleModal({ single, onClose, onConfirm }: { single: SponsoredS
                         onClick={() => onConfirm(single.id, single.name)} 
                         className="px-6 py-3 bg-gradient-primary text-white rounded-full font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1"
                     >
-                        Yes, Release Single
+                        Release single
                     </button>
                 </div>
             </div>
@@ -126,7 +126,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                 throw new Error(error.message);
             }
 
-            alert(`${singleName || 'Single'} released successfully.`);
+            alert(`Single released`);
             window.location.reload();
         } catch (error: any) {
             alert(`Error: ${error.message}`);
@@ -152,7 +152,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
             }
         } catch (error: any) {
             console.error('Error ending sponsorship:', error);
-            alert(`Error ending sponsorship: ${error.message}`);
+            alert(`The sponsorship couldn't be ended. Please try again.`);
         } finally {
             setEndingSponsorship(false);
             setSelectedSingleForEnd(null);
@@ -162,7 +162,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
     return (
         <>
             {/* Section header, no container */}
-                            <h2 className="text-xl font-light text-white mb-2 border-b border-white/20 pb-1 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>CHAT WITH YOUR SINGLES</h2>
+                            <h2 className="text-xl font-light text-white mb-2 border-b border-white/20 pb-1 tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Chat with your singles</h2>
             <div className="flex flex-col gap-3 mb-4">
                 {sponsoredSingles && sponsoredSingles.length > 0 ? (
                     sponsoredSingles.map(single => {
@@ -229,7 +229,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                         );
                     })
                 ) : (
-                    <div className="text-white/90 mb-6 w-full text-center">You are not sponsoring any singles yet.</div>
+                    <div className="text-white/90 mb-6 w-full text-center">No sponsored singles</div>
                 )}
             </div>
             <InviteSingle />

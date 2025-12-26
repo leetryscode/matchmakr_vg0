@@ -27,7 +27,7 @@ const InviteSingleModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                 }
                 throw new Error(errorMsg || 'An error occurred.');
             }
-            setMessage(data.message || 'Invite sent successfully!');
+            setMessage(data.message || 'Invite sent');
             setTimeout(() => {
                 onClose();
                 window.location.reload();
@@ -42,7 +42,7 @@ const InviteSingleModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-gray-200">
-                <h2 className="font-inter font-bold text-2xl mb-4 text-primary-blue">Invite a Single User</h2>
+                <h2 className="font-inter font-bold text-2xl mb-4 text-primary-blue">Invite a single user</h2>
                 <p className="text-gray-600 mb-6 leading-relaxed">
                     Invite a single user to find matches for.
                 </p>
@@ -60,7 +60,7 @@ const InviteSingleModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                         Cancel
                     </button>
                     <button onClick={handleSendInvite} className="px-6 py-3 bg-gradient-primary text-white rounded-full font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1" disabled={isLoading}>
-                        {isLoading ? 'Sending...' : 'Send Invite'}
+                        {isLoading ? 'Sending...' : 'Send invite'}
                     </button>
                 </div>
             </div>
@@ -77,7 +77,7 @@ export default function InviteSingle() {
                 onClick={() => setIsModalOpen(true)}
                 className="mt-6 w-full bg-white/10 hover:bg-white/20 text-white py-3 px-6 rounded-full font-semibold text-lg border border-white/30 shadow-deep transition-all duration-300 hover:-translate-y-2"
             >
-                Invite a Single User
+                Invite a single user
             </button>
             <InviteSingleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </>

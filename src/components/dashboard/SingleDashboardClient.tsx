@@ -145,7 +145,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
         setSponsorLastMessage(messages[0].content);
         setSponsorTimestamp(new Date(messages[0].created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       } else {
-        setSponsorLastMessage('Click to chat with your Sponsor');
+        setSponsorLastMessage('Click to chat');
         setSponsorTimestamp('');
       }
       // Unread count (where sponsor is sender and user is recipient and read is false)
@@ -260,7 +260,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
     <div className="flex flex-col mb-4">
       {/* Personalized greeting */}
       <div className="text-left self-start mb-4">
-        <h1 className="text-xl font-bold text-white">Hello, {userName?.split(' ')[0] || 'there'}!</h1>
+        <h1 className="text-xl font-bold text-white">Hello, {userName?.split(' ')[0] || 'there'}</h1>
       </div>
       <div className="flex flex-col items-center">
         <button
@@ -337,12 +337,12 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
             onClick={() => setIsInviteOpen(true)}
             className="bg-gradient-primary text-white px-6 py-3 rounded-full font-semibold text-lg shadow-button hover:shadow-button-hover transition-all duration-300 hover:-translate-y-1 mt-4"
           >
-            Invite someone to be my Sponsor!
+            Invite someone to be my sponsor
           </button>
           <InviteMatchMakrModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
-          <h2 className="text-xl font-light text-white mt-8 mb-2 border-b border-white/20 pb-1 w-full tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>MY MATCHES</h2>
-          <div className="text-white/90 mb-6 w-full text-center">No matches yet. Once your sponsors approve a match, you can chat here!</div>
-          <h2 className="text-xl font-light text-white mt-6 mb-2 border-b border-white/20 pb-1 w-full tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>MY SNEAK PEAKS</h2>
+          <h2 className="text-xl font-light text-white mt-8 mb-2 border-b border-white/20 pb-1 w-full tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>My matches</h2>
+          <div className="text-white/90 mb-6 w-full text-center">No matches yet. Once your sponsor agrees to the introduction, you can chat here.</div>
+          <h2 className="text-xl font-light text-white mt-6 mb-2 border-b border-white/20 pb-1 w-full tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>My sneak peaks</h2>
           <div className="h-16" />
         </div>
       </>
@@ -354,7 +354,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
       <ProfileSection />
       <div className="flex flex-col gap-4 w-full">
         {/* My Sponsors Section */}
-        <h2 className="text-xl font-light text-white mb-2 border-b border-white/20 pb-1 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>MY SPONSORS</h2>
+        <h2 className="text-xl font-light text-white mb-2 border-b border-white/20 pb-1 tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>My sponsors</h2>
         <ChatRow
           photo={sponsor.profile_pic_url}
           name={sponsor.name}
@@ -382,21 +382,21 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
                 className="block w-full text-left px-5 py-3 text-base text-primary-blue hover:bg-gray-50 rounded-xl font-semibold transition-colors"
                 onClick={e => { e.stopPropagation(); router.push(`/profile/${sponsor.id}`); setSponsorMenuOpen(false); }}
               >
-                View Sponsor
+                View sponsor
               </button>
               <button
                 className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
                 onClick={e => { e.stopPropagation(); setShowEndSponsorshipModal(true); setSponsorMenuOpen(false); }}
               >
-                End Sponsorship
+                End sponsorship
               </button>
             </div>
           )}
         />
         {/* My Matches Section */}
-        <h2 className="text-xl font-light text-white mt-6 mb-2 border-b border-white/20 pb-1 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>MY MATCHES</h2>
+        <h2 className="text-xl font-light text-white mt-6 mb-2 border-b border-white/20 pb-1 tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>My matches</h2>
         {singleChats.length === 0 ? (
-          <div className="text-white/90 mb-6">No matches yet. Once your sponsors approve a match, you can chat here!</div>
+          <div className="text-white/90 mb-6">No matches yet. Once your sponsor agrees to the introduction, you can chat here.</div>
         ) : (
           <div className="flex flex-col gap-2">
             {singleChats.map((row, idx) => (
@@ -404,7 +404,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
                 key={row.otherSingle.id}
                 photo={row.otherSingle.photo}
                 name={row.otherSingle.name}
-                lastMessage={row.lastMessage ? row.lastMessage.content : 'Click to chat with your match'}
+                lastMessage={row.lastMessage ? row.lastMessage.content : 'Click to chat'}
                 unreadCount={row.unreadCount}
                 onClick={() => handleOpenSingleChat(row)}
                 timestamp={row.lastMessage ? new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
@@ -437,7 +437,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
           </div>
         )}
         {/* My Sneak Peaks Section */}
-        <h2 className="text-xl font-bold text-white mt-6 mb-2 border-b border-white/20 pb-1">My Sneak Peaks</h2>
+        <h2 className="text-xl font-bold text-white mt-6 mb-2 border-b border-white/20 pb-1">My sneak peaks</h2>
         <div className="h-16" />
         {/* Chat Modal and other logic remain unchanged */}
         {/* Single-to-Single Chat Modal */}
@@ -493,7 +493,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
                   Cancel
                 </button>
                 <button onClick={handleUnmatch} className="px-6 py-2 bg-gradient-primary text-white rounded-md hover:bg-gradient-light font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
-                  Yes, Unmatch
+                  Unmatch
                 </button>
               </div>
             </div>

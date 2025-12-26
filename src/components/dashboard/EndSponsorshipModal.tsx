@@ -33,9 +33,9 @@ export default function EndSponsorshipModal({
 
   const getTitle = () => {
     if (isSponsorView) {
-      return `End Sponsorship with ${singleName || 'this single'}?`;
+      return `End sponsorship with ${singleName || 'this single'}?`;
     } else {
-      return `End Sponsorship with ${sponsorName || 'your sponsor'}?`;
+      return `End sponsorship with ${sponsorName || 'your sponsor'}?`;
     }
   };
 
@@ -64,13 +64,13 @@ export default function EndSponsorshipModal({
             className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
             onClick={onClose}
           >
-            Nevermind
+            Cancel
           </button>
           <button
             className="px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
             onClick={handleConfirm}
           >
-            End Sponsorship
+            End sponsorship
           </button>
         </div>
       </div>

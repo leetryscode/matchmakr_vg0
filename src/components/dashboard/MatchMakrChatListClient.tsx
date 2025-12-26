@@ -269,10 +269,10 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       });
       const data = await res.json();
       if (!data.success) {
-        alert(data.error || 'Failed to send message');
+        alert(data.error || 'This message couldn\'t be sent. Please try again.');
       }
     } catch (err) {
-      alert('Failed to send message');
+      alert('This message couldn\'t be sent. Please try again.');
     }
     setSending(false);
   };
@@ -343,7 +343,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   return (
     <div className="mb-8">
       {/* Section header, no container */}
-                      <h2 className="text-xl font-light text-white mb-2 border-b border-white/20 pb-1 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>SPONSOR CHAT</h2>
+                      <h2 className="text-xl font-light text-white mb-2 border-b border-white/20 pb-1 tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Sponsor chat</h2>
       {/* Chat rows for matchmakrs only */}
       {localConversations.length === 0 ||
         localConversations.filter((msg: any) => {
@@ -353,7 +353,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           // Only show chats with other matchmakrs
           return !sponsoredSingles.some(s => s.id === otherId);
         }).length === 0 ? (
-        <div className="text-white/90 mb-6">You have no more chats with Sponsors.</div>
+        <div className="text-white/90 mb-6">No sponsor chats</div>
       ) : (
         <div className="mb-6 flex flex-col gap-3">
           {localConversations
@@ -402,7 +402,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-white truncate drop-shadow">{profile?.name || 'Unknown Sponsor'}</div>
+                    <div className="font-medium text-white truncate drop-shadow">{profile?.name || 'Unknown sponsor'}</div>
                     <div className="text-xs text-white/80 truncate mb-1">{singlesInfo}</div>
                     <div className="text-sm text-white/90 truncate">{msg.content}</div>
                   </div>
@@ -433,7 +433,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                           className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-t-lg"
                           onClick={e => { e.stopPropagation(); setConfirmDelete({otherId, profileName: profile?.name || 'this sponsor'}); setMenuOpen(null); }}
                         >
-                          Delete Chat
+                          Delete chat
                         </button>
                       </div>
                     )}
@@ -506,7 +506,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       {confirmDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
           <div className="bg-white rounded-2xl p-8 shadow-xl max-w-sm w-full text-center">
-            <h3 className="text-xl font-bold mb-4 text-primary-blue">Delete Chat?</h3>
+            <h3 className="text-xl font-bold mb-4 text-primary-blue">Delete chat?</h3>
             <p className="mb-6 text-gray-600">Delete chat for both parties? You can restart the conversation by finding them in the pond</p>
             <div className="flex gap-4 justify-center">
               <button
