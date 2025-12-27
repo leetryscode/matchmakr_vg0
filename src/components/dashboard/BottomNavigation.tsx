@@ -11,6 +11,38 @@ interface BottomNavigationProps {
     userId: string;
 }
 
+interface PondSlotProps {
+    enabled?: boolean;
+    onClick?: () => void;
+    href?: string;
+    orbitRole?: string | null;
+}
+
+function PondSlot({ enabled = false, onClick, href, orbitRole }: PondSlotProps) {
+    if (!enabled) {
+        return null;
+    }
+
+    // Visually distinct circular badge container
+    // Ready for future onClick/href wiring but not clickable yet
+    const content = (
+        <div className="flex flex-col items-center">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-blue to-primary-teal flex items-center justify-center shadow-lg border-2 border-white">
+                {/* Placeholder icon - can be replaced later */}
+                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className="text-white">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 8v8M8 12h8" />
+                </svg>
+            </div>
+            <span className="text-xs text-gray-500 mt-1">Pond</span>
+        </div>
+    );
+
+    // Not clickable yet - render as div
+    // Future: can wrap in button (if onClick provided) or Link (if href provided)
+    return <div className="flex flex-col items-center">{content}</div>;
+}
+
 type BottomNavItem =
     | { key: string; kind: 'link'; label: string; href: string; icon: React.ReactNode; show?: boolean }
     | { key: string; kind: 'action'; label: string; onClick: () => void; icon: React.ReactNode; show?: boolean };
@@ -75,6 +107,9 @@ function renderNavItem(item: BottomNavItem) {
 
 export default function BottomNavigation({ userId }: BottomNavigationProps) {
     const { userType } = useAuth();
+    
+    // Feature flag: Pond slot is not enabled yet
+    const ENABLE_POND_SLOT = false;
 
     const items: BottomNavItem[] = [
         {
@@ -142,6 +177,12 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
                 {itemsBeforeNotifications.map(renderNavItem)}
                 {/* Notifications - special render */}
                 <NotificationNavItem key="notifications" userId={userId} />
+                {/* Pond Slot - reserved space for future feature */}
+                <PondSlot 
+                    key="pond-slot"
+                    enabled={ENABLE_POND_SLOT}
+                    orbitRole={userType || null}
+                />
                 {itemsAfterNotifications.map(renderNavItem)}
             </div>
         </nav>
