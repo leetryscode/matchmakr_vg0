@@ -1,61 +1,30 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface NotificationNavItemProps {
     userId: string;
 }
 
 export default function NotificationNavItem({ userId }: NotificationNavItemProps) {
-    const supabaseRef = useRef(createClient());
     const [showDropdown, setShowDropdown] = useState(false);
-    const [notifications, setNotifications] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(0);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const { notifications, unreadCount, loading, refresh, markAllRead } = useNotifications(userId);
 
-    // Fetch notifications for the current user
+    // Fetch notifications when dropdown opens
     useEffect(() => {
-        if (!showDropdown) return;
-        setLoading(true);
-        supabaseRef.current
-            .from('notifications')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false })
-            .limit(10)
-            .then(({ data }) => {
-                setNotifications(data || []);
-                setLoading(false);
-            });
-    }, [showDropdown, userId]);
-
-    // Fetch unread count (for badge)
-    useEffect(() => {
-        supabaseRef.current
-            .from('notifications')
-            .select('id', { count: 'exact', head: true })
-            .eq('user_id', userId)
-            .eq('read', false)
-            .then(({ count }) => setUnreadCount(count || 0));
-    }, [userId, showDropdown]);
+        if (showDropdown) {
+            refresh();
+        }
+    }, [showDropdown, refresh]);
 
     // Mark notifications as read when dropdown opens
     useEffect(() => {
-        if (!showDropdown || unreadCount === 0) return;
-        // Mark all unread notifications as read
-        supabaseRef.current
-            .from('notifications')
-            .update({ read: true })
-            .eq('user_id', userId)
-            .eq('read', false)
-            .then(() => {
-                setUnreadCount(0);
-                // Optionally update notifications state to reflect read status
-                setNotifications((prev) => prev.map(n => ({ ...n, read: true })));
-            });
-    }, [showDropdown, unreadCount, userId]);
+        if (showDropdown && unreadCount > 0) {
+            markAllRead();
+        }
+    }, [showDropdown, unreadCount, markAllRead]);
 
     // Close dropdown on outside click or Escape
     useEffect(() => {
