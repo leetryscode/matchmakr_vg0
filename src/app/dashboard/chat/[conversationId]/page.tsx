@@ -6,8 +6,6 @@ import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import GroupedMessageList from '@/components/chat/GroupedMessageList';
 
-const BOTTOM_NAV_HEIGHT_PX = 72; // Bottom tab bar height
-
 export default function ChatPage() {
   const router = useRouter();
   const { conversationId } = useParams();
@@ -521,7 +519,7 @@ export default function ChatPage() {
       </div>
       
       {/* Input Section */}
-      <div className="fixed left-0 right-0 bottom-[72px] z-30 bg-white border-t border-border-light px-4 py-4 flex items-center gap-3">
+      <div className="fixed left-0 right-0 bottom-[calc(var(--bottom-nav-h,0px)+env(safe-area-inset-bottom))] z-30 bg-white border-t border-border-light px-4 py-4 flex items-center gap-3">
           <input
             type="text"
             className="flex-1 border border-gray-300 rounded-2xl px-4 py-4 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 placeholder:text-gray-400 placeholder:italic text-base bg-white/90"
@@ -545,7 +543,7 @@ export default function ChatPage() {
       </div>
       
       {/* Bottom spacer for bottom nav */}
-      <div className="h-[72px]" aria-hidden="true" />
+      <div className="h-[var(--bottom-nav-h,0px)]" aria-hidden="true" />
       
       {/* Approval Confirmation Modal */}
       {showApprovalModal && (
