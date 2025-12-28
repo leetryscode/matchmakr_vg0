@@ -343,7 +343,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   return (
     <div className="mb-8">
       {/* Section header, no container */}
-                      <h2 className="text-xl font-light text-white mb-2 border-b border-white/20 pb-1 tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Sponsor chat</h2>
+                      <h2 className="text-xl font-light text-white mb-2 border-b border-white/20 pb-1 tracking-[0.05em] font-brand">Sponsor chat</h2>
       {/* Chat rows for matchmakrs only */}
       {localConversations.length === 0 ||
         localConversations.filter((msg: any) => {

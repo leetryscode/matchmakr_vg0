@@ -496,7 +496,7 @@ export default function ForumPage() {
             </svg>
           </button>
           <div className="text-center">
-            <h1 className="text-xl font-light text-white tracking-[0.1em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>THE GREEN ROOM</h1>
+            <h1 className="text-xl font-light text-white tracking-[0.1em] uppercase font-brand">THE GREEN ROOM</h1>
             <p className="text-sm text-white/60 mt-1">Help us build this platform by sharing your thoughts. The Dev Team is listening!</p>
           </div>
           <div className="w-8"></div> {/* Spacer for centering */}

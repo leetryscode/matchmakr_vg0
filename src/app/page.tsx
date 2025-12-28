@@ -7,7 +7,7 @@ export default function HomePage() {
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
         <h1 className="text-4xl font-light tracking-tight sm:text-5xl md:text-[5rem] leading-[1.1] text-center">
           <span className="text-2xl sm:text-3xl md:text-4xl font-extralight text-gray-600 block mb-2">Welcome to</span>
-          <span className="font-light tracking-[0.15em] uppercase text-gradient-light" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Orbit</span>
+          <span className="font-light tracking-[0.15em] uppercase text-gradient-light font-brand">Orbit</span>
         </h1>
         
         {/* Space for future slogan */}

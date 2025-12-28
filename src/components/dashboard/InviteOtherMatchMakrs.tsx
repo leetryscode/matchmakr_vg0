@@ -10,7 +10,7 @@ const InviteOtherMatchMakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClo
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-gray-200">
-                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Invite a fellow sponsor</h2>
+                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] font-brand">Invite a fellow sponsor</h2>
                 <p className="text-gray-600 mb-6 leading-relaxed">
                     Invite a friend to join our community helping friends find love.
                 </p>
@@ -40,7 +40,7 @@ export default function InviteOtherMatchMakrs() {
     return (
         <>
             <div className="bg-white/10 p-8 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-white/20 mb-8">
-                <h2 className="text-3xl font-light text-white mb-3 tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Sponsor chat</h2>
+                <h2 className="text-3xl font-light text-white mb-3 tracking-[0.05em] font-brand">Sponsor chat</h2>
                 <p className="text-white/80 text-lg leading-relaxed mb-6">Chat windows with other sponsors like you, on behalf of their sponsored singles</p>
                 <div className="text-center p-12 bg-white/10 rounded-2xl border-2 border-dashed border-white/20 mb-6">
                     <p className="text-white/70 text-lg">No sponsor chats</p>

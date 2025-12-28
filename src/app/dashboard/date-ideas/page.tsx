@@ -26,7 +26,7 @@ export default function DateIdeasPage() {
     <div className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-b from-primary-blue to-accent-teal-light p-6 text-white">
       {/* Date Ideas Header */}
       <div className="w-full text-center mb-8 mt-8">
-        <h1 className="text-2xl font-light tracking-[0.05em]" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>
+        <h1 className="text-2xl font-light tracking-[0.05em] font-brand">
           Date Ideas
         </h1>
       </div>

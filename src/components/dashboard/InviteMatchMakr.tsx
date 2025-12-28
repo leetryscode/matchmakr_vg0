@@ -48,7 +48,7 @@ const InviteMatchmakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center border border-gray-200">
-                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>INVITE A SPONSOR</h2>
+                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] uppercase font-brand">INVITE A SPONSOR</h2>
                 <p className="text-gray-600 mb-6">
                     This person will be responsible for managing your profile and finding your matches!
                 </p>
@@ -88,7 +88,7 @@ export default function InviteMatchMakr() {
     return (
         <>
             <div className="bg-background-card p-6 rounded-lg shadow-card mt-8 border border-gray-200">
-                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>CHAT WITH MY SPONSOR</h2>
+                <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] uppercase font-brand">CHAT WITH MY SPONSOR</h2>
                 <div className="mt-4 p-4 border border-gray-200 rounded-lg flex items-center justify-between bg-gray-50">
                     <span className="text-gray-700">Chat with the user who manages your profile!</span>
                     <button className="bg-gradient-primary text-white px-4 py-2 rounded-lg hover:bg-gradient-light transition-all duration-300 shadow-button hover:shadow-button-hover">

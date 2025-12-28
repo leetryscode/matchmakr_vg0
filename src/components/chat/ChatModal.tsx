@@ -314,7 +314,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     return (
       <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
         <div className="bg-white rounded-2xl p-8 shadow-xl w-[400px] text-center">
-                          <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Loading...</div>
+                          <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase font-brand">Loading...</div>
           <div className="flex justify-center items-center mt-4">
             <svg className="animate-spin h-8 w-8 text-primary-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -446,7 +446,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
             </>
           ) : (
             <>
-              <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Your conversation with <span className="italic text-primary-blue-light">{otherUserName}</span></div>
+              <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase font-brand">Your conversation with <span className="italic text-primary-blue-light">{otherUserName}</span></div>
               <div className="flex items-center justify-center gap-8">
                 <div className="flex flex-col items-center">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">

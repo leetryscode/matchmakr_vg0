@@ -50,7 +50,7 @@ export default function DashboardLayout({ children, firstName, userId, userType 
         <div className="flex flex-col min-h-screen w-full text-white relative">
             {/* Brand Header Only */}
             <div className="flex flex-col items-center pt-8 pb-4">
-                <div className="text-lg font-light tracking-[0.15em] text-white uppercase" style={{ fontFamily: "'Bahnschrift Light', 'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" }}>Orbit</div>
+                <div className="text-lg font-light tracking-[0.15em] text-white uppercase font-brand">Orbit</div>
             </div>
             {/* Main Content */}
             <main className="flex-grow p-4 md:p-8">
