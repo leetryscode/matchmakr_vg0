@@ -48,18 +48,20 @@ export default function DashboardLayout({ children, firstName, userId, userType 
 
     return (
         <div className="flex flex-col min-h-screen w-full text-white relative">
-            {/* Brand Header Only */}
-            <div className="flex flex-col items-center pt-8 pb-4">
+            {/* Brand Header - consistent spacing across all dashboard pages */}
+            <header className="flex flex-col items-center pt-8 pb-6">
                 <div className="text-lg font-light tracking-[0.15em] text-white uppercase font-brand">Orbit</div>
-            </div>
-            {/* Main Content */}
-            <main className="flex-grow p-4 md:p-8">
+            </header>
+            {/* Main Content - standardized responsive padding rhythm */}
+            {/* GlobalLayout handles bottom padding for bottom nav; no extra padding needed here */}
+            <main className="flex-grow px-4 sm:px-6 md:px-8">
                 <div className="max-w-4xl mx-auto">
                     {children}
                 </div>
             </main>
-            {/* Logout Button - Bottom Left */}
-            <div className="absolute bottom-4 left-4">
+            {/* Logout Button - Bottom Left, positioned above bottom nav */}
+            {/* GlobalLayout handles bottom nav padding, but absolute positioning needs manual offset */}
+            <div className="absolute bottom-[calc(var(--bottom-nav-h,72px)+1rem)] left-4">
                 <button 
                     onClick={handleLogout}
                     className="flex items-center gap-2 px-3 py-2 bg-white/10 backdrop-blur-sm text-white text-sm rounded-lg border border-white/20 hover:bg-white/20 hover:text-red-200 transition-all duration-200 shadow-lg"

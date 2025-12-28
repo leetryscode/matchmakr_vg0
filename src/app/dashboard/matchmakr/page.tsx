@@ -9,20 +9,21 @@ import InviteOtherMatchMakrs from '@/components/dashboard/InviteOtherMatchMakrs'
 import SponsoredSinglesListClient from '@/components/dashboard/SponsoredSinglesListClient';
 import MatchMakrChatList from '@/components/dashboard/MatchMakrChatList';
 import AddSingleButton from '@/components/dashboard/AddSingleButton';
+import GlassCard from '@/components/ui/GlassCard';
+import PrimaryCTA from '@/components/ui/PrimaryCTA';
+import SectionHeader from '@/components/ui/SectionHeader';
 
 // Prominent Singles Pond Button
 const SinglesPondButton = () => (
     <div className="mb-8">
-        <div className="bg-white/10 p-8 rounded-xl shadow-card border border-white/20">
+        <GlassCard variant="1" className="p-8">
             <div className="text-center">
-                <a href="/pond" className="inline-block">
-                    <button className="bg-gradient-to-br from-primary-blue to-primary-teal text-white px-12 py-4 rounded-full font-semibold text-xl shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2 border-2 border-white">
-                        Singles Pond
-                    </button>
-                </a>
+                <PrimaryCTA href="/pond">
+                    Singles Pond
+                </PrimaryCTA>
                 <div className="mt-4 text-white text-base font-medium">Discover singles, message their sponsor</div>
             </div>
-        </div>
+        </GlassCard>
     </div>
 );
 
@@ -119,7 +120,7 @@ async function MatchMakrDashboardContent() {
             />
             {/* Manage my Singles Section */}
             <div className="mt-10 flex flex-col items-center mb-32">
-                <h2 className="text-xl text-white mb-4 border-b border-white/20 pb-1 w-full text-center tracking-[0.05em] font-brand">Manage my singles</h2>
+                <SectionHeader title="Manage my singles" className="w-full text-center mb-4" />
                 <a href={`/profile/${user.id}`} className="block mb-2">
                     <div className="w-28 h-28 rounded-full border-4 border-white bg-gray-200 overflow-hidden flex items-center justify-center mx-auto shadow-lg hover:scale-105 transition">
                         {currentUserProfilePic ? (

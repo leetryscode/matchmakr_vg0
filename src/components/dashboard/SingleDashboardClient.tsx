@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import InviteMatchMakrModal from '@/components/dashboard/InviteMatchMakrModal';
 import EndSponsorshipModal from './EndSponsorshipModal';
+import SectionHeader from '@/components/ui/SectionHeader';
 
 interface SingleDashboardClientProps {
   userId: string;
@@ -340,9 +341,9 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
             Invite someone to be my sponsor
           </button>
           <InviteMatchMakrModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
-          <h2 className="text-xl font-light text-white mt-8 mb-2 border-b border-white/20 pb-1 w-full tracking-[0.05em] font-brand">My matches</h2>
+          <SectionHeader title="My matches" className="mt-8 w-full" />
           <div className="text-white/90 mb-6 w-full text-center">No matches yet. Once your sponsor agrees to the introduction, you can chat here.</div>
-          <h2 className="text-xl font-light text-white mt-6 mb-2 border-b border-white/20 pb-1 w-full tracking-[0.05em] font-brand">My sneak peaks</h2>
+          <SectionHeader title="My sneak peaks" className="mt-6 w-full" />
           <div className="h-16" />
         </div>
       </>
@@ -354,7 +355,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
       <ProfileSection />
       <div className="flex flex-col gap-4 w-full">
         {/* My Sponsors Section */}
-        <h2 className="text-xl font-light text-white mb-2 border-b border-white/20 pb-1 tracking-[0.05em] font-brand">My sponsors</h2>
+        <SectionHeader title="My sponsors" />
         <ChatRow
           photo={sponsor.profile_pic_url}
           name={sponsor.name}
@@ -394,7 +395,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
           )}
         />
         {/* My Matches Section */}
-        <h2 className="text-xl font-light text-white mt-6 mb-2 border-b border-white/20 pb-1 tracking-[0.05em] font-brand">My matches</h2>
+        <SectionHeader title="My matches" className="mt-6" />
         {singleChats.length === 0 ? (
           <div className="text-white/90 mb-6">No matches yet. Once your sponsor agrees to the introduction, you can chat here.</div>
         ) : (
@@ -437,7 +438,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
           </div>
         )}
         {/* My Sneak Peaks Section */}
-        <h2 className="text-xl font-bold text-white mt-6 mb-2 border-b border-white/20 pb-1">My sneak peaks</h2>
+        <SectionHeader title="My sneak peaks" className="mt-6" />
         <div className="h-16" />
         {/* Chat Modal and other logic remain unchanged */}
         {/* Single-to-Single Chat Modal */}
