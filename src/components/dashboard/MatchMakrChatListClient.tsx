@@ -344,7 +344,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   return (
     <div>
       {/* Section header */}
-      <SectionHeader title="Sponsor chat" className="mb-4" />
+      <SectionHeader title="Sponsor chat" />
       {/* Chat rows for matchmakrs only */}
       {localConversations.length === 0 ||
         localConversations.filter((msg: any) => {

@@ -167,7 +167,6 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
             <SectionHeader 
                 title="Chat with your singles" 
                 right={sponsoredSingles && sponsoredSingles.length === 0 ? <AddSingleButton /> : undefined}
-                className="mb-4"
             />
             <div className="flex flex-col gap-3">
                 {sponsoredSingles && sponsoredSingles.length > 0 ? (

@@ -111,56 +111,55 @@ async function MatchMakrDashboardContent() {
             
             {/* Consistent vertical rhythm between sections */}
             <div className="flex flex-col space-y-6">
-                {/* Primary CTA - Singles Pond */}
+                {/* Primary CTA - Singles Pond (hero card) */}
                 <SinglesPondButton />
                 
-                {/* Sponsor-to-sponsor chat list */}
+                {/* Shared content card - Sponsor chat, Chat with singles, Manage singles */}
                 <GlassCard variant="1" className="p-6">
-                    <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
-                </GlassCard>
-                
-                {/* Chat with your singles */}
-                <GlassCard variant="1" className="p-6">
-                    <SponsoredSinglesListClient 
-                        sponsoredSingles={processedSponsoredSingles} 
-                        singleChats={singleChats} 
-                        userId={user.id}
-                        userName={currentUserName}
-                        userProfilePic={currentUserProfilePic}
-                    />
-                </GlassCard>
-                
-                {/* Manage my singles */}
-                <GlassCard variant="1" className="p-6">
-                    <div className="flex flex-col items-center">
-                        <SectionHeader title="Manage my singles" className="w-full text-center mb-4" />
-                        <a href={`/profile/${user.id}`} className="block mb-2">
-                            <div className="w-28 h-28 rounded-full border-4 border-white bg-gray-200 overflow-hidden flex items-center justify-center mx-auto shadow-lg hover:scale-105 transition">
-                                {currentUserProfilePic ? (
-                                    <img src={currentUserProfilePic} alt={currentUserName} className="object-cover w-full h-full" />
+                    <div className="flex flex-col space-y-6">
+                        {/* Sponsor-to-sponsor chat list */}
+                        <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
+                        
+                        {/* Chat with your singles */}
+                        <SponsoredSinglesListClient 
+                            sponsoredSingles={processedSponsoredSingles} 
+                            singleChats={singleChats} 
+                            userId={user.id}
+                            userName={currentUserName}
+                            userProfilePic={currentUserProfilePic}
+                        />
+                        
+                        {/* Manage my singles */}
+                        <div className="flex flex-col items-center">
+                            <SectionHeader title="Manage my singles" className="w-full text-center" />
+                            <a href={`/profile/${user.id}`} className="block mb-2">
+                                <div className="w-28 h-28 rounded-full border-4 border-white bg-gray-200 overflow-hidden flex items-center justify-center mx-auto shadow-lg hover:scale-105 transition">
+                                    {currentUserProfilePic ? (
+                                        <img src={currentUserProfilePic} alt={currentUserName} className="object-cover w-full h-full" />
+                                    ) : (
+                                        <span className="text-4xl font-bold text-white">{currentUserName?.charAt(0).toUpperCase() || '?'}</span>
+                                    )}
+                                </div>
+                            </a>
+                            <a href={`/profile/${user.id}`} className="text-base text-white hover:text-accent-teal-light focus:outline-none mb-6 block text-center">My Profile</a>
+                            <div className="flex flex-wrap justify-center gap-x-8 gap-y-6 w-full max-w-xs">
+                                {processedSponsoredSingles && processedSponsoredSingles.length > 0 ? (
+                                    processedSponsoredSingles.map(single => (
+                                        <a key={single.id} href={`/profile/${single.id}`} className="flex flex-col items-center group w-20">
+                                            <div className="w-16 h-16 rounded-full border-2 border-white bg-gray-200 overflow-hidden flex items-center justify-center shadow-md group-hover:scale-105 transition">
+                                                {single.profile_pic_url ? (
+                                                    <img src={single.profile_pic_url} alt={single.name || 'Single'} className="object-cover w-full h-full" />
+                                                ) : (
+                                                    <span className="text-2xl font-bold text-white">{single.name?.charAt(0).toUpperCase() || '?'}</span>
+                                                )}
+                                            </div>
+                                            <span className="mt-2 text-sm font-semibold text-white text-center w-full">{single.name}</span>
+                                        </a>
+                                    ))
                                 ) : (
-                                    <span className="text-4xl font-bold text-white">{currentUserName?.charAt(0).toUpperCase() || '?'}</span>
+                                    <AddSingleButton />
                                 )}
                             </div>
-                        </a>
-                        <a href={`/profile/${user.id}`} className="text-base text-white hover:text-accent-teal-light focus:outline-none mb-6 block text-center">My Profile</a>
-                        <div className="flex flex-wrap justify-center gap-x-8 gap-y-6 w-full max-w-xs">
-                            {processedSponsoredSingles && processedSponsoredSingles.length > 0 ? (
-                                processedSponsoredSingles.map(single => (
-                                    <a key={single.id} href={`/profile/${single.id}`} className="flex flex-col items-center group w-20">
-                                        <div className="w-16 h-16 rounded-full border-2 border-white bg-gray-200 overflow-hidden flex items-center justify-center shadow-md group-hover:scale-105 transition">
-                                            {single.profile_pic_url ? (
-                                                <img src={single.profile_pic_url} alt={single.name || 'Single'} className="object-cover w-full h-full" />
-                                            ) : (
-                                                <span className="text-2xl font-bold text-white">{single.name?.charAt(0).toUpperCase() || '?'}</span>
-                                            )}
-                                        </div>
-                                        <span className="mt-2 text-sm font-semibold text-white text-center w-full">{single.name}</span>
-                                    </a>
-                                ))
-                            ) : (
-                                <AddSingleButton />
-                            )}
                         </div>
                     </div>
                 </GlassCard>
