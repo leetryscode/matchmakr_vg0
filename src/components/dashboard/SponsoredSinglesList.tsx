@@ -7,6 +7,8 @@ import Link from 'next/link';
 import FlameUnreadIcon from './FlameUnreadIcon';
 import { useRouter, usePathname } from 'next/navigation';
 import EndSponsorshipModal from './EndSponsorshipModal';
+import SectionHeader from '@/components/ui/SectionHeader';
+import AddSingleButton from './AddSingleButton';
 
 interface SponsoredSingle {
     id: string;
@@ -161,9 +163,13 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
 
     return (
         <>
-            {/* Section header, no container */}
-                            <h2 className="text-xl font-light text-white mb-2 border-b border-white/20 pb-1 tracking-[0.05em] font-brand">Chat with your singles</h2>
-            <div className="flex flex-col gap-3 mb-4">
+            {/* Section header with Add Single action */}
+            <SectionHeader 
+                title="Chat with your singles" 
+                right={sponsoredSingles && sponsoredSingles.length === 0 ? <AddSingleButton /> : undefined}
+                className="mb-4"
+            />
+            <div className="flex flex-col gap-3">
                 {sponsoredSingles && sponsoredSingles.length > 0 ? (
                     sponsoredSingles.map(single => {
                         const lastMsg = latestMessages[single.id] || singleChats?.[single.id];

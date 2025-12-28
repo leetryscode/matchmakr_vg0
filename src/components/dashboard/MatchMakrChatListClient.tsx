@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import { createClient } from '@/lib/supabase/client';
 import FlameUnreadIcon from './FlameUnreadIcon';
 import { useRouter, usePathname } from 'next/navigation';
+import SectionHeader from '@/components/ui/SectionHeader';
 
 
 interface MatchMakrChatListClientProps {
@@ -341,9 +342,9 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const sponsoredSingleId = sponsoredSingles && sponsoredSingles.length > 0 ? sponsoredSingles[0].id : null;
 
   return (
-    <div className="mb-8">
-      {/* Section header, no container */}
-                      <h2 className="text-xl font-light text-white mb-2 border-b border-white/20 pb-1 tracking-[0.05em] font-brand">Sponsor chat</h2>
+    <div>
+      {/* Section header */}
+      <SectionHeader title="Sponsor chat" className="mb-4" />
       {/* Chat rows for matchmakrs only */}
       {localConversations.length === 0 ||
         localConversations.filter((msg: any) => {
