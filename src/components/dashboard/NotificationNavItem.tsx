@@ -66,9 +66,9 @@ export default function NotificationNavItem({ userId }: NotificationNavItemProps
                     </span>
                 )}
             </button>
-            {/* Notification Dropdown */}
+            {/* Notification Dropdown - anchored to bell button, opens upward */}
             {showDropdown && (
-                <div ref={dropdownRef} className="absolute bottom-12 right-0 w-80 bg-white text-gray-900 rounded-xl shadow-lg border border-gray-200 z-50 animate-fade-in">
+                <div ref={dropdownRef} className="absolute bottom-full right-0 mb-2 w-80 bg-white text-gray-900 rounded-xl shadow-lg border border-gray-200 z-50 animate-fade-in">
                     <div className="p-4 border-b font-bold text-lg text-primary-blue">Notifications</div>
                     {loading ? (
                         <div className="p-4 text-center text-gray-500">Loading...</div>

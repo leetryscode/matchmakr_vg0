@@ -180,7 +180,7 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
     const visibleItems = items.filter(item => item.show !== false);
 
     return (
-        <nav className="fixed bottom-0 left-0 w-full bg-white/60 backdrop-blur-md shadow-card z-50 border-t border-white/30">
+        <nav className="fixed bottom-0 left-0 w-full bg-white/60 backdrop-blur-md shadow-card z-40 border-t border-white/30 pb-[env(safe-area-inset-bottom)]">
             {/* Inner container with fixed 72px height */}
             <div className="flex items-center w-full px-2" style={{ height: `${BOTTOM_NAV_HEIGHT_PX}px` }}>
                 {/* Left group: Standard nav items */}
