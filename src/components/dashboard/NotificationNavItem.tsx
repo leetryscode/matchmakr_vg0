@@ -48,18 +48,18 @@ export default function NotificationNavItem({ userId }: NotificationNavItemProps
     return (
         <div className="relative flex flex-col items-center justify-center">
             <button
-                className="flex flex-col items-center justify-center text-gray-500 hover:text-primary-blue text-xs focus:outline-none"
+                className="flex flex-col items-center justify-center focus:outline-none gap-1"
                 aria-label="Notifications"
                 onClick={() => setShowDropdown(v => !v)}
             >
                 {/* Bell SVG */}
-                <div className="flex items-center justify-center" style={{ width: '22px', height: '22px' }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <div className="flex items-center justify-center text-white/75 hover:text-white transition-colors" style={{ width: '20px', height: '20px' }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
                         <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                     </svg>
                 </div>
-                <span className="leading-tight">Alerts</span>
+                <span className="text-[10px] leading-tight text-white/60">Notifications</span>
                 {unreadCount > 0 && (
                     <span className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow-lg border-2 border-white animate-pulse" style={{transform: 'translate(50%,-50%)'}}>
                         {unreadCount}
