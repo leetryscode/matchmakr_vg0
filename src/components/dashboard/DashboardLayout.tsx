@@ -6,7 +6,7 @@ import { OrbitUserRole } from '@/types/orbit';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
-    firstName: string | null;
+    firstName?: string | null; // Optional for shared pages
     userId: string;
     userType?: OrbitUserRole; // Only Orbit roles (SINGLE | MATCHMAKR)
 }

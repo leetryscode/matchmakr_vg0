@@ -7,7 +7,7 @@ import { OrbitUserRole } from '@/types/orbit';
 
 interface DashboardWrapperProps {
   children: React.ReactNode;
-  expectedUserType?: OrbitUserRole; // Only Orbit roles (SINGLE | MATCHMAKR)
+  expectedUserType?: OrbitUserRole; // Only Orbit roles (SINGLE | MATCHMAKR) - optional for shared pages
 }
 
 export default function DashboardWrapper({ children, expectedUserType }: DashboardWrapperProps) {
@@ -31,6 +31,27 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
     // If no user, redirect to welcome page
     if (!user) {
       router.push('/');
+      return;
+    }
+
+    // For shared pages (no expectedUserType), wait for orbitRole but don't redirect
+    if (!expectedUserType) {
+      if (!orbitRole) {
+        // Wait up to 3 seconds for role to load
+        setWaitingForRole(true);
+        roleWaitTimeoutRef.current = setTimeout(() => {
+          setWaitingForRole(false);
+          // After timeout, allow access anyway to prevent infinite loading
+        }, 3000);
+        return;
+      }
+      // Clear waiting state once role is available
+      setWaitingForRole(false);
+      if (roleWaitTimeoutRef.current) {
+        clearTimeout(roleWaitTimeoutRef.current);
+        roleWaitTimeoutRef.current = null;
+      }
+      // Don't redirect - allow both roles to access shared pages
       return;
     }
 
