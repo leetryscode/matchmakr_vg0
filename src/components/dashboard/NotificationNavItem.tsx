@@ -12,6 +12,9 @@ export default function NotificationNavItem({ userId, pathname }: NotificationNa
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const { notifications, unreadCount, loading, refresh, markAllRead } = useNotifications(userId);
+    
+    // Notifications is active when dropdown is open (no dedicated route)
+    const isActive = showDropdown;
 
     // Fetch notifications when dropdown opens
     useEffect(() => {
@@ -45,8 +48,6 @@ export default function NotificationNavItem({ userId, pathname }: NotificationNa
             document.removeEventListener('keydown', handleEscape);
         };
     }, [showDropdown]);
-
-    const isActive = pathname === '/dashboard/notifications';
 
     return (
         <div className="relative flex flex-col items-center justify-center min-w-[44px]">

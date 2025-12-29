@@ -20,12 +20,15 @@ function PondBubble({ href }: { href: string }) {
     return (
         <Link href={href} className="flex items-center justify-center" aria-label="Pond">
             <div 
-                className="rounded-full glass-1 shadow-card flex items-center justify-center"
+                className="rounded-full flex items-center justify-center border"
                 style={{ 
                     width: `${BOTTOM_NAV_HEIGHT_PX}px`,
                     height: `${BOTTOM_NAV_HEIGHT_PX}px`,
-                    backdropFilter: 'blur(8px)',
-                    WebkitBackdropFilter: 'blur(8px)'
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    borderColor: 'rgba(255, 255, 255, 0.25)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    boxShadow: '0 8px 32px rgba(15, 23, 42, 0.08)'
                 }}
             >
                 {/* Orbit brand mark: stylized "O" - larger to fill space */}
@@ -82,14 +85,45 @@ function NavItemLink({ href, icon, label, isActive = false }: NavItemLinkProps) 
             <div className={`flex items-center justify-center transition-colors ${isActive ? 'text-white' : 'text-white/75 hover:text-white'}`} style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
-            <span className={`text-[10px] leading-none mt-1 truncate max-w-full ${isActive ? 'text-white/65' : 'text-white/60'}`}>{label}</span>
+            <span className={`text-[10px] leading-none mt-1 truncate max-w-full ${isActive ? 'text-white/60' : 'text-white/60'}`}>{label}</span>
         </Link>
     );
 }
 
+/**
+ * Check if pathname matches exactly or is a child of the base path
+ */
+function isExactOrChild(pathname: string, base: string): boolean {
+    if (pathname === base) return true;
+    if (pathname.startsWith(base + '/')) return true;
+    return false;
+}
+
+/**
+ * Check if Dashboard route is active (only /dashboard/single or /dashboard/matchmakr, not other /dashboard/* routes)
+ */
+function isDashboardActive(pathname: string): boolean {
+    return isExactOrChild(pathname, '/dashboard/single') || isExactOrChild(pathname, '/dashboard/matchmakr');
+}
+
 function renderNavItem(item: BottomNavItem, pathname: string) {
     if (item.kind === 'link') {
-        const isActive = pathname === item.href || (item.key === 'dashboard' && pathname.startsWith('/dashboard') && !pathname.startsWith('/dashboard/date-ideas') && !pathname.startsWith('/dashboard/settings') && !pathname.startsWith('/dashboard/chat'));
+        let isActive = false;
+        
+        if (item.key === 'ideas') {
+            // Ideas is active only for /dashboard/date-ideas (exact or children)
+            isActive = isExactOrChild(pathname, '/dashboard/date-ideas');
+        } else if (item.key === 'settings') {
+            // Settings is active only for /dashboard/settings (exact or children)
+            isActive = isExactOrChild(pathname, '/dashboard/settings');
+        } else if (item.key === 'dashboard') {
+            // Dashboard is active only for role-specific dashboard routes (/dashboard/single or /dashboard/matchmakr)
+            isActive = isDashboardActive(pathname);
+        } else {
+            // For other items, use exact match
+            isActive = pathname === item.href;
+        }
+        
         return (
             <NavItemLink
                 key={item.key}
@@ -177,12 +211,15 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
         >
             {/* Floating bottom navigation pill - with labels */}
             <nav 
-                className="flex-1 glass-1 shadow-card rounded-pill px-4 py-3 overflow-hidden"
+                className="flex-1 rounded-pill px-4 py-3 overflow-hidden border"
                 style={{ 
-                    backdropFilter: 'blur(8px)',
-                    WebkitBackdropFilter: 'blur(8px)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    borderColor: 'rgba(255, 255, 255, 0.25)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
                     height: `${BOTTOM_NAV_HEIGHT_PX}px`,
-                    minWidth: 0
+                    minWidth: 0,
+                    boxShadow: '0 8px 32px rgba(15, 23, 42, 0.08)'
                 }}
             >
                 {/* Inner container with full height - labels below icons */}
