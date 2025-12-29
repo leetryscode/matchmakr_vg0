@@ -377,7 +377,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
               return (
                 <div
                   key={msg.id}
-                  className="flex items-center gap-4 py-3 pl-3 w-full bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 shadow-md transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
+                  className="flex items-center gap-4 py-4 pl-3 w-full bg-white/5 hover:bg-white/10 rounded-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
                   role="button"
                   tabIndex={0}
                   onClick={e => {
@@ -447,7 +447,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       {/* Sponsored Single Chat Row (if any) */}
       {sponsoredSingles && sponsoredSingles.length > 0 && (
         <div
-          className="flex items-center gap-4 py-3 pl-3 w-full bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 shadow-md transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-2"
+          className="flex items-center gap-4 py-4 pl-3 w-full bg-white/5 hover:bg-white/10 rounded-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-2"
           role="button"
           tabIndex={0}
           onClick={e => {

@@ -175,7 +175,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                         return (
                             <div
                                 key={single.id}
-                                className="flex items-center gap-4 py-3 pl-3 w-full bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 shadow-md transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
+                                className="flex items-center gap-4 py-4 pl-3 w-full bg-white/5 hover:bg-white/10 rounded-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
                                 role="button"
                                 tabIndex={0}
                                 onClick={e => {
@@ -190,7 +190,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                                     } 
                                 }}
                             >
-                                <div className="w-14 h-14 rounded-full flex items-center justify-center bg-gradient-primary text-white font-bold text-xl shadow-avatar overflow-hidden">
+                                <div className="w-14 h-14 rounded-full flex items-center justify-center bg-gradient-primary text-white font-bold text-xl overflow-hidden">
                                     {single.profile_pic_url ? (
                                         <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full rounded-full object-cover" />
                                     ) : (

@@ -11,8 +11,8 @@ type SectionHeaderProps = {
 
 export default function SectionHeader({ title, right, className }: SectionHeaderProps) {
   return (
-    <div className={cn('flex items-center justify-between mb-6', className)}>
-      <h2 className="type-section border-b border-white/20 pb-1">
+    <div className={cn('flex items-center justify-between mb-4 mt-8 first:mt-0', className)}>
+      <h2 className="type-section border-b border-white/25 pb-1.5">
         {title}
       </h2>
       {right && <div className="ml-4 type-meta">{right}</div>}

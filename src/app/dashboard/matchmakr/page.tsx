@@ -119,42 +119,32 @@ async function MatchMakrDashboardContent() {
             />
             
             {/* Consistent vertical rhythm between sections */}
-            <div className="flex flex-col space-y-6">
-
-                {/* Shared panel: Notifications, Sponsor chat, Chat with your singles */}
-                <GlassCard variant="1" className="p-6">
-                    <div className="flex flex-col space-y-6">
-                        {/* Notifications */}
-                        <div>
-                            <SectionHeader title="Notifications" />
-                            <div className="text-center py-4">
-                                <p className="type-meta">No notifications yet.</p>
-                            </div>
+            <div className="flex flex-col space-y-8">
+                {/* Notifications */}
+                <div>
+                    <SectionHeader title="Notifications" />
+                    <GlassCard variant="1" className="p-4">
+                        <div className="text-center py-2">
+                            <p className="type-meta">No notifications yet.</p>
                         </div>
+                    </GlassCard>
+                </div>
 
-                        {/* Divider */}
-                        <div className="border-t border-white/20"></div>
+                {/* Sponsor chat */}
+                <div>
+                    <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
+                </div>
 
-                        {/* Sponsor chat */}
-                        <div>
-                            <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
-                        </div>
-
-                        {/* Divider */}
-                        <div className="border-t border-white/20"></div>
-
-                        {/* Chat with your singles */}
-                        <div>
-                            <SponsoredSinglesListClient 
-                                sponsoredSingles={processedSponsoredSingles} 
-                                singleChats={singleChats} 
-                                userId={user.id}
-                                userName={currentUserName}
-                                userProfilePic={currentUserProfilePic}
-                            />
-                        </div>
-                    </div>
-                </GlassCard>
+                {/* Chat with your singles */}
+                <div>
+                    <SponsoredSinglesListClient 
+                        sponsoredSingles={processedSponsoredSingles} 
+                        singleChats={singleChats} 
+                        userId={user.id}
+                        userName={currentUserName}
+                        userProfilePic={currentUserProfilePic}
+                    />
+                </div>
 
                 {/* Primary CTA - Singles Pond (hero card) */}
                 <SinglesPondButton />
