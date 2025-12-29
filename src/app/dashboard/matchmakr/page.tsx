@@ -9,6 +9,7 @@ import InviteOtherMatchMakrs from '@/components/dashboard/InviteOtherMatchMakrs'
 import SponsoredSinglesListClient from '@/components/dashboard/SponsoredSinglesListClient';
 import MatchMakrChatList from '@/components/dashboard/MatchMakrChatList';
 import AddSingleButton from '@/components/dashboard/AddSingleButton';
+import OrbitControlPlaceholder from '@/components/dashboard/OrbitControlPlaceholder';
 import GlassCard from '@/components/ui/GlassCard';
 import PrimaryCTA from '@/components/ui/PrimaryCTA';
 import SectionHeader from '@/components/ui/SectionHeader';
@@ -109,60 +110,54 @@ async function MatchMakrDashboardContent() {
                 <div className="type-display mb-1">Hello, {firstName}</div>
             </div>
             
+            {/* Orbit Control Placeholder */}
+            <OrbitControlPlaceholder
+                userId={user.id}
+                userName={currentUserName}
+                userProfilePic={currentUserProfilePic}
+                sponsoredSingles={processedSponsoredSingles}
+            />
+            
             {/* Consistent vertical rhythm between sections */}
             <div className="flex flex-col space-y-6">
-                {/* Primary CTA - Singles Pond (hero card) */}
-                <SinglesPondButton />
-                
-                {/* Shared content card - Sponsor chat, Chat with singles, Manage singles */}
+
+                {/* Shared panel: Notifications, Sponsor chat, Chat with your singles */}
                 <GlassCard variant="1" className="p-6">
                     <div className="flex flex-col space-y-6">
-                        {/* Sponsor-to-sponsor chat list */}
-                        <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
-                        
-                        {/* Chat with your singles */}
-                        <SponsoredSinglesListClient 
-                            sponsoredSingles={processedSponsoredSingles} 
-                            singleChats={singleChats} 
-                            userId={user.id}
-                            userName={currentUserName}
-                            userProfilePic={currentUserProfilePic}
-                        />
-                        
-                        {/* Manage my singles */}
-                        <div className="flex flex-col items-center">
-                            <SectionHeader title="Manage my singles" className="w-full text-center" />
-                            <a href={`/profile/${user.id}`} className="block mb-2">
-                                <div className="w-28 h-28 rounded-full border-4 border-white bg-gray-200 overflow-hidden flex items-center justify-center mx-auto shadow-lg hover:scale-105 transition">
-                                    {currentUserProfilePic ? (
-                                        <img src={currentUserProfilePic} alt={currentUserName} className="object-cover w-full h-full" />
-                                    ) : (
-                                        <span className="text-4xl font-bold text-white">{currentUserName?.charAt(0).toUpperCase() || '?'}</span>
-                                    )}
-                                </div>
-                            </a>
-                            <a href={`/profile/${user.id}`} className="text-base text-white hover:text-accent-teal-light focus:outline-none mb-6 block text-center">My Profile</a>
-                            <div className="flex flex-wrap justify-center gap-x-8 gap-y-6 w-full max-w-xs">
-                                {processedSponsoredSingles && processedSponsoredSingles.length > 0 ? (
-                                    processedSponsoredSingles.map(single => (
-                                        <a key={single.id} href={`/profile/${single.id}`} className="flex flex-col items-center group w-20">
-                                            <div className="w-16 h-16 rounded-full border-2 border-white bg-gray-200 overflow-hidden flex items-center justify-center shadow-md group-hover:scale-105 transition">
-                                                {single.profile_pic_url ? (
-                                                    <img src={single.profile_pic_url} alt={single.name || 'Single'} className="object-cover w-full h-full" />
-                                                ) : (
-                                                    <span className="text-2xl font-bold text-white">{single.name?.charAt(0).toUpperCase() || '?'}</span>
-                                                )}
-                                            </div>
-                                            <span className="mt-2 text-sm font-semibold text-white text-center w-full">{single.name}</span>
-                                        </a>
-                                    ))
-                                ) : (
-                                    <AddSingleButton />
-                                )}
+                        {/* Notifications */}
+                        <div>
+                            <SectionHeader title="Notifications" />
+                            <div className="text-center py-4">
+                                <p className="type-meta">No notifications yet.</p>
                             </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="border-t border-white/20"></div>
+
+                        {/* Sponsor chat */}
+                        <div>
+                            <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
+                        </div>
+
+                        {/* Divider */}
+                        <div className="border-t border-white/20"></div>
+
+                        {/* Chat with your singles */}
+                        <div>
+                            <SponsoredSinglesListClient 
+                                sponsoredSingles={processedSponsoredSingles} 
+                                singleChats={singleChats} 
+                                userId={user.id}
+                                userName={currentUserName}
+                                userProfilePic={currentUserProfilePic}
+                            />
                         </div>
                     </div>
                 </GlassCard>
+
+                {/* Primary CTA - Singles Pond (hero card) */}
+                <SinglesPondButton />
             </div>
             
             {/* Settings Button - positioned normally in page flow, bottom right */}
