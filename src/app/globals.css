@@ -80,5 +80,23 @@ body {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
+
+  /* Typography system - 3-tier hierarchy */
+  .type-display {
+    @apply font-brand text-2xl sm:text-3xl tracking-wide text-white leading-relaxed;
+  }
+
+  .type-section {
+    @apply font-brand text-lg text-white/90 leading-normal;
+    letter-spacing: 0.06em;
+  }
+
+  .type-body {
+    @apply text-sm sm:text-base text-white/80 leading-relaxed;
+  }
+
+  .type-meta {
+    @apply text-xs text-white/60 leading-normal;
+  }
 }
 

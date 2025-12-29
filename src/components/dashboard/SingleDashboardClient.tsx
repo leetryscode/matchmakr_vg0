@@ -263,7 +263,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
     <div className="flex flex-col">
       {/* Personalized greeting */}
       <div className="text-left self-start mb-4">
-        <h1 className="text-xl font-bold text-white">Hello, {userName?.split(' ')[0] || 'there'}</h1>
+        <h1 className="type-display">Hello, {userName?.split(' ')[0] || 'there'}</h1>
       </div>
       <div className="flex flex-col items-center">
         <button
@@ -306,13 +306,13 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="font-medium text-white truncate drop-shadow">{name}</div>
-        <div className="text-sm text-white/90 truncate">
+        <div className="type-body truncate drop-shadow font-medium">{name}</div>
+        <div className="type-meta truncate">
           {lastMessage || 'Click to chat'}
         </div>
       </div>
       {timestamp && (
-        <div className="text-xs text-white/70 ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>
+        <div className="type-meta ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>
           {timestamp}
         </div>
       )}

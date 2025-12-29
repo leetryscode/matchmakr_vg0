@@ -62,7 +62,7 @@ function NavItemButton({ onClick, icon, label }: NavItemButtonProps) {
             <div className="flex items-center justify-center text-white/75 hover:text-white transition-colors" style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
-            <span className="text-[10px] leading-none text-white/60 mt-1 truncate max-w-full">{label}</span>
+            <span className="type-meta mt-1 truncate max-w-full">{label}</span>
         </button>
     );
 }
@@ -85,7 +85,7 @@ function NavItemLink({ href, icon, label, isActive = false }: NavItemLinkProps) 
             <div className={`flex items-center justify-center transition-colors ${isActive ? 'text-white' : 'text-white/75 hover:text-white'}`} style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
-            <span className={`text-[10px] leading-none mt-1 truncate max-w-full ${isActive ? 'text-white/60' : 'text-white/60'}`}>{label}</span>
+            <span className={`type-meta mt-1 truncate max-w-full`}>{label}</span>
         </Link>
     );
 }

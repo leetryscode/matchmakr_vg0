@@ -403,11 +403,11 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-white truncate drop-shadow">{profile?.name || 'Unknown sponsor'}</div>
-                    <div className="text-xs text-white/80 truncate mb-1">{singlesInfo}</div>
-                    <div className="text-sm text-white/90 truncate">{msg.content}</div>
+                    <div className="type-body truncate drop-shadow font-medium">{profile?.name || 'Unknown sponsor'}</div>
+                    <div className="type-meta truncate mb-1">{singlesInfo}</div>
+                    <div className="type-meta truncate">{msg.content}</div>
                   </div>
-                  <div className="text-xs text-white/70 ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  <div className="type-meta ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                   {/* Unread icon, only show if unreadCount > 0 */}
                   {unreadCount > 0 && (
                     <div className="ml-2 flex items-center">

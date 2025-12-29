@@ -106,7 +106,7 @@ async function MatchMakrDashboardContent() {
         <DashboardLayout firstName={firstName} userId={user.id} userType="MATCHMAKR">
             {/* Greeting */}
             <div className="pt-0 pb-2 px-4">
-                <div className="text-2xl text-white font-light mb-1 tracking-[0.05em] font-brand">Hello, {firstName}</div>
+                <div className="type-display mb-1">Hello, {firstName}</div>
             </div>
             
             {/* Consistent vertical rhythm between sections */}
