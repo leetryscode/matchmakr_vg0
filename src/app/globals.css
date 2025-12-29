@@ -15,9 +15,13 @@
   --primary-teal: 0, 201, 167;
 }
 
+html, body {
+  height: 100%;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
-  background: #FAFAFA;
+  background: #4A5D7C;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   line-height: 1.5;
 }

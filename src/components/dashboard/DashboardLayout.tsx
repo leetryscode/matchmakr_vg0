@@ -47,7 +47,7 @@ export default function DashboardLayout({ children, firstName, userId, userType 
     };
 
     return (
-        <div className="flex flex-col min-h-screen w-full text-white relative">
+        <div className="flex flex-col min-h-[100dvh] w-full text-white relative">
             {/* Brand Header - consistent spacing across all dashboard pages */}
             <header className="flex flex-col items-center pt-8 pb-6">
                 <div className="text-lg font-light tracking-[0.15em] text-white uppercase font-brand">Orbit</div>

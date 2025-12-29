@@ -38,7 +38,7 @@ export default function GlobalLayout({ children, showBottomNav = true }: GlobalL
 
   return (
     <div 
-      className="min-h-screen"
+      className="min-h-[100dvh] bg-dashboard"
       style={shouldShowBottomNav ? ({ '--bottom-nav-h': `${BOTTOM_NAV_HEIGHT_PX}px` } as React.CSSProperties) : undefined}
     >
       {/* Main content with bottom padding to account for fixed navigation */}
