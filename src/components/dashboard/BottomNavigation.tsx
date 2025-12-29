@@ -52,12 +52,14 @@ function NavItemButton({ onClick, icon, label }: NavItemButtonProps) {
     return (
         <button 
             onClick={onClick}
-            className="flex flex-col items-center justify-center focus:outline-none gap-1"
+            className="flex flex-col items-center justify-center focus:outline-none min-w-[44px]"
+            aria-label={label}
+            title={label}
         >
-            <div className="flex items-center justify-center text-white/75" style={{ width: '20px', height: '20px' }}>
+            <div className="flex items-center justify-center text-white/75 hover:text-white transition-colors" style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
-            <span className="text-[10px] leading-tight text-white/60">{label}</span>
+            <span className="text-[10px] leading-none text-white/60 mt-1 truncate max-w-full">{label}</span>
         </button>
     );
 }
@@ -73,12 +75,14 @@ function NavItemLink({ href, icon, label, isActive = false }: NavItemLinkProps) 
     return (
         <Link
             href={href}
-            className="flex flex-col items-center justify-center focus:outline-none gap-1"
+            className="flex flex-col items-center justify-center focus:outline-none min-w-[44px]"
+            aria-label={label}
+            title={label}
         >
-            <div className={`flex items-center justify-center transition-colors ${isActive ? 'text-white' : 'text-white/75 hover:text-white'}`} style={{ width: '20px', height: '20px' }}>
+            <div className={`flex items-center justify-center transition-colors ${isActive ? 'text-white' : 'text-white/75 hover:text-white'}`} style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
-            <span className="text-[10px] leading-tight text-white/60">{label}</span>
+            <span className={`text-[10px] leading-none mt-1 truncate max-w-full ${isActive ? 'text-white/65' : 'text-white/60'}`}>{label}</span>
         </Link>
     );
 }
@@ -124,7 +128,7 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
             href: '/dashboard/date-ideas',
             icon: (
                 // Lightbulb icon (concept: inspiration / exploration)
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                     <path d="M9 21h6" />
                     <path d="M12 3a6 6 0 0 0-6 6c0 1.5.5 3 1.5 4L9 18h6l1.5-5c1-1 1.5-2.5 1.5-4a6 6 0 0 0-6-6z" />
                     <path d="M12 8v4" />
@@ -139,7 +143,7 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
             href: '/dashboard/settings',
             icon: (
                 // Gear icon
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="3" />
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
                 </svg>
@@ -152,7 +156,7 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
             href: getDashboardHref(userType),
             icon: (
                 // Home icon (dashboard concept)
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                     <polyline points="9,22 9,12 15,12 15,22" />
                 </svg>
@@ -161,33 +165,31 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
     ];
 
     const visibleItems = items.filter(item => item.show !== false);
-    
-    // Calculate Pond size for consistent height
-    const pondSize = BOTTOM_NAV_HEIGHT_PX - 24; // 48px
 
     return (
         <div 
             className="fixed left-1/2 -translate-x-1/2 z-40 flex items-center gap-3"
             style={{ 
                 bottom: `calc(1rem + env(safe-area-inset-bottom, 0px))`,
-                width: '87.5%',
+                width: '91%',
                 maxWidth: '400px'
             }}
         >
-            {/* Floating bottom navigation pill - contains only 4 labeled items */}
+            {/* Floating bottom navigation pill - with labels */}
             <nav 
-                className="flex-1 glass-1 shadow-card rounded-pill px-5 py-3"
+                className="flex-1 glass-1 shadow-card rounded-pill px-4 py-3 overflow-hidden"
                 style={{ 
                     backdropFilter: 'blur(8px)',
                     WebkitBackdropFilter: 'blur(8px)',
-                    height: `${BOTTOM_NAV_HEIGHT_PX}px`
+                    height: `${BOTTOM_NAV_HEIGHT_PX}px`,
+                    minWidth: 0
                 }}
             >
-                {/* Inner container with full height */}
+                {/* Inner container with full height - labels below icons */}
                 {/* Order: Ideas → Settings → Dashboard → Notifications */}
-                <div className="flex items-center justify-around gap-5 h-full">
+                <div className="flex items-center justify-around gap-4 h-full min-w-0">
                     {visibleItems.map(item => renderNavItem(item, pathname))}
-                    {/* Notifications - special render (bell icon, locked label: "Notifications") */}
+                    {/* Notifications - special render (bell icon with label) */}
                     <NotificationNavItem key="notifications" userId={userId} pathname={pathname} />
                 </div>
             </nav>
