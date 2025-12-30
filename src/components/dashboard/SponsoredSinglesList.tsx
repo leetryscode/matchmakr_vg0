@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import InviteSingle from './InviteSingle';
 import Link from 'next/link';
 import FlameUnreadIcon from './FlameUnreadIcon';
 import { useRouter, usePathname } from 'next/navigation';
@@ -62,6 +61,8 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
     const [selectedSingleForEnd, setSelectedSingleForEnd] = useState<SponsoredSingle | null>(null);
     const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
     const [latestMessages, setLatestMessages] = useState<Record<string, { content: string; created_at: string }>>({});
+    const [isInviteSingleModalOpen, setIsInviteSingleModalOpen] = useState(false);
+    const [inviteSingleEmail, setInviteSingleEmail] = useState('');
 
     const fetchUnreadCounts = async () => {
         if (!sponsoredSingles) return;
@@ -164,9 +165,17 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
     return (
         <>
             {/* Section header with Add Single action */}
+            {/* Section header with inline invite action */}
             <SectionHeader 
                 title="Chat with your singles" 
-                right={sponsoredSingles && sponsoredSingles.length === 0 ? <AddSingleButton /> : undefined}
+                right={
+                    <button
+                        onClick={() => setIsInviteSingleModalOpen(true)}
+                        className="type-meta text-white/70 hover:text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-full px-3 py-1 transition-colors"
+                    >
+                        Invite
+                    </button>
+                }
             />
             <div className="flex flex-col gap-3">
                 {sponsoredSingles && sponsoredSingles.length > 0 ? (
@@ -237,7 +246,47 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                     <div className="text-white/90 mb-6 w-full text-center">No sponsored singles</div>
                 )}
             </div>
-            <InviteSingle />
+            {/* Invite Single Modal */}
+            {isInviteSingleModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-gray-200">
+                        <h2 className="font-inter font-bold text-2xl mb-4 text-primary-blue">Invite a single user</h2>
+                        <p className="text-gray-600 mb-6 leading-relaxed">
+                            Invite a single user to find matches for.
+                        </p>
+                        <input
+                            type="email"
+                            value={inviteSingleEmail}
+                            onChange={(e) => setInviteSingleEmail(e.target.value)}
+                            placeholder="Single user's email address"
+                            className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                        />
+                        <div className="flex justify-end gap-4">
+                            <button onClick={() => { setIsInviteSingleModalOpen(false); setInviteSingleEmail(''); }} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-full font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={async () => {
+                                    try {
+                                        const { data, error } = await supabase.functions.invoke('sponsor-single', {
+                                            body: { single_email: inviteSingleEmail },
+                                        });
+                                        if (error) throw error;
+                                        setIsInviteSingleModalOpen(false);
+                                        setInviteSingleEmail('');
+                                        window.location.reload();
+                                    } catch (error: any) {
+                                        alert(error.message || 'An error occurred.');
+                                    }
+                                }} 
+                                className="px-6 py-3 bg-gradient-primary text-white rounded-full font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1"
+                            >
+                                Send invite
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <ReleaseSingleModal
                 single={releasingSingle}
                 onClose={() => setReleasingSingle(null)}

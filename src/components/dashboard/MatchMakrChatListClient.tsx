@@ -341,10 +341,23 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   // Get sponsored single id (if any)
   const sponsoredSingleId = sponsoredSingles && sponsoredSingles.length > 0 ? sponsoredSingles[0].id : null;
 
+  const [inviteSponsorEmail, setInviteSponsorEmail] = useState('');
+  const [isInviteSponsorModalOpen, setIsInviteSponsorModalOpen] = useState(false);
+
+  // Inline invite action component
+  const InviteAction = () => (
+    <button
+      onClick={() => setIsInviteSponsorModalOpen(true)}
+      className="type-meta text-white/70 hover:text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-full px-3 py-1 transition-colors"
+    >
+      Invite
+    </button>
+  );
+
   return (
     <div>
       {/* Section header */}
-      <SectionHeader title="Sponsor chat" />
+      <SectionHeader title="Sponsor chat" right={<InviteAction />} />
       {/* Chat rows for matchmakrs only */}
       {localConversations.length === 0 ||
         localConversations.filter((msg: any) => {
@@ -500,9 +513,32 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
 
         </div>
       )}
-      <button className="w-full bg-white/10 hover:bg-white/20 text-white py-3 px-6 rounded-full font-semibold text-lg border border-white/30 shadow-deep transition-all duration-300 hover:-translate-y-2">
-        Invite another sponsor
-      </button>
+      {/* Invite Sponsor Modal */}
+      {isInviteSponsorModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-gray-200">
+            <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] font-brand">Invite a fellow sponsor</h2>
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              Invite a friend to join our community helping friends find love.
+            </p>
+            <input
+              type="email"
+              value={inviteSponsorEmail}
+              onChange={(e) => setInviteSponsorEmail(e.target.value)}
+              placeholder="Their email address"
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+            />
+            <div className="flex justify-end gap-4">
+              <button onClick={() => { setIsInviteSponsorModalOpen(false); setInviteSponsorEmail(''); }} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-full font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
+                Cancel
+              </button>
+              <button onClick={() => { alert(`(Not implemented) Invite would be sent to ${inviteSponsorEmail}`); setIsInviteSponsorModalOpen(false); setInviteSponsorEmail(''); }} className="px-6 py-3 bg-gradient-primary text-white rounded-full font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1">
+                Send invite
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Confirmation Modal */}
       {confirmDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
