@@ -290,7 +290,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
   // Helper: Render a chat row (used for both singles and matchmakr)
   const ChatRow = ({ photo, name, lastMessage, unreadCount, onClick, menu, timestamp, menuButton }: any) => (
     <div
-      className="flex items-center gap-4 py-3 w-full bg-white/10 rounded-xl border border-white/20 shadow-card transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-1 pl-3"
+      className="flex items-center gap-4 py-2.5 w-full bg-white/10 rounded-card-lg border border-white/20 shadow-card transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-0.5 pl-3"
       role="button"
       tabIndex={0}
       onClick={e => { if ((e.target as HTMLElement).closest('.menu-btn')) return; onClick && onClick(e); }}
@@ -426,7 +426,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
               {singleChats.length === 0 ? (
                 <div className="text-white/90">No matches yet. Once your sponsor agrees to the introduction, you can chat here.</div>
               ) : (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1.5">
                   {singleChats.map((row, idx) => (
                     <ChatRow
                       key={row.otherSingle.id}

@@ -348,7 +348,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const InviteAction = () => (
     <button
       onClick={() => setIsInviteSponsorModalOpen(true)}
-      className="type-meta text-white/70 hover:text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-full px-3 py-1 transition-colors"
+      className="type-meta text-white/70 hover:text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-3 py-1 transition-colors"
     >
       Invite
     </button>
@@ -369,7 +369,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
         }).length === 0 ? (
         <div className="text-white/90 mb-6">No sponsor chats</div>
       ) : (
-        <div className="mb-6 flex flex-col gap-3">
+        <div className="mb-6 flex flex-col gap-2.5">
           {localConversations
             .filter((msg: any) => {
               const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
@@ -390,7 +390,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
               return (
                 <div
                   key={msg.id}
-                  className="flex items-center gap-4 py-4 pl-3 w-full bg-white/5 hover:bg-white/10 rounded-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
+                  className="flex items-center gap-4 py-3 pl-3 w-full bg-white/5 hover:bg-white/10 rounded-card-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
                   role="button"
                   tabIndex={0}
                   onClick={e => {
@@ -430,7 +430,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                   {/* Three dots menu */}
                   <div className="relative menu-btn flex items-center justify-end ml-auto">
                     <button
-                      className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
+                      className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-white/10 focus:outline-none transition-colors"
                       onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === msg.conversation.id ? null : msg.conversation.id); }}
                       tabIndex={-1}
                       aria-label="Open menu"
@@ -460,7 +460,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       {/* Sponsored Single Chat Row (if any) */}
       {sponsoredSingles && sponsoredSingles.length > 0 && (
         <div
-          className="flex items-center gap-4 py-4 pl-3 w-full bg-white/5 hover:bg-white/10 rounded-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-2"
+          className="flex items-center gap-4 py-3 pl-3 w-full bg-white/5 hover:bg-white/10 rounded-card-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-2"
           role="button"
           tabIndex={0}
           onClick={e => {
@@ -529,10 +529,10 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
               className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
             />
             <div className="flex justify-end gap-4">
-              <button onClick={() => { setIsInviteSponsorModalOpen(false); setInviteSponsorEmail(''); }} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-full font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
+              <button onClick={() => { setIsInviteSponsorModalOpen(false); setInviteSponsorEmail(''); }} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
                 Cancel
               </button>
-              <button onClick={() => { alert(`(Not implemented) Invite would be sent to ${inviteSponsorEmail}`); setIsInviteSponsorModalOpen(false); setInviteSponsorEmail(''); }} className="px-6 py-3 bg-gradient-primary text-white rounded-full font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1">
+              <button onClick={() => { alert(`(Not implemented) Invite would be sent to ${inviteSponsorEmail}`); setIsInviteSponsorModalOpen(false); setInviteSponsorEmail(''); }} className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1">
                 Send invite
               </button>
             </div>

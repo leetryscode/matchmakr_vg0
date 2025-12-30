@@ -71,6 +71,7 @@ const config: Config = {
         // This step intentionally introduces tokens without enforcing usage;
         // layout and visual unification will follow in subsequent steps.
         'card': '12px',
+        'card-lg': '16px',
         'pill': '9999px',
       },
     },

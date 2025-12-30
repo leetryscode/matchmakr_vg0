@@ -10,7 +10,7 @@ type GlassCardProps = {
 };
 
 export default function GlassCard({ children, variant = '1', className }: GlassCardProps) {
-  const baseClasses = 'rounded-card';
+  const baseClasses = 'rounded-card-lg';
   const variantClasses = variant === '1' 
     ? 'glass-1 shadow-card'
     : 'glass-2 shadow-float';

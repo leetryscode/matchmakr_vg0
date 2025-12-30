@@ -486,7 +486,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                   <div className="text-yellow-600 font-semibold">Waiting for the other sponsor</div>
                 ) : matchStatus === 'can-approve' ? (
                   <button
-                    className="px-6 py-2 bg-gradient-primary text-white rounded-full font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-2 bg-gradient-primary text-white rounded-lg font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleApproveMatch}
                     disabled={!ourSingle?.id || !theirSingle?.id || matchLoading}
                     title={!ourSingle?.id || !theirSingle?.id ? 'Both singles must be present to make the introduction.' : ''}

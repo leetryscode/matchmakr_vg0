@@ -31,7 +31,7 @@ export default function OfferCard({ offer, onEdit, onDelete, onToggleActive }: O
   const isExpired = daysRemaining === 0;
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-card-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow">
       {/* Photo Section */}
       <div className="relative h-48 bg-gray-100">
         {offer.photos && offer.photos.length > 0 ? (

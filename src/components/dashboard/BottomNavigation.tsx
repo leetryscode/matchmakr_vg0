@@ -211,7 +211,7 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
         >
             {/* Floating bottom navigation pill - with labels */}
             <nav 
-                className="flex-1 rounded-pill px-4 py-3 overflow-hidden border"
+                className="flex-1 rounded-card-lg px-4 py-3 overflow-hidden border"
                 style={{ 
                     backgroundColor: 'rgba(255, 255, 255, 0.2)',
                     borderColor: 'rgba(255, 255, 255, 0.25)',

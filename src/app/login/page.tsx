@@ -77,7 +77,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loadingSignIn}
-            className="rounded-full bg-gradient-primary px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-light hover:-translate-y-1 shadow-button hover:shadow-button-hover disabled:opacity-50"
+            className="rounded-lg bg-gradient-primary px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-light hover:-translate-y-1 shadow-button hover:shadow-button-hover disabled:opacity-50"
           >
             {loadingSignIn ? 'Signing in...' : 'Sign In'}
           </button>

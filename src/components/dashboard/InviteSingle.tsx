@@ -56,10 +56,10 @@ const InviteSingleModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                 />
                 {message && <p className="text-gray-800 my-2">{message}</p>}
                 <div className="flex justify-end gap-4">
-                    <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-full font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover" disabled={isLoading}>
+                    <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover" disabled={isLoading}>
                         Cancel
                     </button>
-                    <button onClick={handleSendInvite} className="px-6 py-3 bg-gradient-primary text-white rounded-full font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1" disabled={isLoading}>
+                    <button onClick={handleSendInvite} className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1" disabled={isLoading}>
                         {isLoading ? 'Sending...' : 'Send invite'}
                     </button>
                 </div>

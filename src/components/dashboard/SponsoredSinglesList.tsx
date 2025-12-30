@@ -36,12 +36,12 @@ function ReleaseSingleModal({ single, onClose, onConfirm }: { single: SponsoredS
                     You will no longer be able to manage their profile or find matches for them. This action cannot be undone, and they would need to invite you again to reconnect.
                 </p>
                 <div className="flex justify-center gap-4">
-                    <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-full font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
+                    <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
                         Cancel
                     </button>
                     <button 
                         onClick={() => onConfirm(single.id, single.name)} 
-                        className="px-6 py-3 bg-gradient-primary text-white rounded-full font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1"
+                        className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1"
                     >
                         Release single
                     </button>
@@ -171,20 +171,20 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                 right={
                     <button
                         onClick={() => setIsInviteSingleModalOpen(true)}
-                        className="type-meta text-white/70 hover:text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-full px-3 py-1 transition-colors"
+                        className="type-meta text-white/70 hover:text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-3 py-1 transition-colors"
                     >
                         Invite
                     </button>
                 }
             />
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2.5">
                 {sponsoredSingles && sponsoredSingles.length > 0 ? (
                     sponsoredSingles.map(single => {
                         const lastMsg = latestMessages[single.id] || singleChats?.[single.id];
                         return (
                             <div
                                 key={single.id}
-                                className="flex items-center gap-4 py-4 pl-3 w-full bg-white/5 hover:bg-white/10 rounded-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
+                                className="flex items-center gap-4 py-3 pl-3 w-full bg-white/5 hover:bg-white/10 rounded-card-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
                                 role="button"
                                 tabIndex={0}
                                 onClick={e => {
@@ -223,7 +223,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                                 {/* Three dots menu */}
                                 <div className="relative menu-btn flex items-center justify-end ml-auto">
                                     <button
-                                        className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
+                                        className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-white/10 focus:outline-none transition-colors"
                                         onClick={e => { 
                                             e.stopPropagation(); 
                                             setSelectedSingleForEnd(single);
@@ -262,7 +262,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                             className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
                         />
                         <div className="flex justify-end gap-4">
-                            <button onClick={() => { setIsInviteSingleModalOpen(false); setInviteSingleEmail(''); }} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-full font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
+                            <button onClick={() => { setIsInviteSingleModalOpen(false); setInviteSingleEmail(''); }} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
                                 Cancel
                             </button>
                             <button 
@@ -279,7 +279,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                                         alert(error.message || 'An error occurred.');
                                     }
                                 }} 
-                                className="px-6 py-3 bg-gradient-primary text-white rounded-full font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1"
+                                className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1"
                             >
                                 Send invite
                             </button>

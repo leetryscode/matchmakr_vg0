@@ -507,7 +507,7 @@ export default function ForumPage() {
           {categories.map((cat) => (
             <button
               key={cat.id}
-              className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
                 selectedCategory === cat.id 
                   ? 'bg-primary-blue text-white border-primary-blue' 
                   : 'bg-white/10 text-white/80 border-white/20 hover:bg-white/20'
@@ -519,7 +519,7 @@ export default function ForumPage() {
           ))}
           {selectedCategory && (
             <button
-              className="px-3 py-1.5 rounded-full border text-sm font-medium bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
+              className="px-3 py-1.5 rounded-lg border text-sm font-medium bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
               onClick={() => setSelectedCategory(null)}
             >
               Show All
@@ -547,7 +547,7 @@ export default function ForumPage() {
                   <button
                     onClick={handleCreatePost}
                     disabled={submitting || !newPostContent.trim()}
-                    className="bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white px-6 py-2 rounded-full font-semibold transition-colors disabled:cursor-not-allowed border border-white/20"
+                    className="bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:cursor-not-allowed border border-white/20"
                   >
                     {submitting ? 'Posting...' : 'Post'}
                   </button>
@@ -696,7 +696,7 @@ export default function ForumPage() {
                                 <button
                                   onClick={() => handleCreateReply(post.id)}
                                   disabled={submittingReply || !replyContent.trim()}
-                                  className="bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white px-4 py-1 rounded-full text-sm font-semibold transition-colors disabled:cursor-not-allowed border border-white/20"
+                                  className="bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white px-4 py-1 rounded-lg text-sm font-semibold transition-colors disabled:cursor-not-allowed border border-white/20"
                                 >
                                   {submittingReply ? 'Posting...' : 'Reply'}
                                 </button>
