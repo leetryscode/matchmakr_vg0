@@ -11,6 +11,7 @@ import MatchMakrChatList from '@/components/dashboard/MatchMakrChatList';
 import AddSingleButton from '@/components/dashboard/AddSingleButton';
 import OrbitControlPlaceholder from '@/components/dashboard/OrbitControlPlaceholder';
 import NotificationsSection from '@/components/dashboard/NotificationsSection';
+import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
 import Link from 'next/link';
 
 // Introductions destination card - WHOOP-style navigation card
@@ -157,6 +158,9 @@ async function MatchMakrDashboardContent() {
 
                 {/* Introductions destination card */}
                 <IntroductionsCard />
+                
+                {/* Footer spacer with brand mark */}
+                <DashboardFooterSpacer />
             </div>
         </DashboardLayout>
     );

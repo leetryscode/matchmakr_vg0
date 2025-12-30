@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import DashboardWrapper from '@/components/dashboard/DashboardWrapper';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import GlassCard from '@/components/ui/GlassCard';
+import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
 
 export default function DateIdeasPage() {
   const { user } = useAuth();
@@ -29,6 +30,9 @@ export default function DateIdeasPage() {
               <p className="text-white/80 text-lg">Coming soon</p>
             </div>
           </GlassCard>
+          
+          {/* Footer spacer with brand mark */}
+          <DashboardFooterSpacer />
         </div>
       </DashboardLayout>
     </DashboardWrapper>

@@ -11,6 +11,7 @@ import NotificationsSection from '@/components/dashboard/NotificationsSection';
 import SectionHeader from '@/components/ui/SectionHeader';
 import GlassCard from '@/components/ui/GlassCard';
 import PrimaryCTA from '@/components/ui/PrimaryCTA';
+import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
 
 interface SingleDashboardClientProps {
   userId: string;

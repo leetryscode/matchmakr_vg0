@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { OrbitUserRole } from '@/types/orbit';
+import BrandMark from '@/components/branding/BrandMark';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -15,7 +16,7 @@ export default function DashboardLayout({ children, firstName, userId, userType 
         <div className="flex flex-col min-h-[100dvh] w-full text-white relative">
             {/* Brand Header - consistent spacing across all dashboard pages */}
             <header className="flex flex-col items-center pt-8 pb-6">
-                <div className="type-meta tracking-[0.15em] uppercase font-brand">Orbit</div>
+                <BrandMark className="text-white" />
             </header>
             {/* Main Content - standardized responsive padding rhythm */}
             {/* GlobalLayout handles bottom padding for bottom nav; no extra padding needed here */}

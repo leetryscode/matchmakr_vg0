@@ -42,7 +42,7 @@ export default function GlobalLayout({ children, showBottomNav = true }: GlobalL
       style={shouldShowBottomNav ? ({ '--bottom-nav-h': `${BOTTOM_NAV_HEIGHT_PX}px` } as React.CSSProperties) : undefined}
     >
       {/* Main content with bottom padding to account for fixed navigation */}
-      <div className={shouldShowBottomNav ? 'pb-[calc(var(--bottom-nav-h)+env(safe-area-inset-bottom))]' : ''}>
+      <div className={shouldShowBottomNav ? 'pb-[calc(var(--bottom-nav-h)+1rem+env(safe-area-inset-bottom))]' : ''}>
         {children}
       </div>
       {/* Show bottom navigation only for authenticated users on allowed routes */}

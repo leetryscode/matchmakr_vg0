@@ -7,6 +7,7 @@ import Link from 'next/link';
 import InterestsInput from '@/components/profile/InterestsInput';
 import SelectSingleModal from '@/components/dashboard/SelectSingleModal';
 import InviteSingleModal from '@/components/dashboard/InviteSingleModal';
+import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -797,6 +798,9 @@ export default function PondPage() {
                         </button>
                     </div>
                 )}
+                
+                {/* Footer spacer with brand mark */}
+                <DashboardFooterSpacer />
             </div>
             {/* Select Single Modal */}
             <SelectSingleModal
