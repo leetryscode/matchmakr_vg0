@@ -10,6 +10,7 @@ import SponsoredSinglesListClient from '@/components/dashboard/SponsoredSinglesL
 import MatchMakrChatList from '@/components/dashboard/MatchMakrChatList';
 import AddSingleButton from '@/components/dashboard/AddSingleButton';
 import OrbitControlPlaceholder from '@/components/dashboard/OrbitControlPlaceholder';
+import NotificationsSection from '@/components/dashboard/NotificationsSection';
 import GlassCard from '@/components/ui/GlassCard';
 import PrimaryCTA from '@/components/ui/PrimaryCTA';
 import SectionHeader from '@/components/ui/SectionHeader';
@@ -121,14 +122,7 @@ async function MatchMakrDashboardContent() {
             {/* Consistent vertical rhythm between sections */}
             <div className="flex flex-col space-y-8">
                 {/* Notifications */}
-                <div>
-                    <SectionHeader title="Notifications" />
-                    <GlassCard variant="1" className="p-4">
-                        <div className="text-center py-2">
-                            <p className="type-meta">No notifications yet.</p>
-                        </div>
-                    </GlassCard>
-                </div>
+                <NotificationsSection />
 
                 {/* Sponsor chat */}
                 <div>

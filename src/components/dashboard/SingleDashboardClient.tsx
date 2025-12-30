@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import InviteMatchMakrModal from '@/components/dashboard/InviteMatchMakrModal';
 import EndSponsorshipModal from './EndSponsorshipModal';
+import NotificationsSection from '@/components/dashboard/NotificationsSection';
 import SectionHeader from '@/components/ui/SectionHeader';
 import GlassCard from '@/components/ui/GlassCard';
 import PrimaryCTA from '@/components/ui/PrimaryCTA';
@@ -347,6 +348,9 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
       <>
         <ProfileSection />
         <div className="flex flex-col space-y-8 w-full">
+          {/* Notifications */}
+          <NotificationsSection />
+          
           {/* Get started section with inline invite */}
           <div>
             <SectionHeader title="Get started" right={<InviteAction />} />
@@ -389,6 +393,9 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
       
       {/* Sections with proper spacing */}
       <div className="flex flex-col space-y-8 w-full">
+        {/* Notifications */}
+        <NotificationsSection />
+        
         {/* My Sponsors Section */}
         <div>
           <SectionHeader title="My sponsors" right={<InviteSponsorAction />} />
