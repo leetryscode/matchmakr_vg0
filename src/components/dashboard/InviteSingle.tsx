@@ -42,7 +42,7 @@ const InviteSingleModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-gray-200">
-                <h2 className="font-inter font-bold text-2xl mb-4 text-primary-blue">Invite a single user</h2>
+                <h2 className="type-section mb-4 text-primary-blue">Invite a single user</h2>
                 <p className="text-gray-600 mb-6 leading-relaxed">
                     Invite a single user to find matches for.
                 </p>

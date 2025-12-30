@@ -549,7 +549,7 @@ export default function ChatPage() {
       {showApprovalModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
           <div className="bg-white rounded-2xl p-8 shadow-xl max-w-md w-full mx-4 text-center">
-            <h3 className="text-xl font-bold mb-4 text-primary-blue">Make the introduction?</h3>
+            <h3 className="type-section mb-4 text-primary-blue">Make the introduction?</h3>
             <p className="mb-6 text-gray-600">When both sponsors agree, the singles will be connected.</p>
             <div className="flex gap-4 justify-center">
               <button

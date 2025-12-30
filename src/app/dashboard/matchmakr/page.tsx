@@ -44,9 +44,9 @@ const IntroductionsCard = () => (
 
 const ManageSinglesList = () => (
      <div className="bg-background-card p-6 rounded-lg shadow-card mt-8 border border-gray-200">
-        <h2 className="text-2xl font-bold mb-4 text-primary-blue">Manage Singles</h2>
+        <h2 className="type-section mb-4 text-primary-blue">Manage Singles</h2>
         <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-             <p className="text-center text-gray-500">Chats with the singles you manage.</p>
+             <p className="text-center type-meta">Chats with the singles you manage.</p>
         </div>
         <button className="mt-4 w-full bg-gradient-light text-white py-3 rounded-lg hover:bg-gradient-primary font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
             Invite a Sponsor!

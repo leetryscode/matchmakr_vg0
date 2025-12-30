@@ -33,7 +33,7 @@ const FlameUnreadIcon: React.FC<FlameUnreadIconProps> = ({ count, size = 36, cla
         fontSize="15"
         fontWeight="bold"
         fill="currentColor"
-        style={{ fontFamily: 'Inter, sans-serif', pointerEvents: 'none', userSelect: 'none' }}
+        style={{ pointerEvents: 'none', userSelect: 'none' }}
         dominantBaseline="middle"
       >
         {displayCount}

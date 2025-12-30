@@ -18,7 +18,7 @@ export default function DateIdeasPage() {
         <div className="flex flex-col space-y-6 w-full">
           {/* Date Ideas Header */}
           <div className="w-full text-center">
-            <h1 className="text-2xl font-light tracking-[0.05em] font-brand">
+            <h1 className="type-section">
               Date Ideas
             </h1>
           </div>

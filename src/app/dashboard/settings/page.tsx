@@ -51,7 +51,7 @@ export default function SettingsPage() {
         <div className="flex flex-col space-y-6 w-full">
           {/* Settings Header */}
           <div className="w-full text-center">
-            <h1 className="text-2xl font-light tracking-[0.05em] font-brand">Settings</h1>
+            <h1 className="type-section">Settings</h1>
           </div>
           
           {/* Account Information */}

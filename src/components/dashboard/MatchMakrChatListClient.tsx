@@ -416,7 +416,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="type-body truncate drop-shadow font-medium">{profile?.name || 'Unknown sponsor'}</div>
+                    <div className="type-body truncate drop-shadow">{profile?.name || 'Unknown sponsor'}</div>
                     <div className="type-meta truncate mb-1">{singlesInfo}</div>
                     <div className="type-meta truncate">{msg.content}</div>
                   </div>
@@ -501,8 +501,8 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-medium text-white truncate drop-shadow">{sponsoredSingles[0].name}</div>
-            <div className="text-sm text-white/90 truncate">Chat with your sponsored single</div>
+            <div className="type-body truncate drop-shadow">{sponsoredSingles[0].name}</div>
+            <div className="type-meta truncate">Chat with your sponsored single</div>
           </div>
           {/* Unread icon, only show if unreadCount > 0 */}
           {sponsoredSingleUnreadCount > 0 && (
@@ -517,7 +517,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       {isInviteSponsorModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-gray-200">
-            <h2 className="text-2xl font-light mb-4 text-primary-blue tracking-[0.05em] font-brand">Invite a fellow sponsor</h2>
+            <h2 className="type-section mb-4 text-primary-blue">Invite a fellow sponsor</h2>
             <p className="text-gray-600 mb-6 leading-relaxed">
               Invite a friend to join our community helping friends find love.
             </p>
@@ -543,7 +543,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       {confirmDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
           <div className="bg-white rounded-2xl p-8 shadow-xl max-w-sm w-full text-center">
-            <h3 className="text-xl font-bold mb-4 text-primary-blue">Delete chat?</h3>
+            <h3 className="type-section mb-4 text-primary-blue">Delete chat?</h3>
             <p className="mb-6 text-gray-600">Delete chat for both parties? You can restart the conversation by finding them in the pond</p>
             <div className="flex gap-4 justify-center">
               <button

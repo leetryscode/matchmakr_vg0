@@ -307,7 +307,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="type-body truncate drop-shadow font-medium">{name}</div>
+        <div className="type-body truncate drop-shadow">{name}</div>
         <div className="type-meta truncate">
           {lastMessage || 'Click to chat'}
         </div>
@@ -540,7 +540,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
       {showUnmatchModal && unmatchTarget && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
           <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
-            <h2 className="text-2xl font-bold mb-4 text-primary-blue">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
+            <h2 className="type-section mb-4 text-primary-blue">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
             <p className="text-gray-600 mb-6">
               This will permanently remove your match and chat history. You would need to be matched again to chat in the future.
             </p>
