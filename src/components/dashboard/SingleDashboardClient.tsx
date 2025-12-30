@@ -332,210 +332,225 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
   if (!sponsor) {
     // Unsponsored Single state: Invite Sponsor CTA + empty states
     const [isInviteOpen, setIsInviteOpen] = useState(false);
+    
+    // Inline invite action component
+    const InviteAction = () => (
+      <button
+        onClick={() => setIsInviteOpen(true)}
+        className="type-meta text-white/70 hover:text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-3 py-1 transition-colors"
+      >
+        Invite
+      </button>
+    );
+    
     return (
       <>
         <ProfileSection />
-        <div className="flex flex-col space-y-6 w-full">
-          {/* Primary CTA - Invite Sponsor (hero card) */}
-          <GlassCard variant="2" className="p-8">
-            <div className="text-center">
-              <PrimaryCTA onClick={() => setIsInviteOpen(true)} className="px-6 py-3 text-lg">
-                Invite someone to be my sponsor
-              </PrimaryCTA>
-            </div>
-          </GlassCard>
+        <div className="flex flex-col space-y-8 w-full">
+          {/* Get started section with inline invite */}
+          <div>
+            <SectionHeader title="Get started" right={<InviteAction />} />
+            <div className="text-white/90">Invite someone to be your sponsor to get started.</div>
+          </div>
+          
           <InviteMatchMakrModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
           
-          {/* Shared content card - My matches, My sneak peaks */}
-          <GlassCard variant="1" className="p-6">
-            <div className="flex flex-col space-y-6">
-              {/* My matches - empty state */}
-              <div>
-                <SectionHeader title="My matches" />
-                <div className="text-white/90 w-full text-center">No matches yet. Once your sponsor agrees to the introduction, you can chat here.</div>
-              </div>
-              
-              {/* My sneak peaks - placeholder */}
-              <div>
-                <SectionHeader title="My sneak peaks" />
-                <div className="h-16" />
-              </div>
-            </div>
-          </GlassCard>
+          {/* My matches - empty state */}
+          <div>
+            <SectionHeader title="My matches" />
+            <div className="text-white/90">No matches yet. Once your sponsor agrees to the introduction, you can chat here.</div>
+          </div>
+          
+          {/* My sneak peaks - placeholder */}
+          <div>
+            <SectionHeader title="My sneak peaks" />
+            <div className="h-16" />
+          </div>
         </div>
       </>
     );
   }
 
+  // Inline invite action component for sponsored state
+  const [isInviteSponsorOpen, setIsInviteSponsorOpen] = useState(false);
+  const InviteSponsorAction = () => (
+    <button
+      onClick={() => setIsInviteSponsorOpen(true)}
+      className="type-meta text-white/70 hover:text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-3 py-1 transition-colors"
+    >
+      Invite
+    </button>
+  );
+
   return (
     <>
-      {/* Profile section - elevated hero card */}
-      <GlassCard variant="2" className="p-8 mb-6">
-        <ProfileSection />
-      </GlassCard>
-      <div className="flex flex-col space-y-6 w-full">
-        {/* Shared content card - My sponsors, My matches, My sneak peaks */}
-        <GlassCard variant="1" className="p-6">
-          <div className="flex flex-col space-y-6">
-            {/* My Sponsors Section */}
-            <div>
-              <SectionHeader title="My sponsors" />
-              <ChatRow
-                photo={sponsor.profile_pic_url}
-                name={sponsor.name}
-                lastMessage={sponsorLastMessage}
-                unreadCount={sponsorUnreadCount}
-                onClick={() => { router.push(`/dashboard/chat/single/${userId}`); }}
-                timestamp={sponsorTimestamp}
-                menuButton={
-                  <button
-                    className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
-                    onClick={e => { e.stopPropagation(); setSponsorMenuOpen(!sponsorMenuOpen); setMenuOpenIdx(null); }}
-                    tabIndex={-1}
-                    aria-label="Open menu"
-                  >
-                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                      <circle cx="12" cy="5" r="1.5" fill="#fff"/>
-                      <circle cx="12" cy="12" r="1.5" fill="#fff"/>
-                      <circle cx="12" cy="19" r="1.5" fill="#fff"/>
-                    </svg>
-                  </button>
-                }
-                menu={sponsorMenuOpen && (
-                  <div ref={sponsorMenuRef} className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
-                    <button
-                      className="block w-full text-left px-5 py-3 text-base text-primary-blue hover:bg-gray-50 rounded-xl font-semibold transition-colors"
-                      onClick={e => { e.stopPropagation(); router.push(`/profile/${sponsor.id}`); setSponsorMenuOpen(false); }}
-                    >
-                      View sponsor
-                    </button>
-                    <button
-                      className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
-                      onClick={e => { e.stopPropagation(); setShowEndSponsorshipModal(true); setSponsorMenuOpen(false); }}
-                    >
-                      End sponsorship
-                    </button>
-                  </div>
-                )}
-              />
-            </div>
-            
-            {/* My Matches Section */}
-            <div>
-              <SectionHeader title="My matches" />
-              {singleChats.length === 0 ? (
-                <div className="text-white/90">No matches yet. Once your sponsor agrees to the introduction, you can chat here.</div>
-              ) : (
-                <div className="flex flex-col gap-1.5">
-                  {singleChats.map((row, idx) => (
-                    <ChatRow
-                      key={row.otherSingle.id}
-                      photo={row.otherSingle.photo}
-                      name={row.otherSingle.name}
-                      lastMessage={row.lastMessage ? row.lastMessage.content : 'Click to chat'}
-                      unreadCount={row.unreadCount}
-                      onClick={() => handleOpenSingleChat(row)}
-                      timestamp={row.lastMessage ? new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                      menuButton={
-                        <button
-                          className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
-                          onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); setSponsorMenuOpen(false); }}
-                          tabIndex={-1}
-                          aria-label="Open menu"
-                        >
-                          <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <circle cx="12" cy="5" r="1.5" fill="#fff"/>
-                            <circle cx="12" cy="12" r="1.5" fill="#fff"/>
-                            <circle cx="12" cy="19" r="1.5" fill="#fff"/>
-                          </svg>
-                        </button>
-                      }
-                      menu={menuOpenIdx === idx && (
-                        <div ref={el => { menuRefs.current[idx] = el; }} className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
-                          <button
-                            className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
-                            onClick={e => { e.stopPropagation(); setShowUnmatchModal(true); setUnmatchTarget(row); setMenuOpenIdx(null); }}
-                          >
-                            Unmatch
-                          </button>
-                        </div>
-                      )}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            {/* My Sneak Peaks Section */}
-            <div>
-              <SectionHeader title="My sneak peaks" />
-              <div className="h-16" />
-            </div>
-          </div>
-        </GlassCard>
-        {/* Chat Modal and other logic remain unchanged */}
-        {/* Single-to-Single Chat Modal */}
-        {openChat && selectedSingle && (
-          <ChatModal
-            open={openChat}
-            onClose={() => { setOpenChat(false); setSelectedSingle(null); fetchMatches(); }}
-            currentUserId={userId}
-            currentUserName={userName}
-            currentUserProfilePic={userProfilePic}
-            otherUserId={selectedSingle.otherSingle.id}
-            otherUserName={selectedSingle.otherSingle.name}
-            otherUserProfilePic={selectedSingle.otherSingle.photo}
-            aboutSingle={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
-            clickedSingle={{ id: selectedSingle.otherSingle.id, name: selectedSingle.otherSingle.name, photo: selectedSingle.otherSingle.photo }}
-            isSingleToSingle={true}
-          />
-        )}
-
-        {/* Chat Modal for Sponsor */}
-        {openChat && !selectedSingle && (
-          <ChatModal
-            open={openChat}
-            onClose={() => setOpenChat(false)}
-            currentUserId={userId}
-            currentUserName={userName}
-            currentUserProfilePic={userProfilePic}
-            otherUserId={sponsor.id}
-            otherUserName={sponsor.name || ''}
-            otherUserProfilePic={sponsor.profile_pic_url}
-            aboutSingle={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
-            clickedSingle={{ id: sponsor.id, name: sponsor.name || '', photo: sponsor.profile_pic_url }}
-          />
-        )}
-        {/* End Sponsorship Modal */}
-        <EndSponsorshipModal
-          isOpen={showEndSponsorshipModal}
-          onClose={() => setShowEndSponsorshipModal(false)}
-          onConfirm={handleEndSponsorship}
-          sponsorName={sponsor?.name || undefined}
-          isSponsorView={false}
-        />
-        {/* Unmatch Confirmation Modal */}
-        {showUnmatchModal && unmatchTarget && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-            <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
-              <h2 className="text-2xl font-bold mb-4 text-primary-blue">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
-              <p className="text-gray-600 mb-6">
-                This will permanently remove your match and chat history. You would need to be matched again to chat in the future.
-              </p>
-              <div className="flex justify-center gap-4">
-                <button onClick={() => { setShowUnmatchModal(false); setUnmatchTarget(null); }} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors">
-                  Cancel
+      {/* Profile section - hero surface */}
+      <ProfileSection />
+      
+      {/* Sections with proper spacing */}
+      <div className="flex flex-col space-y-8 w-full">
+        {/* My Sponsors Section */}
+        <div>
+          <SectionHeader title="My sponsors" right={<InviteSponsorAction />} />
+          <ChatRow
+            photo={sponsor.profile_pic_url}
+            name={sponsor.name}
+            lastMessage={sponsorLastMessage}
+            unreadCount={sponsorUnreadCount}
+            onClick={() => { router.push(`/dashboard/chat/single/${userId}`); }}
+            timestamp={sponsorTimestamp}
+            menuButton={
+              <button
+                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
+                onClick={e => { e.stopPropagation(); setSponsorMenuOpen(!sponsorMenuOpen); setMenuOpenIdx(null); }}
+                tabIndex={-1}
+                aria-label="Open menu"
+              >
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <circle cx="12" cy="5" r="1.5" fill="#fff"/>
+                  <circle cx="12" cy="12" r="1.5" fill="#fff"/>
+                  <circle cx="12" cy="19" r="1.5" fill="#fff"/>
+                </svg>
+              </button>
+            }
+            menu={sponsorMenuOpen && (
+              <div ref={sponsorMenuRef} className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
+                <button
+                  className="block w-full text-left px-5 py-3 text-base text-primary-blue hover:bg-gray-50 rounded-xl font-semibold transition-colors"
+                  onClick={e => { e.stopPropagation(); router.push(`/profile/${sponsor.id}`); setSponsorMenuOpen(false); }}
+                >
+                  View sponsor
                 </button>
-                <button onClick={handleUnmatch} className="px-6 py-2 bg-gradient-primary text-white rounded-md hover:bg-gradient-light font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
-                  Unmatch
+                <button
+                  className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
+                  onClick={e => { e.stopPropagation(); setShowEndSponsorshipModal(true); setSponsorMenuOpen(false); }}
+                >
+                  End sponsorship
                 </button>
               </div>
+            )}
+          />
+        </div>
+        
+        {/* My Matches Section */}
+        <div>
+          <SectionHeader title="My matches" />
+          {singleChats.length === 0 ? (
+            <div className="text-white/90">No matches yet. Once your sponsor agrees to the introduction, you can chat here.</div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {singleChats.map((row, idx) => (
+                <ChatRow
+                  key={row.otherSingle.id}
+                  photo={row.otherSingle.photo}
+                  name={row.otherSingle.name}
+                  lastMessage={row.lastMessage ? row.lastMessage.content : 'Click to chat'}
+                  unreadCount={row.unreadCount}
+                  onClick={() => handleOpenSingleChat(row)}
+                  timestamp={row.lastMessage ? new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                  menuButton={
+                    <button
+                      className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
+                      onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); setSponsorMenuOpen(false); }}
+                      tabIndex={-1}
+                      aria-label="Open menu"
+                    >
+                      <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <circle cx="12" cy="5" r="1.5" fill="#fff"/>
+                        <circle cx="12" cy="12" r="1.5" fill="#fff"/>
+                        <circle cx="12" cy="19" r="1.5" fill="#fff"/>
+                      </svg>
+                    </button>
+                  }
+                  menu={menuOpenIdx === idx && (
+                    <div ref={el => { menuRefs.current[idx] = el; }} className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
+                      <button
+                        className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
+                        onClick={e => { e.stopPropagation(); setShowUnmatchModal(true); setUnmatchTarget(row); setMenuOpenIdx(null); }}
+                      >
+                        Unmatch
+                      </button>
+                    </div>
+                  )}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* My Sneak Peaks Section */}
+        <div>
+          <SectionHeader title="My sneak peaks" />
+          <div className="h-16" />
+        </div>
+      </div>
+      
+      {/* Invite Sponsor Modal */}
+      <InviteMatchMakrModal isOpen={isInviteSponsorOpen} onClose={() => setIsInviteSponsorOpen(false)} />
+      
+      {/* Chat Modal and other logic remain unchanged */}
+      {/* Single-to-Single Chat Modal */}
+      {openChat && selectedSingle && (
+        <ChatModal
+          open={openChat}
+          onClose={() => { setOpenChat(false); setSelectedSingle(null); fetchMatches(); }}
+          currentUserId={userId}
+          currentUserName={userName}
+          currentUserProfilePic={userProfilePic}
+          otherUserId={selectedSingle.otherSingle.id}
+          otherUserName={selectedSingle.otherSingle.name}
+          otherUserProfilePic={selectedSingle.otherSingle.photo}
+          aboutSingle={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
+          clickedSingle={{ id: selectedSingle.otherSingle.id, name: selectedSingle.otherSingle.name, photo: selectedSingle.otherSingle.photo }}
+          isSingleToSingle={true}
+        />
+      )}
+
+      {/* Chat Modal for Sponsor */}
+      {openChat && !selectedSingle && (
+        <ChatModal
+          open={openChat}
+          onClose={() => setOpenChat(false)}
+          currentUserId={userId}
+          currentUserName={userName}
+          currentUserProfilePic={userProfilePic}
+          otherUserId={sponsor.id}
+          otherUserName={sponsor.name || ''}
+          otherUserProfilePic={sponsor.profile_pic_url}
+          aboutSingle={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
+          clickedSingle={{ id: sponsor.id, name: sponsor.name || '', photo: sponsor.profile_pic_url }}
+        />
+      )}
+      {/* End Sponsorship Modal */}
+      <EndSponsorshipModal
+        isOpen={showEndSponsorshipModal}
+        onClose={() => setShowEndSponsorshipModal(false)}
+        onConfirm={handleEndSponsorship}
+        sponsorName={sponsor?.name || undefined}
+        isSponsorView={false}
+      />
+      {/* Unmatch Confirmation Modal */}
+      {showUnmatchModal && unmatchTarget && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+          <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
+            <h2 className="text-2xl font-bold mb-4 text-primary-blue">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
+            <p className="text-gray-600 mb-6">
+              This will permanently remove your match and chat history. You would need to be matched again to chat in the future.
+            </p>
+            <div className="flex justify-center gap-4">
+              <button onClick={() => { setShowUnmatchModal(false); setUnmatchTarget(null); }} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors">
+                Cancel
+              </button>
+              <button onClick={handleUnmatch} className="px-6 py-2 bg-gradient-primary text-white rounded-md hover:bg-gradient-light font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
+                Unmatch
+              </button>
             </div>
           </div>
-        )}
-        
-        {/* Settings Button - positioned normally in page flow, bottom right */}
-        <div className="w-full flex justify-end mt-8 mb-4 pr-4">
+        </div>
+      )}
+      
+      {/* Settings Button - positioned normally in page flow, bottom right */}
+      <div className="w-full flex justify-end mt-8 mb-4 pr-4">
             <a 
                 href="/dashboard/settings"
                 className="flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur-md text-white text-sm font-medium rounded-xl border border-white/30 hover:bg-white/30 transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -549,7 +564,6 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
                 <span>Settings</span>
             </a>
         </div>
-      </div>
     </>
   );
 };
