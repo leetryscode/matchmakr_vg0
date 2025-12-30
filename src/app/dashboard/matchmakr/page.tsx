@@ -11,20 +11,35 @@ import MatchMakrChatList from '@/components/dashboard/MatchMakrChatList';
 import AddSingleButton from '@/components/dashboard/AddSingleButton';
 import OrbitControlPlaceholder from '@/components/dashboard/OrbitControlPlaceholder';
 import NotificationsSection from '@/components/dashboard/NotificationsSection';
-import GlassCard from '@/components/ui/GlassCard';
-import PrimaryCTA from '@/components/ui/PrimaryCTA';
-import SectionHeader from '@/components/ui/SectionHeader';
+import Link from 'next/link';
 
-// Prominent Singles Pond Button - Primary CTA section
-const SinglesPondButton = () => (
-    <GlassCard variant="2" className="p-8">
-        <div className="text-center">
-            <PrimaryCTA href="/pond">
-                Singles Pond
-            </PrimaryCTA>
-            <div className="mt-4 text-white text-base font-medium">Discover singles, message their sponsor</div>
+// Introductions destination card - WHOOP-style navigation card
+const IntroductionsCard = () => (
+    <Link 
+        href="/pond"
+        className="block w-full bg-white/5 hover:bg-white/10 rounded-card-lg border border-white/10 hover:border-white/20 shadow-card hover:shadow-card-hover transition-all duration-200 p-6 group cursor-pointer"
+    >
+        <div className="flex items-start justify-between">
+            <div className="flex flex-col flex-1">
+                <h3 className="type-section mb-1">Introductions</h3>
+                <p className="type-meta">View singles and message their sponsor</p>
+            </div>
+            {/* Right-facing chevron in top right */}
+            <svg 
+                width="24" 
+                height="24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                viewBox="0 0 24 24"
+                className="text-white group-hover:text-white/90 transition-colors flex-shrink-0 ml-4"
+            >
+                <polyline points="9,18 15,12 9,6" />
+            </svg>
         </div>
-    </GlassCard>
+    </Link>
 );
 
 const ManageSinglesList = () => (
@@ -140,8 +155,8 @@ async function MatchMakrDashboardContent() {
                     />
                 </div>
 
-                {/* Primary CTA - Singles Pond (hero card) */}
-                <SinglesPondButton />
+                {/* Introductions destination card */}
+                <IntroductionsCard />
             </div>
         </DashboardLayout>
     );
