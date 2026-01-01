@@ -9,7 +9,7 @@ import InviteOtherMatchMakrs from '@/components/dashboard/InviteOtherMatchMakrs'
 import SponsoredSinglesListClient from '@/components/dashboard/SponsoredSinglesListClient';
 import MatchMakrChatList from '@/components/dashboard/MatchMakrChatList';
 import AddSingleButton from '@/components/dashboard/AddSingleButton';
-import OrbitControlPlaceholder from '@/components/dashboard/OrbitControlPlaceholder';
+import OrbitCarouselHeader from '@/components/dashboard/OrbitCarouselHeader';
 import NotificationsSection from '@/components/dashboard/NotificationsSection';
 import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
 import Link from 'next/link';
@@ -78,11 +78,13 @@ async function MatchMakrDashboardContent() {
     }
     
     // Fetch the list of singles sponsored by this MatchMakr
+    // Ordered by created_at ascending so satellites appear in the order they were added
     const { data: sponsoredSingles } = await supabase
         .from('profiles')
-        .select('id, name, photos')
+        .select('id, name, photos, created_at')
         .eq('sponsored_by_id', user.id)
-        .eq('user_type', 'SINGLE');
+        .eq('user_type', 'SINGLE')
+        .order('created_at', { ascending: true });
 
     // Use the first photo from photos array as profile picture
     const processedSponsoredSingles = sponsoredSingles?.map(single => ({
@@ -127,12 +129,18 @@ async function MatchMakrDashboardContent() {
                 <div className="type-display mb-1">Hello, {firstName}</div>
             </div>
             
-            {/* Orbit Control Placeholder */}
-            <OrbitControlPlaceholder
-                userId={user.id}
-                userName={currentUserName}
-                userProfilePic={currentUserProfilePic}
-                sponsoredSingles={processedSponsoredSingles}
+            {/* Orbit Carousel Header */}
+            <OrbitCarouselHeader
+                centerUser={{
+                    id: user.id,
+                    name: currentUserName,
+                    avatarUrl: currentUserProfilePic,
+                }}
+                satellites={processedSponsoredSingles.map(single => ({
+                    id: single.id,
+                    name: single.name || '',
+                    avatarUrl: single.profile_pic_url,
+                }))}
             />
             
             {/* Consistent vertical rhythm between sections */}
