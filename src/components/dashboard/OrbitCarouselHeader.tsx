@@ -13,32 +13,17 @@ const RX_RATIO = 0.38; // Horizontal radius as fraction of container width
 const RY_RATIO = 0.28; // Vertical radius as fraction of container height
 const ROT_DEG = -18; // Tilt angle in degrees
 
-// Tunable phase offsets for even spacing (in clock degrees)
+// Phase offsets for even spacing (in clock degrees)
 // Clock convention: 0° = 12 o'clock (top), increases clockwise
 // These phases control the starting angle for even 360/N spacing
+// Each count has an optimized phase for best visual distribution
 const PHASE_BY_COUNT: Record<number, number> = {
-  1: 225,  // keep hero anchor for 1
-  2: 225,  // keep "hero + opposite"
-  3: 225,  // initial guess; we can tune
-  4: 225,  // initial guess; we can tune
-  5: 225,  // initial guess; we can tune to fix crowding
+  1: 225,  // hero anchor position
+  2: 225,  // hero + opposite
+  3: 210,  // optimized for 3 satellites
+  4: 210,  // optimized for 4 satellites
+  5: 210,  // optimized for 5 satellites (locked)
 };
-
-// Temporary: Quick phase testing for all counts
-// Change PHASE_INDEX_* to test different values rapidly
-const PHASE_CANDIDATES = [180, 195, 210, 225, 240, 255, 270];
-const PHASE_INDEX_1 = 3; // 0=180°, 1=195°, 2=210°, 3=225°, 4=240°, 5=255°, 6=270°
-const PHASE_INDEX_2 = 3;
-const PHASE_INDEX_3 = 3;
-const PHASE_INDEX_4 = 3;
-const PHASE_INDEX_5 = 2; // Currently testing 210°
-
-// Apply candidate phases
-PHASE_BY_COUNT[1] = PHASE_CANDIDATES[PHASE_INDEX_1];
-PHASE_BY_COUNT[2] = PHASE_CANDIDATES[PHASE_INDEX_2];
-PHASE_BY_COUNT[3] = PHASE_CANDIDATES[PHASE_INDEX_3];
-PHASE_BY_COUNT[4] = PHASE_CANDIDATES[PHASE_INDEX_4];
-PHASE_BY_COUNT[5] = PHASE_CANDIDATES[PHASE_INDEX_5];
 
 export type OrbitAvatar = {
   id: string;
@@ -247,10 +232,10 @@ export default function OrbitCarouselHeader({
     }
   }
 
-  // Compute even spacing with tunable phase
+  // Compute even spacing with count-specific phase
   const count = Math.min(displaySatellites.length, 5);
   const stepDeg = count > 0 ? 360 / count : 0;
-  const startDeg = PHASE_BY_COUNT[count] ?? 225;
+  const startDeg = PHASE_BY_COUNT[count] ?? 225; // Default to 225° if count not in map
   
   // Generate clock angles using even spacing: (startDeg + index * stepDeg) % 360
   const clockAnglesDeg = displaySatellites.map((_, i) => (startDeg + i * stepDeg) % 360);
@@ -478,19 +463,10 @@ export default function OrbitCarouselHeader({
             )}
           </div>
           
-          {/* Debug: spacing info (temporary, for tuning phase) */}
-          {process.env.NODE_ENV === 'development' && (
+          {/* Debug: minimal spacing info (development only, behind feature flag) */}
+          {process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_SHOW_ORBIT_DEBUG === 'true' && (
             <div className="type-meta text-white/50 mt-2 text-xs">
-              <div>count: {count}</div>
-              <div>startDeg: {startDeg}°</div>
-              <div>stepDeg: {stepDeg.toFixed(1)}°</div>
-              <div>angles: [{clockAnglesDeg.map(d => Math.round(d)).join(', ')}]</div>
-              <div className="mt-1 text-white/40 text-[10px]">
-                center: ({Math.round(cxPx)}, {Math.round(cyPx)})
-              </div>
-              <div className="mt-1 text-white/40 text-[10px]">
-                phase index: {count === 1 ? PHASE_INDEX_1 : count === 2 ? PHASE_INDEX_2 : count === 3 ? PHASE_INDEX_3 : count === 4 ? PHASE_INDEX_4 : PHASE_INDEX_5} (testing {PHASE_CANDIDATES[count === 1 ? PHASE_INDEX_1 : count === 2 ? PHASE_INDEX_2 : count === 3 ? PHASE_INDEX_3 : count === 4 ? PHASE_INDEX_4 : PHASE_INDEX_5]}°)
-              </div>
+              <div>count: {count} | phase: {startDeg}° | step: {stepDeg.toFixed(1)}°</div>
             </div>
           )}
         </div>
