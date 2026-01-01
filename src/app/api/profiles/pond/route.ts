@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch sponsor info for all profiles in a single batch query (no N+1)
-    const sponsorIds = [...new Set((profiles || []).map((p: any) => p.sponsored_by_id).filter(Boolean))];
+    const sponsorIds = Array.from(new Set((profiles || []).map((p: any) => p.sponsored_by_id).filter(Boolean)));
     let sponsorMap = new Map();
     
     if (sponsorIds.length > 0) {
