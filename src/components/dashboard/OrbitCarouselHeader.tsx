@@ -5,27 +5,40 @@ import { useRouter } from 'next/navigation';
 
 // Orbit path constants (single source of truth)
 const HEADER_H = 220; // Must match Tailwind h-[220px]
-const CX = 0.52; // Center X as fraction of width
-const CY = 0.48; // Center Y as fraction of height
+const CX = 0.52; // Fallback center X as fraction of width (used only if sponsor not measured yet)
+const CY = 0.48; // Fallback center Y as fraction of height (used only if sponsor not measured yet)
 // RX and RY are now calculated in pixel space based on container dimensions
 // Approximate proportions: RX ~38% of width, RY ~28% of height
 const RX_RATIO = 0.38; // Horizontal radius as fraction of container width
 const RY_RATIO = 0.28; // Vertical radius as fraction of container height
 const ROT_DEG = -18; // Tilt angle in degrees
 
-// Clock-style angle presets for satellite positions by count (in degrees)
-// Clock convention: 0° = 12 o'clock (top), 90° = 3 o'clock (right), 
-// 180° = 6 o'clock (bottom), 270° = 9 o'clock (left)
-// Degrees increase clockwise (like a clock face)
-// 1: front-lower-left "hero" anchor position (~7:30)
-// 2-5: progressively fill clockwise around the orbit
-const CLOCK_PRESETS_DEG: Record<number, number[]> = {
-  1: [225],                 // lower-left anchor (~7:30)
-  2: [225, 45],             // add upper-right (~1:30)
-  3: [225, 45, 330],        // add near top (~11:00)
-  4: [225, 45, 330, 135],   // add lower-right (~4:30)
-  5: [225, 45, 330, 135, 270], // add left (~9:00)
+// Tunable phase offsets for even spacing (in clock degrees)
+// Clock convention: 0° = 12 o'clock (top), increases clockwise
+// These phases control the starting angle for even 360/N spacing
+const PHASE_BY_COUNT: Record<number, number> = {
+  1: 225,  // keep hero anchor for 1
+  2: 225,  // keep "hero + opposite"
+  3: 225,  // initial guess; we can tune
+  4: 225,  // initial guess; we can tune
+  5: 225,  // initial guess; we can tune to fix crowding
 };
+
+// Temporary: Quick phase testing for all counts
+// Change PHASE_INDEX_* to test different values rapidly
+const PHASE_CANDIDATES = [180, 195, 210, 225, 240, 255, 270];
+const PHASE_INDEX_1 = 3; // 0=180°, 1=195°, 2=210°, 3=225°, 4=240°, 5=255°, 6=270°
+const PHASE_INDEX_2 = 3;
+const PHASE_INDEX_3 = 3;
+const PHASE_INDEX_4 = 3;
+const PHASE_INDEX_5 = 2; // Currently testing 210°
+
+// Apply candidate phases
+PHASE_BY_COUNT[1] = PHASE_CANDIDATES[PHASE_INDEX_1];
+PHASE_BY_COUNT[2] = PHASE_CANDIDATES[PHASE_INDEX_2];
+PHASE_BY_COUNT[3] = PHASE_CANDIDATES[PHASE_INDEX_3];
+PHASE_BY_COUNT[4] = PHASE_CANDIDATES[PHASE_INDEX_4];
+PHASE_BY_COUNT[5] = PHASE_CANDIDATES[PHASE_INDEX_5];
 
 export type OrbitAvatar = {
   id: string;
@@ -106,33 +119,50 @@ export default function OrbitCarouselHeader({
 
   // Container ref and size state
   const containerRef = useRef<HTMLDivElement>(null);
+  const sponsorAvatarRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
+  const [sponsorCenter, setSponsorCenter] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // Measure container and set up ResizeObserver
+  // Measure container and sponsor avatar center, set up ResizeObserver
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    const sponsorAvatar = sponsorAvatarRef.current;
+    if (!container || !sponsorAvatar) return;
 
-    const updateSize = () => {
-      const rect = container.getBoundingClientRect();
-      setContainerSize({ w: rect.width, h: rect.height });
+    const updateMeasurements = () => {
+      const containerRect = container.getBoundingClientRect();
+      const sponsorRect = sponsorAvatar.getBoundingClientRect();
+      
+      // Container size
+      setContainerSize({ w: containerRect.width, h: containerRect.height });
+      
+      // Sponsor avatar center relative to container
+      const sponsorCenterX = sponsorRect.left + sponsorRect.width / 2 - containerRect.left;
+      const sponsorCenterY = sponsorRect.top + sponsorRect.height / 2 - containerRect.top;
+      setSponsorCenter({ x: sponsorCenterX, y: sponsorCenterY });
     };
 
     // Initial measurement
-    updateSize();
+    updateMeasurements();
 
-    // Set up ResizeObserver
-    const resizeObserver = new ResizeObserver(updateSize);
+    // Set up ResizeObserver for both container and sponsor avatar
+    const resizeObserver = new ResizeObserver(updateMeasurements);
     resizeObserver.observe(container);
+    resizeObserver.observe(sponsorAvatar);
+
+    // Also observe window resize for layout changes
+    window.addEventListener('resize', updateMeasurements);
 
     return () => {
       resizeObserver.disconnect();
+      window.removeEventListener('resize', updateMeasurements);
     };
   }, []);
 
   // Calculate ellipse parameters in pixel space
-  const cxPx = containerSize.w * CX;
-  const cyPx = containerSize.h * CY;
+  // Use measured sponsor center instead of fractional constants
+  const cxPx = sponsorCenter.x > 0 ? sponsorCenter.x : containerSize.w * CX;
+  const cyPx = sponsorCenter.y > 0 ? sponsorCenter.y : containerSize.h * CY;
   const rxPx = containerSize.w * RX_RATIO;
   const ryPx = containerSize.h * RY_RATIO;
 
@@ -217,9 +247,15 @@ export default function OrbitCarouselHeader({
     }
   }
 
-  // Get count-specific clock-style angle preset, convert to parametric degrees, then to radians
+  // Compute even spacing with tunable phase
   const count = Math.min(displaySatellites.length, 5);
-  const clockAnglesDeg = CLOCK_PRESETS_DEG[count] || [];
+  const stepDeg = count > 0 ? 360 / count : 0;
+  const startDeg = PHASE_BY_COUNT[count] ?? 225;
+  
+  // Generate clock angles using even spacing: (startDeg + index * stepDeg) % 360
+  const clockAnglesDeg = displaySatellites.map((_, i) => (startDeg + i * stepDeg) % 360);
+  
+  // Convert to parametric degrees, then to radians
   const parametricAnglesDeg = clockAnglesDeg.map(clockDegToParametricDeg);
   const anglesRad = parametricAnglesDeg.map(degToRad);
 
@@ -416,6 +452,7 @@ export default function OrbitCarouselHeader({
         <div className="flex flex-col items-center justify-center gap-4">
           {/* Center avatar (sponsor) */}
           <div 
+            ref={sponsorAvatarRef}
             className="w-20 h-20 rounded-full border-2 border-white/40 bg-gray-200 overflow-hidden flex items-center justify-center relative cursor-pointer hover:scale-105 transition-transform duration-200"
             onClick={() => router.push(`/profile/${centerUser.id}`)}
             role="button"
@@ -441,10 +478,19 @@ export default function OrbitCarouselHeader({
             )}
           </div>
           
-          {/* Debug: satellites count (optional, for development) - moved lower */}
+          {/* Debug: spacing info (temporary, for tuning phase) */}
           {process.env.NODE_ENV === 'development' && (
-            <div className="type-meta text-white/50 mt-2">
-              {displaySatellites.length} satellite{displaySatellites.length !== 1 ? 's' : ''}
+            <div className="type-meta text-white/50 mt-2 text-xs">
+              <div>count: {count}</div>
+              <div>startDeg: {startDeg}°</div>
+              <div>stepDeg: {stepDeg.toFixed(1)}°</div>
+              <div>angles: [{clockAnglesDeg.map(d => Math.round(d)).join(', ')}]</div>
+              <div className="mt-1 text-white/40 text-[10px]">
+                center: ({Math.round(cxPx)}, {Math.round(cyPx)})
+              </div>
+              <div className="mt-1 text-white/40 text-[10px]">
+                phase index: {count === 1 ? PHASE_INDEX_1 : count === 2 ? PHASE_INDEX_2 : count === 3 ? PHASE_INDEX_3 : count === 4 ? PHASE_INDEX_4 : PHASE_INDEX_5} (testing {PHASE_CANDIDATES[count === 1 ? PHASE_INDEX_1 : count === 2 ? PHASE_INDEX_2 : count === 3 ? PHASE_INDEX_3 : count === 4 ? PHASE_INDEX_4 : PHASE_INDEX_5]}°)
+              </div>
             </div>
           )}
         </div>

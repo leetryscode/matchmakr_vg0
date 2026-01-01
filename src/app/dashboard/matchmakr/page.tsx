@@ -130,7 +130,8 @@ async function MatchMakrDashboardContent() {
             </div>
             
             {/* Orbit Carousel Header */}
-            <OrbitCarouselHeader
+            <div className="mt-6">
+                <OrbitCarouselHeader
                 centerUser={{
                     id: user.id,
                     name: currentUserName,
@@ -141,7 +142,8 @@ async function MatchMakrDashboardContent() {
                     name: single.name || '',
                     avatarUrl: single.profile_pic_url,
                 }))}
-            />
+                />
+            </div>
             
             {/* Consistent vertical rhythm between sections */}
             <div className="flex flex-col space-y-8">
