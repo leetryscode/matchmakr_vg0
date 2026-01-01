@@ -90,11 +90,24 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
     const fileInputRef = useRef<HTMLInputElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
 
-    // Determine max photos based on user type
+    // Determine max photos based on user type (must be before useEffect that uses it)
     const maxPhotos = userType === 'MATCHMAKR' ? MAX_PHOTOS_MATCHMAKR : 
                      userType === 'VENDOR' ? MAX_PHOTOS_VENDOR : MAX_PHOTOS_SINGLE;
     const isMatchMakr = userType === 'MATCHMAKR';
     const isVendor = userType === 'VENDOR';
+
+    // Debug: Track canEdit changes (only log when it changes to help diagnose issues)
+    useEffect(() => {
+        if (canEdit === false) {
+            console.log('PhotoGallery: canEdit is false', { 
+                canEdit, 
+                userType, 
+                userId, 
+                photosLength: photos.length,
+                maxPhotos 
+            });
+        }
+    }, [canEdit, userType, userId, photos.length, maxPhotos]);
 
     const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
         initial: 0,
@@ -135,7 +148,10 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
 
     const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (!file) return;
+        if (!file) {
+            console.warn('PhotoGallery: No file selected');
+            return;
+        }
 
         // For MatchMakrs, if they already have a photo, replace it instead of adding
         if (isMatchMakr && photos.length > 0) {
@@ -145,6 +161,9 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
         const reader = new FileReader();
         reader.onload = () => {
             setImageToCrop(reader.result as string);
+        };
+        reader.onerror = (error) => {
+            console.error('PhotoGallery: FileReader error', error);
         };
         reader.readAsDataURL(file);
         
@@ -341,7 +360,34 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                         {canEdit && (
                                             <button
                                                 className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-text-dark text-sm rounded-full border border-white/30 hover:bg-white transition-colors"
-                                                onClick={() => fileInputRef.current?.click()}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    
+                                                    if (!canEdit) {
+                                                        console.warn('PhotoGallery: Button clicked but canEdit is false', { canEdit, userType, userId });
+                                                        return;
+                                                    }
+                                                    
+                                                    if (!fileInputRef.current) {
+                                                        console.error('PhotoGallery: File input ref is null');
+                                                        const inputById = document.getElementById(`file-input-${userId}`) as HTMLInputElement;
+                                                        if (inputById) {
+                                                            inputById.click();
+                                                        }
+                                                        return;
+                                                    }
+                                                    
+                                                    try {
+                                                        fileInputRef.current.click();
+                                                    } catch (error) {
+                                                        console.error('PhotoGallery: Error clicking file input', error);
+                                                        const inputById = document.getElementById(`file-input-${userId}`) as HTMLInputElement;
+                                                        if (inputById) {
+                                                            inputById.click();
+                                                        }
+                                                    }
+                                                }}
                                                 type="button"
                                             >
                                                 Add photo
@@ -352,7 +398,34 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                     canEdit && (
                                         <button
                                             className="flex flex-col items-center justify-center w-full h-full text-white/80 hover:text-accent-teal-light transition-colors"
-                                            onClick={() => fileInputRef.current?.click()}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                
+                                                if (!canEdit) {
+                                                    console.warn('PhotoGallery: Button clicked but canEdit is false', { canEdit, userType, userId });
+                                                    return;
+                                                }
+                                                
+                                                if (!fileInputRef.current) {
+                                                    console.error('PhotoGallery: File input ref is null');
+                                                    const inputById = document.getElementById(`file-input-${userId}`) as HTMLInputElement;
+                                                    if (inputById) {
+                                                        inputById.click();
+                                                    }
+                                                    return;
+                                                }
+                                                
+                                                try {
+                                                    fileInputRef.current.click();
+                                                } catch (error) {
+                                                    console.error('PhotoGallery: Error clicking file input', error);
+                                                    const inputById = document.getElementById(`file-input-${userId}`) as HTMLInputElement;
+                                                    if (inputById) {
+                                                        inputById.click();
+                                                    }
+                                                }
+                                            }}
                                             type="button"
                                         >
                                             <PlusIcon className="w-10 h-10 mb-2" />
@@ -405,8 +478,42 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                 </span>
                                 {canEdit && (
                                     <button
-                                        className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-text-dark text-sm rounded-full border border-white/30 hover:bg-white transition-colors"
-                                        onClick={() => fileInputRef.current?.click()}
+                                        className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-text-dark text-sm rounded-full border border-white/30 hover:bg-white transition-colors z-50"
+                                        style={{ pointerEvents: 'auto', zIndex: 50 }}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            
+                                            if (!canEdit) {
+                                                console.warn('PhotoGallery: Button clicked but canEdit is false', { canEdit, userType, userId });
+                                                return;
+                                            }
+                                            
+                                            if (!fileInputRef.current) {
+                                                console.error('PhotoGallery: File input ref is null - cannot trigger file picker');
+                                                // Fallback: try accessing by ID
+                                                const inputById = document.getElementById(`file-input-${userId}`) as HTMLInputElement;
+                                                if (inputById) {
+                                                    inputById.click();
+                                                } else {
+                                                    alert('Error: File input not found. Please refresh the page.');
+                                                }
+                                                return;
+                                            }
+                                            
+                                            try {
+                                                fileInputRef.current.click();
+                                            } catch (error) {
+                                                console.error('PhotoGallery: Error clicking file input', error);
+                                                // Fallback: try accessing by ID
+                                                const inputById = document.getElementById(`file-input-${userId}`) as HTMLInputElement;
+                                                if (inputById) {
+                                                    inputById.click();
+                                                } else {
+                                                    alert('Error opening file picker. Please try again.');
+                                                }
+                                            }
+                                        }}
                                         type="button"
                                     >
                                         Add photo
@@ -417,7 +524,34 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                             canEdit && (
                                 <button
                                     className="flex flex-col items-center justify-center w-full h-full text-white/80 hover:text-accent-teal-light transition-colors"
-                                    onClick={() => fileInputRef.current?.click()}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        
+                                        if (!canEdit) {
+                                            console.warn('PhotoGallery: Button clicked but canEdit is false', { canEdit, userType, userId });
+                                            return;
+                                        }
+                                        
+                                        if (!fileInputRef.current) {
+                                            console.error('PhotoGallery: File input ref is null');
+                                            const inputById = document.getElementById(`file-input-${userId}`) as HTMLInputElement;
+                                            if (inputById) {
+                                                inputById.click();
+                                            }
+                                            return;
+                                        }
+                                        
+                                        try {
+                                            fileInputRef.current.click();
+                                        } catch (error) {
+                                            console.error('PhotoGallery: Error clicking file input', error);
+                                            const inputById = document.getElementById(`file-input-${userId}`) as HTMLInputElement;
+                                            if (inputById) {
+                                                inputById.click();
+                                            }
+                                        }
+                                    }}
                                     type="button"
                                 >
                                     <PlusIcon className="w-10 h-10 mb-2" />
@@ -481,7 +615,15 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                     </div>
                 )}
             </div>
-            <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} className="hidden" accept="image/*" />
+            <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handlePhotoUpload} 
+                className="hidden" 
+                accept="image/*"
+                style={{ display: 'none', position: 'absolute', visibility: 'hidden' }}
+                id={`file-input-${userId}`}
+            />
             {/* Image Cropper Modal */}
             {imageToCrop && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">

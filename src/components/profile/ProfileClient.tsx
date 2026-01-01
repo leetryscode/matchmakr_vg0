@@ -79,6 +79,19 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   // Singles viewing their own profile should see read-only view
   const canEditProfile = orbitRole === 'MATCHMAKR' && (isOwnProfile || isSponsorViewing);
   
+  // Debug: Track canEditProfile changes (only log when false to help diagnose issues)
+  React.useEffect(() => {
+    if (canEditProfile === false && (isOwnProfile || isSponsorViewing)) {
+      console.log('ProfileClient: canEditProfile is false (expected true)', {
+        orbitRole,
+        isOwnProfile,
+        isSponsorViewing,
+        canEditProfile,
+        userType: profile.user_type
+      });
+    }
+  }, [orbitRole, isOwnProfile, isSponsorViewing, canEditProfile, profile.user_type]);
+  
   // Singles can edit their own basic info (name, occupation, location) but not bio
   const canEditBasicInfo = orbitRole === 'SINGLE' && isOwnProfile && profile.user_type === 'SINGLE';
 

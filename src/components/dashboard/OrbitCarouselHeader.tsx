@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 // Orbit path constants (single source of truth)
 const HEADER_H = 220; // Must match Tailwind h-[220px]
@@ -98,6 +99,8 @@ export default function OrbitCarouselHeader({
   centerUser,
   satellites,
 }: OrbitCarouselHeaderProps) {
+  const router = useRouter();
+  
   // Cap satellites to 5 for now
   const displaySatellites = satellites.slice(0, 5);
 
@@ -371,7 +374,7 @@ export default function OrbitCarouselHeader({
           {satellitesWithDepth.map(({ satellite, orbitPoint, zIndex, scale, opacity, shadowStrength, borderOpacity }) => (
             <div
               key={satellite.id}
-              className="absolute w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center"
+              className="absolute w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-200"
               style={{
                 left: `${orbitPoint.x}px`,
                 top: `${orbitPoint.y}px`,
@@ -381,6 +384,16 @@ export default function OrbitCarouselHeader({
                 border: `1px solid rgba(255, 255, 255, ${borderOpacity})`,
                 boxShadow: `0 ${4 * shadowStrength}px ${12 * shadowStrength}px rgba(0, 0, 0, ${shadowStrength})`,
               }}
+              onClick={() => router.push(`/profile/${satellite.id}`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  router.push(`/profile/${satellite.id}`);
+                }
+              }}
+              aria-label={`View ${satellite.name}'s profile`}
             >
               {satellite.avatarUrl ? (
                 <img
@@ -402,7 +415,19 @@ export default function OrbitCarouselHeader({
       <div className="relative h-full flex items-center justify-center" style={{ zIndex: 35 }}>
         <div className="flex flex-col items-center justify-center gap-4">
           {/* Center avatar (sponsor) */}
-          <div className="w-20 h-20 rounded-full border-2 border-white/40 bg-gray-200 overflow-hidden flex items-center justify-center relative">
+          <div 
+            className="w-20 h-20 rounded-full border-2 border-white/40 bg-gray-200 overflow-hidden flex items-center justify-center relative cursor-pointer hover:scale-105 transition-transform duration-200"
+            onClick={() => router.push(`/profile/${centerUser.id}`)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                router.push(`/profile/${centerUser.id}`);
+              }
+            }}
+            aria-label={`View ${centerUser.name}'s profile`}
+          >
             {centerUser.avatarUrl ? (
               <img
                 src={centerUser.avatarUrl}
