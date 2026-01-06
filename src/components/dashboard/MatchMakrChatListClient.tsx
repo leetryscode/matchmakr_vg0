@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import FlameUnreadIcon from './FlameUnreadIcon';
 import { useRouter, usePathname } from 'next/navigation';
 import SectionHeader from '@/components/ui/SectionHeader';
+import GlassCard from '@/components/ui/GlassCard';
 
 
 interface MatchMakrChatListClientProps {
@@ -367,7 +368,14 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           // Only show chats with other matchmakrs
           return !sponsoredSingles.some(s => s.id === otherId);
         }).length === 0 ? (
-        <div className="text-white/90 mb-6">No sponsor chats</div>
+        <GlassCard variant="1" className="p-4 mb-6">
+          <div className="text-center">
+            <h3 className="type-body mb-1 text-white/80">No sponsor chats yet</h3>
+            <p className="type-meta text-white/70">
+              Message another sponsor to coordinate introductions.
+            </p>
+          </div>
+        </GlassCard>
       ) : (
         <div className="mb-6 flex flex-col gap-2.5">
           {localConversations
