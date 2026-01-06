@@ -12,6 +12,7 @@ import AddSingleButton from '@/components/dashboard/AddSingleButton';
 import OrbitCarouselHeader from '@/components/dashboard/OrbitCarouselHeader';
 import NotificationsSection from '@/components/dashboard/NotificationsSection';
 import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
+import ManagedSinglesGrid from '@/components/dashboard/ManagedSinglesGrid';
 import Link from 'next/link';
 
 // Introductions destination card - WHOOP-style navigation card
@@ -154,6 +155,9 @@ async function MatchMakrDashboardContent() {
                 <div>
                     <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
                 </div>
+
+                {/* Managed Singles */}
+                <ManagedSinglesGrid singles={processedSponsoredSingles} />
 
                 {/* Chat with your singles */}
                 <div>
