@@ -1,6 +1,7 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useId } from 'react';
 import ReactDOM from 'react-dom';
+import { useChatModal } from '@/contexts/ChatModalContext';
 import GroupedMessageList from './GroupedMessageList';
 
 interface ChatModalProps {
@@ -18,6 +19,8 @@ interface ChatModalProps {
 }
 
 const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, currentUserName, currentUserProfilePic, otherUserId, otherUserName, otherUserProfilePic, aboutSingle, clickedSingle, isSingleToSingle = false }) => {
+  const { registerChatModal, unregisterChatModal } = useChatModal();
+  const modalId = useId();
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
   const [messageText, setMessageText] = useState('');
@@ -39,6 +42,19 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   } | null>(null);
   const [contextLoading, setContextLoading] = useState(false);
   const [currentUserSingles, setCurrentUserSingles] = useState<{ id: string }[]>([]);
+
+  // Register/unregister modal with context when open state changes
+  useEffect(() => {
+    if (open) {
+      registerChatModal(modalId);
+    } else {
+      unregisterChatModal(modalId);
+    }
+    // Always cleanup on unmount
+    return () => {
+      unregisterChatModal(modalId);
+    };
+  }, [open, modalId, registerChatModal, unregisterChatModal]);
 
   // Fetch chat history and context
   useEffect(() => {
@@ -326,6 +342,11 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     );
   }
 
+  // Handle close - context cleanup happens in useEffect
+  const handleClose = () => {
+    onClose();
+  };
+
   if (!open) return null;
 
   // Helper to determine which single is 'ours' and which is 'theirs'
@@ -416,7 +437,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
               <div className="sticky top-0 z-10 bg-white border-b border-gray-100 min-h-[56px]">
                 <div className="flex items-center gap-3 px-4 py-2">
                   <button
-                    onClick={onClose}
+                    onClick={handleClose}
                     className="h-9 w-9 flex items-center justify-center text-primary-blue font-semibold text-base flex-shrink-0"
                     aria-label="Close"
                   >
@@ -589,7 +610,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
             {/* Top left back arrow for mobile */}
             <button
               className="absolute top-4 left-4 block sm:hidden bg-white/80 rounded-full p-2 shadow focus:outline-none"
-              onClick={onClose}
+              onClick={handleClose}
               aria-label="Back"
               disabled={sending}
             >
@@ -601,7 +622,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
             {/* Top right X for desktop */}
             <button
               className="absolute top-4 right-4 hidden sm:block bg-white/80 rounded-full p-2 shadow focus:outline-none"
-              onClick={onClose}
+              onClick={handleClose}
               aria-label="Close"
               disabled={sending}
             >
