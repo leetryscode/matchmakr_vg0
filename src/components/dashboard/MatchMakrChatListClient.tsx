@@ -350,7 +350,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       onClick={() => setIsInviteSponsorModalOpen(true)}
       className="type-meta text-white/70 hover:text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-3 py-1 transition-colors"
     >
-      Invite
+      Invite another sponsor
     </button>
   );
 

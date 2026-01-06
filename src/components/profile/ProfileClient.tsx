@@ -217,7 +217,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
           {/* Helper Note - only for single viewing own profile */}
           {isOwnProfile && profile.user_type === 'SINGLE' && orbitRole === 'SINGLE' && (
-            <div className="text-sm text-text-light italic">
+            <div className="text-sm text-white/60 italic">
               Your Sponsor manages your Orbit profile. If something looks off, chat with them.
             </div>
           )}
@@ -225,16 +225,16 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           {/* Interests Block */}
           {profile.user_type === 'SINGLE' && (
             <div>
-              <div className="text-text-light text-sm font-semibold tracking-wide mb-2">Interests and <span className="italic">vibe</span></div>
+              <div className="text-white/70 text-sm font-semibold tracking-wide mb-2">Interests and <span className="italic">vibe</span></div>
               <div className="flex flex-wrap items-center gap-2">
                 {/* Interest chips - hide when input is open to avoid duplication */}
                 {!showInterestsInput && interests.slice(0, 6).map(interest => (
-                  <span key={interest.id} className="bg-primary-blue/10 text-primary-blue px-3 py-1 rounded-full text-xs flex items-center gap-1">
+                  <span key={interest.id} className="bg-white/10 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1 border border-white/10">
                     {interest.name}
                     {canEditProfile && (
                       <button
                         type="button"
-                        className="ml-1 text-text-light hover:text-red-500"
+                        className="ml-1 text-white/70 hover:text-red-400 transition-colors"
                         onClick={async () => {
                           const newInterests = interests.filter(i => i.id !== interest.id);
                           setSavingInterests(true);
@@ -263,7 +263,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 {/* Add Interest chip */}
                 {canEditProfile && (
                   <button
-                    className="px-3 py-1 rounded-full border border-border-light bg-gray-100 text-text-dark text-xs font-semibold hover:bg-gray-200"
+                    className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
                     onClick={() => setShowInterestsInput(v => !v)}
                     disabled={loadingInterests || savingInterests}
                   >
@@ -280,7 +280,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                     disabled={savingInterests}
                   />
                   <button
-                    className="mt-2 px-4 py-1 rounded-full bg-gradient-primary text-white font-semibold hover:bg-gradient-light transition-colors"
+                    className="mt-2 px-4 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 transition-colors"
                     onClick={() => handleSaveInterests(interests)}
                     disabled={savingInterests}
                   >
@@ -296,22 +296,22 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
             <>
               {sponsors.map((sponsor) => (
                 <div key={sponsor.id}>
-                  <div className="rounded-xl border border-border-light bg-background-card p-4">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                     <div className="flex justify-between items-center">
-                      <h2 className="text-text-dark font-semibold">
+                      <h2 className="text-white/90 font-semibold">
                         Why {sponsor.name || 'their sponsor'} recommends {firstName || profile.name || 'them'}
                       </h2>
                       {sponsor.isCurrentSponsor && (
                         <button
                           onClick={() => setIsEndorsementEditOpen(true)}
-                          className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full border border-border-light bg-gray-100 text-text-dark hover:bg-gray-200"
+                          className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white/90 transition-colors"
                           aria-label="Edit endorsement"
                         >
                           <PencilIcon className="w-4 h-4" />
                         </button>
                       )}
                     </div>
-                    <p className="mt-2 text-text-light text-sm leading-relaxed">{sponsor.endorsement || 'This is where your sponsor writes about you...'}</p>
+                    <p className="mt-2 text-white/70 text-sm leading-relaxed">{sponsor.endorsement || 'This is where your sponsor writes about you...'}</p>
                   </div>
                 </div>
               ))}
@@ -333,7 +333,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
           {/* Sponsored Singles Section - only for MATCHMAKR profiles */}
           {profile.user_type === 'MATCHMAKR' && (
-            <div className="border-t border-border-light pt-4">
+            <div className="border-t border-white/10 pt-4">
               <h2 className="text-lg font-semibold text-text-dark">Sponsored Singles</h2>
               {sponsoredSingles && sponsoredSingles.length > 0 ? (
                 <div className="mt-4 grid grid-cols-3 gap-4">
@@ -362,28 +362,28 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
           {/* Sponsor Block - only for SINGLE profiles with matchmakrProfile */}
           {profile.user_type === 'SINGLE' && matchmakrProfile && (
-            <div className="border-t border-border-light mt-6">
+            <div className="border-t border-white/10 mt-6">
               <div className="px-4 py-4">
-                <div className="text-text-dark font-semibold mb-1">Profile managed by</div>
-                <div className="text-text-light text-xs mb-3">Trusted contact for this profile</div>
-                <div className="mt-3 rounded-xl border border-border-light bg-background-card px-4 py-3">
+                <div className="text-white/90 font-semibold mb-1">Profile managed by</div>
+                <div className="text-white/60 text-xs mb-3">Trusted contact for this profile</div>
+                <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     {/* Avatar */}
-                    <div className="w-12 h-12 rounded-full overflow-hidden border border-border-light shrink-0">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 shrink-0">
                       {matchmakrProfile.profile_pic_url ? (
                         <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'Sponsor'} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full bg-background-main flex items-center justify-center">
-                          <span className="text-xl font-bold text-text-dark">
+                        <div className="w-full h-full bg-white/10 flex items-center justify-center">
+                          <span className="text-xl font-bold text-white/90">
                             {matchmakrProfile.name?.charAt(0).toUpperCase() || '?'}
                           </span>
                         </div>
                       )}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-text-dark font-semibold text-base leading-tight truncate">{matchmakrProfile.name}</div>
-                      <Link href={`/profile/${matchmakrProfile.id}`} className="text-primary-blue text-xs hover:text-primary-teal whitespace-nowrap">
+                      <div className="text-white/90 font-semibold text-base leading-tight truncate">{matchmakrProfile.name}</div>
+                      <Link href={`/profile/${matchmakrProfile.id}`} className="text-white/70 hover:text-white/90 text-xs whitespace-nowrap transition-colors">
                         View profile
                       </Link>
                     </div>
@@ -391,7 +391,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                   {/* Show Message button only if current user is a matchmakr */}
                   {currentUserProfile?.user_type === 'MATCHMAKR' && (
                     <button
-                      className="shrink-0 px-5 py-2 text-sm rounded-full bg-white text-primary-blue font-semibold hover:bg-white/90 active:scale-95 transition shadow-md shadow-black/20"
+                      className="shrink-0 px-5 py-2 text-sm rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 active:scale-95 transition-colors"
                       onClick={e => { e.preventDefault(); handleOpenChat(); }}
                     >
                       Message
