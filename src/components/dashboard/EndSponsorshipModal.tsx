@@ -33,7 +33,7 @@ export default function EndSponsorshipModal({
 
   const getTitle = () => {
     if (isSponsorView) {
-      return `End sponsorship with ${singleName || 'this single'}?`;
+      return `End sponsorship?`;
     } else {
       return `End sponsorship with ${sponsorName || 'your sponsor'}?`;
     }
@@ -41,7 +41,7 @@ export default function EndSponsorshipModal({
 
   const getDescription = () => {
     if (isSponsorView) {
-      return `This will permanently end your sponsorship relationship with ${singleName || 'this single'}. The chat will be deleted and you'll need to re-add them to start again.`;
+      return `You'll stop managing this profile and won't be able to introduce matches for them.`;
     } else {
       return `This will permanently end your sponsorship relationship with ${sponsorName || 'your sponsor'}. The chat will be deleted and you'll need to be re-added to start again.`;
     }

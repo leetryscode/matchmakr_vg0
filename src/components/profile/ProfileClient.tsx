@@ -8,9 +8,11 @@ import { Profile } from './types';
 import InterestsInput from './InterestsInput';
 import SelectSingleModal from '../dashboard/SelectSingleModal';
 import InviteSingleModal from '../dashboard/InviteSingleModal';
+import EndSponsorshipModal from '../dashboard/EndSponsorshipModal';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { PencilIcon } from '@heroicons/react/24/solid';
+import { createClient } from '@/lib/supabase/client';
 
 // Types for sponsored singles and matchmakr
 interface SponsoredSingle {
@@ -70,10 +72,13 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   const [showSelectSingleModal, setShowSelectSingleModal] = useState(false);
   const [showInviteSingleModal, setShowInviteSingleModal] = useState(false);
   const [isEndorsementEditOpen, setIsEndorsementEditOpen] = useState(false);
+  const [showEndSponsorshipModal, setShowEndSponsorshipModal] = useState(false);
+  const [endingSponsorship, setEndingSponsorship] = useState(false);
   const age = calculateAge(profile.birth_year);
   const firstName = profile.name?.split(' ')[0] || '';
   const router = useRouter();
   const { orbitRole } = useAuth();
+  const supabase = createClient();
   
   // In Orbit, only MATCHMAKR (Sponsors) can edit profiles
   // Singles viewing their own profile should see read-only view
@@ -156,6 +161,33 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   const handleSingleSelected = (singleId: string) => {
     // This should not be reached in normal flow since SelectSingleModal handles navigation internally
     console.warn('handleSingleSelected called - this indicates SelectSingleModal props may be missing');
+  };
+
+  // Handler for "Message as sponsor" - navigates to sponsor-to-single chat route
+  const handleMessageAsSponsor = () => {
+    router.push(`/dashboard/chat/single/${profile.id}`);
+  };
+
+  // Handler for ending sponsorship
+  const handleEndSponsorship = async () => {
+    setEndingSponsorship(true);
+    try {
+      const { error } = await supabase.functions.invoke('end-sponsorship', {
+        body: { single_id: profile.id }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Navigate to sponsor dashboard and refresh to show updated state
+      window.location.href = '/dashboard/matchmakr';
+    } catch (error: any) {
+      console.error('Error ending sponsorship:', error);
+      alert(`The sponsorship couldn't be ended. Please try again.`);
+      setEndingSponsorship(false);
+      setShowEndSponsorshipModal(false);
+    }
   };
 
   return (
@@ -362,44 +394,93 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
           {/* Sponsor Block - only for SINGLE profiles with matchmakrProfile */}
           {profile.user_type === 'SINGLE' && matchmakrProfile && (
-            <div className="border-t border-white/10 mt-6">
-              <div className="px-4 py-4">
-                <div className="text-white/90 font-semibold mb-1">Profile managed by</div>
-                <div className="text-white/60 text-xs mb-3">Trusted contact for this profile</div>
-                <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                  <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    {/* Avatar */}
-                    <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 shrink-0">
-                      {matchmakrProfile.profile_pic_url ? (
-                        <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'Sponsor'} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-white/10 flex items-center justify-center">
-                          <span className="text-xl font-bold text-white/90">
-                            {matchmakrProfile.name?.charAt(0).toUpperCase() || '?'}
-                          </span>
+            <>
+              {/* Show "Profile managed by" when viewer is NOT the sponsor */}
+              {!isSponsorViewing && (
+                <div className="border-t border-white/10 mt-6">
+                  <div className="px-4 py-4">
+                    <div className="text-white/90 font-semibold mb-1">Profile managed by</div>
+                    <div className="text-white/60 text-xs mb-3">Trusted contact for this profile</div>
+                    <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                      <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {/* Avatar */}
+                        <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 shrink-0">
+                          {matchmakrProfile.profile_pic_url ? (
+                            <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'Sponsor'} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-white/10 flex items-center justify-center">
+                              <span className="text-xl font-bold text-white/90">
+                                {matchmakrProfile.name?.charAt(0).toUpperCase() || '?'}
+                              </span>
+                            </div>
+                          )}
                         </div>
+                        <div className="min-w-0">
+                          <div className="text-white/90 font-semibold text-base leading-tight truncate">{matchmakrProfile.name}</div>
+                          <Link href={`/profile/${matchmakrProfile.id}`} className="text-white/70 hover:text-white/90 text-xs whitespace-nowrap transition-colors">
+                            View profile
+                          </Link>
+                        </div>
+                      </div>
+                      {/* Show Message button only if current user is a matchmakr */}
+                      {currentUserProfile?.user_type === 'MATCHMAKR' && (
+                        <button
+                          className="shrink-0 px-5 py-2 text-sm rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 active:scale-95 transition-colors"
+                          onClick={e => { e.preventDefault(); handleOpenChat(); }}
+                        >
+                          Message
+                        </button>
                       )}
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <div className="text-white/90 font-semibold text-base leading-tight truncate">{matchmakrProfile.name}</div>
-                      <Link href={`/profile/${matchmakrProfile.id}`} className="text-white/70 hover:text-white/90 text-xs whitespace-nowrap transition-colors">
-                        View profile
-                      </Link>
-                    </div>
-                  </div>
-                  {/* Show Message button only if current user is a matchmakr */}
-                  {currentUserProfile?.user_type === 'MATCHMAKR' && (
-                    <button
-                      className="shrink-0 px-5 py-2 text-sm rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 active:scale-95 transition-colors"
-                      onClick={e => { e.preventDefault(); handleOpenChat(); }}
-                    >
-                      Message
-                    </button>
-                  )}
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Show "Sponsor tools" when viewer IS the sponsor */}
+              {isSponsorViewing && (
+                <div className="border-t border-white/10 mt-6">
+                  <div className="px-4 py-4">
+                    <div className="text-white/90 font-semibold mb-1">Sponsor tools</div>
+                    <div className="text-white/60 text-xs mb-3">Only you can see these actions.</div>
+                    <div className="mt-3 rounded-xl border border-white/10 bg-white/5">
+                      {/* Edit profile row */}
+                      <button
+                        onClick={() => setIsEndorsementEditOpen(true)}
+                        className="w-full flex items-center justify-between py-3 px-4 border-b border-white/10 hover:bg-white/5 transition-colors text-left"
+                      >
+                        <span className="text-white/90 font-medium">Edit profile</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/60">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </button>
+                      {/* Message as sponsor row */}
+                      <button
+                        onClick={handleMessageAsSponsor}
+                        className="w-full flex items-center justify-between py-3 px-4 border-b border-white/10 hover:bg-white/5 transition-colors text-left"
+                      >
+                        <span className="text-white/90 font-medium">Message as sponsor</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/60">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </button>
+                      {/* End sponsorship row - danger style */}
+                      <button
+                        onClick={() => setShowEndSponsorshipModal(true)}
+                        disabled={endingSponsorship}
+                        className="w-full flex items-center justify-between py-3 px-4 hover:bg-white/5 transition-colors text-left disabled:opacity-50"
+                      >
+                        <span className="text-red-400 font-medium">End sponsorship</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Select Single Modal - handles chat creation via chat-context API */}
               <SelectSingleModal
                 open={showSelectSingleModal}
@@ -418,7 +499,16 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 open={showInviteSingleModal}
                 onClose={() => setShowInviteSingleModal(false)}
               />
-            </div>
+
+              {/* End Sponsorship Modal */}
+              <EndSponsorshipModal
+                isOpen={showEndSponsorshipModal}
+                onClose={() => setShowEndSponsorshipModal(false)}
+                onConfirm={handleEndSponsorship}
+                singleName={profile.name || undefined}
+                isSponsorView={true}
+              />
+            </>
           )}
         </div>
       </div>

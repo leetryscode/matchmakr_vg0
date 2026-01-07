@@ -5,7 +5,6 @@ import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import FlameUnreadIcon from './FlameUnreadIcon';
 import { useRouter, usePathname } from 'next/navigation';
-import EndSponsorshipModal from './EndSponsorshipModal';
 import SectionHeader from '@/components/ui/SectionHeader';
 
 interface SponsoredSingle {
@@ -23,41 +22,10 @@ interface SponsoredSinglesListProps {
     onSponsorshipEnded?: (singleId: string) => void;
 }
 
-// Modal for releasing a single
-function ReleaseSingleModal({ single, onClose, onConfirm }: { single: SponsoredSingle | null; onClose: () => void; onConfirm: (singleId: string, singleName: string | null) => void; }) {
-    if (!single) return null;
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-            <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-gray-200">
-                <h2 className="type-section mb-4 text-primary-blue">Release {single.name || 'this single'}?</h2>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                    You will no longer be able to manage their profile or find matches for them. This action cannot be undone, and they would need to invite you again to reconnect.
-                </p>
-                <div className="flex justify-center gap-4">
-                    <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
-                        Cancel
-                    </button>
-                    <button 
-                        onClick={() => onConfirm(single.id, single.name)} 
-                        className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1"
-                    >
-                        Release single
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName, userProfilePic, onSponsorshipEnded }: SponsoredSinglesListProps) {
     const supabase = createClient();
     const router = useRouter();
     const pathname = usePathname();
-    const [releasingSingle, setReleasingSingle] = useState<SponsoredSingle | null>(null);
-    const [showEndSponsorshipModal, setShowEndSponsorshipModal] = useState(false);
-    const [endingSponsorship, setEndingSponsorship] = useState(false);
-    const [selectedSingleForEnd, setSelectedSingleForEnd] = useState<SponsoredSingle | null>(null);
     const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
     const [latestMessages, setLatestMessages] = useState<Record<string, { content: string; created_at: string }>>({});
 
@@ -116,49 +84,6 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
         }
     }, [pathname, userId, sponsoredSingles]);
 
-    const handleReleaseSingle = async (singleId: string, singleName: string | null) => {
-        try {
-            const { error } = await supabase.functions.invoke('end-sponsorship', {
-                body: { single_id: singleId }
-            });
-
-            if (error) {
-                throw new Error(error.message);
-            }
-
-            alert(`Single released`);
-            window.location.reload();
-        } catch (error: any) {
-            alert(`Error: ${error.message}`);
-        }
-    };
-
-    const handleEndSponsorship = async () => {
-        if (!selectedSingleForEnd) return;
-        
-        setEndingSponsorship(true);
-        try {
-            const { error } = await supabase.functions.invoke('end-sponsorship', {
-                body: { single_id: selectedSingleForEnd.id }
-            });
-
-            if (error) {
-                throw new Error(error.message);
-            }
-
-            // Notify parent component to update the sponsored singles list
-            if (onSponsorshipEnded) {
-                onSponsorshipEnded(selectedSingleForEnd.id);
-            }
-        } catch (error: any) {
-            console.error('Error ending sponsorship:', error);
-            alert(`The sponsorship couldn't be ended. Please try again.`);
-        } finally {
-            setEndingSponsorship(false);
-            setSelectedSingleForEnd(null);
-        }
-    };
-
     return (
         <>
             {/* Section header */}
@@ -206,25 +131,6 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                                         <FlameUnreadIcon count={unreadCounts[single.id]} />
                                     </span>
                                 )}
-                                {/* Three dots menu */}
-                                <div className="relative menu-btn flex items-center justify-end ml-auto">
-                                    <button
-                                        className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-white/10 focus:outline-none transition-colors"
-                                        onClick={e => { 
-                                            e.stopPropagation(); 
-                                            setSelectedSingleForEnd(single);
-                                            setShowEndSponsorshipModal(true); 
-                                        }}
-                                        tabIndex={-1}
-                                        aria-label="Open menu"
-                                    >
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
-                                            <circle cx="12" cy="5" r="2" fill="#fff"/>
-                                            <circle cx="12" cy="12" r="2" fill="#fff"/>
-                                            <circle cx="12" cy="19" r="2" fill="#fff"/>
-                                        </svg>
-                                    </button>
-                                </div>
                             </div>
                         );
                     })
@@ -232,19 +138,6 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                     <div className="text-white/90 mb-6 w-full text-center">No sponsored singles</div>
                 )}
             </div>
-            <ReleaseSingleModal
-                single={releasingSingle}
-                onClose={() => setReleasingSingle(null)}
-                onConfirm={handleReleaseSingle}
-            />
-            {/* End Sponsorship Modal */}
-            <EndSponsorshipModal
-                isOpen={showEndSponsorshipModal}
-                onClose={() => setShowEndSponsorshipModal(false)}
-                onConfirm={handleEndSponsorship}
-                singleName={selectedSingleForEnd?.name || undefined}
-                isSponsorView={true}
-            />
         </>
     );
 }
