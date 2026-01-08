@@ -7,6 +7,8 @@ import Link from 'next/link';
 import InterestsInput from '@/components/profile/InterestsInput';
 import SelectSingleModal from '@/components/dashboard/SelectSingleModal';
 import InviteSingleModal from '@/components/dashboard/InviteSingleModal';
+import SendPreviewModal from '@/components/dashboard/SendPreviewModal';
+import Toast from '@/components/ui/Toast';
 import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
@@ -58,6 +60,11 @@ export default function PondPage() {
     const [selectedSingleForChat, setSelectedSingleForChat] = useState<string | null>(null);
     const [clickedSingleForChat, setClickedSingleForChat] = useState<{ id: string, name: string, photo: string | null } | null>(null);
     const [aboutSingleForChat, setAboutSingleForChat] = useState<{ id: string, name: string, photo: string | null } | null>(null);
+    // Send Preview Modal state
+    const [showSendPreviewModal, setShowSendPreviewModal] = useState(false);
+    const [selectedTargetForPreview, setSelectedTargetForPreview] = useState<PondProfile | null>(null);
+    // Toast state
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     // Pagination state
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -564,6 +571,53 @@ export default function PondPage() {
         setPendingChatProfile(null);
     };
 
+    // Handle opening send preview modal
+    const handleOpenSendPreview = (profile: PondProfile) => {
+        setSelectedTargetForPreview(profile);
+        setShowSendPreviewModal(true);
+    };
+
+    // Handle sending preview
+    const handleSendPreview = async (recipientSingleId: string) => {
+        if (!selectedTargetForPreview) return;
+
+        try {
+            const response = await fetch('/api/sneak-peeks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    recipientSingleId,
+                    targetSingleId: selectedTargetForPreview.id,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Handle specific error messages
+                let errorMessage = data.error || 'Failed to send preview';
+                
+                // Check if it's the 5 active previews limit
+                if (errorMessage.includes('5 active') || errorMessage.includes('Maximum of 5')) {
+                    errorMessage = 'They already have 5 previews right now. Try again later.';
+                }
+                
+                setToast({ message: errorMessage, type: 'error' });
+                return;
+            }
+
+            // Success
+            setToast({ message: 'Preview sent', type: 'success' });
+            setShowSendPreviewModal(false);
+            setSelectedTargetForPreview(null);
+        } catch (error) {
+            console.error('Error sending preview:', error);
+            setToast({ message: 'Failed to send preview. Please try again.', type: 'error' });
+        }
+    };
+
     if (DEBUG) console.log('Pond page render state:', { loading: loading || authLoading, profilesCount: profiles.length, hasMore });
 
     // Show loading while auth is loading or if we're still loading data
@@ -688,15 +742,15 @@ export default function PondPage() {
                                         <div className="md:rounded-2xl overflow-hidden border-0 md:border border-white/15 bg-white/5 md:bg-white/5">
                                             {/* Image with overlay */}
                                             <div className="relative w-full aspect-[4/5] md:aspect-[1/1]">
-                                                {/* Sneak Peek Button */}
+                                                {/* Send Preview Button */}
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         e.stopPropagation();
-                                                        alert('Sneak Peek coming soon — this will let your single preview profiles before you message.');
+                                                        handleOpenSendPreview(profile);
                                                     }}
                                                     className="absolute top-4 right-4 z-20 w-11 h-11 rounded-full flex items-center justify-center bg-transparent border border-white/70 hover:border-white hover:bg-white/5 active:scale-95 text-white shadow-md shadow-black/30 transition-transform duration-150 ease-out hover:scale-105"
-                                                    aria-label="Sneak Peek (coming soon)"
+                                                    aria-label="Send preview"
                                                 >
                                                     <PaperAirplaneIcon className="w-5 h-5 -rotate-45" />
                                                 </button>
@@ -824,6 +878,30 @@ export default function PondPage() {
                 open={showInviteSingleModal}
                 onClose={() => setShowInviteSingleModal(false)}
             />
+
+            {/* Send Preview Modal */}
+            <SendPreviewModal
+                open={showSendPreviewModal}
+                onClose={() => {
+                    setShowSendPreviewModal(false);
+                    setSelectedTargetForPreview(null);
+                }}
+                targetSingleId={selectedTargetForPreview?.id || ''}
+                targetSinglePhotoUrl={selectedTargetForPreview?.profile_pic_url || null}
+                targetSingleName={selectedTargetForPreview?.name || null}
+                sponsoredSingles={sponsoredSingles}
+                onSend={handleSendPreview}
+            />
+
+            {/* Toast Notification */}
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    isVisible={!!toast}
+                    onClose={() => setToast(null)}
+                />
+            )}
 
             {/* Tailor Search Modal */}
             {showTailorSearchModal && (

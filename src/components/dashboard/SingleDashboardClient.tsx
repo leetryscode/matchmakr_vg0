@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import InviteMatchMakrModal from '@/components/dashboard/InviteMatchMakrModal';
 import EndSponsorshipModal from './EndSponsorshipModal';
 import NotificationsSection from '@/components/dashboard/NotificationsSection';
+import PreviewCardsSection from '@/components/dashboard/PreviewCardsSection';
 import SectionHeader from '@/components/ui/SectionHeader';
 import GlassCard from '@/components/ui/GlassCard';
 import PrimaryCTA from '@/components/ui/PrimaryCTA';
@@ -366,11 +367,11 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
             <div className="text-white/90">No matches yet. Once your sponsor agrees to the introduction, you can chat here.</div>
           </div>
           
-          {/* My sneak peaks - placeholder */}
-          <div>
-            <SectionHeader title="My sneak peaks" />
-            <div className="h-16" />
-          </div>
+          {/* Preview cards section - only renders when there are previews */}
+          <PreviewCardsSection userId={userId} />
+          
+          {/* Footer spacer with brand mark */}
+          <DashboardFooterSpacer />
         </div>
       </>
     );
@@ -486,11 +487,11 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
           )}
         </div>
         
-        {/* My Sneak Peaks Section */}
-        <div>
-          <SectionHeader title="My sneak peaks" />
-          <div className="h-16" />
-        </div>
+        {/* Preview cards section - only renders when there are previews */}
+        <PreviewCardsSection userId={userId} />
+        
+        {/* Footer spacer with brand mark */}
+        <DashboardFooterSpacer />
       </div>
       
       {/* Invite Sponsor Modal */}
