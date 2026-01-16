@@ -13,6 +13,7 @@ import OrbitCarouselHeader from '@/components/dashboard/OrbitCarouselHeader';
 import NotificationsSection from '@/components/dashboard/NotificationsSection';
 import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
 import ManagedSinglesGrid from '@/components/dashboard/ManagedSinglesGrid';
+import SneakPeeksSection from '@/components/dashboard/SneakPeeksSection';
 import Link from 'next/link';
 
 // Introductions destination card - WHOOP-style navigation card
@@ -169,6 +170,12 @@ async function MatchMakrDashboardContent() {
                         userProfilePic={currentUserProfilePic}
                     />
                 </div>
+
+                {/* Sneak peaks sent to my singles */}
+                <SneakPeeksSection 
+                    sponsorId={user.id}
+                    sponsoredSingles={processedSponsoredSingles}
+                />
 
                 {/* Introductions destination card */}
                 <IntroductionsCard />
