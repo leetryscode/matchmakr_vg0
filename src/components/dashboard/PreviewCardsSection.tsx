@@ -96,14 +96,11 @@ export default function PreviewCardsSection({ userId }: PreviewCardsSectionProps
 
     return (
         <>
-            {/* Section-level copy - shown once above the list */}
+            {/* Single header above the preview */}
             <div className="mb-4">
-                <p className="text-white/90 text-sm mb-1.5 leading-snug">
+                <h2 className="type-section">
                     Your sponsor shared someone they think you might like.
-                </p>
-                <p className="text-white/60 text-xs leading-relaxed">
-                    This just helps your sponsor understand how you feel.
-                </p>
+                </h2>
             </div>
 
             <div className="flex flex-col gap-3">
@@ -118,6 +115,13 @@ export default function PreviewCardsSection({ userId }: PreviewCardsSectionProps
                         isProcessing={processingIds.has(preview.id)}
                     />
                 ))}
+            </div>
+
+            {/* Reassurance text below the preview card(s) */}
+            <div className="mt-4">
+                <p className="type-meta">
+                    The other person won't see this. Your response only helps your sponsor understand how you feel — nothing happens automatically.
+                </p>
             </div>
 
             {/* Toast for errors only */}

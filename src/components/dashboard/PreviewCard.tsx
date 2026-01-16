@@ -64,19 +64,19 @@ export default function PreviewCard({
 
             {/* Right: Content and actions - vertically centered relative to image */}
             <div className="flex-1 min-w-0 flex flex-col justify-center">
-                {/* Actions - stacked vertically, narrower, quieter */}
+                {/* Actions - stacked vertically, narrower, quieter, less button-like */}
                 <div className="flex flex-col gap-2">
                     <button
                         onClick={onNotSureYet}
                         disabled={isProcessing}
-                        className="px-3 py-1.5 text-white/80 bg-white/5 hover:bg-white/8 border border-white/15 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-w-[160px]"
+                        className="px-3 py-1 text-white/80 bg-white/3 hover:bg-white/5 border border-white/10 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-w-[160px]"
                     >
                         I'm not sure yet
                     </button>
                     <button
                         onClick={onOpenToIt}
                         disabled={isProcessing}
-                        className="px-3 py-1.5 text-white/80 bg-white/5 hover:bg-white/8 border border-white/15 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-w-[160px]"
+                        className="px-3 py-1 text-white/80 bg-white/3 hover:bg-white/5 border border-white/10 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-w-[160px]"
                     >
                         I'm open to it
                     </button>
