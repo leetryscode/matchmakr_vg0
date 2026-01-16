@@ -3,6 +3,16 @@ import './globals.css'
 import { AuthProvider } from '../contexts/AuthContext';
 import GlobalLayout from '../components/dashboard/GlobalLayout';
 
+/**
+ * PWA Metadata Configuration
+ * 
+ * iOS PWA Support:
+ * - appleWebApp.capable: Enables standalone mode on iOS
+ * - appleWebApp.statusBarStyle: Black-translucent for immersive overlay
+ * - apple icons: Required for home screen icon (180x180)
+ * 
+ * Validation: See PWA_VALIDATION.md or comments in manifest.ts for testing checklist
+ */
 export const metadata: Metadata = {
   title: 'Orbit',
   description: 'A matchmaking platform that connects singles through Sponsors',
@@ -18,8 +28,8 @@ export const metadata: Metadata = {
     ],
   },
   appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
+    capable: true, // Enables standalone mode: apple-mobile-web-app-capable="yes"
+    statusBarStyle: 'black-translucent', // Immersive status bar overlay
     title: 'Orbit',
   },
 }

@@ -1,5 +1,24 @@
 import { MetadataRoute } from 'next'
 
+/**
+ * Web App Manifest for Orbit PWA
+ * 
+ * PWA DESIGN DECISION: Orbit intentionally does NOT use a service worker.
+ * 
+ * Installability is achieved through:
+ * - Web App Manifest (this file)
+ * - display: "standalone" mode
+ * - start_url + scope configuration
+ * 
+ * Why no service worker?
+ * - Faster iteration during MVP (avoids stale cache issues)
+ * - Simpler debugging and deployment
+ * - Installability works without SW for basic PWA features
+ * 
+ * NOTE: Do not add next-pwa or service worker without understanding this trade-off.
+ * If offline functionality is needed later, consider a minimal SW with careful cache strategy.
+ */
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Orbit',
@@ -10,6 +29,8 @@ export default function manifest(): MetadataRoute.Manifest {
     display: 'standalone',
     background_color: '#4A5D7C',
     theme_color: '#4A5D7C',
+    // NOTE: Icons are currently placeholders (solid color #4A5D7C with "O").
+    // Replace with proper brand assets before production launch.
     icons: [
       {
         src: '/icons/icon-192.png',
