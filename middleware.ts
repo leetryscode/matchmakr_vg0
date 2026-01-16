@@ -78,8 +78,8 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(redirectUrl)
     }
 
-    // If user is signed in and the current path is /login, redirect to appropriate dashboard
-    if (user && req.nextUrl.pathname === '/login') {
+    // Helper function to redirect authenticated user to role-specific dashboard
+    const redirectToRoleDashboard = async (pathname: string) => {
       // Get the user's profile to determine their user type
       try {
         const { data: profile, error: profileError } = await supabase
@@ -90,7 +90,7 @@ export async function middleware(req: NextRequest) {
 
         // If profile fetch fails, don't redirect to default dashboard - let client handle it
         if (profileError || !profile) {
-          console.log('[Middleware] Profile fetch failed for user', user.id, 'on path', req.nextUrl.pathname, 'error:', profileError?.message || 'No profile found');
+          console.log('[Middleware] Profile fetch failed for user', user.id, 'on path', pathname, 'error:', profileError?.message || 'No profile found');
           return res; // Let the client handle the error
         }
 
@@ -108,10 +108,15 @@ export async function middleware(req: NextRequest) {
         redirectUrlObj.pathname = redirectUrl
         return NextResponse.redirect(redirectUrlObj)
       } catch (error) {
-        console.log('[Middleware] Profile fetch exception for user', user.id, 'on path', req.nextUrl.pathname, 'error:', error instanceof Error ? error.message : 'Unknown error');
+        console.log('[Middleware] Profile fetch exception for user', user.id, 'on path', pathname, 'error:', error instanceof Error ? error.message : 'Unknown error');
         // If we can't fetch the profile, return res to let client handle it (preferred over redirecting)
         return res;
       }
+    }
+
+    // If user is signed in and the current path is /login or /dashboard, redirect to appropriate dashboard
+    if (user && (req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/dashboard')) {
+      return redirectToRoleDashboard(req.nextUrl.pathname)
     }
 
     return res
