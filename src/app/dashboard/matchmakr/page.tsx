@@ -15,6 +15,7 @@ import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer'
 import ManagedSinglesGrid from '@/components/dashboard/ManagedSinglesGrid';
 import SneakPeeksSection from '@/components/dashboard/SneakPeeksSection';
 import Link from 'next/link';
+import { createSponsorLoginNotifications } from '@/lib/notifications/sponsor-login';
 
 // Introductions destination card - WHOOP-style navigation card
 const IntroductionsCard = () => (
@@ -77,6 +78,18 @@ async function MatchMakrDashboardContent() {
     if (!profile || profile.user_type !== 'MATCHMAKR') {
         // Redirect if not a matchmakr, or no profile found
         redirect('/');
+    }
+
+    // Trigger sponsor-login notifications for sponsored singles (non-blocking)
+    // This runs asynchronously and won't delay dashboard load
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (supabaseUrl && serviceRoleKey) {
+        // Fire and forget - don't await
+        createSponsorLoginNotifications(user.id, supabaseUrl, serviceRoleKey).catch((error) => {
+            // Error already logged in the function, just ensure it doesn't crash
+            console.error('[MatchMakrDashboard] Failed to create sponsor-login notifications:', error);
+        });
     }
     
     // Fetch the list of singles sponsored by this MatchMakr

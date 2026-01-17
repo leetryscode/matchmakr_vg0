@@ -90,6 +90,8 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
         return 'Sponsor Activity';
       case 'intro_created':
         return 'New introduction';
+      case 'sponsor_logged_in':
+        return 'Sponsor activity';
       default:
         return type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     }
@@ -104,6 +106,13 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
     }
     if (notification.type === 'intro_created') {
       return 'Your sponsor introduced you to someone new.';
+    }
+    if (notification.type === 'sponsor_logged_in') {
+      // Use the message stored in data, or fallback to default
+      return (
+        notification.data?.message ||
+        'Your sponsor is spending time in Orbit.'
+      );
     }
     return notification.data?.message || 'You have a new notification.';
   };
