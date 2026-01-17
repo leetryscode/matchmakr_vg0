@@ -125,8 +125,17 @@ export function useNotifications(userId: string): UseNotificationsResult {
             } else {
                 // Optimistically remove from state
                 setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-                // Update active count
+                // Update active count optimistically
                 setActiveCount((prev) => Math.max(0, prev - 1));
+                
+                // Also refresh the count from server to ensure accuracy
+                supabaseRef.current
+                    .from('notifications')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('user_id', userId)
+                    .is('dismissed_at', null)
+                    .or('read.is.null,read.eq.false')
+                    .then(({ count }) => setActiveCount(count || 0));
             }
         } catch (error) {
             console.error('Error dismissing notification:', error);

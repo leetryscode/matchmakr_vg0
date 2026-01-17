@@ -28,6 +28,20 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
     }
   }, [userId, refresh]);
 
+  // Handle hash navigation - scroll to notifications if URL has #notifications
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#notifications') {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        const element = document.getElementById('notifications');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [notifications]); // Re-run when notifications load/change
+
   // Temporarily always render section for testing (removed early return)
   if (!userId) {
     return null;
@@ -45,6 +59,14 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
       
       // Refresh notifications after seeding
       await refresh();
+      
+      // Scroll to notifications section after adding (helps test scroll behavior)
+      setTimeout(() => {
+        const notificationsElement = document.getElementById('notifications');
+        if (notificationsElement) {
+          notificationsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     } catch (error) {
       console.error('Error seeding notification:', error);
     }
@@ -89,7 +111,7 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
   const isDevMode = process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_ORBIT_DEBUG_UI === 'true';
 
   return (
-    <div>
+    <div id="notifications">
       <SectionHeader 
         title="Notifications"
         right={isDevMode ? (
