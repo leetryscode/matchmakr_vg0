@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ChatModalProvider, useChatModal } from '@/contexts/ChatModalContext';
 import BottomNavigation from './BottomNavigation';
 import { BOTTOM_NAV_HEIGHT_PX } from '@/constants/layout';
-import InstallNudge from '../pwa/InstallNudge';
+import InstallBar from '../pwa/InstallBar';
 
 interface GlobalLayoutProps {
   children: React.ReactNode;
@@ -59,10 +59,10 @@ function GlobalLayoutContent({ children, showBottomNav = true }: GlobalLayoutPro
 
   return (
     <div className="min-h-[100dvh] bg-dashboard">
+      {/* Persistent install bar - sticky at top, only shows when not standalone */}
+      <InstallBar />
       {/* Main content with bottom padding to account for fixed navigation - always applied to prevent jump */}
       <div className="pb-[calc(var(--bottom-nav-h,0px)+1rem+env(safe-area-inset-bottom))] transition-[padding-bottom] duration-200">
-        {/* Install nudge - only shown in browser mode on dashboard routes */}
-        <InstallNudge />
         {children}
       </div>
       {/* Show bottom navigation only for authenticated users on allowed routes */}

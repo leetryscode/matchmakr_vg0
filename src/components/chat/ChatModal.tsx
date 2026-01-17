@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef, useId } from 'react';
 import ReactDOM from 'react-dom';
 import { useChatModal } from '@/contexts/ChatModalContext';
+import { isStandaloneMode } from '@/utils/pwa';
+import RequireStandaloneGate from '../pwa/RequireStandaloneGate';
 import GroupedMessageList from './GroupedMessageList';
 
 interface ChatModalProps {
@@ -420,7 +422,15 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
 
   const { ourSingle, theirSingle } = getChatSingles(currentUserId, chatContext, currentUserSingles);
 
+  if (!open) return null;
+
   return ReactDOM.createPortal(
+    <RequireStandaloneGate
+      enabled={true}
+      title="Install Orbit to access Chat"
+      body="Chat is available in app mode only. Install Orbit for full access."
+      showBackButton={false}
+    >
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
       <div 
         className="bg-white rounded-2xl p-0 shadow-xl w-[600px] h-[100dvh] flex flex-col text-center relative overflow-hidden"
@@ -634,7 +644,8 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
           </>
         )}
       </div>
-    </div>,
+    </div>
+    </RequireStandaloneGate>,
     document.body
   );
 };

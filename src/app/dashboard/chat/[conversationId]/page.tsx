@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import GroupedMessageList from '@/components/chat/GroupedMessageList';
+import RequireStandaloneGate from '@/components/pwa/RequireStandaloneGate';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -350,6 +351,13 @@ export default function ChatPage() {
   };
 
   return (
+    <RequireStandaloneGate
+      enabled={true}
+      title="Install Orbit to access Chat"
+      body="Chat is available in app mode only. Install Orbit for full access."
+      showBackButton={true}
+      backRoute="/dashboard"
+    >
     <div className="h-[100dvh] flex flex-col p-0 sm:p-2 bg-white">
       {/* Fixed header section */}
       <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-sm w-full bg-white/80 rounded-none shadow-2xl">
@@ -571,5 +579,6 @@ export default function ChatPage() {
         </div>
       )}
     </div>
+    </RequireStandaloneGate>
   );
 } 

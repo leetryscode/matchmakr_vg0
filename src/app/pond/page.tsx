@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
+import RequireStandaloneGate from '@/components/pwa/RequireStandaloneGate';
 
 interface PondProfile extends Profile {
     profile_pic_url: string | null;
@@ -641,6 +642,13 @@ export default function PondPage() {
     };
 
     return (
+        <RequireStandaloneGate
+            enabled={true}
+            title="Install Orbit to access the Pond"
+            body="The Pond is available in app mode only. Install Orbit for full access."
+            showBackButton={true}
+            backRoute="/dashboard"
+        >
         <div className="min-h-screen bg-gradient-to-br from-primary-blue to-primary-teal px-0 md:px-4">
             <div className="max-w-none md:max-w-6xl md:mx-auto">
                 {/* Sticky Banner */}
@@ -980,5 +988,6 @@ export default function PondPage() {
                 </div>
             )}
         </div>
+        </RequireStandaloneGate>
     );
 }
