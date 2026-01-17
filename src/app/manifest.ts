@@ -25,7 +25,10 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Orbit',
     description: 'A matchmaking platform that connects singles through Sponsors',
     start_url: '/dashboard',
-    scope: '/dashboard',
+    // Broad scope allows all routes to render within PWA container (MVP choice)
+    // This ensures app-native experience across all pages (Pond, profile, etc.)
+    // and avoids premature route refactors. Can be tightened later if needed.
+    scope: '/',
     display: 'standalone',
     background_color: '#4A5D7C',
     theme_color: '#4A5D7C',
