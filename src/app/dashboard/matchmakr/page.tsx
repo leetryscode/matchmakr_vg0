@@ -16,6 +16,7 @@ import ManagedSinglesGrid from '@/components/dashboard/ManagedSinglesGrid';
 import SneakPeeksSection from '@/components/dashboard/SneakPeeksSection';
 import Link from 'next/link';
 import { createSponsorLoginNotifications } from '@/lib/notifications/sponsor-login';
+import { checkAndCreateSingleNotSeenIntroNotifications } from '@/lib/notifications/single-not-seen-intro';
 
 // Introductions destination card - WHOOP-style navigation card
 const IntroductionsCard = () => (
@@ -80,15 +81,22 @@ async function MatchMakrDashboardContent() {
         redirect('/');
     }
 
-    // Trigger sponsor-login notifications for sponsored singles (non-blocking)
+    // Trigger notifications for sponsored singles (non-blocking)
     // This runs asynchronously and won't delay dashboard load
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (supabaseUrl && serviceRoleKey) {
         // Fire and forget - don't await
+        // 1. Sponsor-login notifications
         createSponsorLoginNotifications(user.id, supabaseUrl, serviceRoleKey).catch((error) => {
             // Error already logged in the function, just ensure it doesn't crash
             console.error('[MatchMakrDashboard] Failed to create sponsor-login notifications:', error);
+        });
+        
+        // 2. Single-not-seen-intro notifications (opportunistic check)
+        checkAndCreateSingleNotSeenIntroNotifications(user.id, supabaseUrl, serviceRoleKey).catch((error) => {
+            // Error already logged in the function, just ensure it doesn't crash
+            console.error('[MatchMakrDashboard] Failed to check single-not-seen-intro notifications:', error);
         });
     }
     

@@ -92,6 +92,8 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
         return 'New introduction';
       case 'sponsor_logged_in':
         return 'Sponsor activity';
+      case 'single_not_seen_intro':
+        return 'Introduction not yet viewed';
       default:
         return type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     }
@@ -113,6 +115,9 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
         notification.data?.message ||
         'Your sponsor is spending time in Orbit.'
       );
+    }
+    if (notification.type === 'single_not_seen_intro') {
+      return 'Your single hasn't logged in yet to view the introduction.';
     }
     return notification.data?.message || 'You have a new notification.';
   };
