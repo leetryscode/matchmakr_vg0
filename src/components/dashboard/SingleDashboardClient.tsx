@@ -396,7 +396,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
       {/* Sections with proper spacing */}
       <div className="flex flex-col space-y-8 w-full">
         {/* Notifications */}
-        <NotificationsSection />
+        <NotificationsSection userId={userId} />
         
         {/* My Sponsors Section */}
         <div>

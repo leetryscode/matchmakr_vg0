@@ -282,7 +282,7 @@ export default function SneakPeeksSection({ sponsorId, sponsoredSingles }: Sneak
             ) : visibleSneakPeeks.length === 0 ? (
                 <div>
                     <div className="mb-3">
-                        <p className="text-xs text-white/50">What your single will see</p>
+                        <p className="text-xs text-white/50">No previews sent yet. This is what your single will see:</p>
                     </div>
                     <ExamplePreviewCard />
                 </div>

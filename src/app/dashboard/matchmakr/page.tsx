@@ -150,7 +150,7 @@ async function MatchMakrDashboardContent() {
             {/* Consistent vertical rhythm between sections */}
             <div className="flex flex-col space-y-8">
                 {/* Notifications */}
-                <NotificationsSection />
+                <NotificationsSection userId={user.id} />
 
                 {/* Sponsor chat */}
                 <div>

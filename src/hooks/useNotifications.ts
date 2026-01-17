@@ -18,6 +18,7 @@ export interface UseNotificationsResult {
     loading: boolean;
     refresh: () => Promise<void>;
     markAllRead: () => Promise<void>;
+    dismissNotification: (notificationId: string) => Promise<void>;
 }
 
 export function useNotifications(userId: string): UseNotificationsResult {
@@ -43,6 +44,7 @@ export function useNotifications(userId: string): UseNotificationsResult {
     }, [userId]);
 
     // Fetch notifications (called by UI when needed)
+    // Only fetch unread notifications (read=false)
     const refresh = useCallback(async () => {
         if (!userId) {
             setNotifications([]);
@@ -55,6 +57,7 @@ export function useNotifications(userId: string): UseNotificationsResult {
                 .from('notifications')
                 .select('*')
                 .eq('user_id', userId)
+                .eq('read', false)
                 .order('created_at', { ascending: false })
                 .limit(10);
 
@@ -95,12 +98,37 @@ export function useNotifications(userId: string): UseNotificationsResult {
         }
     }, [userId, unreadCount]);
 
+    // Dismiss a single notification (set read=true)
+    const dismissNotification = useCallback(async (notificationId: string) => {
+        if (!userId) return;
+
+        try {
+            const { error } = await supabaseRef.current
+                .from('notifications')
+                .update({ read: true })
+                .eq('id', notificationId)
+                .eq('user_id', userId);
+
+            if (error) {
+                console.error('Error dismissing notification:', error);
+            } else {
+                // Optimistically remove from state
+                setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+                // Update unread count
+                setUnreadCount((prev) => Math.max(0, prev - 1));
+            }
+        } catch (error) {
+            console.error('Error dismissing notification:', error);
+        }
+    }, [userId]);
+
     return {
         notifications,
         unreadCount,
         loading,
         refresh,
         markAllRead,
+        dismissNotification,
     };
 }
 
