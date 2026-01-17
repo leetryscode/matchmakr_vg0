@@ -1,17 +1,136 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardWrapper from '@/components/dashboard/DashboardWrapper';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import GlassCard from '@/components/ui/GlassCard';
 import SectionHeader from '@/components/ui/SectionHeader';
+import { createClient } from '@/lib/supabase/client';
+
+interface DeleteAccountModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  isDeleting: boolean;
+}
+
+function DeleteAccountModal({ isOpen, onClose, onConfirm, isDeleting }: DeleteAccountModalProps) {
+  if (!isOpen) return null;
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-white/10 backdrop-blur-md rounded-lg border border-white/20 shadow-xl max-w-md w-full p-6">
+        <h3 className="text-lg font-semibold text-white mb-3">Delete account?</h3>
+        <p className="text-white/80 mb-6">
+          This permanently removes your account and data.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            disabled={isDeleting}
+            className="flex-1 px-4 py-2 text-white/80 hover:text-white border border-white/20 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isDeleting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Deleting...
+              </>
+            ) : (
+              'Delete account'
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const [userName, setUserName] = useState<string | null>(null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
+  const [isSavingName, setIsSavingName] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user?.id) return;
+      
+      const supabase = createClient();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile) {
+        setUserName(profile.name);
+      }
+    };
+
+    fetchProfile();
+  }, [user?.id]);
 
   if (!user) {
     return null; // DashboardWrapper handles redirect
   }
+
+  const handleSaveName = async () => {
+    if (!user?.id) return;
+    
+    setIsSavingName(true);
+    const supabase = createClient();
+    const trimmedName = editedName.trim();
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ name: trimmedName || null })
+        .eq('id', user.id);
+      
+      if (error) {
+        console.error('Error saving name:', error);
+        alert('Failed to save name. Please try again.');
+      } else {
+        setUserName(trimmedName || null);
+        setIsEditingName(false);
+      }
+    } catch (err) {
+      console.error('Error saving name:', err);
+      alert('Failed to save name. Please try again.');
+    } finally {
+      setIsSavingName(false);
+    }
+  };
+
+  const handleEditNameClick = () => {
+    setEditedName(userName || '');
+    setIsEditingName(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingName(false);
+    setEditedName('');
+  };
 
   const handleLogout = async () => {
     console.log('Logout button clicked');
@@ -45,6 +164,34 @@ export default function SettingsPage() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      // TODO: Implement account deletion flow
+      // This should:
+      // 1. Delete the user's profile from profiles table
+      // 2. Delete associated data (photos, conversations, etc.)
+      // 3. Delete the auth user
+      // 4. Clear all storage and redirect to home
+      
+      console.log('Account deletion not yet implemented');
+      alert('Account deletion is not yet implemented. Please contact support.');
+      setShowDeleteModal(false);
+      
+      // When implemented, the flow should be:
+      // const supabase = createClient();
+      // // Delete profile and related data
+      // // Delete auth user
+      // // Clear storage
+      // window.location.href = '/';
+    } catch (err) {
+      console.error('Error deleting account:', err);
+      alert('Failed to delete account. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <DashboardWrapper>
       <DashboardLayout firstName={null} userId={user.id}>
@@ -54,50 +201,95 @@ export default function SettingsPage() {
             <h1 className="type-section">Settings</h1>
           </div>
           
-          {/* Account Information */}
+          {/* Account Card */}
           <GlassCard variant="1" className="p-6">
-            <SectionHeader title="Account information" className="mb-4" />
+            <SectionHeader title="Account" className="mb-4" />
             <div className="space-y-4">
+              {/* Name Row */}
               <div className="flex items-center justify-between py-3 border-b border-white/10">
+                <span className="text-white/80 font-medium">Name:</span>
+                {isEditingName ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={editedName}
+                      onChange={(e) => setEditedName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSaveName();
+                        } else if (e.key === 'Escape') {
+                          handleCancelEdit();
+                        }
+                      }}
+                      autoFocus
+                      className="bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/30"
+                      disabled={isSavingName}
+                    />
+                    <button
+                      onClick={handleSaveName}
+                      disabled={isSavingName}
+                      className="text-accent-teal-light hover:text-accent-teal text-sm font-medium disabled:opacity-50"
+                    >
+                      {isSavingName ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      disabled={isSavingName}
+                      className="text-white/60 hover:text-white text-sm font-medium disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className={userName ? "text-white" : "text-white/50 italic"}>
+                      {userName || 'Add name'}
+                    </span>
+                    <button
+                      onClick={handleEditNameClick}
+                      className="text-white/60 hover:text-white text-sm font-medium ml-2"
+                    >
+                      {userName ? 'Edit' : 'Add'}
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              {/* Email Row */}
+              <div className="flex items-center justify-between py-3">
                 <span className="text-white/80 font-medium">Email:</span>
                 <span className="text-white">{user?.email || 'Not set'}</span>
               </div>
-              
-              <div className="flex items-center justify-between py-3 border-b border-white/10">
-                <span className="text-white/80 font-medium">User ID:</span>
-                <span className="text-white font-mono text-sm">{user?.id}</span>
-              </div>
-              
-              <div className="flex items-center justify-between py-3">
-                <span className="text-white/80 font-medium">Account status:</span>
-                <span className="text-white">Active</span>
-              </div>
             </div>
           </GlassCard>
 
-          {/* Coming Soon Section */}
-          <GlassCard variant="1" className="p-6">
-            <SectionHeader title="Coming soon" className="mb-4" />
-            <div className="text-white/80 text-center">
-              <p className="mb-2">• Profile management</p>
-              <p className="mb-2">• Photo uploads</p>
-              <p className="mb-2">• Phone number management</p>
-              <p className="mb-2">• Password changes</p>
-              <p className="mb-2">• Notification preferences</p>
-              <p>• Privacy settings</p>
-            </div>
-          </GlassCard>
-
-          {/* Sign Out Button */}
-          <div className="w-full max-w-md mx-auto mt-6">
+          {/* Actions Section */}
+          <div className="space-y-3">
+            {/* Sign Out Button */}
             <button
               onClick={handleLogout}
               className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-xl border border-white/20 transition-all duration-200 shadow-button hover:shadow-button-hover"
             >
-              Sign Out
+              Sign out
+            </button>
+
+            {/* Delete Account Button */}
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold py-3 px-6 rounded-xl border border-red-500/30 hover:border-red-500/50 transition-all duration-200"
+            >
+              Delete account
             </button>
           </div>
         </div>
+
+        {/* Delete Account Modal */}
+        <DeleteAccountModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDeleteAccount}
+          isDeleting={isDeleting}
+        />
       </DashboardLayout>
     </DashboardWrapper>
   );
