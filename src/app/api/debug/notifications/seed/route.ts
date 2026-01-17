@@ -17,10 +17,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Validate service role key exists
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceRoleKey) {
+    console.error('SUPABASE_SERVICE_ROLE_KEY is not set');
+    return NextResponse.json({ 
+      error: 'Server configuration error: Service role key not configured' 
+    }, { status: 500 });
+  }
+
   // Create service role client for INSERT (bypasses RLS)
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    serviceRoleKey,
     {
       auth: {
         autoRefreshToken: false,
@@ -60,7 +69,17 @@ export async function POST(req: NextRequest) {
 
   if (insertError) {
     console.error('Error seeding notification:', insertError);
-    return NextResponse.json({ error: insertError.message }, { status: 500 });
+    console.error('Insert error details:', {
+      message: insertError.message,
+      details: insertError.details,
+      hint: insertError.hint,
+      code: insertError.code
+    });
+    return NextResponse.json({ 
+      error: insertError.message || 'Failed to insert notification',
+      details: insertError.details,
+      hint: insertError.hint
+    }, { status: 500 });
   }
 
   return NextResponse.json({ success: true, notification });
