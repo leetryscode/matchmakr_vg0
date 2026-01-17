@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { isStandaloneMode } from '@/utils/pwa';
 import { useInstallPrompt } from '@/hooks/useInstallPrompt';
+import { useAuth } from '@/contexts/AuthContext';
+import { getDashboardHref } from '@/utils/routes';
 import InstallInstructionsSheet from './InstallInstructionsSheet';
 
 interface RequireStandaloneGateProps {
@@ -22,12 +24,16 @@ export default function RequireStandaloneGate({
   body,
   ctaLabel = 'Install Orbit',
   showBackButton = false,
-  backRoute = '/dashboard',
+  backRoute,
   children,
 }: RequireStandaloneGateProps) {
   const router = useRouter();
+  const { userType } = useAuth();
   const [isStandalone, setIsStandalone] = useState(true);
   const { triggerInstall, installing, showInstructions, setShowInstructions } = useInstallPrompt();
+  
+  // Use user's role-based dashboard route, or fallback to /dashboard/matchmakr
+  const defaultBackRoute = backRoute || getDashboardHref(userType) || '/dashboard/matchmakr';
 
   // Check standalone mode on mount and when window focus changes
   useEffect(() => {
@@ -82,7 +88,7 @@ export default function RequireStandaloneGate({
               {/* Secondary: Back button (if enabled) */}
               {showBackButton && (
                 <button
-                  onClick={() => router.push(backRoute)}
+                  onClick={() => router.push(defaultBackRoute)}
                   className="w-full px-4 py-3 bg-transparent hover:bg-white/10 border border-white/20 rounded-lg text-white/80 hover:text-white text-sm font-medium transition-colors"
                 >
                   Back to Dashboard
