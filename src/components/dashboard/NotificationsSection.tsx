@@ -66,6 +66,8 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
         return 'System Update';
       case 'matchmakr_chat':
         return 'Sponsor Activity';
+      case 'intro_created':
+        return 'New introduction';
       default:
         return type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     }
@@ -77,6 +79,9 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
     }
     if (notification.type === 'matchmakr_chat') {
       return notification.data?.message || 'Your sponsor is talking to another sponsor about you.';
+    }
+    if (notification.type === 'intro_created') {
+      return 'Your sponsor introduced you to someone new.';
     }
     return notification.data?.message || 'You have a new notification.';
   };
@@ -153,9 +158,6 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
                   <p className="type-meta text-white/70">
                     {getNotificationBody(notification)}
                   </p>
-                  <div className="mt-2 text-xs text-white/50">
-                    {new Date(notification.created_at).toLocaleString()}
-                  </div>
                 </div>
               </GlassCard>
             );

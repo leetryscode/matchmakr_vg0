@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 
 export async function POST(req: NextRequest) {
   const supabase = createClient();
@@ -55,6 +56,57 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
     match = newMatch;
+
+    // Create notifications for both SINGLE users when introduction is created
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (serviceRoleKey) {
+      const supabaseAdmin = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false
+          }
+        }
+      );
+
+      // Notify both singles about the new introduction
+      const notificationsToInsert = [
+        {
+          user_id: single_a_id,
+          type: 'intro_created',
+          data: {
+            intro_id: match.id,
+            other_single_id: single_b_id,
+            sponsor_id: matchmakr_id
+          },
+          dismissed_at: null,
+          read: false
+        },
+        {
+          user_id: single_b_id,
+          type: 'intro_created',
+          data: {
+            intro_id: match.id,
+            other_single_id: single_a_id,
+            sponsor_id: matchmakr_id
+          },
+          dismissed_at: null,
+          read: false
+        }
+      ];
+
+      // Insert notifications (ignore errors to not break intro creation)
+      const { error: notifyError } = await supabaseAdmin
+        .from('notifications')
+        .insert(notificationsToInsert);
+
+      if (notifyError) {
+        console.error('Error creating intro notifications:', notifyError);
+        // Don't fail the intro creation if notifications fail
+      }
+    }
   } else {
     // Update approval
     const updateFields: any = {};
