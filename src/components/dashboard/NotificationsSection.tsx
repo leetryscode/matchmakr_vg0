@@ -18,7 +18,7 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
   const { user } = useAuth();
   const userId = userIdProp || user?.id || '';
   
-  const { notifications, unreadCount, loading, refresh, dismissNotification } = useNotifications(userId);
+  const { notifications, activeCount, loading, refresh, dismissNotification } = useNotifications(userId);
   const [dismissing, setDismissing] = useState<Set<string>>(new Set());
 
   // Refresh notifications on mount

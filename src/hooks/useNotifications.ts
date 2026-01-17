@@ -8,13 +8,14 @@ export interface Notification {
     user_id: string;
     type: string;
     read: boolean;
+    dismissed_at: string | null;
     created_at: string;
     data?: any;
 }
 
 export interface UseNotificationsResult {
     notifications: Notification[];
-    unreadCount: number;
+    activeCount: number;
     loading: boolean;
     refresh: () => Promise<void>;
     markAllRead: () => Promise<void>;
@@ -25,26 +26,31 @@ export function useNotifications(userId: string): UseNotificationsResult {
     const supabaseRef = useRef(createClient());
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(0);
+    const [activeCount, setActiveCount] = useState(0);
 
-    // Fetch unread count on mount and when userId changes
+    // Fetch active count on mount and when userId changes
+    // Active = dismissed_at IS NULL AND (read IS NULL OR read = false) for compatibility
     useEffect(() => {
         if (!userId) {
-            setUnreadCount(0);
+            setActiveCount(0);
             return;
         }
 
-        // Fetch unread count
+        // Fetch active count (dismissed_at IS NULL)
+        // Compatibility: Also exclude read=true notifications during transition
+        // Note: We filter by dismissed_at first, then apply OR filter for read compatibility
         supabaseRef.current
             .from('notifications')
             .select('id', { count: 'exact', head: true })
             .eq('user_id', userId)
-            .eq('read', false)
-            .then(({ count }) => setUnreadCount(count || 0));
+            .is('dismissed_at', null)
+            .or('read.is.null,read.eq.false')
+            .then(({ count }) => setActiveCount(count || 0));
     }, [userId]);
 
     // Fetch notifications (called by UI when needed)
-    // Only fetch unread notifications (read=false)
+    // Only fetch active notifications (dismissed_at IS NULL)
+    // Compatibility: Also exclude read=true notifications during transition
     const refresh = useCallback(async () => {
         if (!userId) {
             setNotifications([]);
@@ -57,7 +63,8 @@ export function useNotifications(userId: string): UseNotificationsResult {
                 .from('notifications')
                 .select('*')
                 .eq('user_id', userId)
-                .eq('read', false)
+                .is('dismissed_at', null)
+                .or('read.is.null,read.eq.false')
                 .order('created_at', { ascending: false })
                 .limit(10);
 
@@ -66,6 +73,8 @@ export function useNotifications(userId: string): UseNotificationsResult {
                 setNotifications([]);
             } else {
                 setNotifications(data || []);
+                // Update active count
+                setActiveCount(data?.length || 0);
             }
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -75,37 +84,39 @@ export function useNotifications(userId: string): UseNotificationsResult {
         }
     }, [userId]);
 
-    // Mark all unread notifications as read
+    // Mark all active notifications as read
+    // Note: This still uses the read column, but dismissal now uses dismissed_at
     const markAllRead = useCallback(async () => {
-        if (!userId || unreadCount === 0) return;
+        if (!userId || activeCount === 0) return;
 
         try {
             const { error } = await supabaseRef.current
                 .from('notifications')
                 .update({ read: true })
                 .eq('user_id', userId)
-                .eq('read', false);
+                .is('dismissed_at', null)
+                .or('read.is.null,read.eq.false');
 
             if (error) {
                 console.error('Error marking notifications as read:', error);
             } else {
-                setUnreadCount(0);
+                setActiveCount(0);
                 // Update notifications state to reflect read status
                 setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
             }
         } catch (error) {
             console.error('Error marking notifications as read:', error);
         }
-    }, [userId, unreadCount]);
+    }, [userId, activeCount]);
 
-    // Dismiss a single notification (set read=true)
+    // Dismiss a single notification (set dismissed_at = now())
     const dismissNotification = useCallback(async (notificationId: string) => {
         if (!userId) return;
 
         try {
             const { error } = await supabaseRef.current
                 .from('notifications')
-                .update({ read: true })
+                .update({ dismissed_at: new Date().toISOString() })
                 .eq('id', notificationId)
                 .eq('user_id', userId);
 
@@ -114,8 +125,8 @@ export function useNotifications(userId: string): UseNotificationsResult {
             } else {
                 // Optimistically remove from state
                 setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-                // Update unread count
-                setUnreadCount((prev) => Math.max(0, prev - 1));
+                // Update active count
+                setActiveCount((prev) => Math.max(0, prev - 1));
             }
         } catch (error) {
             console.error('Error dismissing notification:', error);
@@ -124,7 +135,7 @@ export function useNotifications(userId: string): UseNotificationsResult {
 
     return {
         notifications,
-        unreadCount,
+        activeCount,
         loading,
         refresh,
         markAllRead,

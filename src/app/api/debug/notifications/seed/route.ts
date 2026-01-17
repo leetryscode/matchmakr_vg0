@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createServerClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 
 // DEV-only route to seed example notifications
 export async function POST(req: NextRequest) {
@@ -8,13 +9,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  const supabase = createClient();
-
-  // Check authentication
+  // Use server client to check authentication (requires user context)
+  const supabase = createServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  // Create service role client for INSERT (bypasses RLS)
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  );
 
   // Get notification type from query params, otherwise random
   const { searchParams } = new URL(req.url);
@@ -31,14 +44,16 @@ export async function POST(req: NextRequest) {
     data = { message: 'Your sponsor is talking to another sponsor about you.' };
   }
 
-  // Insert notification
-  const { data: notification, error: insertError } = await supabase
+  // Insert notification with dismissed_at = null (active notification)
+  // Use service role client to bypass RLS (no INSERT policy for regular users)
+  const { data: notification, error: insertError } = await supabaseAdmin
     .from('notifications')
     .insert({
       user_id: user.id,
       type,
       data,
       read: false,
+      dismissed_at: null,
     })
     .select()
     .single();

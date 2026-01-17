@@ -11,7 +11,7 @@ interface NotificationNavItemProps {
 export default function NotificationNavItem({ userId, pathname }: NotificationNavItemProps) {
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const { notifications, unreadCount, loading, refresh, markAllRead } = useNotifications(userId);
+    const { notifications, activeCount, loading, refresh, markAllRead } = useNotifications(userId);
     
     // Notifications is active when dropdown is open (no dedicated route)
     const isActive = showDropdown;
@@ -25,10 +25,10 @@ export default function NotificationNavItem({ userId, pathname }: NotificationNa
 
     // Mark notifications as read when dropdown opens
     useEffect(() => {
-        if (showDropdown && unreadCount > 0) {
+        if (showDropdown && activeCount > 0) {
             markAllRead();
         }
-    }, [showDropdown, unreadCount, markAllRead]);
+    }, [showDropdown, activeCount, markAllRead]);
 
     // Close dropdown on outside click or Escape
     useEffect(() => {
@@ -65,9 +65,9 @@ export default function NotificationNavItem({ userId, pathname }: NotificationNa
                     </svg>
                 </div>
                 <span className={`text-[10px] leading-none mt-1 ${isActive ? 'text-white/65' : 'text-white/60'}`}>Notifications</span>
-                {unreadCount > 0 && (
+                {activeCount > 0 && (
                     <span className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow-lg border-2 border-white animate-pulse" style={{transform: 'translate(50%,-50%)'}}>
-                        {unreadCount}
+                        {activeCount}
                     </span>
                 )}
             </button>
