@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,8 +15,28 @@ export default function NotificationNavItem({ userId, pathname }: NotificationNa
     const router = useRouter();
     const { userType } = useAuth();
     const { activeCount } = useNotifications(userId);
+    const [hideBadge, setHideBadge] = useState(false);
+    const prevActiveCountRef = React.useRef<number>(0);
+    
+    // Reset badge visibility when new notifications arrive
+    useEffect(() => {
+        const hadNotifications = prevActiveCountRef.current > 0;
+        const hasNewNotifications = activeCount > prevActiveCountRef.current;
+        
+        if (hasNewNotifications && hadNotifications) {
+            // New notification arrived - show badge again
+            setHideBadge(false);
+        }
+        
+        prevActiveCountRef.current = activeCount;
+    }, [activeCount]);
     
     const handleClick = () => {
+        // Hide badge when bell is clicked
+        if (activeCount > 0) {
+            setHideBadge(true);
+        }
+        
         // Get the appropriate dashboard route based on user type
         const dashboardRoute = getDashboardHref(userType);
         
@@ -53,7 +73,7 @@ export default function NotificationNavItem({ userId, pathname }: NotificationNa
                     </svg>
                 </div>
                 <span className="text-[10px] leading-none mt-1 text-white/60">Notifications</span>
-                {activeCount > 0 && (
+                {activeCount > 0 && !hideBadge && (
                     <span className="absolute top-0 right-0 bg-white text-gray-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg border border-white/30" style={{transform: 'translate(50%,-50%)'}}>
                         {activeCount}
                     </span>
