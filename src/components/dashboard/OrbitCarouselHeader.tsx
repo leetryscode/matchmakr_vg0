@@ -318,8 +318,8 @@ export default function OrbitCarouselHeader({
     if (containerSize.w === 0 || containerSize.h === 0) return '';
     
     // Calculate start and end points
-    const startPoint = getEllipsePoint(startRad);
-    const endPoint = getEllipsePoint(endRad);
+    const startPoint = getEllipsePoint(startRad, cxPx, cyPx, rxPx, ryPx);
+    const endPoint = getEllipsePoint(endRad, cxPx, cyPx, rxPx, ryPx);
     
     // For half ellipse (180°), use small arc
     const largeArcFlag = 0;
