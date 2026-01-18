@@ -507,7 +507,33 @@ export default function OrbitCarouselHeader({
   }, []);
 
   return (
-    <div ref={containerRef} className="w-full h-[220px] relative px-4">
+    <>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .orbit-avatar-highlight::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            pointer-events: none;
+            background: radial-gradient(
+              circle at top left,
+              rgba(255, 255, 255, 0.08),
+              rgba(255, 255, 255, 0.04) 30%,
+              rgba(255, 255, 255, 0.0) 60%
+            );
+          }
+          .orbit-avatar-sponsor::after {
+            background: radial-gradient(
+              circle at top left,
+              rgba(255, 255, 255, 0.10),
+              rgba(255, 255, 255, 0.05) 30%,
+              rgba(255, 255, 255, 0.0) 60%
+            );
+          }
+        `
+      }} />
+      <div ref={containerRef} className="w-full h-[220px] relative px-4">
       {/* Back arc SVG layer - behind everything (z-10) */}
       {containerSize.w > 0 && (
         <svg
@@ -547,7 +573,7 @@ export default function OrbitCarouselHeader({
                     satelliteRefsRef.current.delete(satellite.id);
                   }
                 }}
-                className="absolute left-1/2 top-1/2 w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-200"
+                className="orbit-avatar-highlight absolute left-1/2 top-1/2 w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-200"
                 style={{
                   transform: transform,
                   opacity: opacity,
@@ -590,7 +616,7 @@ export default function OrbitCarouselHeader({
           {/* Center avatar (sponsor) */}
           <div 
             ref={sponsorAvatarRef}
-            className="w-20 h-20 rounded-full border border-white/15 bg-gray-200 overflow-hidden flex items-center justify-center relative cursor-pointer hover:scale-105 transition-transform duration-200"
+            className="orbit-avatar-highlight orbit-avatar-sponsor w-20 h-20 rounded-full border border-white/15 bg-gray-200 overflow-hidden flex items-center justify-center relative cursor-pointer hover:scale-105 transition-transform duration-200"
             style={{
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.22)',
             }}
@@ -647,6 +673,7 @@ export default function OrbitCarouselHeader({
         </svg>
       )}
     </div>
+    </>
   );
 }
 
