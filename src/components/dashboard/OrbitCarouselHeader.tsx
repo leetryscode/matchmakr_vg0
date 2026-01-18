@@ -434,6 +434,16 @@ export default function OrbitCarouselHeader({
       let opacity = 0.70 + ((depthScore + 1) * 0.15); // Maps -1..+1 to 0.70..1.0
       opacity = Math.min(1.0, Math.max(0.70, opacity));
 
+      // Shadow strength based on depth - subtle depth-linked shadow
+      // Map depthScore (-1 to +1) to shadow strength (0.80 to 1.10)
+      // depthScore = -1 → shadowStrength = 0.80 (far back, softer shadow)
+      // depthScore = 0 → shadowStrength = 0.95 (at center)
+      // depthScore = +1 → shadowStrength = 1.10 (far front, stronger shadow)
+      const depth01 = Math.max(0, Math.min(1, (depthScore + 1) / 2)); // Normalize to 0..1
+      const shadowStrength = 0.80 + (depth01 * 0.30); // Lerp from 0.80 to 1.10
+      const shadowAlpha = 0.18 * shadowStrength; // Baseline alpha 0.18, scaled by strength
+      const boxShadow = `0 6px 18px rgba(0, 0, 0, ${shadowAlpha})`;
+
       // Calculate transform: translate3d(dx, dy, 0) translate3d(-50%, -50%, 0) scale(scale)
       const dx = orbitPoint.x - containerW / 2;
       const dy = orbitPoint.y - containerH / 2;
@@ -443,6 +453,7 @@ export default function OrbitCarouselHeader({
       el.style.transform = transform;
       el.style.zIndex = String(zIndex);
       el.style.opacity = String(opacity);
+      el.style.boxShadow = boxShadow;
     });
   };
 
