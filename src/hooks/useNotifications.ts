@@ -30,6 +30,7 @@ export function useNotifications(userId: string): UseNotificationsResult {
     
     // Debounce timer ref for realtime events
     const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
 
     // Fetch active count on mount and when userId changes
     // Active = dismissed_at IS NULL AND (read IS NULL OR read = false) for compatibility
@@ -152,6 +153,12 @@ export function useNotifications(userId: string): UseNotificationsResult {
     useEffect(() => {
         if (!userId) return;
 
+        // Cleanup previous channel if exists (guard against double-subscribe)
+        if (channelRef.current) {
+            supabaseRef.current.removeChannel(channelRef.current);
+            channelRef.current = null;
+        }
+
         const channel = supabaseRef.current
             .channel(`notifications:${userId}`) // Unique channel per user
             .on(
@@ -185,14 +192,19 @@ export function useNotifications(userId: string): UseNotificationsResult {
             )
             .subscribe();
 
+        channelRef.current = channel;
+
         return () => {
             // Cleanup: clear any pending refresh timer
             if (refreshTimerRef.current) {
                 clearTimeout(refreshTimerRef.current);
             }
-            supabaseRef.current.removeChannel(channel);
+            if (channelRef.current) {
+                supabaseRef.current.removeChannel(channelRef.current);
+                channelRef.current = null;
+            }
         };
-    }, [userId, debouncedRefresh]);
+    }, [userId, debouncedRefresh]); // debouncedRefresh is stable due to useCallback
 
     return {
         notifications,

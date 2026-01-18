@@ -22,6 +22,7 @@ export default function ChatPage() {
   const didInitialScrollRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const supabase = createClient();
+  const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
   
   // Match approval states
   const [matchStatus, setMatchStatus] = useState<'none' | 'pending' | 'matched' | 'can-approve'>('none');
@@ -33,9 +34,15 @@ export default function ChatPage() {
 
   // Realtime subscription for new messages
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId || !currentUserId) return; // Guard against auth transitions
     
-    const channel = supabase.channel('public:messages')
+    // Cleanup previous channel if exists (guard against double-subscribe)
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+    
+    const channel = supabase.channel(`messages-${conversationId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
         const newMessage = payload.new;
         console.log('Realtime message received:', newMessage);
@@ -57,10 +64,15 @@ export default function ChatPage() {
       })
       .subscribe();
     
+    channelRef.current = channel;
+    
     return () => {
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
-  }, [conversationId, supabase]);
+  }, [conversationId]); // Removed supabase from dependencies
 
   // Fetch chat context and messages
   useEffect(() => {

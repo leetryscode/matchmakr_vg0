@@ -39,6 +39,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
   const supabase = createClient();
   const menuRefs = useRef<(HTMLDivElement | null)[]>([]);
   const sponsorMenuRef = useRef<HTMLDivElement | null>(null);
+  const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
   const router = useRouter();
 
   // Refactor fetchMatches to be callable
@@ -110,7 +111,13 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
   useEffect(() => {
     if (!userId) return;
     
-    const channel = supabase.channel('public:matches')
+    // Cleanup previous channel if exists (guard against double-subscribe)
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+    
+    const channel = supabase.channel(`matches-${userId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'matches' }, payload => {
         const newMatch = payload.new;
         // Check if this match involves the current user and both matchmakrs have approved
@@ -131,10 +138,15 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
       })
       .subscribe();
     
+    channelRef.current = channel;
+    
     return () => {
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
-  }, [userId, supabase]);
+  }, [userId]); // Removed supabase from dependencies
 
   // Fetch sponsor chat info
   useEffect(() => {

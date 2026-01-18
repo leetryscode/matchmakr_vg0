@@ -138,11 +138,20 @@ export default function SingleChatPage() {
   const [isTyping, setIsTyping] = useState(false);
 
   // Realtime subscription for new messages
+  const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
+  
   useEffect(() => {
     if (!currentUserId) return;
     
     const supabase = createClient();
-    const channel = supabase.channel('public:messages')
+    
+    // Cleanup previous channel if exists (guard against double-subscribe)
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+    
+    const channel = supabase.channel(`single-messages-${currentUserId}-${singleId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
         const newMessage = payload.new;
         // If the new message is between current user and the other user, add it to chatMessages
@@ -158,8 +167,13 @@ export default function SingleChatPage() {
       })
       .subscribe();
     
+    channelRef.current = channel;
+    
     return () => {
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
   }, [currentUserId, currentUserType, sponsorInfo?.id, singleId]);
 

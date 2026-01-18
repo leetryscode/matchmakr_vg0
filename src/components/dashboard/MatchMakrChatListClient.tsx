@@ -60,43 +60,44 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
+  const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
 
   // Optimized realtime subscription for new messages
   useEffect(() => {
-    if (!openConversationId) return;
+    if (!openConversationId || !userId) return; // Guard against auth transitions
 
-    let channel: any = null;
-    const setupSubscription = async () => {
-      try {
-        channel = supabase.channel(`messages-${openConversationId}`)
-          .on('postgres_changes', { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'messages',
-            filter: `conversation_id=eq.${openConversationId}`
-          }, payload => {
-            const newMessage = payload.new;
-            // Only add if it's not from the current user and belongs to the open conversation
-            if (newMessage.sender_id !== userId && newMessage.conversation_id === openConversationId) {
-              setChatMessages(prev => [...prev, newMessage]);
-            }
-          })
-          .subscribe((status) => {
-            console.log('Subscription status:', status);
-          });
-      } catch (error) {
-        console.error('Error setting up realtime subscription:', error);
-      }
-    };
+    // Cleanup previous channel if exists (guard against double-subscribe)
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
 
-    setupSubscription();
+    const channel = supabase.channel(`messages-${openConversationId}`)
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'messages',
+        filter: `conversation_id=eq.${openConversationId}`
+      }, payload => {
+        const newMessage = payload.new;
+        // Only add if it's not from the current user and belongs to the open conversation
+        if (newMessage.sender_id !== userId && newMessage.conversation_id === openConversationId) {
+          setChatMessages(prev => [...prev, newMessage]);
+        }
+      })
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
+    
+    channelRef.current = channel;
 
     return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
       }
     };
-  }, [openConversationId, userId, supabase]);
+  }, [openConversationId, userId]); // Removed supabase from dependencies
 
   // Helper to fetch single info by ID
   const fetchSingleById = async (singleId: string) => {
