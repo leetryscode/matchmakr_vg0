@@ -27,7 +27,7 @@ const PHASE_BY_COUNT: Record<number, number> = {
 
 // Motion configuration
 const MOTION_ENABLED = true; // Feature flag
-const REVOLUTION_MINUTES = 0.5; // 0.5 minutes per full rotation (2 revolutions per minute) - temporarily sped up for testing
+const REVOLUTION_MINUTES = 1; // 1 minute per full rotation (1 revolution per minute) - production rate
 const ROTATION_RATE_DEG_PER_MS = 360 / (REVOLUTION_MINUTES * 60 * 1000); // degrees per millisecond
 
 // Orbit visual tuning constants (single source of truth)
