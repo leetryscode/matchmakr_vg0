@@ -205,7 +205,10 @@ export default function OrbitCarouselHeader({
   const lastFrameTimeRef = useRef<number | null>(null);
   const satelliteRefsRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const geometryRef = useRef<{ cxPx: number; cyPx: number; rxPx: number; ryPx: number; count: number; containerW: number; containerH: number } | null>(null);
-  const isPausedRef = useRef<boolean>(false);
+  const isPausedRef = useRef<boolean>(false); // Visibility pause (document.hidden)
+  const isUserPausedRef = useRef<boolean>(false); // Tap-to-pause (user interaction)
+  const resumeTimeoutRef = useRef<number | null>(null); // Delayed resume timeout
+  const isPointerDownRef = useRef<boolean>(false); // Track if pointer is currently held
 
   // Check prefers-reduced-motion
   const prefersReducedMotion = typeof window !== 'undefined' && 
@@ -495,7 +498,9 @@ export default function OrbitCarouselHeader({
 
   // Animation frame function
   const animateFrame = (now: number) => {
-    if (isPausedRef.current) {
+    // Pause if visibility is hidden OR user is interacting (tap-to-pause)
+    const isPaused = isPausedRef.current || isUserPausedRef.current;
+    if (isPaused) {
       // Still schedule next frame even when paused
       animationFrameIdRef.current = requestAnimationFrame(animateFrame);
       return;
@@ -545,11 +550,72 @@ export default function OrbitCarouselHeader({
   useEffect(() => {
     const handleVisibilityChange = () => {
       isPausedRef.current = document.hidden;
+      
+      // If going hidden, clear any pending resume timer
+      // Prevents resume while hidden / time-jump oddities
+      if (document.hidden) {
+        if (resumeTimeoutRef.current !== null) {
+          clearTimeout(resumeTimeoutRef.current);
+          resumeTimeoutRef.current = null;
+        }
+      }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  // Tap-to-pause: pause motion on pointer down, resume 1s after release
+  // This quiet interaction signals the orbit is intentional and alive
+  // Inert if prefers-reduced-motion is on (no motion to pause)
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (prefersReducedMotion) return; // No motion to pause
+    
+    isUserPausedRef.current = true;
+    isPointerDownRef.current = true;
+    
+    // Capture pointer to prevent stray cancels when finger drifts
+    e.currentTarget.setPointerCapture(e.pointerId);
+    
+    // Clear any existing resume timeout
+    if (resumeTimeoutRef.current !== null) {
+      clearTimeout(resumeTimeoutRef.current);
+      resumeTimeoutRef.current = null;
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (prefersReducedMotion) return; // No motion to pause
+    
+    isPointerDownRef.current = false;
+    
+    // Release pointer capture
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    
+    // Clear any existing resume timeout
+    if (resumeTimeoutRef.current !== null) {
+      clearTimeout(resumeTimeoutRef.current);
+    }
+    
+    // Resume after 1000ms delay, but only if pointer is not still held
+    resumeTimeoutRef.current = window.setTimeout(() => {
+      // Guard: don't resume if user is still holding
+      if (!isPointerDownRef.current) {
+        isUserPausedRef.current = false;
+      }
+      resumeTimeoutRef.current = null;
+    }, 1000);
+  };
+
+  // Cleanup resume timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (resumeTimeoutRef.current !== null) {
+        clearTimeout(resumeTimeoutRef.current);
+        resumeTimeoutRef.current = null;
+      }
     };
   }, []);
 
@@ -580,7 +646,33 @@ export default function OrbitCarouselHeader({
           }
         `
       }} />
-      <div ref={containerRef} className="w-full h-[220px] relative px-4">
+      <div 
+        ref={containerRef} 
+        className="w-full h-[220px] relative px-4"
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={(e) => {
+          isPointerDownRef.current = false;
+          if (prefersReducedMotion) return;
+          // Try to release capture, but handle gracefully if not captured
+          try {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+          } catch {}
+          handlePointerUp(e);
+        }}
+        onPointerLeave={(e) => {
+          // Only handle if we had capture (pointer was down)
+          if (isPointerDownRef.current) {
+            isPointerDownRef.current = false;
+            if (prefersReducedMotion) return;
+            // Try to release capture, but handle gracefully if not captured
+            try {
+              e.currentTarget.releasePointerCapture(e.pointerId);
+            } catch {}
+            handlePointerUp(e);
+          }
+        }}
+      >
       {/* Back arc SVG layer - behind everything (z-10) */}
       {containerSize.w > 0 && (
         <svg
