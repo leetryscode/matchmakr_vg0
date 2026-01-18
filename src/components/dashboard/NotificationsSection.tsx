@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import SectionHeader from '@/components/ui/SectionHeader';
 import GlassCard from '@/components/ui/GlassCard';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useAuth } from '@/contexts/AuthContext';
@@ -156,17 +155,16 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
       id="notifications"
       className={showAnimation ? 'animate-[fadeIn_300ms_ease-out_forwards]' : ''}
     >
-      <SectionHeader 
-        title="Notifications"
-        right={isDevMode ? (
+      {isDevMode && (
+        <div className="mb-3 flex justify-end">
           <button
             onClick={handleSeedNotification}
             className="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white/80 hover:text-white transition-colors"
           >
             Add example
           </button>
-        ) : undefined}
-      />
+        </div>
+      )}
       <div className="flex flex-col gap-3">
         {loading ? (
           <GlassCard variant="1" className="p-4">
