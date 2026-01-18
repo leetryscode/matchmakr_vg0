@@ -148,12 +148,12 @@ async function MatchMakrDashboardContent() {
     return (
         <DashboardLayout firstName={firstName} userId={user.id} userType="MATCHMAKR">
             {/* Greeting */}
-            <div className="pt-0 pb-2 px-4">
+            <div className="pt-0 px-4">
                 <div className="type-display mb-1">Hello, {firstName}</div>
             </div>
             
             {/* Orbit Carousel Header */}
-            <div className="mt-6">
+            <div className="mt-1">
                 <OrbitCarouselHeader
                 centerUser={{
                     id: user.id,
