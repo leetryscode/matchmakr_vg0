@@ -36,7 +36,7 @@ const ORBIT_VISUALS = {
     front: {
       k: 0.05, // multiplier for front scale variation
       min: 1.04,
-      max: 1.06,
+      max: 1.055,
     },
     back: {
       k: 0.03, // multiplier for back scale variation
