@@ -80,8 +80,22 @@ body {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
+}
 
-  /* Typography system - 3-tier hierarchy */
+/* Notification section fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Typography system - 3-tier hierarchy */
+@layer components {
   .type-display {
     @apply font-brand text-2xl sm:text-3xl tracking-wide text-white leading-relaxed;
   }

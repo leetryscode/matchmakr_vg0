@@ -20,18 +20,18 @@ export default function NotificationNavItem({ userId, pathname }: NotificationNa
         // Get the appropriate dashboard route based on user type
         const dashboardRoute = getDashboardHref(userType);
         
-        // Navigate to dashboard with hash for notifications
-        router.push(`${dashboardRoute}#notifications`);
+        // Navigate to dashboard
+        router.push(dashboardRoute);
         
-        // Scroll to notifications section after navigation
+        // Scroll to top of page (same view as when dashboard opens)
         // Use multiple attempts to ensure scroll works even if DOM isn't ready
         const attemptScroll = (attempts = 0) => {
-            const notificationsElement = document.getElementById('notifications');
-            if (notificationsElement) {
-                notificationsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else if (attempts < 10) {
-                // Retry up to 10 times with increasing delays
-                setTimeout(() => attemptScroll(attempts + 1), 50 * (attempts + 1));
+            if (attempts < 10) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // If we're already at the top, we're done; otherwise retry after a delay
+                if (window.scrollY > 0) {
+                    setTimeout(() => attemptScroll(attempts + 1), 50 * (attempts + 1));
+                }
             }
         };
         setTimeout(() => attemptScroll(), 100);

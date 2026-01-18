@@ -27,6 +27,9 @@ export function useNotifications(userId: string): UseNotificationsResult {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
     const [activeCount, setActiveCount] = useState(0);
+    
+    // Debounce timer ref for realtime events
+    const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Fetch active count on mount and when userId changes
     // Active = dismissed_at IS NULL AND (read IS NULL OR read = false) for compatibility
@@ -38,7 +41,6 @@ export function useNotifications(userId: string): UseNotificationsResult {
 
         // Fetch active count (dismissed_at IS NULL)
         // Compatibility: Also exclude read=true notifications during transition
-        // Note: We filter by dismissed_at first, then apply OR filter for read compatibility
         supabaseRef.current
             .from('notifications')
             .select('id', { count: 'exact', head: true })
@@ -49,11 +51,11 @@ export function useNotifications(userId: string): UseNotificationsResult {
     }, [userId]);
 
     // Fetch notifications (called by UI when needed)
-    // Only fetch active notifications (dismissed_at IS NULL)
-    // Compatibility: Also exclude read=true notifications during transition
+    // Stable callback with correct dependencies
     const refresh = useCallback(async () => {
         if (!userId) {
             setNotifications([]);
+            setActiveCount(0);
             return;
         }
 
@@ -71,21 +73,22 @@ export function useNotifications(userId: string): UseNotificationsResult {
             if (error) {
                 console.error('Error fetching notifications:', error);
                 setNotifications([]);
+                setActiveCount(0);
             } else {
                 setNotifications(data || []);
-                // Update active count
+                // Derive activeCount from refreshed data
                 setActiveCount(data?.length || 0);
             }
         } catch (error) {
             console.error('Error fetching notifications:', error);
             setNotifications([]);
+            setActiveCount(0);
         } finally {
             setLoading(false);
         }
     }, [userId]);
 
     // Mark all active notifications as read
-    // Note: This still uses the read column, but dismissal now uses dismissed_at
     const markAllRead = useCallback(async () => {
         if (!userId || activeCount === 0) return;
 
@@ -100,14 +103,13 @@ export function useNotifications(userId: string): UseNotificationsResult {
             if (error) {
                 console.error('Error marking notifications as read:', error);
             } else {
-                setActiveCount(0);
-                // Update notifications state to reflect read status
-                setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+                // Refresh to get accurate state
+                await refresh();
             }
         } catch (error) {
             console.error('Error marking notifications as read:', error);
         }
-    }, [userId, activeCount]);
+    }, [userId, activeCount, refresh]);
 
     // Dismiss a single notification (set dismissed_at = now())
     const dismissNotification = useCallback(async (notificationId: string) => {
@@ -123,24 +125,75 @@ export function useNotifications(userId: string): UseNotificationsResult {
             if (error) {
                 console.error('Error dismissing notification:', error);
             } else {
-                // Optimistically remove from state
+                // Optimistically remove from state for immediate UI feedback
                 setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-                // Update active count optimistically
-                setActiveCount((prev) => Math.max(0, prev - 1));
-                
-                // Also refresh the count from server to ensure accuracy
-                supabaseRef.current
-                    .from('notifications')
-                    .select('id', { count: 'exact', head: true })
-                    .eq('user_id', userId)
-                    .is('dismissed_at', null)
-                    .or('read.is.null,read.eq.false')
-                    .then(({ count }) => setActiveCount(count || 0));
+                // Refresh to get accurate activeCount (removed manual decrement)
+                await refresh();
             }
         } catch (error) {
             console.error('Error dismissing notification:', error);
         }
-    }, [userId]);
+    }, [userId, refresh]);
+
+    // Debounced refresh helper for realtime events
+    const debouncedRefresh = useCallback(() => {
+        // Clear existing timer
+        if (refreshTimerRef.current) {
+            clearTimeout(refreshTimerRef.current);
+        }
+        
+        // Schedule refresh after 200ms, coalescing multiple events
+        refreshTimerRef.current = setTimeout(() => {
+            refresh();
+        }, 200);
+    }, [refresh]);
+
+    // Real-time subscription for notifications
+    useEffect(() => {
+        if (!userId) return;
+
+        const channel = supabaseRef.current
+            .channel(`notifications:${userId}`) // Unique channel per user
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT', // Only INSERT and UPDATE
+                    schema: 'public',
+                    table: 'notifications',
+                    filter: `user_id=eq.${userId}`,
+                },
+                (payload) => {
+                    const newNotification = payload.new as Notification;
+                    // Only trigger refresh if notification is active
+                    if (!newNotification.dismissed_at && 
+                        (!newNotification.read || newNotification.read === false)) {
+                        debouncedRefresh();
+                    }
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE', // Only INSERT and UPDATE
+                    schema: 'public',
+                    table: 'notifications',
+                    filter: `user_id=eq.${userId}`,
+                },
+                () => {
+                    // On any UPDATE, refresh to get accurate state
+                    debouncedRefresh();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            // Cleanup: clear any pending refresh timer
+            if (refreshTimerRef.current) {
+                clearTimeout(refreshTimerRef.current);
+            }
+            supabaseRef.current.removeChannel(channel);
+        };
+    }, [userId, debouncedRefresh]);
 
     return {
         notifications,

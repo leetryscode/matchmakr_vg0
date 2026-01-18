@@ -20,6 +20,8 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
   
   const { notifications, activeCount, loading, refresh, dismissNotification } = useNotifications(userId);
   const [dismissing, setDismissing] = useState<Set<string>>(new Set());
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+  const prevActiveCountRef = React.useRef<number>(0);
 
   // Refresh notifications on mount
   useEffect(() => {
@@ -28,24 +30,54 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
     }
   }, [userId, refresh]);
 
-  // Handle hash navigation - scroll to notifications if URL has #notifications
+  // Track when section appears (activeCount goes from 0 → 1) for fade-in animation
+  useEffect(() => {
+    const wasHidden = prevActiveCountRef.current === 0;
+    const isNowVisible = activeCount > 0;
+    
+    if (wasHidden && isNowVisible && !loading) {
+      // Section is appearing for the first time - trigger fade-in animation
+      // Works in both production and dev mode
+      setShouldAnimate(true);
+      // Reset animation flag after animation completes (300ms)
+      const timer = setTimeout(() => {
+        setShouldAnimate(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    } else if (activeCount === 0) {
+      // Section is hidden - reset animation state
+      setShouldAnimate(false);
+    }
+    
+    prevActiveCountRef.current = activeCount;
+  }, [activeCount, loading]);
+
+  // Handle hash navigation - scroll to top if URL has #notifications
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.hash === '#notifications') {
-      // Small delay to ensure DOM is ready
+      // Small delay to ensure DOM is ready, then scroll to top
       const timer = setTimeout(() => {
-        const element = document.getElementById('notifications');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 100);
       return () => clearTimeout(timer);
     }
   }, [notifications]); // Re-run when notifications load/change
 
-  // Temporarily always render section for testing (removed early return)
+  // Early return if no userId
   if (!userId) {
     return null;
   }
+
+  const isDevMode = process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_ORBIT_DEBUG_UI === 'true';
+
+  // In production (debug flag off), hide entire section when no active notifications
+  // In dev/debug mode, keep section visible for testing
+  if (!isDevMode && activeCount === 0 && !loading) {
+    return null;
+  }
+
+  // Animation runs when section first appears (works in both production and dev mode)
+  const showAnimation = shouldAnimate;
 
   const handleSeedNotification = async () => {
     try {
@@ -60,12 +92,9 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
       // Refresh notifications after seeding
       await refresh();
       
-      // Scroll to notifications section after adding (helps test scroll behavior)
+      // Scroll to top of page (same view as when dashboard opens)
       setTimeout(() => {
-        const notificationsElement = document.getElementById('notifications');
-        if (notificationsElement) {
-          notificationsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 100);
     } catch (error) {
       console.error('Error seeding notification:', error);
@@ -122,10 +151,11 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
     return notification.data?.message || 'You have a new notification.';
   };
 
-  const isDevMode = process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_ORBIT_DEBUG_UI === 'true';
-
   return (
-    <div id="notifications">
+    <div 
+      id="notifications"
+      className={showAnimation ? 'animate-[fadeIn_300ms_ease-out_forwards]' : ''}
+    >
       <SectionHeader 
         title="Notifications"
         right={isDevMode ? (
