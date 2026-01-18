@@ -64,19 +64,24 @@ function calculateDepthScore(y: number, cyPx: number, ryPx: number): number {
 // Map depthScore to z-index (continuous)
 // depthScore typically ranges from ~-1 to ~+1
 function depthScoreToZIndex(depthScore: number, allowAboveSponsor: boolean = true): number {
-  // Map depthScore to z-index range
-  // More positive (front) = higher z-index
-  let z = 20 + Math.round(depthScore * 10);
+  // Sponsor is at z-35
+  // Front satellites (positive depthScore) should be above sponsor (z > 35)
+  // Back satellites (negative depthScore) should be below sponsor (z < 35)
   
-  // Clamp to sane range
-  z = Math.max(10, Math.min(40, z));
-  
-  // If allowAboveSponsor, front satellites can go above sponsor (z-35)
-  if (allowAboveSponsor && z >= 35) {
-    z = Math.max(35, z); // Allow up to z-40
-  } else {
-    z = Math.min(34, z); // Keep below sponsor
+  if (!allowAboveSponsor) {
+    // Force all satellites below sponsor
+    let z = 20 + Math.round(depthScore * 10);
+    return Math.max(10, Math.min(34, z));
   }
+  
+  // Map depthScore to z-index with sponsor (35) as the pivot point
+  // depthScore = 0 → z = 35 (at sponsor level)
+  // depthScore > 0 → z > 35 (in front, above sponsor)
+  // depthScore < 0 → z < 35 (behind, below sponsor)
+  let z = 35 + Math.round(depthScore * 5);
+  
+  // Clamp to sane range: back satellites 10-34, front satellites 36-40
+  z = Math.max(10, Math.min(40, z));
   
   return z;
 }
@@ -306,12 +311,13 @@ export default function OrbitCarouselHeader({
       scale = Math.min(1.0, Math.max(0.94, scale));
     }
     
-    // Opacity based on depth
-    let opacity = 1.0;
-    if (isBack) {
-      opacity = 0.70 + (Math.abs(depthScore) * 0.15); // 0.70 to 0.85
-      opacity = Math.min(0.85, Math.max(0.70, opacity));
-    }
+    // Opacity based on depth - smooth transition across entire range
+    // Map depthScore (-1 to +1) to opacity (0.70 to 1.0)
+    // depthScore = -1 → opacity = 0.70 (far back)
+    // depthScore = 0 → opacity = 0.85 (at center)
+    // depthScore = +1 → opacity = 1.0 (far front)
+    let opacity = 0.70 + ((depthScore + 1) * 0.15); // Maps -1..+1 to 0.70..1.0
+    opacity = Math.min(1.0, Math.max(0.70, opacity));
     
     // Shadow strength based on depth
     let shadowStrength = 0.15;
@@ -440,12 +446,13 @@ export default function OrbitCarouselHeader({
         scale = Math.min(1.0, Math.max(0.94, scale));
       }
 
-      // Opacity based on depth
-      let opacity = 1.0;
-      if (isBack) {
-        opacity = 0.70 + (Math.abs(depthScore) * 0.15);
-        opacity = Math.min(0.85, Math.max(0.70, opacity));
-      }
+      // Opacity based on depth - smooth transition across entire range
+      // Map depthScore (-1 to +1) to opacity (0.70 to 1.0)
+      // depthScore = -1 → opacity = 0.70 (far back)
+      // depthScore = 0 → opacity = 0.85 (at center)
+      // depthScore = +1 → opacity = 1.0 (far front)
+      let opacity = 0.70 + ((depthScore + 1) * 0.15); // Maps -1..+1 to 0.70..1.0
+      opacity = Math.min(1.0, Math.max(0.70, opacity));
 
       // Calculate transform: translate3d(dx, dy, 0) translate3d(-50%, -50%, 0) scale(scale)
       const dx = orbitPoint.x - containerW / 2;
