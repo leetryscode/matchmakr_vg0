@@ -117,7 +117,7 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
       );
     }
     if (notification.type === 'single_not_seen_intro') {
-      return 'Your single hasn't logged in yet to view the introduction.';
+      return "Your single hasn't logged in yet to view the introduction.";
     }
     return notification.data?.message || 'You have a new notification.';
   };
