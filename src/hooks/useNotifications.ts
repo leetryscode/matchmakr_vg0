@@ -165,8 +165,7 @@ export function useNotifications(userId: string): UseNotificationsResult {
                 (payload) => {
                     const newNotification = payload.new as Notification;
                     // Only trigger refresh if notification is active
-                    if (!newNotification.dismissed_at && 
-                        (!newNotification.read || newNotification.read === false)) {
+                    if (!newNotification.dismissed_at && !newNotification.read) {
                         debouncedRefresh();
                     }
                 }
