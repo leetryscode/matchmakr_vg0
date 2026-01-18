@@ -30,6 +30,43 @@ const MOTION_ENABLED = true; // Feature flag
 const REVOLUTION_MINUTES = 0.5; // 0.5 minutes per full rotation (2 revolutions per minute) - temporarily sped up for testing
 const ROTATION_RATE_DEG_PER_MS = 360 / (REVOLUTION_MINUTES * 60 * 1000); // degrees per millisecond
 
+// Orbit visual tuning constants (single source of truth)
+const ORBIT_VISUALS = {
+  scale: {
+    front: {
+      k: 0.05, // multiplier for front scale variation
+      min: 1.04,
+      max: 1.06,
+    },
+    back: {
+      k: 0.03, // multiplier for back scale variation
+      min: 0.94,
+      max: 1.0,
+    },
+  },
+  opacity: {
+    min: 0.70, // minimum opacity (far back)
+    max: 1.0,  // maximum opacity (far front)
+    // span = max - min = 0.30, but computed as (depthScore + 1) * 0.15
+  },
+  shadow: {
+    baseline: {
+      y: 6,     // shadow offset Y (px)
+      blur: 18, // shadow blur (px)
+      alpha: 0.18, // baseline shadow alpha
+    },
+    strength: {
+      min: 0.80, // minimum shadow strength (far back, 80% of baseline)
+      max: 1.10, // maximum shadow strength (far front, 110% of baseline)
+    },
+  },
+  border: {
+    width: '1px',
+    color: 'rgba(255, 255, 255, 0.15)',
+  },
+  sponsorShadow: '0 8px 24px rgba(0, 0, 0, 0.22)',
+} as const;
+
 export type OrbitAvatar = {
   id: string;
   name: string;
@@ -59,6 +96,50 @@ function clockDegToParametricDeg(clockDeg: number): number {
 function calculateDepthScore(y: number, cyPx: number, ryPx: number): number {
   if (ryPx === 0) return 0;
   return (y - cyPx) / ryPx;
+}
+
+// Visual computation helpers (pure functions, used by both initial render and animation loop)
+
+// Normalize depthScore (-1 to +1) to depth01 (0 to 1)
+function computeDepth01(depthSigned: number): number {
+  return Math.max(0, Math.min(1, (depthSigned + 1) / 2));
+}
+
+// Compute scale from depthScore using ORBIT_VISUALS config
+function computeScale(depthSigned: number, visuals: typeof ORBIT_VISUALS): number {
+  const isFront = depthSigned > 0;
+  const isBack = depthSigned < 0;
+  
+  let scale = 1.0;
+  if (isFront) {
+    scale = 1.0 + (depthSigned * visuals.scale.front.k);
+    scale = Math.min(visuals.scale.front.max, Math.max(visuals.scale.front.min, scale));
+  } else if (isBack) {
+    scale = 1.0 + (depthSigned * visuals.scale.back.k);
+    scale = Math.min(visuals.scale.back.max, Math.max(visuals.scale.back.min, scale));
+  }
+  
+  return scale;
+}
+
+// Compute opacity from depth01 using ORBIT_VISUALS config
+function computeOpacity(depth01: number, visuals: typeof ORBIT_VISUALS): number {
+  const span = visuals.opacity.max - visuals.opacity.min;
+  // Map depth01 (0..1) to opacity (min..max)
+  // depth01 = 0 → opacity = min (far back)
+  // depth01 = 1 → opacity = max (far front)
+  let opacity = visuals.opacity.min + (depth01 * span);
+  opacity = Math.min(visuals.opacity.max, Math.max(visuals.opacity.min, opacity));
+  return opacity;
+}
+
+// Compute shadow from depth01 using ORBIT_VISUALS config
+function computeShadow(depth01: number, visuals: typeof ORBIT_VISUALS): string {
+  const { baseline, strength } = visuals.shadow;
+  // Lerp shadow strength from min to max based on depth01
+  const shadowStrength = strength.min + (depth01 * (strength.max - strength.min));
+  const shadowAlpha = baseline.alpha * shadowStrength;
+  return `0 ${baseline.y}px ${baseline.blur}px rgba(0, 0, 0, ${shadowAlpha})`;
 }
 
 // Map depthScore to z-index (continuous)
@@ -297,29 +378,10 @@ export default function OrbitCarouselHeader({
     // Calculate z-index from depthScore
     const zIndex = depthScoreToZIndex(depthScore, true); // Allow above sponsor
     
-    // Calculate visual properties from depthScore
-    const isFront = depthScore > 0;
-    const isBack = depthScore < 0;
-    
-    // Scale based on depth
-    let scale = 1.0;
-    if (isFront) {
-      scale = 1.0 + (depthScore * 0.05); // 1.0 to ~1.05 for front
-      scale = Math.min(1.06, Math.max(1.04, scale));
-    } else if (isBack) {
-      scale = 1.0 + (depthScore * 0.03); // ~0.97 to 1.0 for back
-      scale = Math.min(1.0, Math.max(0.94, scale));
-    }
-    
-    // Opacity based on depth - smooth transition across entire range
-    // Map depthScore (-1 to +1) to opacity (0.70 to 1.0)
-    // depthScore = -1 → opacity = 0.70 (far back)
-    // depthScore = 0 → opacity = 0.85 (at center)
-    // depthScore = +1 → opacity = 1.0 (far front)
-    let opacity = 0.70 + ((depthScore + 1) * 0.15); // Maps -1..+1 to 0.70..1.0
-    opacity = Math.min(1.0, Math.max(0.70, opacity));
-    
-    // Note: border and shadow are now fixed (not depth-based) for subtle, atmospheric treatment
+    // Calculate visual properties from depthScore using shared helpers
+    const depth01 = computeDepth01(depthScore);
+    const scale = computeScale(depthScore, ORBIT_VISUALS);
+    const opacity = computeOpacity(depth01, ORBIT_VISUALS);
     
     let orbitPoint = { ...baseOrbitPoint };
     
@@ -380,6 +442,7 @@ export default function OrbitCarouselHeader({
       satellite,
       orbitPoint,
       depthScore,
+      depth01,
       zIndex,
       scale,
       opacity,
@@ -409,40 +472,13 @@ export default function OrbitCarouselHeader({
       // Get orbit point
       const orbitPoint = getOrbitPoint(angleRad, cxPx, cyPx, rxPx, ryPx);
 
-      // Calculate depth properties
+      // Calculate depth properties using shared helpers
       const depthScore = calculateDepthScore(orbitPoint.y, cyPx, ryPx);
       const zIndex = depthScoreToZIndex(depthScore, true);
-
-      const isFront = depthScore > 0;
-      const isBack = depthScore < 0;
-
-      // Scale based on depth
-      let scale = 1.0;
-      if (isFront) {
-        scale = 1.0 + (depthScore * 0.05);
-        scale = Math.min(1.06, Math.max(1.04, scale));
-      } else if (isBack) {
-        scale = 1.0 + (depthScore * 0.03);
-        scale = Math.min(1.0, Math.max(0.94, scale));
-      }
-
-      // Opacity based on depth - smooth transition across entire range
-      // Map depthScore (-1 to +1) to opacity (0.70 to 1.0)
-      // depthScore = -1 → opacity = 0.70 (far back)
-      // depthScore = 0 → opacity = 0.85 (at center)
-      // depthScore = +1 → opacity = 1.0 (far front)
-      let opacity = 0.70 + ((depthScore + 1) * 0.15); // Maps -1..+1 to 0.70..1.0
-      opacity = Math.min(1.0, Math.max(0.70, opacity));
-
-      // Shadow strength based on depth - subtle depth-linked shadow
-      // Map depthScore (-1 to +1) to shadow strength (0.80 to 1.10)
-      // depthScore = -1 → shadowStrength = 0.80 (far back, softer shadow)
-      // depthScore = 0 → shadowStrength = 0.95 (at center)
-      // depthScore = +1 → shadowStrength = 1.10 (far front, stronger shadow)
-      const depth01 = Math.max(0, Math.min(1, (depthScore + 1) / 2)); // Normalize to 0..1
-      const shadowStrength = 0.80 + (depth01 * 0.30); // Lerp from 0.80 to 1.10
-      const shadowAlpha = 0.18 * shadowStrength; // Baseline alpha 0.18, scaled by strength
-      const boxShadow = `0 6px 18px rgba(0, 0, 0, ${shadowAlpha})`;
+      const depth01 = computeDepth01(depthScore);
+      const scale = computeScale(depthScore, ORBIT_VISUALS);
+      const opacity = computeOpacity(depth01, ORBIT_VISUALS);
+      const boxShadow = computeShadow(depth01, ORBIT_VISUALS);
 
       // Calculate transform: translate3d(dx, dy, 0) translate3d(-50%, -50%, 0) scale(scale)
       const dx = orbitPoint.x - containerW / 2;
@@ -568,11 +604,12 @@ export default function OrbitCarouselHeader({
       {/* Satellites layer - rendered with geometry-driven z-index */}
       {containerSize.w > 0 && (
         <>
-          {satellitesWithDepth.map(({ satellite, orbitPoint, zIndex, scale, opacity }) => {
+          {satellitesWithDepth.map(({ satellite, orbitPoint, zIndex, scale, opacity, depth01 }) => {
             // Calculate transform for initial render (static fallback)
             const dx = orbitPoint.x - containerSize.w / 2;
             const dy = orbitPoint.y - containerSize.h / 2;
             const transform = `translate3d(${dx}px, ${dy}px, 0) translate3d(-50%, -50%, 0) scale(${scale})`;
+            const boxShadow = computeShadow(depth01, ORBIT_VISUALS);
 
             return (
               <div
@@ -590,8 +627,8 @@ export default function OrbitCarouselHeader({
                   opacity: opacity,
                   zIndex: zIndex,
                   willChange: 'transform',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  boxShadow: '0 6px 18px rgba(0, 0, 0, 0.18)',
+                  border: `${ORBIT_VISUALS.border.width} solid ${ORBIT_VISUALS.border.color}`,
+                  boxShadow: boxShadow,
                 }}
                 onClick={() => router.push(`/profile/${satellite.id}`)}
                 role="button"
@@ -629,7 +666,7 @@ export default function OrbitCarouselHeader({
             ref={sponsorAvatarRef}
             className="orbit-avatar-highlight orbit-avatar-sponsor w-20 h-20 rounded-full border border-white/15 bg-gray-200 overflow-hidden flex items-center justify-center relative cursor-pointer hover:scale-105 transition-transform duration-200"
             style={{
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.22)',
+              boxShadow: ORBIT_VISUALS.sponsorShadow,
             }}
             onClick={() => router.push(`/profile/${centerUser.id}`)}
             role="button"
