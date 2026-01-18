@@ -319,25 +319,7 @@ export default function OrbitCarouselHeader({
     let opacity = 0.70 + ((depthScore + 1) * 0.15); // Maps -1..+1 to 0.70..1.0
     opacity = Math.min(1.0, Math.max(0.70, opacity));
     
-    // Shadow strength based on depth
-    let shadowStrength = 0.15;
-    if (isFront) {
-      shadowStrength = 0.15 + (depthScore * 0.10); // 0.15 to 0.25
-      shadowStrength = Math.min(0.25, Math.max(0.15, shadowStrength));
-    } else if (isBack) {
-      shadowStrength = 0.15 - (Math.abs(depthScore) * 0.07); // 0.08 to 0.15
-      shadowStrength = Math.min(0.15, Math.max(0.08, shadowStrength));
-    }
-    
-    // Border opacity based on depth
-    let borderOpacity = 0.40;
-    if (isFront) {
-      borderOpacity = 0.40 + (depthScore * 0.20); // 0.40 to 0.60
-      borderOpacity = Math.min(0.60, Math.max(0.40, borderOpacity));
-    } else if (isBack) {
-      borderOpacity = 0.40 - (Math.abs(depthScore) * 0.15); // 0.25 to 0.40
-      borderOpacity = Math.min(0.40, Math.max(0.25, borderOpacity));
-    }
+    // Note: border and shadow are now fixed (not depth-based) for subtle, atmospheric treatment
     
     let orbitPoint = { ...baseOrbitPoint };
     
@@ -401,8 +383,6 @@ export default function OrbitCarouselHeader({
       zIndex,
       scale,
       opacity,
-      shadowStrength,
-      borderOpacity,
       angleRad,
     };
   });
@@ -551,7 +531,7 @@ export default function OrbitCarouselHeader({
       {/* Satellites layer - rendered with geometry-driven z-index */}
       {containerSize.w > 0 && (
         <>
-          {satellitesWithDepth.map(({ satellite, orbitPoint, zIndex, scale, opacity, shadowStrength, borderOpacity }) => {
+          {satellitesWithDepth.map(({ satellite, orbitPoint, zIndex, scale, opacity }) => {
             // Calculate transform for initial render (static fallback)
             const dx = orbitPoint.x - containerSize.w / 2;
             const dy = orbitPoint.y - containerSize.h / 2;
@@ -573,8 +553,8 @@ export default function OrbitCarouselHeader({
                   opacity: opacity,
                   zIndex: zIndex,
                   willChange: 'transform',
-                  border: `1px solid rgba(255, 255, 255, ${borderOpacity})`,
-                  boxShadow: `0 ${4 * shadowStrength}px ${12 * shadowStrength}px rgba(0, 0, 0, ${shadowStrength})`,
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  boxShadow: '0 6px 18px rgba(0, 0, 0, 0.18)',
                 }}
                 onClick={() => router.push(`/profile/${satellite.id}`)}
                 role="button"
@@ -610,7 +590,10 @@ export default function OrbitCarouselHeader({
           {/* Center avatar (sponsor) */}
           <div 
             ref={sponsorAvatarRef}
-            className="w-20 h-20 rounded-full border-2 border-white/40 bg-gray-200 overflow-hidden flex items-center justify-center relative cursor-pointer hover:scale-105 transition-transform duration-200"
+            className="w-20 h-20 rounded-full border border-white/15 bg-gray-200 overflow-hidden flex items-center justify-center relative cursor-pointer hover:scale-105 transition-transform duration-200"
+            style={{
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.22)',
+            }}
             onClick={() => router.push(`/profile/${centerUser.id}`)}
             role="button"
             tabIndex={0}
