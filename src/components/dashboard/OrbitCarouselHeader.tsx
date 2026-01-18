@@ -25,6 +25,11 @@ const PHASE_BY_COUNT: Record<number, number> = {
   5: 210,  // optimized for 5 satellites (locked)
 };
 
+// Motion configuration
+const MOTION_ENABLED = true; // Feature flag
+const REVOLUTION_MINUTES = 0.5; // 0.5 minutes per full rotation (2 revolutions per minute) - temporarily sped up for testing
+const ROTATION_RATE_DEG_PER_MS = 360 / (REVOLUTION_MINUTES * 60 * 1000); // degrees per millisecond
+
 export type OrbitAvatar = {
   id: string;
   name: string;
@@ -108,6 +113,18 @@ export default function OrbitCarouselHeader({
   const [containerSize, setContainerSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
   const [sponsorCenter, setSponsorCenter] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
+  // Animation refs
+  const rotationOffsetDegRef = useRef<number>(0);
+  const animationFrameIdRef = useRef<number | null>(null);
+  const lastFrameTimeRef = useRef<number | null>(null);
+  const satelliteRefsRef = useRef<Map<string, HTMLDivElement>>(new Map());
+  const geometryRef = useRef<{ cxPx: number; cyPx: number; rxPx: number; ryPx: number; count: number; containerW: number; containerH: number } | null>(null);
+  const isPausedRef = useRef<boolean>(false);
+
+  // Check prefers-reduced-motion
+  const prefersReducedMotion = typeof window !== 'undefined' && 
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
   // Measure container and sponsor avatar center, set up ResizeObserver
   useEffect(() => {
     const container = containerRef.current;
@@ -151,37 +168,55 @@ export default function OrbitCarouselHeader({
   const rxPx = containerSize.w * RX_RATIO;
   const ryPx = containerSize.h * RY_RATIO;
 
+  // Update geometry ref when measurements change (avoids stale closures)
+  const count = Math.min(displaySatellites.length, 5);
+  useEffect(() => {
+    if (containerSize.w > 0 && containerSize.h > 0) {
+      geometryRef.current = {
+        cxPx: sponsorCenter.x > 0 ? sponsorCenter.x : containerSize.w * CX,
+        cyPx: sponsorCenter.y > 0 ? sponsorCenter.y : containerSize.h * CY,
+        rxPx: containerSize.w * RX_RATIO,
+        ryPx: containerSize.h * RY_RATIO,
+        count,
+        containerW: containerSize.w,
+        containerH: containerSize.h,
+      };
+    }
+  }, [containerSize.w, containerSize.h, sponsorCenter.x, sponsorCenter.y, count]);
+
   // Helper: Get point on orbit at parametric angle t (in radians)
   // Returns coordinates in pixel space
-  const getOrbitPoint = (tRad: number): { x: number; y: number } => {
+  // Accepts geometry params to avoid closure issues
+  const getOrbitPoint = (tRad: number, cx: number, cy: number, rx: number, ry: number): { x: number; y: number } => {
     if (containerSize.w === 0 || containerSize.h === 0) {
       return { x: 0, y: 0 };
     }
     
     // Parametric ellipse: x = cx + rx * cos(t), y = cy + ry * sin(t)
-    const xUnrotated = cxPx + rxPx * Math.cos(tRad);
-    const yUnrotated = cyPx + ryPx * Math.sin(tRad);
+    const xUnrotated = cx + rx * Math.cos(tRad);
+    const yUnrotated = cy + ry * Math.sin(tRad);
     
     // Apply rotation around center
     const rotRad = degToRad(ROT_DEG);
-    return rotatePoint(xUnrotated, yUnrotated, cxPx, cyPx, rotRad);
+    return rotatePoint(xUnrotated, yUnrotated, cx, cy, rotRad);
   };
 
   // Helper: Calculate point on rotated ellipse at given angle (in radians)
   // Returns coordinates in pixel space
-  const getEllipsePoint = (angleRad: number) => {
+  // Accepts geometry params to avoid closure issues
+  const getEllipsePoint = (angleRad: number, cx: number, cy: number, rx: number, ry: number) => {
     if (containerSize.w === 0 || containerSize.h === 0) {
       return { x: 0, y: 0 };
     }
     
     // Calculate point on unrotated ellipse
-    const xUnrotated = rxPx * Math.cos(angleRad);
-    const yUnrotated = ryPx * Math.sin(angleRad);
+    const xUnrotated = rx * Math.cos(angleRad);
+    const yUnrotated = ry * Math.sin(angleRad);
     
     // Apply rotation transform
     const rotRad = degToRad(ROT_DEG);
-    const x = cxPx + xUnrotated * Math.cos(rotRad) - yUnrotated * Math.sin(rotRad);
-    const y = cyPx + xUnrotated * Math.sin(rotRad) + yUnrotated * Math.cos(rotRad);
+    const x = cx + xUnrotated * Math.cos(rotRad) - yUnrotated * Math.sin(rotRad);
+    const y = cy + xUnrotated * Math.sin(rotRad) + yUnrotated * Math.cos(rotRad);
     
     return { x, y };
   };
@@ -211,8 +246,8 @@ export default function OrbitCarouselHeader({
   
   if (containerSize.w > 0) {
     // Check sample points to determine which arc is back (depthScore < 0)
-    const sampleTop = getEllipsePoint((3 * Math.PI) / 2); // Top
-    const sampleBottom = getEllipsePoint(Math.PI / 2); // Bottom
+    const sampleTop = getEllipsePoint((3 * Math.PI) / 2, cxPx, cyPx, rxPx, ryPx); // Top
+    const sampleBottom = getEllipsePoint(Math.PI / 2, cxPx, cyPx, rxPx, ryPx); // Bottom
     
     const topDepthScore = calculateDepthScore(sampleTop.y, cyPx, ryPx);
     const bottomDepthScore = calculateDepthScore(sampleBottom.y, cyPx, ryPx);
@@ -233,7 +268,6 @@ export default function OrbitCarouselHeader({
   }
 
   // Compute even spacing with count-specific phase
-  const count = Math.min(displaySatellites.length, 5);
   const stepDeg = count > 0 ? 360 / count : 0;
   const startDeg = PHASE_BY_COUNT[count] ?? 225; // Default to 225° if count not in map
   
@@ -250,7 +284,7 @@ export default function OrbitCarouselHeader({
   // First pass: Get base orbit points and compute depthScore
   const satellitesWithDepth = displaySatellites.map((satellite, index) => {
     const angleRad = anglesRad[index];
-    const baseOrbitPoint = getOrbitPoint(angleRad); // Base point after rotation
+    const baseOrbitPoint = getOrbitPoint(angleRad, cxPx, cyPx, rxPx, ryPx); // Base point after rotation
     
     // Calculate depthScore from geometry
     const depthScore = calculateDepthScore(baseOrbitPoint.y, cyPx, ryPx);
@@ -301,14 +335,14 @@ export default function OrbitCarouselHeader({
     
     let orbitPoint = { ...baseOrbitPoint };
     
-    // Fix crowding: apply tangential nudge when satellites are too close
-    if (count >= 4 && containerSize.w > 0) {
-      // Check distance to previous satellites
-      const nearbySatellites = displaySatellites.slice(0, index).map((other, otherIndex) => {
-        const otherAngleRad = anglesRad[otherIndex];
-        const otherPoint = getOrbitPoint(otherAngleRad);
-        return otherPoint;
-      });
+      // Fix crowding: apply tangential nudge when satellites are too close
+      if (count >= 4 && containerSize.w > 0) {
+        // Check distance to previous satellites
+        const nearbySatellites = displaySatellites.slice(0, index).map((other, otherIndex) => {
+          const otherAngleRad = anglesRad[otherIndex];
+          const otherPoint = getOrbitPoint(otherAngleRad, cxPx, cyPx, rxPx, ryPx);
+          return otherPoint;
+        });
       
       // Find closest satellite
       let minDistance = Infinity;
@@ -367,6 +401,124 @@ export default function OrbitCarouselHeader({
     };
   });
 
+  // Update satellite transforms via DOM (bypasses React re-renders)
+  const updateSatelliteTransforms = () => {
+    const geometry = geometryRef.current;
+    if (!geometry || satelliteRefsRef.current.size === 0) return;
+
+    const { cxPx, cyPx, rxPx, ryPx, count, containerW, containerH } = geometry;
+    const stepDeg = count > 0 ? 360 / count : 0;
+    const basePhase = PHASE_BY_COUNT[count] ?? 225;
+    const effectivePhase = basePhase + rotationOffsetDegRef.current;
+
+    displaySatellites.forEach((satellite, index) => {
+      const el = satelliteRefsRef.current.get(satellite.id);
+      if (!el) return;
+
+      // Calculate clock angle with rotation offset
+      const clockAngleDeg = (effectivePhase + index * stepDeg) % 360;
+      const parametricDeg = clockDegToParametricDeg(clockAngleDeg);
+      const angleRad = degToRad(parametricDeg);
+
+      // Get orbit point
+      const orbitPoint = getOrbitPoint(angleRad, cxPx, cyPx, rxPx, ryPx);
+
+      // Calculate depth properties
+      const depthScore = calculateDepthScore(orbitPoint.y, cyPx, ryPx);
+      const zIndex = depthScoreToZIndex(depthScore, true);
+
+      const isFront = depthScore > 0;
+      const isBack = depthScore < 0;
+
+      // Scale based on depth
+      let scale = 1.0;
+      if (isFront) {
+        scale = 1.0 + (depthScore * 0.05);
+        scale = Math.min(1.06, Math.max(1.04, scale));
+      } else if (isBack) {
+        scale = 1.0 + (depthScore * 0.03);
+        scale = Math.min(1.0, Math.max(0.94, scale));
+      }
+
+      // Opacity based on depth
+      let opacity = 1.0;
+      if (isBack) {
+        opacity = 0.70 + (Math.abs(depthScore) * 0.15);
+        opacity = Math.min(0.85, Math.max(0.70, opacity));
+      }
+
+      // Calculate transform: translate3d(dx, dy, 0) translate3d(-50%, -50%, 0) scale(scale)
+      const dx = orbitPoint.x - containerW / 2;
+      const dy = orbitPoint.y - containerH / 2;
+      const transform = `translate3d(${dx}px, ${dy}px, 0) translate3d(-50%, -50%, 0) scale(${scale})`;
+
+      // Update DOM directly
+      el.style.transform = transform;
+      el.style.zIndex = String(zIndex);
+      el.style.opacity = String(opacity);
+    });
+  };
+
+  // Animation frame function
+  const animateFrame = (now: number) => {
+    if (isPausedRef.current) {
+      // Still schedule next frame even when paused
+      animationFrameIdRef.current = requestAnimationFrame(animateFrame);
+      return;
+    }
+
+    const geometry = geometryRef.current;
+    if (!geometry || !MOTION_ENABLED || prefersReducedMotion) {
+      animationFrameIdRef.current = null;
+      return;
+    }
+
+    // Calculate delta time
+    const lastTime = lastFrameTimeRef.current ?? now;
+    let dt = now - lastTime;
+    dt = Math.min(dt, 50); // Clamp to prevent teleporting if tab wakes
+
+    // Advance rotation offset
+    rotationOffsetDegRef.current += dt * ROTATION_RATE_DEG_PER_MS;
+    lastFrameTimeRef.current = now;
+
+    // Update satellite transforms
+    updateSatelliteTransforms();
+
+    // Schedule next frame
+    animationFrameIdRef.current = requestAnimationFrame(animateFrame);
+  };
+
+  // Start animation loop when ready
+  useEffect(() => {
+    if (!MOTION_ENABLED || prefersReducedMotion || containerSize.w === 0) {
+      return;
+    }
+
+    // Start animation
+    lastFrameTimeRef.current = performance.now();
+    animationFrameIdRef.current = requestAnimationFrame(animateFrame);
+
+    return () => {
+      if (animationFrameIdRef.current !== null) {
+        cancelAnimationFrame(animationFrameIdRef.current);
+        animationFrameIdRef.current = null;
+      }
+    };
+  }, [containerSize.w, containerSize.h, prefersReducedMotion]);
+
+  // Handle visibility change (pause when hidden)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      isPausedRef.current = document.hidden;
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   return (
     <div ref={containerRef} className="w-full h-[220px] relative px-4">
       {/* Back arc SVG layer - behind everything (z-10) */}
@@ -392,30 +544,42 @@ export default function OrbitCarouselHeader({
       {/* Satellites layer - rendered with geometry-driven z-index */}
       {containerSize.w > 0 && (
         <>
-          {satellitesWithDepth.map(({ satellite, orbitPoint, zIndex, scale, opacity, shadowStrength, borderOpacity }) => (
-            <div
-              key={satellite.id}
-              className="absolute w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-200"
-              style={{
-                left: `${orbitPoint.x}px`,
-                top: `${orbitPoint.y}px`,
-                transform: `translate(-50%, -50%) scale(${scale})`,
-                opacity: opacity,
-                zIndex: zIndex,
-                border: `1px solid rgba(255, 255, 255, ${borderOpacity})`,
-                boxShadow: `0 ${4 * shadowStrength}px ${12 * shadowStrength}px rgba(0, 0, 0, ${shadowStrength})`,
-              }}
-              onClick={() => router.push(`/profile/${satellite.id}`)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  router.push(`/profile/${satellite.id}`);
-                }
-              }}
-              aria-label={`View ${satellite.name}'s profile`}
-            >
+          {satellitesWithDepth.map(({ satellite, orbitPoint, zIndex, scale, opacity, shadowStrength, borderOpacity }) => {
+            // Calculate transform for initial render (static fallback)
+            const dx = orbitPoint.x - containerSize.w / 2;
+            const dy = orbitPoint.y - containerSize.h / 2;
+            const transform = `translate3d(${dx}px, ${dy}px, 0) translate3d(-50%, -50%, 0) scale(${scale})`;
+
+            return (
+              <div
+                key={satellite.id}
+                ref={(el) => {
+                  if (el) {
+                    satelliteRefsRef.current.set(satellite.id, el);
+                  } else {
+                    satelliteRefsRef.current.delete(satellite.id);
+                  }
+                }}
+                className="absolute left-1/2 top-1/2 w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-200"
+                style={{
+                  transform: transform,
+                  opacity: opacity,
+                  zIndex: zIndex,
+                  willChange: 'transform',
+                  border: `1px solid rgba(255, 255, 255, ${borderOpacity})`,
+                  boxShadow: `0 ${4 * shadowStrength}px ${12 * shadowStrength}px rgba(0, 0, 0, ${shadowStrength})`,
+                }}
+                onClick={() => router.push(`/profile/${satellite.id}`)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    router.push(`/profile/${satellite.id}`);
+                  }
+                }}
+                aria-label={`View ${satellite.name}'s profile`}
+              >
               {satellite.avatarUrl ? (
                 <img
                   src={satellite.avatarUrl}
@@ -427,8 +591,9 @@ export default function OrbitCarouselHeader({
                   {satellite.name?.charAt(0).toUpperCase() || '?'}
                 </span>
               )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </>
       )}
 
