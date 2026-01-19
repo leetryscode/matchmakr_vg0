@@ -4,7 +4,7 @@ import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisVerticalIcon } from '@heroicons/react/24/solid';
+import { PlusIcon, EllipsisVerticalIcon } from '@heroicons/react/24/solid';
 import ImageCropper from './ImageCropper';
 import { Area } from 'react-easy-crop';
 import 'keen-slider/keen-slider.min.css';
@@ -84,7 +84,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
     const [photos, setPhotos] = useState(initialPhotos ? initialPhotos.filter((p): p is string => typeof p === 'string' && p.trim() !== '') : []);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [uploading, setUploading] = useState(false);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [activeMenuPhotoUrl, setActiveMenuPhotoUrl] = useState<string | null>(null);
     const [imageToCrop, setImageToCrop] = useState<string | null>(null);
     const [editingPhotoUrl, setEditingPhotoUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -122,14 +122,16 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                setIsMenuOpen(false);
+                setActiveMenuPhotoUrl(null);
             }
         }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [menuRef]);
+        if (activeMenuPhotoUrl) {
+            document.addEventListener("mousedown", handleClickOutside);
+            return () => {
+                document.removeEventListener("mousedown", handleClickOutside);
+            };
+        }
+    }, [activeMenuPhotoUrl]);
 
     const displayItems = useMemo(() => {
         const items = [...photos];
@@ -138,13 +140,6 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
         }
         return items;
     }, [photos, maxPhotos, canEdit]);
-
-    const handleNavigation = (direction: 'next' | 'prev') => {
-        const newIndex = direction === 'next'
-            ? (currentIndex + 1) % displayItems.length
-            : (currentIndex - 1 + displayItems.length) % displayItems.length;
-        setCurrentIndex(newIndex);
-    };
 
     const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -176,7 +171,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
     const handleEditClick = (photoUrl: string) => {
         setEditingPhotoUrl(photoUrl);
         setImageToCrop(photoUrl);
-        setIsMenuOpen(false);
+        setActiveMenuPhotoUrl(null);
     }
     
     const onCropComplete = async (croppedAreaPixels: Area) => {
@@ -184,6 +179,12 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
 
         setUploading(true);
         setImageToCrop(null); // Close cropper
+
+        // Capture old photo info BEFORE any state changes or uploads (for safe replacement)
+        const isReplacing = !!editingPhotoUrl;
+        const oldPhotoUrl = editingPhotoUrl || null;
+        const oldFileName = oldPhotoUrl ? new URL(oldPhotoUrl).pathname.split('/').pop() : null;
+        const oldFilePath = oldFileName ? `${userId}/${oldFileName}` : null;
 
         try {
             const croppedImageBlob = await getCroppedImg(imageToCrop, croppedAreaPixels);
@@ -195,14 +196,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
             const fileName = `${Date.now()}.${fileExt}`;
             const filePath = `${userId}/${fileName}`;
 
-            // If we were editing, delete the old photo first
-            if (editingPhotoUrl) {
-                const oldFileName = editingPhotoUrl.split('/').pop();
-                if (oldFileName) {
-                     await supabase.storage.from('profile_pictures').remove([`${userId}/${oldFileName}`]);
-                }
-            }
-
+            // Step 1: Upload new photo first (don't delete old one yet)
             const { error: uploadError } = await supabase.storage.from('profile_pictures').upload(filePath, croppedImageBlob, {
                 contentType: 'image/jpeg',
                 upsert: false,
@@ -212,16 +206,17 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
 
             const { data: { publicUrl } } = supabase.storage.from('profile_pictures').getPublicUrl(filePath);
             
+            // Step 2: Update photos array
             let updatedPhotos: string[];
-            if (editingPhotoUrl) {
+            if (isReplacing && oldPhotoUrl) {
                 // Replace the old URL with the new one
-                updatedPhotos = photos.map(p => p === editingPhotoUrl ? publicUrl : p);
+                updatedPhotos = photos.map(p => p === oldPhotoUrl ? publicUrl : p);
             } else {
                 // Add the new URL
                 updatedPhotos = [...photos, publicUrl];
             }
             
-            // Determine which table to update based on user type
+            // Step 3: Update database
             let dbError;
             console.log('PhotoGallery: Updating photos for user type:', userType, 'userId:', userId);
             
@@ -246,10 +241,32 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
             }
             
             if (dbError) {
+                // DB update failed - clean up the uploaded file and throw error
                 console.error('Database update error:', dbError);
                 console.error('Attempting to update profile ID:', userId);
                 console.error('Current user context:', await supabase.auth.getUser());
+                
+                // Try to delete the newly uploaded file since DB update failed
+                try {
+                    await supabase.storage.from('profile_pictures').remove([filePath]);
+                    console.log('PhotoGallery: Cleaned up uploaded file after DB error');
+                } catch (cleanupError) {
+                    console.error('PhotoGallery: Failed to clean up uploaded file:', cleanupError);
+                }
+                
                 throw dbError;
+            }
+
+            // Step 4: Delete old file only AFTER DB update succeeds (best effort, don't fail on error)
+            if (isReplacing && oldFilePath) {
+                try {
+                    await supabase.storage.from('profile_pictures').remove([oldFilePath]);
+                    console.log('PhotoGallery: Successfully deleted old photo file:', oldFilePath);
+                } catch (deleteError) {
+                    // Log error but don't surface as failure - DB is already updated with new photo
+                    console.error('PhotoGallery: Failed to delete old photo file (non-critical):', deleteError);
+                    console.log('PhotoGallery: New photo is active; old file cleanup can be done later');
+                }
             }
 
             // Invalidate pond cache after successful photo update
@@ -259,15 +276,23 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
 
             setPhotos(updatedPhotos);
             setEditingPhotoUrl(null);
-            if (updatedPhotos.length < maxPhotos) {
-                setCurrentIndex(updatedPhotos.length); // Move to Add Photo slot
-                if (instanceRef.current) {
-                    instanceRef.current.moveToIdx(updatedPhotos.length);
+            
+            // Update carousel index after upload
+            if (isReplacing) {
+                // After replace: keep same index
+                const currentPhotoIndex = updatedPhotos.findIndex(p => p === publicUrl);
+                if (currentPhotoIndex !== -1) {
+                    setCurrentIndex(currentPhotoIndex);
+                    if (instanceRef.current) {
+                        instanceRef.current.moveToIdx(currentPhotoIndex);
+                    }
                 }
             } else {
-                setCurrentIndex(updatedPhotos.findIndex(p => p === publicUrl));
+                // After add: move to newly added photo
+                const newIdx = updatedPhotos.length - 1;
+                setCurrentIndex(newIdx);
                 if (instanceRef.current) {
-                    instanceRef.current.moveToIdx(updatedPhotos.findIndex(p => p === publicUrl));
+                    instanceRef.current.moveToIdx(newIdx);
                 }
             }
 
@@ -321,7 +346,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
             }
 
             // Delete from storage
-            const fileName = photoUrlToDelete.split('/').pop();
+            const fileName = new URL(photoUrlToDelete).pathname.split('/').pop();
             if(fileName) {
                 const { error: storageError } = await supabase.storage.from('profile_pictures').remove([`${userId}/${fileName}`]);
                 if (storageError) {
@@ -447,16 +472,27 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                             <div className="absolute top-2 right-2 z-10">
                                                 <button
                                                     className="p-2 rounded-full bg-black/40 hover:bg-black/70 text-white"
-                                                    onClick={() => { setIsMenuOpen(item === photos[currentIndex]); setEditingPhotoUrl(item); }}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        setActiveMenuPhotoUrl(item);
+                                                        setEditingPhotoUrl(item);
+                                                    }}
                                                     type="button"
                                                 >
                                                     <EllipsisVerticalIcon className="w-6 h-6" />
                                                 </button>
-                                                {isMenuOpen && editingPhotoUrl === item && (
+                                                {activeMenuPhotoUrl === item && (
                                                     <div ref={menuRef} className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg z-20 py-2 border border-gray-200">
                                                         <button
+                                                            className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-xl font-semibold transition-colors"
+                                                            onClick={() => handleEditClick(item)}
+                                                        >
+                                                            Replace Photo
+                                                        </button>
+                                                        <button
                                                             className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-xl font-semibold transition-colors"
-                                                            onClick={() => { setIsMenuOpen(false); handlePhotoDelete(item); }}
+                                                            onClick={() => { setActiveMenuPhotoUrl(null); handlePhotoDelete(item); }}
                                                         >
                                                             Delete Photo
                                                         </button>
@@ -573,16 +609,27 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                     <div className="absolute top-2 right-2 z-10">
                                         <button
                                             className="p-2 rounded-full bg-black/40 hover:bg-black/70 text-white"
-                                            onClick={() => { setIsMenuOpen(true); setEditingPhotoUrl(displayItems[0] as string); }}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setActiveMenuPhotoUrl(displayItems[0] as string);
+                                                setEditingPhotoUrl(displayItems[0] as string);
+                                            }}
                                             type="button"
                                         >
                                             <EllipsisVerticalIcon className="w-6 h-6" />
                                         </button>
-                                        {isMenuOpen && editingPhotoUrl === displayItems[0] && (
+                                        {activeMenuPhotoUrl === displayItems[0] && (
                                             <div ref={menuRef} className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg z-20 py-2 border border-gray-200">
                                                 <button
+                                                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-xl font-semibold transition-colors"
+                                                    onClick={() => handleEditClick(displayItems[0] as string)}
+                                                >
+                                                    Replace Photo
+                                                </button>
+                                                <button
                                                     className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-xl font-semibold transition-colors"
-                                                    onClick={() => { setIsMenuOpen(false); handlePhotoDelete(displayItems[0] as string); }}
+                                                    onClick={() => { setActiveMenuPhotoUrl(null); handlePhotoDelete(displayItems[0] as string); }}
                                                 >
                                                     Delete Photo
                                                 </button>
