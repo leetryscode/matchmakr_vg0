@@ -14,7 +14,8 @@ interface NotificationNavItemProps {
 export default function NotificationNavItem({ userId, pathname }: NotificationNavItemProps) {
     const router = useRouter();
     const { userType } = useAuth();
-    const { activeCount } = useNotifications(userId);
+    // Notifications come from context (NotificationsProvider) - userId parameter is ignored
+    const { activeCount } = useNotifications();
     const [hideBadge, setHideBadge] = useState(false);
     const prevActiveCountRef = React.useRef<number>(0);
     

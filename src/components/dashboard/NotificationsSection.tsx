@@ -17,7 +17,8 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
   const { user } = useAuth();
   const userId = userIdProp || user?.id || '';
   
-  const { notifications, activeCount, loading, refresh, dismissNotification } = useNotifications(userId);
+  // Notifications come from context (NotificationsProvider) - userId parameter is ignored
+  const { notifications, activeCount, loading, refresh, dismissNotification } = useNotifications();
   const [dismissing, setDismissing] = useState<Set<string>>(new Set());
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const prevActiveCountRef = React.useRef<number>(0);

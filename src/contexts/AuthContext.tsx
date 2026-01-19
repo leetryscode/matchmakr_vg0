@@ -6,6 +6,7 @@ import { User } from '@supabase/supabase-js';
 import { useRouter, usePathname } from 'next/navigation';
 import { orbitConfig } from '@/config/orbitConfig';
 import { normalizeToOrbitRole, OrbitUserRole } from '@/types/orbit';
+import { NotificationsProvider } from './NotificationsContext';
 
 interface AuthContextType {
   user: User | null;
@@ -214,7 +215,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, loading, userType, orbitRole, signOut }}>
-      {children}
+      <NotificationsProvider>
+        {children}
+      </NotificationsProvider>
     </AuthContext.Provider>
   );
 }
