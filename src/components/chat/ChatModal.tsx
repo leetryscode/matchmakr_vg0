@@ -29,8 +29,14 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   const [sending, setSending] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const isPinnedRef = useRef<boolean>(true);
+  const isInputFocusedRef = useRef<boolean>(false);
   const prevMsgCount = useRef<number>(0);
   const loadingTimeout = useRef<NodeJS.Timeout | null>(null);
+  
+  // Threshold for determining if user is "pinned" to bottom (in pixels)
+  const SCROLL_PIN_THRESHOLD_PX = 48;
   const [matchStatus, setMatchStatus] = useState<'none' | 'pending' | 'matched' | 'can-approve'>('none');
   const [matchLoading, setMatchLoading] = useState(false);
   const [matchError, setMatchError] = useState<string | null>(null);
@@ -45,6 +51,27 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   const [contextLoading, setContextLoading] = useState(false);
   const [currentUserSingles, setCurrentUserSingles] = useState<{ id: string }[]>([]);
 
+  // Update pinned state based on scroll position
+  const updatePinnedState = () => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    
+    const distanceFromBottom = container.scrollHeight - (container.scrollTop + container.clientHeight);
+    isPinnedRef.current = distanceFromBottom < SCROLL_PIN_THRESHOLD_PX;
+  };
+
+  // Scroll to bottom only if user is pinned to bottom
+  const scrollToBottomIfPinned = (reason: string) => {
+    if (!isPinnedRef.current) return;
+    
+    const sentinel = bottomRef.current;
+    if (sentinel) {
+      requestAnimationFrame(() => {
+        sentinel.scrollIntoView({ block: 'end' });
+      });
+    }
+  };
+
   // Register/unregister modal with context when open state changes
   useEffect(() => {
     if (open) {
@@ -57,6 +84,40 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
       unregisterChatModal(modalId);
     };
   }, [open, modalId, registerChatModal, unregisterChatModal]);
+
+  // Track pinned state on scroll
+  useEffect(() => {
+    if (!open) return;
+    const container = chatContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener('scroll', updatePinnedState);
+    // Initial check
+    updatePinnedState();
+
+    return () => {
+      container.removeEventListener('scroll', updatePinnedState);
+    };
+  }, [open]);
+
+  // Handle keyboard open/close via VisualViewport
+  useEffect(() => {
+    if (!open) return;
+
+    const handleViewportResize = () => {
+      // Only scroll if input is focused and user is pinned to bottom
+      if (isInputFocusedRef.current && isPinnedRef.current) {
+        scrollToBottomIfPinned('keyboard-resize');
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportResize);
+      return () => {
+        window.visualViewport?.removeEventListener('resize', handleViewportResize);
+      };
+    }
+  }, [open]);
 
   // Fetch chat history and context
   useEffect(() => {
@@ -123,16 +184,22 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     };
   }, [open, currentUserId, otherUserId, isSingleToSingle, aboutSingle?.id, clickedSingle?.id]);
 
-  // Always scroll to bottom when new messages arrive or modal opens
+  // On modal open, scroll to bottom and set pinned state
   useEffect(() => {
     if (!open) return;
-    const container = chatContainerRef.current;
-    if (container) {
-      // Use setTimeout to ensure DOM is fully rendered
-      setTimeout(() => {
-        container.scrollTop = container.scrollHeight;
-      }, 100);
-    }
+    isPinnedRef.current = true;
+    requestAnimationFrame(() => {
+      const sentinel = bottomRef.current;
+      if (sentinel) {
+        sentinel.scrollIntoView({ block: 'end' });
+      }
+    });
+  }, [open]);
+
+  // On new messages, only scroll if pinned
+  useEffect(() => {
+    if (!open || chatLoading) return;
+    scrollToBottomIfPinned('new-message');
   }, [chatMessages, open, chatLoading]);
 
   // Fetch match status for the two singles
@@ -587,6 +654,8 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                 }}
               />
             )}
+            {/* Bottom sentinel for scroll detection */}
+            <div ref={bottomRef} />
           </div>
         </div>
         {/* Input Section */}
@@ -597,6 +666,8 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
             placeholder={`Send a message to ${otherUserName}`}
             value={messageText}
             onChange={e => setMessageText(e.target.value)}
+            onFocus={() => { isInputFocusedRef.current = true; }}
+            onBlur={() => { isInputFocusedRef.current = false; }}
             disabled={sending || (isSingleToSingle && !canChat)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(); } }}
           />
