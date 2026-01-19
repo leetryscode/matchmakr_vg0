@@ -541,7 +541,6 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
               <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
                 <div className="font-semibold text-gray-900 mb-1">You're now connected</div>
                 <div className="text-sm text-gray-600 mb-2">Your sponsors agreed to introduce you</div>
-                <div className="text-xs text-gray-500">This conversation is visible to sponsors</div>
                 {/* Optional: small avatars */}
                 <div className="flex items-center justify-center gap-4 mt-3">
                   <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300">

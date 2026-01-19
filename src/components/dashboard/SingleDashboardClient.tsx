@@ -411,9 +411,9 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
         {/* Notifications */}
         <NotificationsSection userId={userId} />
         
-        {/* My Sponsors Section */}
+        {/* My Sponsor Section */}
         <div>
-          <SectionHeader title="My sponsors" right={<InviteSponsorAction />} />
+          <SectionHeader title="My Sponsor" right={<InviteSponsorAction />} />
           <ChatRow
             photo={sponsor.profile_pic_url}
             name={sponsor.name}
