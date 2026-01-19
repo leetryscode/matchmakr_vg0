@@ -128,6 +128,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
     const [editingPhotoUrl, setEditingPhotoUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
+    const sliderContainerRef = useRef<HTMLDivElement | null>(null);
 
     // Determine max photos based on user type (must be before useEffect that uses it)
     const maxPhotos = userType === 'MATCHMAKR' ? MAX_PHOTOS_MATCHMAKR : 
@@ -156,6 +157,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
         rubberband: false,
         loop: false,
         mode: 'snap',
+        slides: { perView: 1, spacing: 0 },
     });
 
     useEffect(() => {
@@ -409,13 +411,36 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
     const currentItem = displayItems[currentIndex];
     const isCarousel = !isMatchMakr && displayItems.length > 1;
 
+    // ResizeObserver to update slider when container size changes
+    useEffect(() => {
+        if (!isCarousel) return;
+        const el = sliderContainerRef.current;
+        if (!el) return;
+
+        const ro = new ResizeObserver(() => {
+            requestAnimationFrame(() => {
+                instanceRef.current?.update();
+            });
+        });
+
+        ro.observe(el);
+
+        return () => ro.disconnect();
+    }, [isCarousel, instanceRef]);
+
     return (
         <div className="relative mb-6 px-0">
             <div className="relative w-full aspect-[4/5] rounded-none md:rounded-2xl overflow-hidden shadow-card sm:mx-auto sm:max-w-md">
                 {isCarousel ? (
-                    <div ref={sliderRef} className="keen-slider w-full h-full">
+                    <div 
+                        ref={(node) => {
+                            sliderContainerRef.current = node;
+                            sliderRef(node);
+                        }} 
+                        className="keen-slider w-full h-full"
+                    >
                         {displayItems.map((item, idx) => (
-                            <div className="keen-slider__slide flex items-center justify-center relative" key={idx}>
+                            <div className="keen-slider__slide relative w-full min-w-full h-full flex items-center justify-center" key={idx}>
                                 {item === ADD_PHOTO_SLOT && photos.length === 0 ? (
                                     <div className="relative w-full h-full bg-gradient-to-br from-primary-blue/50 to-primary-teal/50 flex items-center justify-center">
                                         <span className="text-6xl font-bold text-white">
@@ -505,6 +530,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                             sizes="100vw"
                                             className="object-cover rounded-none md:rounded-2xl"
                                             priority={idx === 0}
+                                            onLoadingComplete={() => instanceRef.current?.update()}
                                         />
                                         {/* Three dot menu for delete/edit */}
                                         {canEdit && (
@@ -641,6 +667,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                     sizes="100vw"
                                     className="object-cover rounded-none md:rounded-2xl"
                                     priority
+                                    onLoadingComplete={() => instanceRef.current?.update()}
                                 />
                                 {/* Three dot menu for delete/edit */}
                                 {canEdit && (
