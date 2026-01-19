@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ChatModal from '@/components/chat/ChatModal';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import FlameUnreadIcon from './FlameUnreadIcon';
@@ -43,8 +43,8 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
   const instanceIdRef = useRef<string>(`single-dashboard-${Math.random().toString(36).substr(2, 9)}`);
   const router = useRouter();
 
-  // Refactor fetchMatches to be callable
-  const fetchMatches = async () => {
+  // Refactor fetchMatches to be callable - wrapped in useCallback for stable reference
+  const fetchMatches = useCallback(async () => {
     const { data: matches } = await supabase
       .from('matches')
       .select('*')
@@ -102,11 +102,11 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
       };
     }).filter(row => row.otherSingle);
     setSingleChats(chatRows);
-  };
+  }, [userId, supabase]); // Stable dependencies
 
   useEffect(() => {
     fetchMatches();
-  }, [userId]);
+  }, [userId, fetchMatches]); // Added fetchMatches to dependencies
 
   // Real-time subscription for matches
   useEffect(() => {
@@ -156,7 +156,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
         channelRef.current = null;
       }
     };
-  }, [userId]); // supabase is singleton, stable
+  }, [userId, fetchMatches, supabase]); // Added fetchMatches for stable closure
 
   // Fetch sponsor chat info
   useEffect(() => {
