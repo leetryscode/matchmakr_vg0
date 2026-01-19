@@ -633,13 +633,6 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                             onCropComplete={onCropComplete}
                             onClose={() => setImageToCrop(null)}
                         />
-                        <button
-                            className="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-2xl font-bold"
-                            onClick={() => setImageToCrop(null)}
-                            aria-label="Cancel"
-                        >
-                            &times;
-                        </button>
                     </div>
                 </div>
             )}
