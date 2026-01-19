@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase/client';
 import GroupedMessageList from '@/components/chat/GroupedMessageList';
 
 export default function SingleChatPage() {
@@ -23,7 +23,7 @@ export default function SingleChatPage() {
   // Fetch current user ID, profile info, and user_type
   useEffect(() => {
     const fetchUser = async () => {
-      const supabase = createClient();
+      const supabase = getSupabaseClient();
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUserId(user?.id || null);
       
@@ -74,7 +74,7 @@ export default function SingleChatPage() {
     setChatLoading(true);
     const fetchChatData = async () => {
       // Fetch single info
-      const supabase = createClient();
+      const supabase = getSupabaseClient();
       const { data: singleData } = await supabase
         .from('profiles')
         .select('id, name, photos')
@@ -139,19 +139,25 @@ export default function SingleChatPage() {
 
   // Realtime subscription for new messages
   const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
+  const instanceIdRef = useRef<string>(`single-chat-${singleId}-${Math.random().toString(36).substr(2, 9)}`);
+  const supabase = getSupabaseClient();
   
   useEffect(() => {
     if (!currentUserId) return;
     
-    const supabase = createClient();
+    const channelName = `single-messages-${currentUserId}-${singleId}`;
+    const instanceId = instanceIdRef.current;
+    
+    console.log(`[REALTIME-DEBUG] ${instanceId} | SingleChatPage | SUBSCRIBE | channel: ${channelName}`);
     
     // Cleanup previous channel if exists (guard against double-subscribe)
     if (channelRef.current) {
+      console.log(`[REALTIME-DEBUG] ${instanceId} | SingleChatPage | CLEANUP-PREV | channel: ${channelName}`);
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
     
-    const channel = supabase.channel(`single-messages-${currentUserId}-${singleId}`)
+    const channel = supabase.channel(channelName)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
         const newMessage = payload.new;
         // If the new message is between current user and the other user, add it to chatMessages
@@ -165,17 +171,20 @@ export default function SingleChatPage() {
           });
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`[REALTIME-DEBUG] ${instanceId} | SingleChatPage | SUBSCRIBE-STATUS | channel: ${channelName} | status: ${status}`);
+      });
     
     channelRef.current = channel;
     
     return () => {
       if (channelRef.current) {
+        console.log(`[REALTIME-DEBUG] ${instanceId} | SingleChatPage | CLEANUP | channel: ${channelName}`);
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
     };
-  }, [currentUserId, currentUserType, sponsorInfo?.id, singleId]);
+  }, [currentUserId, currentUserType, sponsorInfo?.id, singleId]); // supabase is singleton, stable
 
   // Send message
   const handleSendMessage = async () => {

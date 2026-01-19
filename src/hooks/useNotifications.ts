@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase/client';
 
 export interface Notification {
     id: string;
@@ -23,7 +23,7 @@ export interface UseNotificationsResult {
 }
 
 export function useNotifications(userId: string): UseNotificationsResult {
-    const supabaseRef = useRef(createClient());
+    const supabaseRef = useRef(getSupabaseClient());
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
     const [activeCount, setActiveCount] = useState(0);
@@ -31,6 +31,7 @@ export function useNotifications(userId: string): UseNotificationsResult {
     // Debounce timer ref for realtime events
     const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
     const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
+    const instanceIdRef = useRef<string>(`notifications-${userId}-${Math.random().toString(36).substr(2, 9)}`);
 
     // Fetch active count on mount and when userId changes
     // Active = dismissed_at IS NULL AND (read IS NULL OR read = false) for compatibility
@@ -153,14 +154,20 @@ export function useNotifications(userId: string): UseNotificationsResult {
     useEffect(() => {
         if (!userId) return;
 
+        const channelName = `notifications:${userId}`;
+        const instanceId = instanceIdRef.current;
+        
+        console.log(`[REALTIME-DEBUG] ${instanceId} | useNotifications | SUBSCRIBE | channel: ${channelName}`);
+
         // Cleanup previous channel if exists (guard against double-subscribe)
         if (channelRef.current) {
+            console.log(`[REALTIME-DEBUG] ${instanceId} | useNotifications | CLEANUP-PREV | channel: ${channelName}`);
             supabaseRef.current.removeChannel(channelRef.current);
             channelRef.current = null;
         }
 
         const channel = supabaseRef.current
-            .channel(`notifications:${userId}`) // Unique channel per user
+            .channel(channelName) // Unique channel per user
             .on(
                 'postgres_changes',
                 {
@@ -190,7 +197,9 @@ export function useNotifications(userId: string): UseNotificationsResult {
                     debouncedRefresh();
                 }
             )
-            .subscribe();
+            .subscribe((status) => {
+                console.log(`[REALTIME-DEBUG] ${instanceId} | useNotifications | SUBSCRIBE-STATUS | channel: ${channelName} | status: ${status}`);
+            });
 
         channelRef.current = channel;
 
@@ -200,6 +209,7 @@ export function useNotifications(userId: string): UseNotificationsResult {
                 clearTimeout(refreshTimerRef.current);
             }
             if (channelRef.current) {
+                console.log(`[REALTIME-DEBUG] ${instanceId} | useNotifications | CLEANUP | channel: ${channelName}`);
                 supabaseRef.current.removeChannel(channelRef.current);
                 channelRef.current = null;
             }

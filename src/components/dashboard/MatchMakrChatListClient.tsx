@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
-import { createClient } from '@/lib/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase/client';
 import FlameUnreadIcon from './FlameUnreadIcon';
 import { useRouter, usePathname } from 'next/navigation';
 import SectionHeader from '@/components/ui/SectionHeader';
@@ -59,20 +59,27 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
 
   const router = useRouter();
   const pathname = usePathname();
-  const supabase = createClient();
+  const supabase = getSupabaseClient();
   const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
+  const instanceIdRef = useRef<string>(`matchmakr-chatlist-${Math.random().toString(36).substr(2, 9)}`);
 
   // Optimized realtime subscription for new messages
   useEffect(() => {
     if (!openConversationId || !userId) return; // Guard against auth transitions
 
+    const channelName = `messages-${openConversationId}`;
+    const instanceId = instanceIdRef.current;
+    
+    console.log(`[REALTIME-DEBUG] ${instanceId} | MatchMakrChatListClient | SUBSCRIBE | channel: ${channelName}`);
+
     // Cleanup previous channel if exists (guard against double-subscribe)
     if (channelRef.current) {
+      console.log(`[REALTIME-DEBUG] ${instanceId} | MatchMakrChatListClient | CLEANUP-PREV | channel: ${channelName}`);
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
 
-    const channel = supabase.channel(`messages-${openConversationId}`)
+    const channel = supabase.channel(channelName)
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
@@ -86,22 +93,23 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
         }
       })
       .subscribe((status) => {
-        console.log('Subscription status:', status);
+        console.log(`[REALTIME-DEBUG] ${instanceId} | MatchMakrChatListClient | SUBSCRIBE-STATUS | channel: ${channelName} | status: ${status}`);
       });
     
     channelRef.current = channel;
 
     return () => {
       if (channelRef.current) {
+        console.log(`[REALTIME-DEBUG] ${instanceId} | MatchMakrChatListClient | CLEANUP | channel: ${channelName}`);
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
     };
-  }, [openConversationId, userId]); // Removed supabase from dependencies
+  }, [openConversationId, userId]); // supabase is singleton, stable
 
   // Helper to fetch single info by ID
   const fetchSingleById = async (singleId: string) => {
-    const supabase = createClient();
+    const supabase = getSupabaseClient();
     const { data } = await supabase
       .from('profiles')
       .select('id, name, photos')
@@ -200,7 +208,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           counts[conversationId] = msg.unreadCount;
         } else {
           // Only fetch from database if not available in conversation data
-          const supabase = createClient();
+          const supabase = getSupabaseClient();
           const { count } = await supabase
             .from('messages')
             .select('*', { count: 'exact', head: true })

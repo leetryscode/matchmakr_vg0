@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import ChatModal from '@/components/chat/ChatModal';
-import { createClient } from '@/lib/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase/client';
 import FlameUnreadIcon from './FlameUnreadIcon';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -36,10 +36,11 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
   const [sponsorMenuOpen, setSponsorMenuOpen] = useState(false);
   const [showEndSponsorshipModal, setShowEndSponsorshipModal] = useState(false);
   const [endingSponsorship, setEndingSponsorship] = useState(false);
-  const supabase = createClient();
+  const supabase = getSupabaseClient();
   const menuRefs = useRef<(HTMLDivElement | null)[]>([]);
   const sponsorMenuRef = useRef<HTMLDivElement | null>(null);
   const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
+  const instanceIdRef = useRef<string>(`single-dashboard-${Math.random().toString(36).substr(2, 9)}`);
   const router = useRouter();
 
   // Refactor fetchMatches to be callable
@@ -111,13 +112,19 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
   useEffect(() => {
     if (!userId) return;
     
+    const channelName = `matches-${userId}`;
+    const instanceId = instanceIdRef.current;
+    
+    console.log(`[REALTIME-DEBUG] ${instanceId} | SingleDashboardClient | SUBSCRIBE | channel: ${channelName}`);
+    
     // Cleanup previous channel if exists (guard against double-subscribe)
     if (channelRef.current) {
+      console.log(`[REALTIME-DEBUG] ${instanceId} | SingleDashboardClient | CLEANUP-PREV | channel: ${channelName}`);
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
     
-    const channel = supabase.channel(`matches-${userId}`)
+    const channel = supabase.channel(channelName)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'matches' }, payload => {
         const newMatch = payload.new;
         // Check if this match involves the current user and both matchmakrs have approved
@@ -136,17 +143,20 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
           fetchMatches();
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`[REALTIME-DEBUG] ${instanceId} | SingleDashboardClient | SUBSCRIBE-STATUS | channel: ${channelName} | status: ${status}`);
+      });
     
     channelRef.current = channel;
     
     return () => {
       if (channelRef.current) {
+        console.log(`[REALTIME-DEBUG] ${instanceId} | SingleDashboardClient | CLEANUP | channel: ${channelName}`);
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
     };
-  }, [userId]); // Removed supabase from dependencies
+  }, [userId]); // supabase is singleton, stable
 
   // Fetch sponsor chat info
   useEffect(() => {

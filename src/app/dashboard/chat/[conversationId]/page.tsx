@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase/client';
 import GroupedMessageList from '@/components/chat/GroupedMessageList';
 import RequireStandaloneGate from '@/components/pwa/RequireStandaloneGate';
 
@@ -21,8 +21,9 @@ export default function ChatPage() {
   const shouldAutoScrollRef = useRef<boolean>(true);
   const didInitialScrollRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const supabase = createClient();
+  const supabase = getSupabaseClient();
   const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
+  const instanceIdRef = useRef<string>(`chat-${conversationId}-${Math.random().toString(36).substr(2, 9)}`);
   
   // Match approval states
   const [matchStatus, setMatchStatus] = useState<'none' | 'pending' | 'matched' | 'can-approve'>('none');
@@ -36,13 +37,19 @@ export default function ChatPage() {
   useEffect(() => {
     if (!conversationId || !currentUserId) return; // Guard against auth transitions
     
+    const channelName = `messages-${conversationId}`;
+    const instanceId = instanceIdRef.current;
+    
+    console.log(`[REALTIME-DEBUG] ${instanceId} | ChatPage | SUBSCRIBE | channel: ${channelName}`);
+    
     // Cleanup previous channel if exists (guard against double-subscribe)
     if (channelRef.current) {
+      console.log(`[REALTIME-DEBUG] ${instanceId} | ChatPage | CLEANUP-PREV | channel: ${channelName}`);
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
     
-    const channel = supabase.channel(`messages-${conversationId}`)
+    const channel = supabase.channel(channelName)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
         const newMessage = payload.new;
         console.log('Realtime message received:', newMessage);
@@ -62,17 +69,20 @@ export default function ChatPage() {
           }
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`[REALTIME-DEBUG] ${instanceId} | ChatPage | SUBSCRIBE-STATUS | channel: ${channelName} | status: ${status}`);
+      });
     
     channelRef.current = channel;
     
     return () => {
       if (channelRef.current) {
+        console.log(`[REALTIME-DEBUG] ${instanceId} | ChatPage | CLEANUP | channel: ${channelName}`);
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
     };
-  }, [conversationId]); // Removed supabase from dependencies
+  }, [conversationId, currentUserId]); // supabase is singleton, stable
 
   // Fetch chat context and messages
   useEffect(() => {
@@ -99,7 +109,7 @@ export default function ChatPage() {
       setCurrentUserId(user?.id || null);
     };
     fetchUser();
-  }, [supabase]);
+  }, []);
 
   // Mark messages as read as soon as chat is opened
   useEffect(() => {
