@@ -62,6 +62,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const supabase = getSupabaseClient();
   const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
   const instanceIdRef = useRef<string>(`matchmakr-chatlist-${Math.random().toString(36).substr(2, 9)}`);
+  const menuRefs = useRef<Record<string, HTMLDivElement | null>>({}); // Refs for menu elements
 
   // Optimized realtime subscription for new messages
   useEffect(() => {
@@ -238,6 +239,26 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       fetchUnreadCounts(true);
     }
   }, [pathname, fetchUnreadCounts]);
+
+  // Close menu on outside click/touch
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (menuOpen !== null) {
+        const menuEl = menuRefs.current[menuOpen];
+        if (menuEl && !menuEl.contains(event.target as Node)) {
+          setMenuOpen(null);
+        }
+      }
+    }
+    if (menuOpen !== null) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [menuOpen]);
 
   // After closing chat modal, refresh unread counts
   useEffect(() => {
@@ -459,7 +480,10 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                       </svg>
                     </button>
                     {menuOpen === msg.conversation.id && (
-                      <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                      <div 
+                        ref={el => { menuRefs.current[msg.conversation.id] = el; }}
+                        className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
+                      >
                         <button
                           className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-t-lg"
                           onClick={e => { e.stopPropagation(); setConfirmDelete({otherId, profileName: profile?.name || 'this sponsor'}); setMenuOpen(null); }}
