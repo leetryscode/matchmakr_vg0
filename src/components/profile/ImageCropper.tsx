@@ -54,7 +54,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCl
 
   return (
     <div className="w-full">
-      <div className="relative w-full aspect-square bg-gray-900 rounded-xl overflow-hidden">
+      <div className="relative w-full aspect-square bg-black/10 rounded-xl overflow-hidden">
         <div className="absolute inset-0">
           <Cropper
             image={image}
@@ -76,23 +76,29 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCl
           )}
         </div>
       </div>
-      <div className="w-full mt-4">
-        <label htmlFor="zoom" className="block text-sm font-medium text-gray-700 mb-1">Zoom</label>
-        <input
-          id="zoom"
-          type="range"
-          min={1}
-          max={3}
-          step={0.1}
-          value={zoom}
-          onChange={(e) => {
-            const newZoom = Number((e.target as HTMLInputElement).value);
-            setZoom(newZoom);
-            bumpInteraction();
-          }}
-          className="w-full h-2.5 bg-gray-200 rounded-full appearance-none cursor-pointer"
-          style={{ accentColor: 'rgb(var(--primary-blue))' }}
-        />
+      <div className="w-full mt-6">
+        <div className="flex items-center gap-3">
+          <input
+            id="zoom"
+            type="range"
+            min={1}
+            max={3}
+            step={0.1}
+            value={zoom}
+            onChange={(e) => {
+              const newZoom = Number((e.target as HTMLInputElement).value);
+              setZoom(newZoom);
+              bumpInteraction();
+            }}
+            className="flex-1 h-1.5 bg-gray-200/70 rounded-full appearance-none cursor-pointer"
+            style={{ accentColor: 'rgba(var(--primary-blue), 0.6)' }}
+          />
+          {isInteracting && (
+            <span className="text-xs text-gray-400 tabular-nums min-w-[3ch] text-right">
+              {zoom.toFixed(1)}×
+            </span>
+          )}
+        </div>
       </div>
       <div className="mt-5 flex gap-3">
         <button
@@ -106,7 +112,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCl
           type="button"
           onClick={handleSave}
           disabled={!croppedAreaPixels}
-          className="flex-1 h-11 rounded-xl bg-primary-blue text-white hover:opacity-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 h-11 rounded-xl bg-primary-blue/90 text-white hover:bg-primary-blue transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Use photo
         </button>
