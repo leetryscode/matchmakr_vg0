@@ -710,16 +710,18 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
             />
             {/* Image Cropper Modal */}
             {imageToCrop && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-                    <div className="bg-white rounded-xl p-6 max-w-lg w-full shadow-xl relative">
-                        <ImageCropper
-                            image={imageToCrop}
-                            onCropComplete={onCropComplete}
-                            onClose={() => {
-                                setImageToCrop(null);
-                                setEditingPhotoUrl(null);
-                            }}
-                        />
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[2px] p-4">
+                    <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl ring-1 ring-black/10">
+                        <div className="p-5 sm:p-6">
+                            <ImageCropper
+                                image={imageToCrop}
+                                onCropComplete={onCropComplete}
+                                onClose={() => {
+                                    setImageToCrop(null);
+                                    setEditingPhotoUrl(null);
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
             )}
