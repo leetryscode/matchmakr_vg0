@@ -25,40 +25,79 @@ async function getCroppedImg(
   pixelCrop: Area
 ): Promise<Blob | null> {
   const image = await createImage(imageSrc);
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  
+  // Ensure pixelCrop values are safe integers (react-easy-crop may return floats)
+  const cropX = Math.max(0, Math.round(pixelCrop.x));
+  const cropY = Math.max(0, Math.round(pixelCrop.y));
+  const cropW = Math.max(1, Math.round(pixelCrop.width));
+  const cropH = Math.max(1, Math.round(pixelCrop.height));
+  
+  // Step 1: Create intermediate canvas for the cropped region
+  const cropCanvas = document.createElement('canvas');
+  const cropCtx = cropCanvas.getContext('2d');
 
-  if (!ctx) {
+  if (!cropCtx) {
     return null;
   }
 
-  // set canvas size to match the bounding box
-  canvas.width = image.width;
-  canvas.height = image.height;
+  // Set canvas size to match the crop dimensions
+  cropCanvas.width = cropW;
+  cropCanvas.height = cropH;
 
-  // draw rotated image
-  ctx.drawImage(image, 0, 0);
-
-  // croppedAreaPixels values are bounding box with respect to the source image
-  const data = ctx.getImageData(
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height
+  // Draw the cropped region from the source image
+  cropCtx.drawImage(
+    image,
+    cropX,
+    cropY,
+    cropW,
+    cropH,
+    0,
+    0,
+    cropW,
+    cropH
   );
 
-  // set canvas width to final desired crop size - this will clear existing context
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
+  // Step 2: Create destination canvas at fixed 1080x1080 resolution
+  const OUTPUT_SIZE = 1080;
+  const outputCanvas = document.createElement('canvas');
+  const outputCtx = outputCanvas.getContext('2d');
 
-  // paste generated rotate image with correct offsets
-  ctx.putImageData(data, 0, 0);
+  if (!outputCtx) {
+    return null;
+  }
 
-  // As a blob
+  outputCanvas.width = OUTPUT_SIZE;
+  outputCanvas.height = OUTPUT_SIZE;
+
+  // Enable high-quality image smoothing for better scaling
+  outputCtx.imageSmoothingEnabled = true;
+  outputCtx.imageSmoothingQuality = 'high';
+
+  // Step 3: Draw the cropped image scaled to 1080x1080 (maintains exact framing)
+  outputCtx.drawImage(
+    cropCanvas,
+    0,
+    0,
+    cropCanvas.width,
+    cropCanvas.height,
+    0,
+    0,
+    OUTPUT_SIZE,
+    OUTPUT_SIZE
+  );
+
+  // Step 4: Export as JPEG with quality 0.85
   return new Promise((resolve) => {
-    canvas.toBlob((file) => {
-      resolve(file);
-    }, 'image/jpeg');
+    outputCanvas.toBlob(
+      (file) => {
+        // Memory cleanup: help GC by clearing canvas dimensions
+        cropCanvas.width = cropCanvas.height = 0;
+        outputCanvas.width = outputCanvas.height = 0;
+        resolve(file);
+      },
+      'image/jpeg',
+      0.85
+    );
   });
 }
 
@@ -476,7 +515,6 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                                         e.preventDefault();
                                                         e.stopPropagation();
                                                         setActiveMenuPhotoUrl(item);
-                                                        setEditingPhotoUrl(item);
                                                     }}
                                                     type="button"
                                                 >
@@ -613,7 +651,6 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                                 e.preventDefault();
                                                 e.stopPropagation();
                                                 setActiveMenuPhotoUrl(displayItems[0] as string);
-                                                setEditingPhotoUrl(displayItems[0] as string);
                                             }}
                                             type="button"
                                         >
@@ -678,7 +715,10 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                         <ImageCropper
                             image={imageToCrop}
                             onCropComplete={onCropComplete}
-                            onClose={() => setImageToCrop(null)}
+                            onClose={() => {
+                                setImageToCrop(null);
+                                setEditingPhotoUrl(null);
+                            }}
                         />
                     </div>
                 </div>
