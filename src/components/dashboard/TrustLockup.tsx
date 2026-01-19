@@ -257,26 +257,16 @@ export default function TrustLockup({
         )}
       </div>
       
-      {/* Labels */}
-      <div className="flex items-center gap-6 mt-4">
-        {/* Primary label */}
+      {/* Single contextual label - only show if sponsor exists */}
+      {hasSponsor && secondaryName && (
         <button
-          onClick={() => router.push(`/profile/${primaryId}`)}
-          className="text-base underline text-white hover:text-accent-teal-light focus:outline-none transition-colors"
+          onClick={() => router.push(`/profile/${secondaryId}`)}
+          className="type-body text-white/70 hover:text-white/90 hover:underline focus:outline-none focus:underline transition-colors mt-4"
+          aria-label={`View ${secondaryName}'s profile`}
         >
-          My Profile
+          Introduced by {secondaryName}
         </button>
-        
-        {/* Secondary label (only if sponsor exists) */}
-        {hasSponsor && (
-          <button
-            onClick={() => router.push(`/profile/${secondaryId}`)}
-            className="text-base underline text-white/70 hover:text-white/90 focus:outline-none transition-colors"
-          >
-            My Sponsor
-          </button>
-        )}
-      </div>
+      )}
     </div>
   );
 }
