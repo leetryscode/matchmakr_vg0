@@ -7,9 +7,11 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import type { PairingsSignal } from '@/types/pairings';
 import { getPairingQualityById } from '@/lib/pairings';
+import PairingsModal from './PairingsModal';
 
 interface PairingsSectionProps {
   profileId: string;
@@ -47,29 +49,90 @@ export default function PairingsSection({
   pairingsSignal,
   canEdit = false,
 }: PairingsSectionProps) {
-  const signal = parsePairingsSignal(pairingsSignal);
+  const supabase = createClient();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [localSignal, setLocalSignal] = useState<PairingsSignal | null>(
+    () => parsePairingsSignal(pairingsSignal)
+  );
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const signal = localSignal;
   const isEmpty = !signal || (signal.quality_ids.length === 0 && !signal.custom_quality);
+
+  const handleAdd = () => {
+    setSaveError(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = () => {
+    setSaveError(null);
+    setIsModalOpen(true);
+  };
+
+  const handleClose = () => {
+    setIsModalOpen(false);
+    setSaveError(null);
+  };
+
+  const handleSaved = async (newSignal: PairingsSignal): Promise<void> => {
+    setSaveError(null);
+
+    // Save to Supabase
+    const { error } = await supabase
+      .from('profiles')
+      .update({ pairings_signal: newSignal })
+      .eq('id', profileId);
+
+    if (error) {
+      setSaveError(error.message);
+      // Don't close modal on error
+      throw new Error(error.message);
+    }
+
+    // Update local state immediately
+    setLocalSignal(newSignal);
+
+    // Clear pond cache (match existing pattern)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('pond_cache');
+    }
+
+    // Close modal on success
+    setIsModalOpen(false);
+  };
 
   // Empty state
   if (isEmpty) {
     return (
-      <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-white/70 text-sm font-semibold">Pairs well with…</h2>
-          {canEdit && (
-            <button
-              onClick={() => {
-                // Placeholder: will open modal in next step
-                console.log('Add pairings');
-              }}
-              className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
-              aria-label="Add pairings"
-            >
-              Add
-            </button>
+      <>
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-white/70 text-sm font-semibold">Pairs well with…</h2>
+            {canEdit && (
+              <button
+                onClick={handleAdd}
+                className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
+                aria-label="Add pairings"
+              >
+                Add
+              </button>
+            )}
+          </div>
+          {saveError && (
+            <p className="text-sm text-red-400 mt-2">{saveError}</p>
           )}
         </div>
-      </div>
+        {canEdit && (
+          <PairingsModal
+            isOpen={isModalOpen}
+            onClose={handleClose}
+            profileId={profileId}
+            initialSignal={null}
+            canEdit={canEdit}
+            onSaved={handleSaved}
+          />
+        )}
+      </>
     );
   }
 
@@ -79,39 +142,51 @@ export default function PairingsSection({
     .filter((q): q is NonNullable<typeof q> => q !== null);
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-white/90 font-semibold">Pairs well with</h2>
-        {canEdit && (
-          <button
-            onClick={() => {
-              // Placeholder: will open modal in next step
-              console.log('Edit pairings');
-            }}
-            className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
-            aria-label="Edit pairings"
-          >
-            Edit
-          </button>
+    <>
+      <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-white/90 font-semibold">Pairs well with</h2>
+          {canEdit && (
+            <button
+              onClick={handleEdit}
+              className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
+              aria-label="Edit pairings"
+            >
+              Edit
+            </button>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-2 justify-start">
+          {qualities.map((quality) => (
+            <span
+              key={quality.id}
+              className="bg-white/10 text-white px-3 py-1 rounded-full text-xs border border-white/10"
+            >
+              {quality.label}
+            </span>
+          ))}
+          {signal.custom_quality && (
+            <span className="bg-white/8 text-white px-3 py-1 rounded-full text-xs border border-white/20 relative">
+              {signal.custom_quality}
+              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-white/40 rounded-full" aria-hidden="true"></span>
+            </span>
+          )}
+        </div>
+        {saveError && (
+          <p className="text-sm text-red-400 mt-2">{saveError}</p>
         )}
       </div>
-      <div className="flex flex-wrap items-center gap-2 justify-start">
-        {qualities.map((quality) => (
-          <span
-            key={quality.id}
-            className="bg-white/10 text-white px-3 py-1 rounded-full text-xs border border-white/10"
-          >
-            {quality.label}
-          </span>
-        ))}
-        {signal.custom_quality && (
-          <span className="bg-white/8 text-white px-3 py-1 rounded-full text-xs border border-white/20 relative">
-            {signal.custom_quality}
-            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-white/40 rounded-full" aria-hidden="true"></span>
-          </span>
-        )}
-      </div>
-    </div>
+      {canEdit && (
+        <PairingsModal
+          isOpen={isModalOpen}
+          onClose={handleClose}
+          profileId={profileId}
+          initialSignal={signal}
+          canEdit={canEdit}
+          onSaved={handleSaved}
+        />
+      )}
+    </>
   );
 }
 

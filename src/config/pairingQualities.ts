@@ -45,6 +45,11 @@ export const PAIRING_QUALITIES = [
     label: 'High-energy and expressive',
     category: 'temperament' as const,
   },
+  {
+    id: 'curious_by_nature',
+    label: 'Curious by nature',
+    category: 'temperament' as const,
+  },
   // Values & orientation
   {
     id: 'comfortable_with_ambition',
@@ -82,6 +87,21 @@ export const PAIRING_QUALITIES = [
     label: 'Thrives on being active and on the move',
     category: 'lifestyle' as const,
   },
+  {
+    id: 'loves_spontaneity',
+    label: 'Loves spontaneity',
+    category: 'lifestyle' as const,
+  },
+  {
+    id: 'likes_a_full_calendar',
+    label: 'Likes a full calendar',
+    category: 'lifestyle' as const,
+  },
+  {
+    id: 'enjoys_getting_outdoors',
+    label: 'Enjoys getting outdoors',
+    category: 'lifestyle' as const,
+  },
   // Social style
   {
     id: 'enjoys_one_on_one',
@@ -91,6 +111,21 @@ export const PAIRING_QUALITIES = [
   {
     id: 'naturally_draws_people_together',
     label: 'Naturally draws people together',
+    category: 'social' as const,
+  },
+  {
+    id: 'energized_by_groups',
+    label: 'Energized by groups',
+    category: 'social' as const,
+  },
+  {
+    id: 'social_butterfly',
+    label: 'Social butterfly',
+    category: 'social' as const,
+  },
+  {
+    id: 'great_with_new_people',
+    label: 'Great with new people',
     category: 'social' as const,
   },
   // Communication & care
@@ -112,6 +147,11 @@ export const PAIRING_QUALITIES = [
   {
     id: 'expresses_care_through_actions',
     label: 'Expresses care through actions',
+    category: 'communication' as const,
+  },
+  {
+    id: 'expresses_care_through_words',
+    label: 'Expresses care through words',
     category: 'communication' as const,
   },
 ] as const satisfies readonly PairingQualityDefinition[];
