@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import PhotoGallery from './PhotoGallery';
 import EditProfileModal from './EditProfileModal';
 import EditProfileButton from './EditProfileButton';
+import IntroductionSignalSection from './IntroductionSignalSection';
 import Link from 'next/link';
 import { Profile } from './types';
 import InterestsInput from './InterestsInput';
@@ -378,6 +379,22 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 window.location.reload();
               }}
               canEditEndorsementOnly={true}
+            />
+          )}
+
+          {/* Introduction Signal Section - only for SINGLE profiles */}
+          {profile.user_type === 'SINGLE' && (
+            <IntroductionSignalSection
+              introductionSignal={profile.introduction_signal}
+              firstName={firstName}
+              onAdd={() => {
+                // Placeholder: will open modal in next step
+                console.log('Add introduction signal');
+              }}
+              onEdit={() => {
+                // Placeholder: will open modal in next step
+                console.log('Edit introduction signal');
+              }}
             />
           )}
 

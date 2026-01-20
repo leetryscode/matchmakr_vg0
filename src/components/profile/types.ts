@@ -19,6 +19,7 @@ export interface Profile {
     matchmakr_endorsement: string | null;
     street_address: string | null;
     address_line_2: string | null;
+    introduction_signal: any | null; // JSONB: IntroductionSignal
     created_at: string;
 }
 
