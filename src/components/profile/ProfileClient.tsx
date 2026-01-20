@@ -259,12 +259,11 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           {profile.user_type === 'SINGLE' && sponsors.length > 0 && (
             <>
               {sponsors.map((sponsor) => {
-                const sponsorFirstName = sponsor.name?.split(' ')[0] || 'Sponsor';
                 return (
                   <div key={sponsor.id}>
                     <div className="flex justify-between items-center mb-3">
                       <h2 className="text-white/90 font-semibold">
-                        {sponsorFirstName}'s note
+                        From {profile.name || 'this person'}'s sponsor
                       </h2>
                       {sponsor.isCurrentSponsor && (
                         <button
@@ -279,7 +278,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                     <div className="relative pt-2 pb-2 pl-4 pr-4">
                       <span
                         aria-hidden
-                        className="pointer-events-none select-none absolute left-0 top-0 text-white/20 text-3xl leading-none"
+                        className="pointer-events-none select-none absolute left-0 top-0 text-white/40 text-3xl leading-none"
                         style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
                       >
                         "
@@ -289,7 +288,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                       </p>
                       <span
                         aria-hidden
-                        className="pointer-events-none select-none absolute right-0 bottom-0 text-white/20 text-3xl leading-none"
+                        className="pointer-events-none select-none absolute right-0 bottom-0 text-white/40 text-3xl leading-none"
                         style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
                       >
                         "

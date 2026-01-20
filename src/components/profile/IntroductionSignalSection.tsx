@@ -121,26 +121,23 @@ export default function IntroductionSignalSection({
 
     return (
       <>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-white/90 font-semibold">Conversation hook</h2>
-            {canEdit && (
-              <button
-                onClick={handleAdd}
-                className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
-                aria-label="Add introduction signal"
-              >
-                Add
-              </button>
-            )}
-          </div>
-          <p className="text-white/60 text-xs leading-relaxed text-center">
+        <div className="flex items-start gap-3">
+          <p className="text-white/70 text-base font-medium leading-relaxed flex-1">
             {renderedPrompt}
           </p>
-          {saveError && (
-            <p className="text-sm text-red-400 mt-2">{saveError}</p>
+          {canEdit && (
+            <button
+              onClick={handleAdd}
+              className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors shrink-0"
+              aria-label="Add introduction signal"
+            >
+              Add
+            </button>
           )}
         </div>
+        {saveError && (
+          <p className="text-sm text-red-400 mt-2">{saveError}</p>
+        )}
         <IntroductionSignalModal
           isOpen={isModalOpen}
           initialSignal={null}
