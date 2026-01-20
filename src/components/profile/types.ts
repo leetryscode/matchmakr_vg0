@@ -20,6 +20,7 @@ export interface Profile {
     street_address: string | null;
     address_line_2: string | null;
     introduction_signal: any | null; // JSONB: IntroductionSignal
+    pairings_signal: any | null; // JSONB: PairingsSignal
     created_at: string;
 }
 

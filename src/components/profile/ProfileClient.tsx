@@ -4,6 +4,7 @@ import PhotoGallery from './PhotoGallery';
 import EditProfileModal from './EditProfileModal';
 import EditProfileButton from './EditProfileButton';
 import IntroductionSignalSection from './IntroductionSignalSection';
+import PairingsSection from './PairingsSection';
 import Link from 'next/link';
 import { Profile } from './types';
 import InterestsInput from './InterestsInput';
@@ -389,6 +390,15 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
               firstName={firstName}
               profileId={profile.id}
               profileName={profile.name}
+              canEdit={canEditProfile}
+            />
+          )}
+
+          {/* Pairings Section - only for SINGLE profiles */}
+          {profile.user_type === 'SINGLE' && (
+            <PairingsSection
+              profileId={profile.id}
+              pairingsSignal={profile.pairings_signal}
               canEdit={canEditProfile}
             />
           )}
