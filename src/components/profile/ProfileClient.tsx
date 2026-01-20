@@ -11,7 +11,6 @@ import InviteSingleModal from '../dashboard/InviteSingleModal';
 import EndSponsorshipModal from '../dashboard/EndSponsorshipModal';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { PencilIcon } from '@heroicons/react/24/solid';
 import { createClient } from '@/lib/supabase/client';
 
 // Types for sponsored singles and matchmakr
@@ -326,27 +325,46 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           {/* Endorsement Block - only for SINGLE profiles with sponsors */}
           {profile.user_type === 'SINGLE' && sponsors.length > 0 && (
             <>
-              {sponsors.map((sponsor) => (
-                <div key={sponsor.id}>
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                    <div className="flex justify-between items-center">
+              {sponsors.map((sponsor) => {
+                const sponsorFirstName = sponsor.name?.split(' ')[0] || 'Sponsor';
+                return (
+                  <div key={sponsor.id}>
+                    <div className="flex justify-between items-center mb-3">
                       <h2 className="text-white/90 font-semibold">
-                        Why {sponsor.name || 'their sponsor'} recommends {firstName || profile.name || 'them'}
+                        {sponsorFirstName}'s note
                       </h2>
                       {sponsor.isCurrentSponsor && (
                         <button
                           onClick={() => setIsEndorsementEditOpen(true)}
-                          className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white/90 transition-colors"
+                          className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
                           aria-label="Edit endorsement"
                         >
-                          <PencilIcon className="w-4 h-4" />
+                          Edit
                         </button>
                       )}
                     </div>
-                    <p className="mt-2 text-white/70 text-sm leading-relaxed">{sponsor.endorsement || 'This is where your sponsor writes about you...'}</p>
+                    <div className="relative pt-2 pb-2 pl-4 pr-4">
+                      <span
+                        aria-hidden
+                        className="pointer-events-none select-none absolute left-0 top-0 text-white/20 text-3xl leading-none"
+                        style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
+                      >
+                        "
+                      </span>
+                      <p className={sponsor.endorsement ? "text-white/70 text-sm leading-relaxed" : "text-white/50 text-sm leading-relaxed"}>
+                        {sponsor.endorsement || 'This is where your sponsor writes about you...'}
+                      </p>
+                      <span
+                        aria-hidden
+                        className="pointer-events-none select-none absolute right-0 bottom-0 text-white/20 text-3xl leading-none"
+                        style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
+                      >
+                        "
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </>
           )}
 
