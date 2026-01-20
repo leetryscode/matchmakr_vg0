@@ -121,7 +121,7 @@ export default function IntroductionSignalSection({
 
     return (
       <>
-        <div>
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-white/90 font-semibold">Conversation hook</h2>
             {canEdit && (
@@ -134,35 +134,13 @@ export default function IntroductionSignalSection({
               </button>
             )}
           </div>
-        <div className="relative pt-2 pb-2 pl-4 pr-4">
-          <span
-            aria-hidden
-            className="pointer-events-none select-none absolute left-0 top-0 text-white/20 text-3xl leading-none"
-            style={{
-              fontFamily:
-                'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
-            }}
-          >
-            "
-          </span>
-          <p className="text-white/50 text-sm leading-relaxed">
+          <p className="text-white/60 text-xs leading-relaxed text-center">
             {renderedPrompt}
           </p>
-          <span
-            aria-hidden
-            className="pointer-events-none select-none absolute right-0 bottom-0 text-white/20 text-3xl leading-none"
-            style={{
-              fontFamily:
-                'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
-            }}
-          >
-            "
-          </span>
+          {saveError && (
+            <p className="text-sm text-red-400 mt-2">{saveError}</p>
+          )}
         </div>
-        {saveError && (
-          <p className="text-sm text-red-400 mt-2">{saveError}</p>
-        )}
-      </div>
         <IntroductionSignalModal
           isOpen={isModalOpen}
           initialSignal={null}
@@ -182,9 +160,8 @@ export default function IntroductionSignalSection({
 
   return (
     <>
-      <div>
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-white/90 font-semibold">Conversation hook</h2>
+      <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+        <div className="flex justify-end items-start mb-2">
           {canEdit && (
             <button
               onClick={handleEdit}
@@ -195,33 +172,11 @@ export default function IntroductionSignalSection({
             </button>
           )}
         </div>
-      <div className="relative pt-2 pb-2 pl-4 pr-4">
-        <span
-          aria-hidden
-          className="pointer-events-none select-none absolute left-0 top-0 text-white/20 text-3xl leading-none"
-          style={{
-            fontFamily:
-              'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
-          }}
-        >
-          "
-        </span>
-        <p className="text-white/70 text-sm leading-relaxed">
+        <p className="text-white/70 text-sm leading-relaxed text-center">
           {beforeResponse}
-          <span className="text-white/90 font-medium">{signal.response}</span>
+          <span className="text-white/85 font-medium">{signal.response}</span>
           {afterResponse}
         </p>
-        <span
-          aria-hidden
-          className="pointer-events-none select-none absolute right-0 bottom-0 text-white/20 text-3xl leading-none"
-          style={{
-            fontFamily:
-              'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
-          }}
-        >
-          "
-        </span>
-        </div>
         {saveError && (
           <p className="text-sm text-red-400 mt-2">{saveError}</p>
         )}
