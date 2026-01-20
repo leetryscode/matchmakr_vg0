@@ -235,20 +235,41 @@ export default function PairingsModal({
           {/* Custom quality option */}
           <div className="mt-2">
             {!showCustomInput ? (
-              <button
-                onClick={handleToggleCustomInput}
-                disabled={isMaxReached || saving}
-                className={`
-                  px-3 py-1 rounded-full text-[13px] leading-snug border transition-all
-                  ${isMaxReached
-                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                    : 'bg-white/50 text-gray-500 border-gray-200/50 hover:border-gray-300 hover:bg-white/70 hover:text-gray-600'
-                  }
-                  ${saving ? 'opacity-50 cursor-not-allowed' : ''}
-                `}
-              >
-                + Add your own…
-              </button>
+              <>
+                {/* Show custom quality as a removable pill if it exists */}
+                {customQuality.trim() ? (
+                  <button
+                    onClick={() => {
+                      setCustomQuality('');
+                      setError(null);
+                    }}
+                    disabled={saving}
+                    className={`
+                      px-3 py-1 rounded-full text-[13px] leading-snug border transition-all
+                      bg-primary-blue/90 text-white border-primary-blue
+                      hover:bg-primary-blue/80
+                      ${saving ? 'opacity-50 cursor-not-allowed' : ''}
+                    `}
+                  >
+                    {customQuality.trim()}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleToggleCustomInput}
+                    disabled={isMaxReached || saving}
+                    className={`
+                      px-3 py-1 rounded-full text-[13px] leading-snug border transition-all
+                      ${isMaxReached
+                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                        : 'bg-white/50 text-gray-500 border-gray-200/50 hover:border-gray-300 hover:bg-white/70 hover:text-gray-600'
+                      }
+                      ${saving ? 'opacity-50 cursor-not-allowed' : ''}
+                    `}
+                  >
+                    + Add your own…
+                  </button>
+                )}
+              </>
             ) : (
               <div className="space-y-2">
                 <input
@@ -260,6 +281,10 @@ export default function PairingsModal({
                     const trimmed = customQuality.trim();
                     if (trimmed !== customQuality) {
                       setCustomQuality(trimmed);
+                    }
+                    // Auto-hide input if empty
+                    if (!trimmed) {
+                      setShowCustomInput(false);
                     }
                   }}
                   placeholder="Enter a custom quality..."
@@ -277,7 +302,7 @@ export default function PairingsModal({
                       disabled={saving}
                       className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50"
                     >
-                      Remove
+                      Cancel
                     </button>
                     <p
                       className={`text-xs ${

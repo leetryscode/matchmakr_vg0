@@ -166,9 +166,8 @@ export default function PairingsSection({
             </span>
           ))}
           {signal.custom_quality && (
-            <span className="bg-white/8 text-white px-3 py-1 rounded-full text-xs border border-white/20 relative">
+            <span className="bg-white/8 text-white px-3 py-1 rounded-full text-xs border border-white/20">
               {signal.custom_quality}
-              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-white/40 rounded-full" aria-hidden="true"></span>
             </span>
           )}
         </div>
