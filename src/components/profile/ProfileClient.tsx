@@ -387,14 +387,9 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
             <IntroductionSignalSection
               introductionSignal={profile.introduction_signal}
               firstName={firstName}
-              onAdd={() => {
-                // Placeholder: will open modal in next step
-                console.log('Add introduction signal');
-              }}
-              onEdit={() => {
-                // Placeholder: will open modal in next step
-                console.log('Edit introduction signal');
-              }}
+              profileId={profile.id}
+              profileName={profile.name}
+              canEdit={canEditProfile}
             />
           )}
 

@@ -7,18 +7,21 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import type { IntroductionSignal } from '@/types/introductionSignal';
 import {
   getDefaultIntroductionPrompt,
   renderIntroductionPrompt,
 } from '@/lib/introductionSignal';
+import IntroductionSignalModal from './IntroductionSignalModal';
 
 interface IntroductionSignalSectionProps {
   introductionSignal: any | null; // JSONB from database
   firstName: string;
-  onAdd?: () => void;
-  onEdit?: () => void;
+  profileId: string;
+  profileName: string | null;
+  canEdit?: boolean;
 }
 
 /**
@@ -51,13 +54,63 @@ function parseIntroductionSignal(
 export default function IntroductionSignalSection({
   introductionSignal,
   firstName,
-  onAdd,
-  onEdit,
+  profileId,
+  profileName,
+  canEdit = false,
 }: IntroductionSignalSectionProps) {
-  const signal = parseIntroductionSignal(introductionSignal);
+  const supabase = createClient();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [localSignal, setLocalSignal] = useState<IntroductionSignal | null>(
+    () => parseIntroductionSignal(introductionSignal)
+  );
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const signal = localSignal;
   const isEmpty = !signal;
   const defaultPrompt = getDefaultIntroductionPrompt();
   const displayName = firstName || 'This person';
+
+  const handleAdd = () => {
+    setSaveError(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = () => {
+    setSaveError(null);
+    setIsModalOpen(true);
+  };
+
+  const handleClose = () => {
+    setIsModalOpen(false);
+    setSaveError(null);
+  };
+
+  const handleSaved = async (newSignal: IntroductionSignal): Promise<void> => {
+    setSaveError(null);
+
+    // Save to Supabase
+    const { error } = await supabase
+      .from('profiles')
+      .update({ introduction_signal: newSignal })
+      .eq('id', profileId);
+
+    if (error) {
+      setSaveError(error.message);
+      // Don't close modal on error
+      throw new Error(error.message);
+    }
+
+    // Update local state immediately
+    setLocalSignal(newSignal);
+
+    // Clear pond cache (match existing pattern)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('pond_cache');
+    }
+
+    // Close modal on success
+    setIsModalOpen(false);
+  };
 
   // Empty state
   if (isEmpty) {
@@ -67,19 +120,20 @@ export default function IntroductionSignalSection({
     );
 
     return (
-      <div>
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-white/90 font-semibold">Conversation hook</h2>
-          {onAdd && (
-            <button
-              onClick={onAdd}
-              className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
-              aria-label="Add introduction signal"
-            >
-              Add
-            </button>
-          )}
-        </div>
+      <>
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-white/90 font-semibold">Conversation hook</h2>
+            {canEdit && (
+              <button
+                onClick={handleAdd}
+                className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
+                aria-label="Add introduction signal"
+              >
+                Add
+              </button>
+            )}
+          </div>
         <div className="relative pt-2 pb-2 pl-4 pr-4">
           <span
             aria-hidden
@@ -105,7 +159,18 @@ export default function IntroductionSignalSection({
             "
           </span>
         </div>
+        {saveError && (
+          <p className="text-sm text-red-400 mt-2">{saveError}</p>
+        )}
       </div>
+        <IntroductionSignalModal
+          isOpen={isModalOpen}
+          initialSignal={null}
+          profileName={profileName}
+          onClose={handleClose}
+          onSaved={handleSaved}
+        />
+      </>
     );
   }
 
@@ -116,19 +181,20 @@ export default function IntroductionSignalSection({
   const afterResponse = parts[1] || '';
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-white/90 font-semibold">Conversation hook</h2>
-        {onEdit && (
-          <button
-            onClick={onEdit}
-            className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
-            aria-label="Edit introduction signal"
-          >
-            Edit
-          </button>
-        )}
-      </div>
+    <>
+      <div>
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-white/90 font-semibold">Conversation hook</h2>
+          {canEdit && (
+            <button
+              onClick={handleEdit}
+              className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
+              aria-label="Edit introduction signal"
+            >
+              Edit
+            </button>
+          )}
+        </div>
       <div className="relative pt-2 pb-2 pl-4 pr-4">
         <span
           aria-hidden
@@ -155,8 +221,19 @@ export default function IntroductionSignalSection({
         >
           "
         </span>
+        </div>
+        {saveError && (
+          <p className="text-sm text-red-400 mt-2">{saveError}</p>
+        )}
       </div>
-    </div>
+      <IntroductionSignalModal
+        isOpen={isModalOpen}
+        initialSignal={signal}
+        profileName={profileName}
+        onClose={handleClose}
+        onSaved={handleSaved}
+      />
+    </>
   );
 }
 
