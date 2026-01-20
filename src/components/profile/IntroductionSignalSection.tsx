@@ -160,27 +160,25 @@ export default function IntroductionSignalSection({
 
   return (
     <>
-      <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-        <div className="flex justify-end items-start mb-2">
-          {canEdit && (
-            <button
-              onClick={handleEdit}
-              className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
-              aria-label="Edit introduction signal"
-            >
-              Edit
-            </button>
-          )}
-        </div>
-        <p className="text-white/70 text-sm leading-relaxed text-center">
+      <div className="flex justify-between items-start">
+        <p className="text-white/70 text-sm leading-relaxed flex-1">
           {beforeResponse}
           <span className="text-white/85 font-medium">{signal.response}</span>
           {afterResponse}
         </p>
-        {saveError && (
-          <p className="text-sm text-red-400 mt-2">{saveError}</p>
+        {canEdit && (
+          <button
+            onClick={handleEdit}
+            className="ml-3 px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors shrink-0"
+            aria-label="Edit introduction signal"
+          >
+            Edit
+          </button>
         )}
       </div>
+      {saveError && (
+        <p className="text-sm text-red-400 mt-2">{saveError}</p>
+      )}
       <IntroductionSignalModal
         isOpen={isModalOpen}
         initialSignal={signal}

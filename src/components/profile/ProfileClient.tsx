@@ -255,10 +255,89 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
             </div>
           )}
 
+          {/* Sponsor Note - only for SINGLE profiles with sponsors */}
+          {profile.user_type === 'SINGLE' && sponsors.length > 0 && (
+            <>
+              {sponsors.map((sponsor) => {
+                const sponsorFirstName = sponsor.name?.split(' ')[0] || 'Sponsor';
+                return (
+                  <div key={sponsor.id}>
+                    <div className="flex justify-between items-center mb-3">
+                      <h2 className="text-white/90 font-semibold">
+                        {sponsorFirstName}'s note
+                      </h2>
+                      {sponsor.isCurrentSponsor && (
+                        <button
+                          onClick={() => setIsEndorsementEditOpen(true)}
+                          className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
+                          aria-label="Edit endorsement"
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative pt-2 pb-2 pl-4 pr-4">
+                      <span
+                        aria-hidden
+                        className="pointer-events-none select-none absolute left-0 top-0 text-white/20 text-3xl leading-none"
+                        style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
+                      >
+                        "
+                      </span>
+                      <p className={sponsor.endorsement ? "text-white/70 text-sm leading-relaxed" : "text-white/50 text-sm leading-relaxed"}>
+                        {sponsor.endorsement || 'This is where your sponsor writes about you...'}
+                      </p>
+                      <span
+                        aria-hidden
+                        className="pointer-events-none select-none absolute right-0 bottom-0 text-white/20 text-3xl leading-none"
+                        style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
+                      >
+                        "
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+
+          {/* Endorsement Edit Modal */}
+          {isEndorsementEditOpen && (
+            <EditProfileModal
+              profile={profile}
+              onClose={() => setIsEndorsementEditOpen(false)}
+              onSave={() => {
+                setIsEndorsementEditOpen(false);
+                window.location.reload();
+              }}
+              canEditEndorsementOnly={true}
+            />
+          )}
+
+          {/* Pairings Section - only for SINGLE profiles */}
+          {profile.user_type === 'SINGLE' && (
+            <PairingsSection
+              profileId={profile.id}
+              pairingsSignal={profile.pairings_signal}
+              canEdit={canEditProfile}
+            />
+          )}
+
+          {/* Introduction Signal Section - only for SINGLE profiles */}
+          {profile.user_type === 'SINGLE' && (
+            <IntroductionSignalSection
+              introductionSignal={profile.introduction_signal}
+              firstName={firstName}
+              profileId={profile.id}
+              profileName={profile.name}
+              canEdit={canEditProfile}
+            />
+          )}
+
           {/* Interests Block */}
           {profile.user_type === 'SINGLE' && (
             <div>
-              <div className="text-white/70 text-sm font-semibold tracking-wide mb-2">Interests and <span className="italic">vibe</span></div>
+              <div className="text-white/70 text-sm font-semibold tracking-wide mb-2">Interests</div>
               <div className="flex flex-wrap items-center gap-2">
                 {/* Interest chips - hide when input is open to avoid duplication */}
                 {!showInterestsInput && interests.slice(0, 6).map(interest => (
@@ -322,85 +401,6 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 </div>
               )}
             </div>
-          )}
-
-          {/* Endorsement Block - only for SINGLE profiles with sponsors */}
-          {profile.user_type === 'SINGLE' && sponsors.length > 0 && (
-            <>
-              {sponsors.map((sponsor) => {
-                const sponsorFirstName = sponsor.name?.split(' ')[0] || 'Sponsor';
-                return (
-                  <div key={sponsor.id}>
-                    <div className="flex justify-between items-center mb-3">
-                      <h2 className="text-white/90 font-semibold">
-                        {sponsorFirstName}'s note
-                      </h2>
-                      {sponsor.isCurrentSponsor && (
-                        <button
-                          onClick={() => setIsEndorsementEditOpen(true)}
-                          className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
-                          aria-label="Edit endorsement"
-                        >
-                          Edit
-                        </button>
-                      )}
-                    </div>
-                    <div className="relative pt-2 pb-2 pl-4 pr-4">
-                      <span
-                        aria-hidden
-                        className="pointer-events-none select-none absolute left-0 top-0 text-white/20 text-3xl leading-none"
-                        style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
-                      >
-                        "
-                      </span>
-                      <p className={sponsor.endorsement ? "text-white/70 text-sm leading-relaxed" : "text-white/50 text-sm leading-relaxed"}>
-                        {sponsor.endorsement || 'This is where your sponsor writes about you...'}
-                      </p>
-                      <span
-                        aria-hidden
-                        className="pointer-events-none select-none absolute right-0 bottom-0 text-white/20 text-3xl leading-none"
-                        style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
-                      >
-                        "
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </>
-          )}
-
-          {/* Endorsement Edit Modal */}
-          {isEndorsementEditOpen && (
-            <EditProfileModal
-              profile={profile}
-              onClose={() => setIsEndorsementEditOpen(false)}
-              onSave={() => {
-                setIsEndorsementEditOpen(false);
-                window.location.reload();
-              }}
-              canEditEndorsementOnly={true}
-            />
-          )}
-
-          {/* Introduction Signal Section - only for SINGLE profiles */}
-          {profile.user_type === 'SINGLE' && (
-            <IntroductionSignalSection
-              introductionSignal={profile.introduction_signal}
-              firstName={firstName}
-              profileId={profile.id}
-              profileName={profile.name}
-              canEdit={canEditProfile}
-            />
-          )}
-
-          {/* Pairings Section - only for SINGLE profiles */}
-          {profile.user_type === 'SINGLE' && (
-            <PairingsSection
-              profileId={profile.id}
-              pairingsSignal={profile.pairings_signal}
-              canEdit={canEditProfile}
-            />
           )}
 
           {/* Sponsored Singles Section - only for MATCHMAKR profiles */}
