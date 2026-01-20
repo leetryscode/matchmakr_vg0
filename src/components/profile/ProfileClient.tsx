@@ -262,13 +262,13 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 return (
                   <div key={sponsor.id}>
                     <div className="flex justify-between items-center mb-3">
-                      <h2 className="text-white/90 font-semibold">
+                      <h2 className="text-white/90 text-base font-semibold">
                         From {profile.name || 'this person'}'s sponsor
                       </h2>
                       {sponsor.isCurrentSponsor && (
                         <button
                           onClick={() => setIsEndorsementEditOpen(true)}
-                          className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
+                          className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-sm font-medium transition-colors"
                           aria-label="Edit endorsement"
                         >
                           Edit
@@ -283,7 +283,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                       >
                         "
                       </span>
-                      <p className={sponsor.endorsement ? "text-white/70 text-sm leading-relaxed" : "text-white/50 text-sm leading-relaxed"}>
+                      <p className={sponsor.endorsement ? "text-white/70 text-base font-normal leading-relaxed" : "text-white/50 text-base font-normal leading-relaxed"}>
                         {sponsor.endorsement || 'This is where your sponsor writes about you...'}
                       </p>
                       <span
@@ -336,11 +336,11 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           {/* Interests Block */}
           {profile.user_type === 'SINGLE' && (
             <div>
-              <div className="text-white/70 text-sm font-semibold tracking-wide mb-2">Interests</div>
+              <div className="text-white/70 text-base font-semibold mb-2">Interests</div>
               <div className="flex flex-wrap items-center gap-2">
                 {/* Interest chips - hide when input is open to avoid duplication */}
                 {!showInterestsInput && interests.slice(0, 6).map(interest => (
-                  <span key={interest.id} className="bg-white/10 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1 border border-white/10">
+                  <span key={interest.id} className="bg-white/10 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 border border-white/10">
                     {interest.name}
                     {canEditProfile && (
                       <button
@@ -481,8 +481,8 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
               {isSponsorViewing && (
                 <div className="border-t border-white/10 mt-6">
                   <div className="px-4 py-4">
-                    <div className="text-white/90 font-semibold mb-1">Sponsor tools</div>
-                    <div className="text-white/60 text-xs mb-3">Only you can see these actions.</div>
+                    <div className="text-white/90 text-base font-semibold mb-1">Sponsor tools</div>
+                    <div className="text-white/70 text-xs font-medium opacity-70 mb-3">Only you can see these actions.</div>
                     <div className="mt-3 rounded-xl border border-white/10 bg-white/5">
                       {/* Edit profile row */}
                       <button

@@ -122,13 +122,13 @@ export default function IntroductionSignalSection({
     return (
       <>
         <div className="flex items-start gap-3">
-          <p className="text-white/70 text-base font-medium leading-relaxed flex-1">
+          <p className="text-white/70 text-base font-normal leading-relaxed flex-1">
             {renderedPrompt}
           </p>
           {canEdit && (
             <button
               onClick={handleAdd}
-              className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors shrink-0"
+              className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-sm font-medium transition-colors shrink-0"
               aria-label="Add introduction signal"
             >
               Add
@@ -158,7 +158,7 @@ export default function IntroductionSignalSection({
   return (
     <>
       <div className="flex justify-between items-start">
-        <p className="text-white/70 text-sm leading-relaxed flex-1">
+        <p className="text-white/70 text-base font-normal leading-snug flex-1">
           {beforeResponse}
           <span className="text-white/85 font-medium">{signal.response}</span>
           {afterResponse}
@@ -166,7 +166,7 @@ export default function IntroductionSignalSection({
         {canEdit && (
           <button
             onClick={handleEdit}
-            className="ml-3 px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors shrink-0"
+            className="ml-3 px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-sm font-medium transition-colors shrink-0"
             aria-label="Edit introduction signal"
           >
             Edit
