@@ -1,0 +1,135 @@
+'use client';
+
+import React, { useState } from 'react';
+import { SingleStatus, getSingleFacingStatusLabel, getSingleFacingStatusExplanation, getStatusStyles } from '@/lib/status/singleStatus';
+import { createClient } from '@/lib/supabase/client';
+
+interface AvailabilitySectionProps {
+  status: SingleStatus;
+  userId: string;
+  onStatusChange?: () => void;
+}
+
+const AvailabilitySection: React.FC<AvailabilitySectionProps> = ({ status, userId, onStatusChange }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState<SingleStatus>(status);
+  const supabase = createClient();
+
+  // Update local status when prop changes (e.g., after refetch)
+  React.useEffect(() => {
+    setCurrentStatus(status);
+  }, [status]);
+
+  const handleTogglePause = async () => {
+    setIsUpdating(true);
+    try {
+      if (currentStatus === 'PAUSED') {
+        // Resume: set paused_at to null
+        // Only update paused_at - do not touch other fields
+        const { error } = await supabase
+          .from('profiles')
+          .update({ paused_at: null })
+          .eq('id', userId)
+          .select('paused_at')
+          .single();
+        
+        if (error) throw error;
+        
+        // Optimistically update local state
+        setCurrentStatus('NEEDS_INTRODUCTION'); // Will be recalculated on next render, but this prevents flicker
+      } else {
+        // Pause: set paused_at to now
+        // Only update paused_at - do not touch other fields
+        const { error } = await supabase
+          .from('profiles')
+          .update({ paused_at: new Date().toISOString() })
+          .eq('id', userId)
+          .select('paused_at')
+          .single();
+        
+        if (error) throw error;
+        
+        // Optimistically update local state
+        setCurrentStatus('PAUSED');
+      }
+      
+      // Refresh the page to show updated status (ensures all data is fresh)
+      if (onStatusChange) {
+        onStatusChange();
+      } else {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error updating availability:', error);
+      alert('Failed to update availability. Please try again.');
+      // Revert optimistic update on error
+      setCurrentStatus(status);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return (
+    <div className="bg-white/5 rounded-card-lg border border-white/10 p-4">
+      {/* Always visible: Status pill and explanation */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1">
+          {/* Status pill */}
+          <div className="mb-2">
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium border uppercase tracking-wide ${getStatusStyles(currentStatus)}`}>
+              {getSingleFacingStatusLabel(currentStatus)}
+            </span>
+          </div>
+          {/* Explanation */}
+          <p className="text-sm text-white/70">
+            {getSingleFacingStatusExplanation(currentStatus)}
+          </p>
+        </div>
+        
+        {/* Expand/collapse chevron */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex-shrink-0 ml-4 p-1 text-white/60 hover:text-white/90 transition-colors"
+          aria-label={isExpanded ? 'Collapse' : 'Expand'}
+        >
+          <svg
+            width="20"
+            height="20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            viewBox="0 0 24 24"
+            className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+          >
+            <polyline points="6,9 12,15 18,9" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Expanded content */}
+      {isExpanded && (
+        <div className="mt-4 pt-4 border-t border-white/10">
+          <p className="text-xs text-white/60 mb-3">
+            Only you and your sponsor can see this status.
+          </p>
+          <p className="text-xs text-white/60 mb-4">
+            This helps communicate your availability to your sponsor.
+          </p>
+          <button
+            onClick={handleTogglePause}
+            disabled={isUpdating}
+            className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white/90 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isUpdating ? 'Updating...' : currentStatus === 'PAUSED' ? 'Resume introductions' : 'Pause introductions'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AvailabilitySection;
+

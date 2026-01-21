@@ -18,7 +18,7 @@ async function SingleDashboardContent() {
         redirect('/login');
     }
 
-    // Fetch the user's full profile including sponsored_by_id
+    // Fetch the user's full profile including status-related fields
     const { data: profile } = await supabase
         .from('profiles')
         .select('*')
@@ -48,6 +48,22 @@ async function SingleDashboardContent() {
     
     const firstName = profile.name?.split(' ')[0] || null;
 
+    // Fetch approved match count for status computation
+    let approvedMatchCount = 0;
+    const { data: matchesAsA } = await supabase
+        .from('matches')
+        .select('id')
+        .not('approved_at', 'is', null)
+        .eq('single_a_id', user.id);
+    
+    const { data: matchesAsB } = await supabase
+        .from('matches')
+        .select('id')
+        .not('approved_at', 'is', null)
+        .eq('single_b_id', user.id);
+    
+    approvedMatchCount = (matchesAsA?.length || 0) + (matchesAsB?.length || 0);
+
     return (
         <DashboardLayout firstName={firstName} userId={user.id} userType="SINGLE">
             <SingleDashboardClient
@@ -56,6 +72,11 @@ async function SingleDashboardContent() {
                 userProfilePic={profile.photos && profile.photos.length > 0 ? profile.photos[0] : null}
                 sponsor={sponsor}
                 userPhotos={profile.photos || []}
+                pausedAt={profile.paused_at}
+                onboardedAt={profile.onboarded_at}
+                photos={profile.photos}
+                matchmakrEndorsement={profile.matchmakr_endorsement}
+                approvedMatchCount={approvedMatchCount}
             />
         </DashboardLayout>
     );

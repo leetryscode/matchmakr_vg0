@@ -106,7 +106,7 @@ async function MatchMakrDashboardContent() {
     // Include fields needed for status computation
     const { data: sponsoredSingles } = await supabase
         .from('profiles')
-        .select('id, name, photos, created_at, onboarded_at, matchmakr_endorsement, sponsor_label')
+        .select('id, name, photos, created_at, onboarded_at, matchmakr_endorsement, sponsor_label, paused_at')
         .eq('sponsored_by_id', user.id)
         .eq('user_type', 'SINGLE')
         .order('created_at', { ascending: true });
@@ -162,6 +162,7 @@ async function MatchMakrDashboardContent() {
     const processedSponsoredSingles = sponsoredSingles?.map(single => {
         const approvedMatchCount = approvedMatchCounts[single.id] || 0;
         const status = computeSingleStatus({
+            paused_at: single.paused_at,
             onboarded_at: single.onboarded_at,
             photos: single.photos,
             matchmakr_endorsement: single.matchmakr_endorsement,

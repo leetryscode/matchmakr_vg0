@@ -14,6 +14,8 @@ import GlassCard from '@/components/ui/GlassCard';
 import PrimaryCTA from '@/components/ui/PrimaryCTA';
 import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
 import TrustLockup from '@/components/dashboard/TrustLockup';
+import AvailabilitySection from '@/components/dashboard/AvailabilitySection';
+import { computeSingleStatus, SingleStatus } from '@/lib/status/singleStatus';
 
 interface SingleDashboardClientProps {
   userId: string;
@@ -21,9 +23,37 @@ interface SingleDashboardClientProps {
   userProfilePic: string | null;
   sponsor: { id: string; name: string | null; profile_pic_url: string | null } | null;
   userPhotos: string[];
+  pausedAt: string | null;
+  onboardedAt: string | null;
+  photos: (string | null)[] | null;
+  matchmakrEndorsement: string | null;
+  approvedMatchCount: number;
 }
 
-const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, userName, userProfilePic, sponsor, userPhotos }) => {
+const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ 
+  userId, 
+  userName, 
+  userProfilePic, 
+  sponsor, 
+  userPhotos,
+  pausedAt,
+  onboardedAt,
+  photos,
+  matchmakrEndorsement,
+  approvedMatchCount
+}) => {
+  // Compute status for availability section
+  const computedStatus = computeSingleStatus({
+    paused_at: pausedAt,
+    onboarded_at: onboardedAt,
+    photos: photos,
+    matchmakr_endorsement: matchmakrEndorsement,
+    approved_match_count: approvedMatchCount
+  });
+  
+  // Never show INVITED to singles - convert to NEEDS_ATTENTION
+  // (un-onboarded users need to complete setup, not see "Available")
+  const displayStatus: SingleStatus = computedStatus === 'INVITED' ? 'NEEDS_ATTENTION' : computedStatus;
   const [openChat, setOpenChat] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [singleChats, setSingleChats] = useState<any[]>([]);
@@ -502,6 +532,15 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ userId, u
         
         {/* Preview cards section - only renders when there are previews */}
         <PreviewCardsSection userId={userId} />
+        
+        {/* Availability section - at the very bottom */}
+        <div>
+          <SectionHeader title="Availability" />
+          <AvailabilitySection 
+            status={displayStatus}
+            userId={userId}
+          />
+        </div>
         
         {/* Footer spacer with brand mark */}
         <DashboardFooterSpacer />
