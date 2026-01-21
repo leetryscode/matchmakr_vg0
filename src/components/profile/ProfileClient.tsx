@@ -371,71 +371,76 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
           {/* Interests Block */}
           {profile.user_type === 'SINGLE' && (
-            <div>
-              <div className="text-white/70 text-base font-semibold mb-2">Interests</div>
-              <div className="flex flex-wrap items-center gap-2">
-                {/* Interest chips - hide when input is open to avoid duplication */}
-                {!showInterestsInput && interests.slice(0, 6).map(interest => (
-                  <span key={interest.id} className="bg-white/10 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 border border-white/10">
-                    {interest.name}
+            <>
+              {/* Hide section if interests are empty AND viewer is not sponsor AND not profile owner */}
+              {interests.length === 0 && !isSponsorOfThisSingle && !isViewingOwnSingleProfile ? null : (
+                <div>
+                  <div className="text-white/70 text-base font-semibold mb-2">Interests</div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Interest chips - hide when input is open to avoid duplication */}
+                    {!showInterestsInput && interests.slice(0, 6).map(interest => (
+                      <span key={interest.id} className="bg-white/10 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 border border-white/10">
+                        {interest.name}
+                        {canEditProfile && (
+                          <button
+                            type="button"
+                            className="ml-1 text-white/70 hover:text-red-400 transition-colors"
+                            onClick={async () => {
+                              const newInterests = interests.filter(i => i.id !== interest.id);
+                              setSavingInterests(true);
+                              const response = await fetch(`/api/profiles/${profile.id}/interests`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ interestIds: newInterests.map(i => i.id) })
+                              });
+                              if (response.ok) {
+                                // Invalidate pond cache after successful interests deletion
+                                if (typeof window !== 'undefined') {
+                                  localStorage.removeItem('pond_cache');
+                                }
+                              }
+                              setInterests(newInterests);
+                              setSavingInterests(false);
+                            }}
+                            disabled={savingInterests}
+                            aria-label={`Remove ${interest.name}`}
+                          >
+                            &times;
+                          </button>
+                        )}
+                      </span>
+                    ))}
+                    {/* Add Interest chip */}
                     {canEditProfile && (
                       <button
-                        type="button"
-                        className="ml-1 text-white/70 hover:text-red-400 transition-colors"
-                        onClick={async () => {
-                          const newInterests = interests.filter(i => i.id !== interest.id);
-                          setSavingInterests(true);
-                          const response = await fetch(`/api/profiles/${profile.id}/interests`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ interestIds: newInterests.map(i => i.id) })
-                          });
-                          if (response.ok) {
-                            // Invalidate pond cache after successful interests deletion
-                            if (typeof window !== 'undefined') {
-                              localStorage.removeItem('pond_cache');
-                            }
-                          }
-                          setInterests(newInterests);
-                          setSavingInterests(false);
-                        }}
-                        disabled={savingInterests}
-                        aria-label={`Remove ${interest.name}`}
+                        className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
+                        onClick={() => setShowInterestsInput(v => !v)}
+                        disabled={loadingInterests || savingInterests}
                       >
-                        &times;
+                        {showInterestsInput ? 'Cancel' : '+ Add'}
                       </button>
                     )}
-                  </span>
-                ))}
-                {/* Add Interest chip */}
-                {canEditProfile && (
-                  <button
-                    className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
-                    onClick={() => setShowInterestsInput(v => !v)}
-                    disabled={loadingInterests || savingInterests}
-                  >
-                    {showInterestsInput ? 'Cancel' : '+ Add'}
-                  </button>
-                )}
-              </div>
-              {/* InterestsInput when expanded */}
-              {showInterestsInput && canEditProfile && (
-                <div className="mt-2">
-                  <InterestsInput
-                    value={interests}
-                    onChange={handleSaveInterests}
-                    disabled={savingInterests}
-                  />
-                  <button
-                    className="mt-2 px-4 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 transition-colors"
-                    onClick={() => handleSaveInterests(interests)}
-                    disabled={savingInterests}
-                  >
-                    Save Interests
-                  </button>
+                  </div>
+                  {/* InterestsInput when expanded */}
+                  {showInterestsInput && canEditProfile && (
+                    <div className="mt-2">
+                      <InterestsInput
+                        value={interests}
+                        onChange={handleSaveInterests}
+                        disabled={savingInterests}
+                      />
+                      <button
+                        className="mt-2 px-4 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 transition-colors"
+                        onClick={() => handleSaveInterests(interests)}
+                        disabled={savingInterests}
+                      >
+                        Save Interests
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
+            </>
           )}
 
           {/* Sponsored Singles Section - only for MATCHMAKR profiles */}

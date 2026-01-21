@@ -6,10 +6,14 @@ import { createClient } from '@/lib/supabase/client';
 import SectionHeader from '@/components/ui/SectionHeader';
 import ManagedSingleCard from './ManagedSingleCard';
 
+import { SingleStatus } from '@/lib/status/singleStatus';
+
 interface ManagedSinglesGridProps {
     singles: Array<{
         id: string;
         name: string | null;
+        status: SingleStatus;
+        approved_match_count: number;
     }>;
 }
 
@@ -48,6 +52,8 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
                         <ManagedSingleCard
                             key={single.id}
                             single={single}
+                            status={single.status}
+                            approvedMatchCount={single.approved_match_count}
                             onClick={() => handleCardClick(single.id)}
                         />
                     ))}

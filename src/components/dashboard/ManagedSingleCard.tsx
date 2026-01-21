@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { SingleStatus, getStatusLabel, getStatusDescription, getStatusStyles } from '@/lib/status/singleStatus';
 
 interface ManagedSingleCardProps {
     single: {
@@ -8,36 +9,11 @@ interface ManagedSingleCardProps {
         name: string | null;
     };
     onClick: () => void;
-    status?: 'active' | 'invite_pending' | 'paused'; // Optional status prop for future use
+    status: SingleStatus;
+    approvedMatchCount: number;
 }
 
-const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, status = 'active' }) => {
-    // Get status chip styling based on status
-    const getStatusStyles = () => {
-        switch (status) {
-            case 'active':
-                return 'bg-green-500/15 text-green-300 border-green-500/20';
-            case 'invite_pending':
-                return 'bg-red-500/20 text-red-400 border-red-500/30';
-            case 'paused':
-                return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-            default:
-                return 'bg-white/10 text-white/90 border-white/10';
-        }
-    };
-
-    const getStatusLabel = () => {
-        switch (status) {
-            case 'active':
-                return 'Active';
-            case 'invite_pending':
-                return 'Invite pending';
-            case 'paused':
-                return 'Paused';
-            default:
-                return 'Active';
-        }
-    };
+const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, status, approvedMatchCount }) => {
     return (
         <div
             onClick={onClick}
@@ -74,14 +50,14 @@ const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, 
 
             {/* Status chip row */}
             <div className="mb-2">
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium border uppercase tracking-wide ${getStatusStyles()}`}>
-                    {getStatusLabel()}
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium border uppercase tracking-wide ${getStatusStyles(status)}`}>
+                    {getStatusLabel(status)}
                 </span>
             </div>
 
-            {/* Match state line */}
+            {/* Status description line */}
             <div className="type-meta text-white/60">
-                0 unopened matches
+                {getStatusDescription(status, approvedMatchCount)}
             </div>
         </div>
     );

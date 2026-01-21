@@ -17,6 +17,7 @@ import SneakPeeksSection from '@/components/dashboard/SneakPeeksSection';
 import Link from 'next/link';
 import { createSponsorLoginNotifications } from '@/lib/notifications/sponsor-login';
 import { checkAndCreateSingleNotSeenIntroNotifications } from '@/lib/notifications/single-not-seen-intro';
+import { computeSingleStatus, type SingleStatus } from '@/lib/status/singleStatus';
 
 // Introductions destination card - WHOOP-style navigation card
 const IntroductionsCard = () => (
@@ -102,18 +103,78 @@ async function MatchMakrDashboardContent() {
     
     // Fetch the list of singles sponsored by this MatchMakr
     // Ordered by created_at ascending so satellites appear in the order they were added
+    // Include fields needed for status computation
     const { data: sponsoredSingles } = await supabase
         .from('profiles')
-        .select('id, name, photos, created_at')
+        .select('id, name, photos, created_at, onboarded_at, matchmakr_endorsement')
         .eq('sponsored_by_id', user.id)
         .eq('user_type', 'SINGLE')
         .order('created_at', { ascending: true });
 
+    // Fetch approved match counts for all sponsored singles (efficient two-query approach)
+    // Approved match = match where approved_at IS NOT NULL (both matchmakrs approved)
+    const singleIds = sponsoredSingles?.map(s => s.id) || [];
+    let approvedMatchCounts: Record<string, number> = {};
+    
+    if (singleIds.length > 0) {
+        // Initialize counts to 0 for all singles
+        singleIds.forEach(id => {
+            approvedMatchCounts[id] = 0;
+        });
+        
+        // Query 1: Matches where single_a_id is in our list
+        const { data: matchesAsA, error: errorA } = await supabase
+            .from('matches')
+            .select('single_a_id, single_b_id')
+            .not('approved_at', 'is', null)
+            .in('single_a_id', singleIds);
+        
+        if (errorA) {
+            console.error('[MatchMakrDashboard] Error fetching matchesAsA:', errorA);
+        }
+        
+        // Query 2: Matches where single_b_id is in our list
+        const { data: matchesAsB, error: errorB } = await supabase
+            .from('matches')
+            .select('single_a_id, single_b_id')
+            .not('approved_at', 'is', null)
+            .in('single_b_id', singleIds);
+        
+        if (errorB) {
+            console.error('[MatchMakrDashboard] Error fetching matchesAsB:', errorB);
+        }
+        
+        // Count matches for singles in single_a_id position
+        // No need to check singleIds.includes() since we already filtered with .in()
+        matchesAsA?.forEach(match => {
+            approvedMatchCounts[match.single_a_id]++;
+        });
+        
+        // Count matches for singles in single_b_id position
+        // No need to check singleIds.includes() since we already filtered with .in()
+        matchesAsB?.forEach(match => {
+            approvedMatchCounts[match.single_b_id]++;
+        });
+    }
+
     // Use the first photo from photos array as profile picture
-    const processedSponsoredSingles = sponsoredSingles?.map(single => ({
-        ...single,
-        profile_pic_url: single.photos && single.photos.length > 0 ? single.photos[0] : null
-    })) || [];
+    // Include status-related fields and compute status
+    const processedSponsoredSingles = sponsoredSingles?.map(single => {
+        const approvedMatchCount = approvedMatchCounts[single.id] || 0;
+        const status = computeSingleStatus({
+            onboarded_at: single.onboarded_at,
+            photos: single.photos,
+            matchmakr_endorsement: single.matchmakr_endorsement,
+            approved_match_count: approvedMatchCount
+        });
+        
+        return {
+            ...single,
+            profile_pic_url: single.photos && single.photos.length > 0 ? single.photos[0] : null,
+            approved_match_count: approvedMatchCount,
+            status
+        };
+    }) || [];
 
     const firstName = profile.name?.split(' ')[0] || profile.name || 'User';
 
