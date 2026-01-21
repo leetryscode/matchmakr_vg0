@@ -85,6 +85,42 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   // Singles viewing their own profile should see read-only view
   const canEditProfile = orbitRole === 'MATCHMAKR' && (isOwnProfile || isSponsorViewing);
   
+  // Structure sponsors as an array to support multiple sponsors in the future
+  // Currently, the schema only supports one sponsor, but this structure makes it easy to extend
+  const sponsors = matchmakrProfile ? [{
+    id: matchmakrProfile.id,
+    name: matchmakrProfile.name,
+    profile_pic_url: matchmakrProfile.profile_pic_url,
+    endorsement: profile.matchmakr_endorsement, // Currently one endorsement field, but could be per-sponsor in future
+    isCurrentSponsor: isSponsorViewing
+  }] : [];
+
+  // Explicit booleans for sponsor-authored sections visibility and edit permissions
+  // Only the sponsor-of-record (assigned to this single) can edit sponsor-authored sections
+  const isSponsorOfThisSingle = 
+    orbitRole === 'MATCHMAKR' &&
+    profile.user_type === 'SINGLE' &&
+    sponsors.length > 0 &&
+    sponsors.some(sponsor => sponsor.isCurrentSponsor === true);
+  
+  const isViewingOwnSingleProfile = 
+    isOwnProfile && 
+    profile.user_type === 'SINGLE' && 
+    orbitRole === 'SINGLE';
+
+  // Guardrail: log if there's a mismatch between isSponsorViewing and isSponsorOfThisSingle
+  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+    if (isSponsorViewing && profile.user_type === 'SINGLE' && orbitRole === 'MATCHMAKR' && !isSponsorOfThisSingle) {
+      console.error('[ProfileClient] Access control inconsistency: isSponsorViewing is true but isSponsorOfThisSingle is false', {
+        isSponsorViewing,
+        isSponsorOfThisSingle,
+        sponsors: sponsors.map(s => ({ id: s.id, isCurrentSponsor: s.isCurrentSponsor })),
+        orbitRole,
+        profileUserType: profile.user_type,
+      });
+    }
+  }
+  
   // Debug: Track canEditProfile changes (only log when false to help diagnose issues)
   React.useEffect(() => {
     if (canEditProfile === false && (isOwnProfile || isSponsorViewing)) {
@@ -100,16 +136,6 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   
   // Singles can edit their own basic info (name, occupation, location) but not bio
   const canEditBasicInfo = orbitRole === 'SINGLE' && isOwnProfile && profile.user_type === 'SINGLE';
-
-  // Structure sponsors as an array to support multiple sponsors in the future
-  // Currently, the schema only supports one sponsor, but this structure makes it easy to extend
-  const sponsors = matchmakrProfile ? [{
-    id: matchmakrProfile.id,
-    name: matchmakrProfile.name,
-    profile_pic_url: matchmakrProfile.profile_pic_url,
-    endorsement: profile.matchmakr_endorsement, // Currently one endorsement field, but could be per-sponsor in future
-    isCurrentSponsor: isSponsorViewing
-  }] : [];
 
   // Fetch interests for this profile on mount
   React.useEffect(() => {
@@ -259,13 +285,20 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           {profile.user_type === 'SINGLE' && sponsors.length > 0 && (
             <>
               {sponsors.map((sponsor) => {
+                // Blank definition: missing/null OR empty after trim
+                const endorsementBlank = !sponsor.endorsement || sponsor.endorsement.trim() === '';
+                // Hide section if blank AND viewer is not sponsor-of-record AND not profile owner
+                if (endorsementBlank && !isSponsorOfThisSingle && !isViewingOwnSingleProfile) {
+                  return null;
+                }
+                
                 return (
                   <div key={sponsor.id}>
                     <div className="flex justify-between items-center mb-3">
                       <h2 className="text-white/90 text-base font-semibold">
                         From {profile.name || 'this person'}'s sponsor
                       </h2>
-                      {sponsor.isCurrentSponsor && (
+                      {isSponsorOfThisSingle && (
                         <button
                           onClick={() => setIsEndorsementEditOpen(true)}
                           className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-sm font-medium transition-colors"
@@ -319,7 +352,8 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
             <PairingsSection
               profileId={profile.id}
               pairingsSignal={profile.pairings_signal}
-              canEdit={canEditProfile}
+              canEdit={isSponsorOfThisSingle}
+              viewerIsProfileOwner={isViewingOwnSingleProfile}
             />
           )}
 
@@ -330,7 +364,8 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
               firstName={firstName}
               profileId={profile.id}
               profileName={profile.name}
-              canEdit={canEditProfile}
+              canEdit={isSponsorOfThisSingle}
+              viewerIsProfileOwner={isViewingOwnSingleProfile}
             />
           )}
 

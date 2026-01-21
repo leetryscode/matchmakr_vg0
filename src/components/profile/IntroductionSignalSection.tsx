@@ -21,7 +21,8 @@ interface IntroductionSignalSectionProps {
   firstName: string;
   profileId: string;
   profileName: string | null;
-  canEdit?: boolean;
+  canEdit?: boolean; // isSponsorOfThisSingle
+  viewerIsProfileOwner?: boolean; // isViewingOwnSingleProfile
 }
 
 /**
@@ -57,6 +58,7 @@ export default function IntroductionSignalSection({
   profileId,
   profileName,
   canEdit = false,
+  viewerIsProfileOwner = false,
 }: IntroductionSignalSectionProps) {
   const supabase = createClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -66,9 +68,15 @@ export default function IntroductionSignalSection({
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const signal = localSignal;
-  const isEmpty = !signal;
+  // Blank definition: missing/null OR invalid parse OR response is empty after trim
+  const isEmpty = !signal || !signal.response || signal.response.trim() === '';
   const defaultPrompt = getDefaultIntroductionPrompt();
   const displayName = firstName || 'This person';
+  
+  // Visibility rule: hide if blank AND !canEdit AND !viewerIsProfileOwner
+  if (isEmpty && !canEdit && !viewerIsProfileOwner) {
+    return null;
+  }
 
   const handleAdd = () => {
     setSaveError(null);
@@ -138,13 +146,15 @@ export default function IntroductionSignalSection({
             <p className="text-sm text-red-400 mt-2 text-center">{saveError}</p>
           )}
         </div>
-        <IntroductionSignalModal
-          isOpen={isModalOpen}
-          initialSignal={null}
-          profileName={profileName}
-          onClose={handleClose}
-          onSaved={handleSaved}
-        />
+        {canEdit && (
+          <IntroductionSignalModal
+            isOpen={isModalOpen}
+            initialSignal={null}
+            profileName={profileName}
+            onClose={handleClose}
+            onSaved={handleSaved}
+          />
+        )}
       </>
     );
   }
@@ -176,13 +186,15 @@ export default function IntroductionSignalSection({
           <p className="text-sm text-red-400 mt-2 text-center">{saveError}</p>
         )}
       </div>
-      <IntroductionSignalModal
-        isOpen={isModalOpen}
-        initialSignal={signal}
-        profileName={profileName}
-        onClose={handleClose}
-        onSaved={handleSaved}
-      />
+      {canEdit && (
+        <IntroductionSignalModal
+          isOpen={isModalOpen}
+          initialSignal={signal}
+          profileName={profileName}
+          onClose={handleClose}
+          onSaved={handleSaved}
+        />
+      )}
     </>
   );
 }

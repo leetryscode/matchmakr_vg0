@@ -16,7 +16,8 @@ import PairingsModal from './PairingsModal';
 interface PairingsSectionProps {
   profileId: string;
   pairingsSignal: any | null; // JSONB from database
-  canEdit?: boolean;
+  canEdit?: boolean; // isSponsorOfThisSingle
+  viewerIsProfileOwner?: boolean; // isViewingOwnSingleProfile
 }
 
 /**
@@ -48,6 +49,7 @@ export default function PairingsSection({
   profileId,
   pairingsSignal,
   canEdit = false,
+  viewerIsProfileOwner = false,
 }: PairingsSectionProps) {
   const supabase = createClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,7 +59,16 @@ export default function PairingsSection({
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const signal = localSignal;
-  const isEmpty = !signal || (signal.quality_ids.length === 0 && !signal.custom_quality);
+  // Blank definition: missing/null OR (no quality_ids AND no non-empty custom_quality)
+  const isEmpty = !signal || (
+    signal.quality_ids.length === 0 && 
+    (!signal.custom_quality || signal.custom_quality.trim() === '')
+  );
+  
+  // Visibility rule: hide if blank AND !canEdit AND !viewerIsProfileOwner
+  if (isEmpty && !canEdit && !viewerIsProfileOwner) {
+    return null;
+  }
 
   const handleAdd = () => {
     setSaveError(null);
@@ -106,7 +117,7 @@ export default function PairingsSection({
     return (
       <>
         <div className="flex justify-between items-center mb-2">
-          <h2 className="text-white/70 text-base font-semibold">Pairs well with…</h2>
+          <h2 className="text-white/70 text-base font-semibold">Pairs naturally with…</h2>
           {canEdit && (
             <button
               onClick={handleAdd}
@@ -142,7 +153,7 @@ export default function PairingsSection({
   return (
     <>
       <div className="flex justify-between items-center mb-3">
-        <h2 className="text-white/90 text-base font-semibold">Pairs well with</h2>
+        <h2 className="text-white/90 text-base font-semibold">Pairs naturally with</h2>
         {canEdit && (
           <button
             onClick={handleEdit}
