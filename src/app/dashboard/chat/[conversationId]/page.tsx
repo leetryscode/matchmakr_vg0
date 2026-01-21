@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import GroupedMessageList from '@/components/chat/GroupedMessageList';
 import RequireStandaloneGate from '@/components/pwa/RequireStandaloneGate';
+import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -374,7 +375,7 @@ export default function ChatPage() {
 
   return (
     <RequireStandaloneGate
-      enabled={true}
+      enabled={REQUIRE_STANDALONE_ENABLED}
       title="Install Orbit to access Chat"
       body="Chat is available in app mode only. Install Orbit for full access."
       showBackButton={true}

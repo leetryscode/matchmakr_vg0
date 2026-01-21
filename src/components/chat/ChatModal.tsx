@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import { useChatModal } from '@/contexts/ChatModalContext';
 import { isStandaloneMode } from '@/utils/pwa';
 import RequireStandaloneGate from '../pwa/RequireStandaloneGate';
+import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
 import GroupedMessageList from './GroupedMessageList';
 
 interface ChatModalProps {
@@ -493,7 +494,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
 
   return ReactDOM.createPortal(
     <RequireStandaloneGate
-      enabled={true}
+      enabled={REQUIRE_STANDALONE_ENABLED}
       title="Install Orbit to access Chat"
       body="Chat is available in app mode only. Install Orbit for full access."
       showBackButton={false}
