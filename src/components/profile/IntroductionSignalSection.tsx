@@ -121,23 +121,21 @@ export default function IntroductionSignalSection({
 
     return (
       <>
-        <div className="rounded-xl border border-white/10 bg-white/3 p-3">
-          <div className="flex items-start gap-3">
-            <p className="text-white/80 text-base font-normal leading-relaxed flex-1">
-              {renderedPrompt}
-            </p>
-            {canEdit && (
-              <button
-                onClick={handleAdd}
-                className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-sm font-medium transition-colors shrink-0"
-                aria-label="Add introduction signal"
-              >
-                Add
-              </button>
-            )}
-          </div>
+        <div className="py-6 relative">
+          {canEdit && (
+            <button
+              onClick={handleAdd}
+              className="absolute top-0 right-0 px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/80 text-sm font-medium transition-colors"
+              aria-label="Add introduction signal"
+            >
+              Add
+            </button>
+          )}
+          <p className="text-white/90 text-lg font-medium leading-relaxed text-center">
+            {renderedPrompt}
+          </p>
           {saveError && (
-            <p className="text-sm text-red-400 mt-2">{saveError}</p>
+            <p className="text-sm text-red-400 mt-2 text-center">{saveError}</p>
           )}
         </div>
         <IntroductionSignalModal
@@ -159,25 +157,23 @@ export default function IntroductionSignalSection({
 
   return (
     <>
-      <div className="rounded-xl border border-white/10 bg-white/3 p-3">
-        <div className="flex justify-between items-start">
-          <p className="text-white/80 text-base font-normal leading-relaxed flex-1">
-            {beforeResponse}
-            <span className="text-white/90 font-medium">{signal.response}</span>
-            {afterResponse}
-          </p>
-          {canEdit && (
-            <button
-              onClick={handleEdit}
-              className="ml-3 px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-sm font-medium transition-colors shrink-0"
-              aria-label="Edit introduction signal"
-            >
-              Edit
-            </button>
-          )}
-        </div>
+      <div className="py-6 relative">
+        {canEdit && (
+          <button
+            onClick={handleEdit}
+            className="absolute top-0 right-0 px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/80 text-sm font-medium transition-colors"
+            aria-label="Edit introduction signal"
+          >
+            Edit
+          </button>
+        )}
+        <p className="text-white/90 text-lg font-medium leading-relaxed text-center">
+          {beforeResponse}
+          <span className="text-white font-semibold">{signal.response}</span>
+          {afterResponse}
+        </p>
         {saveError && (
-          <p className="text-sm text-red-400 mt-2">{saveError}</p>
+          <p className="text-sm text-red-400 mt-2 text-center">{saveError}</p>
         )}
       </div>
       <IntroductionSignalModal

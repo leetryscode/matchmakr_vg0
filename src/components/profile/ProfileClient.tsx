@@ -275,27 +275,26 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                         </button>
                       )}
                     </div>
-                    <div className="rounded-xl border border-white/10 bg-white/3 p-4">
-                      <div className="relative pt-2 pb-2 pl-4 pr-4">
-                        <span
-                          aria-hidden
-                          className="pointer-events-none select-none absolute left-0 top-0 text-white/40 text-3xl leading-none"
-                          style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
-                        >
-                          "
-                        </span>
-                        <p className={sponsor.endorsement ? "text-white/70 text-base font-normal leading-relaxed" : "text-white/50 text-base font-normal leading-relaxed"}>
-                          {sponsor.endorsement || 'This is where your sponsor writes about you...'}
-                        </p>
-                        <span
-                          aria-hidden
-                          className="pointer-events-none select-none absolute right-0 bottom-0 text-white/40 text-3xl leading-none"
-                          style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
-                        >
-                          "
-                        </span>
-                      </div>
+                    <div className="relative pt-2 pb-2 pl-4 pr-4 mb-4">
+                      <span
+                        aria-hidden
+                        className="pointer-events-none select-none absolute left-0 top-0 text-white/40 text-3xl leading-none"
+                        style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
+                      >
+                        "
+                      </span>
+                      <p className={sponsor.endorsement ? "text-white/70 text-base font-normal leading-relaxed" : "text-white/50 text-base font-normal leading-relaxed"}>
+                        {sponsor.endorsement || 'This is where your sponsor writes about you...'}
+                      </p>
+                      <span
+                        aria-hidden
+                        className="pointer-events-none select-none absolute right-0 bottom-0 text-white/40 text-3xl leading-none"
+                        style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
+                      >
+                        "
+                      </span>
                     </div>
+                    <div className="border-t border-white/10"></div>
                   </div>
                 );
               })}
@@ -322,11 +321,6 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
               pairingsSignal={profile.pairings_signal}
               canEdit={canEditProfile}
             />
-          )}
-
-          {/* Divider between narrative sections */}
-          {profile.user_type === 'SINGLE' && sponsors.length > 0 && (
-            <div className="border-t border-white/10"></div>
           )}
 
           {/* Introduction Signal Section - only for SINGLE profiles */}
