@@ -7,10 +7,27 @@ interface ManagedSingleCardProps {
     single: {
         id: string;
         name: string | null;
+        sponsor_label: string | null;
     };
     onClick: () => void;
     status: SingleStatus;
     approvedMatchCount: number;
+}
+
+/**
+ * Gets the display name for a single, prioritizing their real name over sponsor label
+ */
+function getDisplayName(name: string | null, sponsorLabel: string | null): string {
+    // If single has set their own name and it's not empty, use that
+    if (name && name.trim() !== '') {
+        return name;
+    }
+    // Otherwise use sponsor label if available
+    if (sponsorLabel && sponsorLabel.trim() !== '') {
+        return sponsorLabel;
+    }
+    // Fallback
+    return 'Invited single';
 }
 
 const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, status, approvedMatchCount }) => {
@@ -30,7 +47,7 @@ const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, 
             {/* Name row with chevron */}
             <div className="flex items-start justify-between mb-2">
                 <h3 className="text-base font-semibold text-white/90 flex-1 pr-2">
-                    {single.name || 'Unnamed'}
+                    {getDisplayName(single.name, single.sponsor_label)}
                 </h3>
                 {/* Right-facing chevron */}
                 <svg 

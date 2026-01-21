@@ -12,6 +12,7 @@ interface ManagedSinglesGridProps {
     singles: Array<{
         id: string;
         name: string | null;
+        sponsor_label: string | null;
         status: SingleStatus;
         approved_match_count: number;
     }>;
@@ -22,6 +23,7 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
     const supabase = createClient();
     const [isInviteSingleModalOpen, setIsInviteSingleModalOpen] = useState(false);
     const [inviteSingleEmail, setInviteSingleEmail] = useState('');
+    const [inviteSingleName, setInviteSingleName] = useState('');
 
     const handleCardClick = (singleId: string) => {
         router.push(`/profile/${singleId}`);
@@ -68,26 +70,54 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
                         <p className="text-gray-600 mb-6 leading-relaxed">
                             Invite a single user to find matches for.
                         </p>
-                        <input
-                            type="email"
-                            value={inviteSingleEmail}
-                            onChange={(e) => setInviteSingleEmail(e.target.value)}
-                            placeholder="Single user's email address"
-                            className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
-                        />
+                        <div className="space-y-4 mb-6">
+                            <div>
+                                <input
+                                    type="text"
+                                    value={inviteSingleName}
+                                    onChange={(e) => setInviteSingleName(e.target.value)}
+                                    placeholder="Name (only visible to you)"
+                                    required
+                                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                                />
+                                <p className="text-xs text-gray-500 mt-1 text-left">
+                                    This helps you keep track. They can change their name after joining.
+                                </p>
+                            </div>
+                            <input
+                                type="email"
+                                value={inviteSingleEmail}
+                                onChange={(e) => setInviteSingleEmail(e.target.value)}
+                                placeholder="Single user's email address"
+                                required
+                                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                            />
+                        </div>
                         <div className="flex justify-end gap-4">
-                            <button onClick={() => { setIsInviteSingleModalOpen(false); setInviteSingleEmail(''); }} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
+                            <button onClick={() => { setIsInviteSingleModalOpen(false); setInviteSingleEmail(''); setInviteSingleName(''); }} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
                                 Cancel
                             </button>
                             <button 
                                 onClick={async () => {
+                                    if (!inviteSingleName.trim()) {
+                                        alert('Please enter a name.');
+                                        return;
+                                    }
+                                    if (!inviteSingleEmail.trim()) {
+                                        alert('Please enter an email address.');
+                                        return;
+                                    }
                                     try {
                                         const { data, error } = await supabase.functions.invoke('sponsor-single', {
-                                            body: { single_email: inviteSingleEmail },
+                                            body: { 
+                                                single_email: inviteSingleEmail,
+                                                sponsor_label: inviteSingleName.trim()
+                                            },
                                         });
                                         if (error) throw error;
                                         setIsInviteSingleModalOpen(false);
                                         setInviteSingleEmail('');
+                                        setInviteSingleName('');
                                         window.location.reload();
                                     } catch (error: any) {
                                         alert(error.message || 'An error occurred.');

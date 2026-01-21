@@ -106,7 +106,7 @@ async function MatchMakrDashboardContent() {
     // Include fields needed for status computation
     const { data: sponsoredSingles } = await supabase
         .from('profiles')
-        .select('id, name, photos, created_at, onboarded_at, matchmakr_endorsement')
+        .select('id, name, photos, created_at, onboarded_at, matchmakr_endorsement, sponsor_label')
         .eq('sponsored_by_id', user.id)
         .eq('user_type', 'SINGLE')
         .order('created_at', { ascending: true });
@@ -172,7 +172,8 @@ async function MatchMakrDashboardContent() {
             ...single,
             profile_pic_url: single.photos && single.photos.length > 0 ? single.photos[0] : null,
             approved_match_count: approvedMatchCount,
-            status
+            status,
+            sponsor_label: single.sponsor_label
         };
     }) || [];
 

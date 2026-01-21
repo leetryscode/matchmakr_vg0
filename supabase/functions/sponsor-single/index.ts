@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { single_email } = await req.json();
+    const { single_email, sponsor_label } = await req.json();
 
     // Create a Supabase client with the user's auth token
     const userSupabaseClient = createClient(
@@ -112,10 +112,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 4. Update the single user's profile with the sponsor's ID
+    // 4. Update the single user's profile with the sponsor's ID and label
+    // Always set sponsor_label when provided (display logic prefers name over sponsor_label)
+    const updateData: { sponsored_by_id: string; sponsor_label?: string } = {
+      sponsored_by_id: user.id
+    };
+    
+    // Set sponsor_label if provided (display logic will prefer name if it exists)
+    if (sponsor_label && sponsor_label.trim() !== '') {
+      updateData.sponsor_label = sponsor_label.trim();
+    }
+    
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
-      .update({ sponsored_by_id: user.id })
+      .update(updateData)
       .eq('id', singleId);
 
     if (updateError) {
