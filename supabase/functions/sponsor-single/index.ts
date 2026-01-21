@@ -14,6 +14,8 @@ const corsHeaders = {
 
 console.log(`Function "sponsor-single" up and running!`);
 
+// NOTE: This function currently only links existing users. Pre-signup invites will be handled by `invites` table + acceptance flow.
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -31,7 +33,15 @@ Deno.serve(async (req) => {
 
     // Get the current user from the token
     const { data: { user }, error: userError } = await userSupabaseClient.auth.getUser();
-    if (userError) throw userError;
+    if (userError) {
+      return new Response(JSON.stringify({ 
+        error: 'Authentication failed.',
+        code: 'AUTH_ERROR'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
 
     // Create a Supabase admin client to perform privileged operations
     const supabaseAdmin = createClient(
@@ -47,14 +57,20 @@ Deno.serve(async (req) => {
       .single();
 
     if (matchmakrProfileError || !matchmakrProfile) {
-      return new Response(JSON.stringify({ error: 'Could not find your profile.' }), {
+      return new Response(JSON.stringify({ 
+        error: 'Could not find your profile.',
+        code: 'PROFILE_NOT_FOUND'
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 404,
       });
     }
 
     if (matchmakrProfile.user_type !== 'MATCHMAKR') {
-      return new Response(JSON.stringify({ error: 'You must be a MatchMakr to sponsor a Single.' }), {
+      return new Response(JSON.stringify({ 
+        error: 'You must be a MatchMakr to sponsor a Single.',
+        code: 'INVALID_USER_TYPE'
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
@@ -65,7 +81,13 @@ Deno.serve(async (req) => {
 
     if (listError) {
       console.error('Error listing users:', listError);
-      throw listError;
+      return new Response(JSON.stringify({ 
+        error: 'Failed to search for user.',
+        code: 'SEARCH_ERROR'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
     }
 
     // Workaround for local dev where listUsers doesn't filter by email.
@@ -73,7 +95,10 @@ Deno.serve(async (req) => {
     const singleUser = allUsers.find(u => u.email === single_email);
 
     if (!singleUser) {
-      return new Response(JSON.stringify({ error: 'Single user not found with that email.' }), {
+      return new Response(JSON.stringify({ 
+        error: 'Single user not found with that email.',
+        code: 'USER_NOT_FOUND'
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 404,
       });
@@ -93,7 +118,10 @@ Deno.serve(async (req) => {
     console.log('Profile lookup result:', { singleProfile, singleProfileError });
 
     if (singleProfileError || !singleProfile) {
-      return new Response(JSON.stringify({ error: 'Could not find a profile for the specified Single.' }), {
+      return new Response(JSON.stringify({ 
+        error: 'Could not find a profile for the specified Single.',
+        code: 'PROFILE_NOT_FOUND'
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 404,
       });
@@ -106,7 +134,10 @@ Deno.serve(async (req) => {
     });
 
     if (singleProfile.user_type !== 'SINGLE') {
-      return new Response(JSON.stringify({ error: 'This user is not a Single.' }), {
+      return new Response(JSON.stringify({ 
+        error: 'This user is not a Single.',
+        code: 'INVALID_USER_TYPE'
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
@@ -114,6 +145,7 @@ Deno.serve(async (req) => {
 
     // 4. Update the single user's profile with the sponsor's ID and label
     // Always set sponsor_label when provided (display logic prefers name over sponsor_label)
+    // Never overwrite profiles.name - display logic will prefer name if it exists
     const updateData: { sponsored_by_id: string; sponsor_label?: string } = {
       sponsored_by_id: user.id
     };
@@ -130,15 +162,24 @@ Deno.serve(async (req) => {
 
     if (updateError) {
       console.error('Update Error:', updateError);
-      throw updateError;
+      return new Response(JSON.stringify({ 
+        error: 'Failed to link account.',
+        code: 'UPDATE_ERROR'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
     }
 
-    return new Response(JSON.stringify({ message: 'Successfully sponsored this Single!' }), {
+    return new Response(JSON.stringify({ message: 'Successfully linked account!' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message || 'An unexpected error occurred.',
+      code: 'UNKNOWN_ERROR'
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     });

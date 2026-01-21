@@ -24,6 +24,7 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
     const [isInviteSingleModalOpen, setIsInviteSingleModalOpen] = useState(false);
     const [inviteSingleEmail, setInviteSingleEmail] = useState('');
     const [inviteSingleName, setInviteSingleName] = useState('');
+    const [inviteError, setInviteError] = useState<string | null>(null);
 
     const handleCardClick = (singleId: string) => {
         router.push(`/profile/${singleId}`);
@@ -62,20 +63,27 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
                 </div>
             )}
             
-            {/* Invite Single Modal */}
+            {/* Link Single Modal */}
+            {/* NOTE: True invite-only onboarding will use an `invites` table to support pre-signup invites. */}
             {isInviteSingleModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
                     <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-gray-200">
-                        <h2 className="type-section mb-4 text-primary-blue">Invite a single user</h2>
-                        <p className="text-gray-600 mb-6 leading-relaxed">
-                            Invite a single user to find matches for.
+                        <h2 className="type-section mb-4 text-primary-blue">Link a single account</h2>
+                        <p className="text-gray-600 mb-2 leading-relaxed">
+                            Link an existing Orbit account by email.
+                        </p>
+                        <p className="text-xs text-gray-500 mb-6">
+                            They must already have an Orbit account.
                         </p>
                         <div className="space-y-4 mb-6">
                             <div>
                                 <input
                                     type="text"
                                     value={inviteSingleName}
-                                    onChange={(e) => setInviteSingleName(e.target.value)}
+                                    onChange={(e) => {
+                                        setInviteSingleName(e.target.value);
+                                        setInviteError(null);
+                                    }}
                                     placeholder="Name (only visible to you)"
                                     required
                                     className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
@@ -84,29 +92,47 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
                                     This helps you keep track. They can change their name after joining.
                                 </p>
                             </div>
-                            <input
-                                type="email"
-                                value={inviteSingleEmail}
-                                onChange={(e) => setInviteSingleEmail(e.target.value)}
-                                placeholder="Single user's email address"
-                                required
-                                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
-                            />
+                            <div>
+                                <input
+                                    type="email"
+                                    value={inviteSingleEmail}
+                                    onChange={(e) => {
+                                        setInviteSingleEmail(e.target.value);
+                                        setInviteError(null);
+                                    }}
+                                    placeholder="Single user's email address"
+                                    required
+                                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                                />
+                                {inviteError && (
+                                    <p className="text-sm text-red-600 mt-2 text-left">
+                                        {inviteError}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                         <div className="flex justify-end gap-4">
-                            <button onClick={() => { setIsInviteSingleModalOpen(false); setInviteSingleEmail(''); setInviteSingleName(''); }} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
+                            <button onClick={() => { 
+                                setIsInviteSingleModalOpen(false); 
+                                setInviteSingleEmail(''); 
+                                setInviteSingleName('');
+                                setInviteError(null);
+                            }} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
                                 Cancel
                             </button>
                             <button 
                                 onClick={async () => {
                                     if (!inviteSingleName.trim()) {
-                                        alert('Please enter a name.');
+                                        setInviteError('Please enter a name.');
                                         return;
                                     }
                                     if (!inviteSingleEmail.trim()) {
-                                        alert('Please enter an email address.');
+                                        setInviteError('Please enter an email address.');
                                         return;
                                     }
+                                    
+                                    setInviteError(null);
+                                    
                                     try {
                                         const { data, error } = await supabase.functions.invoke('sponsor-single', {
                                             body: { 
@@ -114,18 +140,47 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
                                                 sponsor_label: inviteSingleName.trim()
                                             },
                                         });
-                                        if (error) throw error;
+                                        
+                                        if (error) {
+                                            // Supabase functions return error data in error.data when status is not 2xx
+                                            // Our edge function returns { error: '...', code: '...' }
+                                            const errorData = error.data;
+                                            
+                                            // Check if this is a USER_NOT_FOUND error
+                                            if (errorData?.code === 'USER_NOT_FOUND') {
+                                                setInviteError('Invites currently work only for people who already have an Orbit account. Email invitations are coming soon.');
+                                                return;
+                                            }
+                                            
+                                            // For other errors, show the error message from the function or generic message
+                                            // Never show raw Supabase error messages
+                                            const friendlyMessage = errorData?.error || 'An error occurred. Please try again.';
+                                            setInviteError(friendlyMessage);
+                                            return;
+                                        }
+                                        
+                                        // Success - close modal and reload
                                         setIsInviteSingleModalOpen(false);
                                         setInviteSingleEmail('');
                                         setInviteSingleName('');
+                                        setInviteError(null);
                                         window.location.reload();
                                     } catch (error: any) {
-                                        alert(error.message || 'An error occurred.');
+                                        // Catch any unexpected errors
+                                        const errorData = error?.data;
+                                        
+                                        if (errorData?.code === 'USER_NOT_FOUND') {
+                                            setInviteError('Invites currently work only for people who already have an Orbit account. Email invitations are coming soon.');
+                                            return;
+                                        }
+                                        
+                                        // Never show raw error messages
+                                        setInviteError(errorData?.error || 'An error occurred. Please try again.');
                                     }
                                 }} 
                                 className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1"
                             >
-                                Send invite
+                                Link account
                             </button>
                         </div>
                     </div>
