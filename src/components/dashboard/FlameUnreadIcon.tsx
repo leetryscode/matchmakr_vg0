@@ -1,4 +1,5 @@
 import React from 'react';
+import { palette } from '@/config/palette';
 
 interface FlameUnreadIconProps {
   count: number; // 1-9
@@ -23,7 +24,7 @@ const FlameUnreadIcon: React.FC<FlameUnreadIconProps> = ({ count, size = 36, cla
       {/* Classic rounded chat bubble with filled tail */}
       <path
         d="M18 5C10.268 5 4 10.268 4 17c0 3.13 1.51 5.98 4.01 8.01C7.7 28.1 6.5 30.5 6.5 30.5c-.2.4.2.8.6.7l6.1-2.1C14.6 29.7 16.3 30 18 30c7.732 0 14-5.268 14-13S25.732 5 18 5z"
-        fill="#fff"
+        fill={palette.background.card}
       />
       {/* Notification number */}
       <text
@@ -42,4 +43,4 @@ const FlameUnreadIcon: React.FC<FlameUnreadIconProps> = ({ count, size = 36, cla
   );
 };
 
-export default FlameUnreadIcon; 
+export default FlameUnreadIcon;

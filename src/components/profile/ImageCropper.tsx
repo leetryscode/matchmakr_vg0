@@ -3,6 +3,9 @@ import Cropper, { Area, Point } from 'react-easy-crop';
 import { hexToRgba } from '@/config/theme';
 import { palette } from '@/config/palette';
 
+// Precompute accent color to avoid creating new strings on each render
+const ACCENT_COLOR = hexToRgba(palette.primary.blue, 0.6);
+
 interface ImageCropperProps {
   image: string;
   onCropComplete: (croppedAreaPixels: Area) => void;
@@ -93,7 +96,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCl
               bumpInteraction();
             }}
             className="flex-1 h-1.5 bg-gray-200/70 rounded-full appearance-none cursor-pointer"
-            style={{ accentColor: hexToRgba(palette.primary.blue, 0.6) }}
+            style={{ accentColor: ACCENT_COLOR }}
           />
           {isInteracting && (
             <span className="text-xs text-gray-400 tabular-nums min-w-[3ch] text-right">

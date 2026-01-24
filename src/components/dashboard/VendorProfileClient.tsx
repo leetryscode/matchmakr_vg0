@@ -147,9 +147,9 @@ const VendorProfileClient: React.FC<VendorProfileClientProps> = ({ vendorProfile
             </p>
             <p className="text-base font-light text-white/70 mt-2 flex items-center">
               <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                  <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="#fff" stroke="none"/>
-                  <circle cx="8" cy="6" r="2" fill="white"/>
+                <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }} className="text-white/70">
+                  <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="currentColor" stroke="none"/>
+                  <circle cx="8" cy="6" r="2" fill="currentColor"/>
                 </svg>
               </span>
               {vendorProfile.street_address && vendorProfile.city && vendorProfile.state ? 

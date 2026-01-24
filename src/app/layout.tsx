@@ -42,7 +42,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-source-sans text-text-dark bg-primary-blue leading-relaxed text-lg">
+      <body className="font-source-sans text-text-dark bg-primary-blue leading-relaxed text-lg min-h-dvh">
         <AuthProvider>
           <GlobalLayout>
             {children}
