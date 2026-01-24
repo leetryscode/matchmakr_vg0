@@ -157,6 +157,29 @@ export function getStatusStyles(status: SingleStatus): string {
   }
 }
 
+/**
+ * Gets the single-facing status pill styling classes
+ * Softer, more reassuring tones compared to sponsor-facing pills
+ */
+export function getSingleFacingStatusStyles(status: SingleStatus): string {
+  switch (status) {
+    case 'PAUSED':
+      return 'bg-gray-500/15 text-gray-300 border-gray-500/20';
+    case 'NEEDS_ATTENTION':
+      return 'bg-yellow-500/15 text-yellow-300 border-yellow-500/20';
+    case 'IN_MOTION':
+      // Softer, desaturated green for single-facing (reassuring, not urgent)
+      return 'bg-emerald-500/12 text-emerald-200 border-emerald-500/15';
+    case 'NEEDS_INTRODUCTION':
+      return 'bg-white/10 text-white/90 border-white/10';
+    case 'INVITED':
+      // This should never be shown to singles, but provide fallback
+      return 'bg-white/10 text-white/90 border-white/10';
+    default:
+      return 'bg-white/10 text-white/90 border-white/10';
+  }
+}
+
 // Example test cases (for documentation/sanity checking):
 // 
 // Example 1: INVITED

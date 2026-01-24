@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { SingleStatus, getSingleFacingStatusLabel, getSingleFacingStatusExplanation, getStatusStyles } from '@/lib/status/singleStatus';
+import { SingleStatus, getSingleFacingStatusLabel, getSingleFacingStatusExplanation, getSingleFacingStatusStyles } from '@/lib/status/singleStatus';
 import { createClient } from '@/lib/supabase/client';
 
 interface AvailabilitySectionProps {
@@ -71,28 +71,27 @@ const AvailabilitySection: React.FC<AvailabilitySectionProps> = ({ status, userI
   };
 
   return (
-    <div className="bg-white/5 rounded-card-lg border border-white/10 p-4">
+    <div 
+      onClick={() => setIsExpanded(!isExpanded)}
+      className="bg-white/5 hover:bg-white/7 rounded-card-lg border border-white/10 hover:border-white/15 p-4 cursor-pointer transition-all duration-150 active:bg-white/8 active:scale-[0.99]"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setIsExpanded(!isExpanded);
+        }
+      }}
+    >
       {/* Always visible: Status pill and explanation */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          {/* Status pill */}
-          <div className="mb-2">
-            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium border uppercase tracking-wide ${getStatusStyles(currentStatus)}`}>
-              {getSingleFacingStatusLabel(currentStatus)}
-            </span>
-          </div>
-          {/* Explanation */}
-          <p className="text-sm text-white/70">
-            {getSingleFacingStatusExplanation(currentStatus)}
-          </p>
-        </div>
+      {/* Row 1: Pill (left) + Chevron (right) */}
+      <div className="flex items-center justify-between mb-2">
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium border uppercase tracking-wide transition-colors duration-150 ${getSingleFacingStatusStyles(currentStatus)}`}>
+          {getSingleFacingStatusLabel(currentStatus)}
+        </span>
         
         {/* Expand/collapse chevron */}
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex-shrink-0 ml-4 p-1 text-white/60 hover:text-white/90 transition-colors"
-          aria-label={isExpanded ? 'Collapse' : 'Expand'}
-        >
+        <div className="flex-shrink-0 p-1 text-white/60">
           <svg
             width="20"
             height="20"
@@ -102,29 +101,47 @@ const AvailabilitySection: React.FC<AvailabilitySectionProps> = ({ status, userI
             strokeLinecap="round"
             strokeLinejoin="round"
             viewBox="0 0 24 24"
-            className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            className={`transition-transform duration-150 ${isExpanded ? 'rotate-180' : ''}`}
           >
             <polyline points="6,9 12,15 18,9" />
           </svg>
-        </button>
+        </div>
       </div>
+      
+      {/* Row 2: Explanation text */}
+      <p className="text-sm text-white/70 leading-relaxed">
+        {getSingleFacingStatusExplanation(currentStatus)}
+      </p>
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className="mt-4 pt-4 border-t border-white/10">
-          <p className="text-xs text-white/60 mb-3">
-            Only you and your sponsor can see this status.
-          </p>
-          <p className="text-xs text-white/60 mb-4">
-            This helps communicate your availability to your sponsor.
-          </p>
-          <button
-            onClick={handleTogglePause}
-            disabled={isUpdating}
-            className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white/90 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isUpdating ? 'Updating...' : currentStatus === 'PAUSED' ? 'Resume introductions' : 'Pause introductions'}
-          </button>
+        <div className="mt-3 pt-3 border-t border-white/10">
+          {/* Helper text block - tight stack */}
+          <div className="mb-3 space-y-1">
+            <p className="text-xs text-white/50">
+              Only you and your sponsor can see this status.
+            </p>
+            <p className="text-xs text-white/50">
+              This helps communicate your availability — it doesn't affect existing conversations.
+            </p>
+          </div>
+          
+          {/* Divider */}
+          <div className="border-t border-white/5 mb-3"></div>
+          
+          {/* Actions row */}
+          <div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleTogglePause();
+              }}
+              disabled={isUpdating}
+              className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white/90 rounded-lg text-sm font-medium transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isUpdating ? 'Updating...' : currentStatus === 'PAUSED' ? 'Resume introductions' : 'Pause introductions'}
+            </button>
+          </div>
         </div>
       )}
     </div>
