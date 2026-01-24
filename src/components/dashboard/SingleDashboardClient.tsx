@@ -406,8 +406,8 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           
           {/* My matches - empty state */}
           <div>
-            <SectionHeader title="My matches" />
-            <div className="text-white/90">No matches yet. Once your sponsor agrees to the introduction, you can chat here.</div>
+            <SectionHeader title="Introduced by my sponsor" />
+            <div className="text-white/90">No introductions yet. Once your sponsor agrees to the introduction, you can chat here.</div>
           </div>
           
           {/* Preview cards section - only renders when there are previews */}
@@ -486,9 +486,9 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         
         {/* My Matches Section */}
         <div>
-          <SectionHeader title="My matches" />
+          <SectionHeader title="Introduced by my sponsor" />
           {singleChats.length === 0 ? (
-            <div className="text-white/90">No matches yet. Once your sponsor agrees to the introduction, you can chat here.</div>
+            <div className="text-white/90">No introductions yet. Once your sponsor agrees to the introduction, you can chat here.</div>
           ) : (
             <div className="flex flex-col gap-1.5">
               {singleChats.map((row, idx) => (

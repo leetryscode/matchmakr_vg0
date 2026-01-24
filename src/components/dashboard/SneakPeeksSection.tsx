@@ -273,7 +273,7 @@ export default function SneakPeeksSection({ sponsorId, sponsoredSingles }: Sneak
         <div>
             <div className="mb-3 mt-8 first:mt-0">
                 <h2 className="type-section">
-                    Previews
+                    Preview responses
                 </h2>
             </div>
             
