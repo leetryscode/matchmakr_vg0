@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Cropper, { Area, Point } from 'react-easy-crop';
+import { hexToRgba } from '@/config/theme';
+import { palette } from '@/config/palette';
 
 interface ImageCropperProps {
   image: string;
@@ -91,7 +93,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCl
               bumpInteraction();
             }}
             className="flex-1 h-1.5 bg-gray-200/70 rounded-full appearance-none cursor-pointer"
-            style={{ accentColor: 'rgba(var(--primary-blue), 0.6)' }}
+            style={{ accentColor: hexToRgba(palette.primary.blue, 0.6) }}
           />
           {isInteracting && (
             <span className="text-xs text-gray-400 tabular-nums min-w-[3ch] text-right">

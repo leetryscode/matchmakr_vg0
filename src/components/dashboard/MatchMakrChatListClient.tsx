@@ -468,15 +468,15 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                   {/* Three dots menu */}
                   <div className="relative menu-btn flex items-center justify-end ml-auto">
                     <button
-                      className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-white/10 focus:outline-none transition-colors"
+                      className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-white/10 focus:outline-none transition-colors text-white"
                       onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === msg.conversation.id ? null : msg.conversation.id); }}
                       tabIndex={-1}
                       aria-label="Open menu"
                     >
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
-                        <circle cx="12" cy="5" r="2" fill="#fff"/>
-                        <circle cx="12" cy="12" r="2" fill="#fff"/>
-                        <circle cx="12" cy="19" r="2" fill="#fff"/>
+                        <circle cx="12" cy="5" r="2" fill="currentColor"/>
+                        <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                        <circle cx="12" cy="19" r="2" fill="currentColor"/>
                       </svg>
                     </button>
                     {menuOpen === msg.conversation.id && (

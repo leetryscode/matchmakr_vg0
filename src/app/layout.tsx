@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { AuthProvider } from '../contexts/AuthContext';
 import GlobalLayout from '../components/dashboard/GlobalLayout';
+import { themeColor } from '../config/theme';
 
 /**
  * PWA Metadata Configuration
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
   title: 'Orbit',
   description: 'A matchmaking platform that connects singles through Sponsors',
   manifest: '/manifest.webmanifest',
-  themeColor: '#4A5D7C',
+  themeColor: themeColor,
   icons: {
     icon: [
       { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
@@ -41,7 +42,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-source-sans text-gray-800 leading-relaxed text-lg">
+      <body className="font-source-sans text-text-dark bg-primary-blue leading-relaxed text-lg">
         <AuthProvider>
           <GlobalLayout>
             {children}

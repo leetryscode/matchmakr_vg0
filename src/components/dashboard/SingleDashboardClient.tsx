@@ -453,15 +453,15 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             timestamp={sponsorTimestamp}
             menuButton={
               <button
-                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
+                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors text-white"
                 onClick={e => { e.stopPropagation(); setSponsorMenuOpen(!sponsorMenuOpen); setMenuOpenIdx(null); }}
                 tabIndex={-1}
                 aria-label="Open menu"
               >
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                  <circle cx="12" cy="5" r="1.5" fill="#fff"/>
-                  <circle cx="12" cy="12" r="1.5" fill="#fff"/>
-                  <circle cx="12" cy="19" r="1.5" fill="#fff"/>
+                  <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
+                  <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                  <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
                 </svg>
               </button>
             }
@@ -502,15 +502,15 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                   timestamp={row.lastMessage ? new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                   menuButton={
                     <button
-                      className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors"
+                      className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors text-white"
                       onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); setSponsorMenuOpen(false); }}
                       tabIndex={-1}
                       aria-label="Open menu"
                     >
                       <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <circle cx="12" cy="5" r="1.5" fill="#fff"/>
-                        <circle cx="12" cy="12" r="1.5" fill="#fff"/>
-                        <circle cx="12" cy="19" r="1.5" fill="#fff"/>
+                        <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
+                        <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                        <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
                       </svg>
                     </button>
                   }

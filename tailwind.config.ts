@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { palette } from "./src/config/palette";
 
 const config: Config = {
   content: [
@@ -9,29 +10,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: {
-          blue: '#4A5D7C',
-          teal: '#5B7396',
-          'blue-light': '#8E99A8',
-          'teal-light': '#A5B0C2',
-        },
-        accent: {
-          'blue-light': '#8E99A8',
-          'teal-light': '#A5B0C2',
-        },
-        background: {
-          main: '#FAFAFA',
-          card: '#FFFFFF',
-          'gradient-start': '#4A5D7C',
-          'gradient-end': '#5B7396',
-        },
-        text: {
-          dark: '#1F2937',
-          light: '#6B7280',
-        },
-        border: {
-          light: '#E5E7EB',
-        },
+        primary: palette.primary,
+        accent: palette.accent,
+        background: palette.background,
+        text: palette.text,
+        border: palette.border,
       },
       fontFamily: {
         'inter': ['Inter', 'sans-serif'],
@@ -40,12 +23,12 @@ const config: Config = {
         'brand': ['Bahnschrift Light', 'Bahnschrift', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
-        'dashboard': 'linear-gradient(to bottom right, #4A5D7C, #5B7396)',
-        'gradient-primary': 'linear-gradient(135deg, #4A5D7C, #5B7396)',
-        'gradient-light': 'linear-gradient(135deg, #8E99A8, #A5B0C2)',
-        'gradient-card': 'linear-gradient(135deg, #FAFAFA 0%, #FFFFFF 100%)',
-        'gradient-radial': 'radial-gradient(ellipse at center, #4A5D7C 0%, #5B7396 100%)',
-        'gradient-diagonal': 'linear-gradient(45deg, #4A5D7C 0%, #5B7396 100%)',
+        'dashboard': `linear-gradient(to bottom right, ${palette.primary.blue}, ${palette.primary.teal})`,
+        'gradient-primary': `linear-gradient(135deg, ${palette.primary.blue}, ${palette.primary.teal})`,
+        'gradient-light': `linear-gradient(135deg, ${palette.primary['blue-light']}, ${palette.primary['teal-light']})`,
+        'gradient-card': `linear-gradient(135deg, ${palette.background.main} 0%, ${palette.background.card} 100%)`,
+        'gradient-radial': `radial-gradient(ellipse at center, ${palette.primary.blue} 0%, ${palette.primary.teal} 100%)`,
+        'gradient-diagonal': `linear-gradient(45deg, ${palette.primary.blue} 0%, ${palette.primary.teal} 100%)`,
       },
       boxShadow: {
         'card': '0 8px 32px rgba(15, 23, 42, 0.08)',

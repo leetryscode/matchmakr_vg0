@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import { palette } from '@/config/palette';
 
 export interface ConfettiBlastProps {
   isActive: boolean;
@@ -8,11 +9,11 @@ export interface ConfettiBlastProps {
   style?: React.CSSProperties;
 }
 
-// decorative-only, excluded from theme tokens
+// Confetti colors derived from theme palette
 const CONFETTI_COLORS = [
-  '#0066FF', // primary blue
-  '#00C9A7', // primary blue-light
-  '#4D9CFF', // accent blue-light
+  palette.primary.blue,
+  palette.primary.teal,
+  palette.primary['blue-light'],
 ];
 const CONFETTI_COUNT = 324; // Reduced by another 80% from 1620 (now 94% total reduction)
 const DURATION = 15000; // Increased to 15 seconds for much longer trickle

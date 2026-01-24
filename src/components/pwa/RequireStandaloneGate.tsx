@@ -62,7 +62,7 @@ export default function RequireStandaloneGate({
 
       {/* Full-screen blocking overlay */}
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-        <div className="bg-[#4A5D7C] rounded-2xl p-6 max-w-md w-full shadow-xl border border-white/10">
+        <div className="bg-primary-blue rounded-2xl p-6 max-w-md w-full shadow-xl border border-white/10">
           <div className="flex flex-col gap-4">
             {/* Header */}
             <h3 className="text-white text-xl font-semibold text-center">

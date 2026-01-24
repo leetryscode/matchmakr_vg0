@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { palette } from '@/config/palette';
 
 // ============================================================================
 // TRUST LOCKUP CONFIGURATION
@@ -183,7 +184,7 @@ export default function TrustLockup({
             height: `${config.primarySizePx}px`,
             border: `${config.borderWidth} solid ${config.borderColor}`,
             boxShadow: config.primaryShadow,
-            backgroundColor: '#e5e7eb', // bg-gray-200
+            backgroundColor: palette.border.light,
             zIndex: primaryZIndex,
           }}
           aria-label="Go to My Profile"
@@ -225,7 +226,7 @@ export default function TrustLockup({
               height: `${config.secondarySizePx}px`,
               border: `${config.borderWidth} solid ${config.borderColor}`,
               boxShadow: config.secondaryShadow,
-              backgroundColor: '#e5e7eb', // bg-gray-200
+              backgroundColor: palette.border.light,
               zIndex: secondaryZIndex,
             }}
             aria-label={`View ${secondaryName}'s profile`}

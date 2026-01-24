@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next'
+import { themeColor, backgroundColor } from '../config/theme'
 
 /**
  * Web App Manifest for Orbit PWA
@@ -30,8 +31,8 @@ export default function manifest(): MetadataRoute.Manifest {
     // and avoids premature route refactors. Can be tightened later if needed.
     scope: '/',
     display: 'standalone',
-    background_color: '#4A5D7C',
-    theme_color: '#4A5D7C',
+    background_color: backgroundColor,
+    theme_color: themeColor,
     // NOTE: Icons are currently placeholders (solid color #4A5D7C with "O").
     // Replace with proper brand assets before production launch.
     icons: [

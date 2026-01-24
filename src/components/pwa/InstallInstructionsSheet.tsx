@@ -25,7 +25,7 @@ export default function InstallInstructionsSheet({ isOpen, onClose }: InstallIns
       onClick={handleBackdropClick}
     >
       <div
-        className="bg-[#4A5D7C] rounded-t-2xl p-6 max-w-md w-full shadow-xl border-t border-white/10"
+        className="bg-primary-blue rounded-t-2xl p-6 max-w-md w-full shadow-xl border-t border-white/10"
         onClick={(e) => e.stopPropagation()}
         style={{
           paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))',

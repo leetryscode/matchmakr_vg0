@@ -51,7 +51,7 @@ export default function InstallBar() {
   return (
     <>
       {/* Sticky install bar */}
-      <div className="sticky top-0 z-40 w-full bg-[#4A5D7C] border-b border-white/10 shadow-lg">
+      <div className="sticky top-0 z-40 w-full bg-primary-blue border-b border-white/10 shadow-lg">
         <div className="px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <p className="text-white text-sm font-medium">
