@@ -699,20 +699,28 @@ export default function OrbitCarouselHeader({
           }}
         />
       )}
-      {/* Hero light spill layer - full-bleed wrapper extending beyond bounds */}
+      {/* Hero light - two layers: spill (below) + core (centered) */}
       {sponsorCenter.x > 0 && sponsorCenter.y > 0 && (
-        <div 
-          className="absolute inset-[-80px] pointer-events-none"
-          style={{ zIndex: 5 }}
-        >
-          <div 
-            className="orbit-lightspill"
+        <>
+          <div
+            className="absolute pointer-events-none orbit-lightspill debug"
             style={{
-              left: `${sponsorCenter.x}px`,
-              top: `${sponsorCenter.y}px`,
+              left: sponsorCenter.x,
+              top: sponsorCenter.y,
+              transform: 'translate(-50%, -10%)',
+              zIndex: 5,
             }}
           />
-        </div>
+          <div
+            className="absolute pointer-events-none orbit-lightcore debug"
+            style={{
+              left: sponsorCenter.x,
+              top: sponsorCenter.y,
+              transform: 'translate(-50%, -50%)',
+              zIndex: 6,
+            }}
+          />
+        </>
       )}
       {/* Back arc SVG layer - behind everything (z-10) */}
       {containerSize.w > 0 && (

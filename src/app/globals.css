@@ -125,74 +125,102 @@ body {
   }
 }
 
-/* Hero light spill - star-like atmospheric glow */
+/* Hero light - two-layer approach: core + spill */
+
+/* Core glow + rays - centered on sponsor */
+.orbit-lightcore {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 999px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 50%,
+      rgba(255, 196, 107, 0.38) 0%,
+      rgba(255, 196, 107, 0.16) 28%,
+      rgba(255, 196, 107, 0.00) 62%
+    ),
+    conic-gradient(from 210deg at 50% 50%,
+      rgba(255, 196, 107, 0.00) 0deg,
+      rgba(255, 196, 107, 0.16) 14deg,
+      rgba(255, 196, 107, 0.00) 30deg,
+      rgba(255, 196, 107, 0.12) 46deg,
+      rgba(255, 196, 107, 0.00) 78deg,
+      rgba(255, 196, 107, 0.14) 96deg,
+      rgba(255, 196, 107, 0.00) 132deg,
+      rgba(255, 196, 107, 0.10) 170deg,
+      rgba(255, 196, 107, 0.00) 360deg
+    );
+  filter: blur(12px);
+  opacity: 0.55;
+}
+
+/* Downward spill - positioned slightly below sponsor */
 .orbit-lightspill {
   position: absolute;
-  pointer-events: none;
-
-  /* Very large rounded surface for full-bleed atmospheric effect */
-  width: 1200px;
-  height: 900px;
+  width: 520px;
+  height: 640px;
   border-radius: 999px;
-
-  background:
-    /* core glow */
-    radial-gradient(circle at 50% 28%,
-      rgba(15, 23, 42, 0.16) 0%,
-      rgba(15, 23, 42, 0.08) 24%,
-      rgba(15, 23, 42, 0.00) 58%
-    ),
-    /* rays (irregular, subtle) */
-    conic-gradient(from 210deg at 50% 28%,
-      rgba(15, 23, 42, 0.00) 0deg,
-      rgba(15, 23, 42, 0.14) 14deg,
-      rgba(15, 23, 42, 0.00) 30deg,
-      rgba(15, 23, 42, 0.10) 46deg,
-      rgba(15, 23, 42, 0.00) 78deg,
-      rgba(15, 23, 42, 0.12) 96deg,
-      rgba(15, 23, 42, 0.00) 132deg,
-      rgba(15, 23, 42, 0.10) 170deg,
-      rgba(15, 23, 42, 0.00) 360deg
-    ),
-    /* downward spill */
-    radial-gradient(ellipse at 50% 38%,
-      rgba(15, 23, 42, 0.10) 0%,
-      rgba(15, 23, 42, 0.05) 40%,
-      rgba(15, 23, 42, 0.00) 78%
-    );
-
-  filter: blur(18px);
-  opacity: 0.40;
-
-  /* Circular radial mask for soft edges - no rectangular boundaries */
-  mask-image: radial-gradient(
-    circle at 50% 28%,
-    rgba(0,0,0,1) 0%,
-    rgba(0,0,0,0.8) 45%,
-    rgba(0,0,0,0) 70%
+  pointer-events: none;
+  background: radial-gradient(ellipse 55% 85% at 50% 20%,
+    rgba(255, 196, 107, 0.18) 0%,
+    rgba(255, 196, 107, 0.07) 45%,
+    rgba(255, 196, 107, 0.00) 82%
   );
+  filter: blur(22px);
+  opacity: 0.30;
 }
 
-/* Ambient breathing animation */
-@keyframes orbit-breathe {
+/* Ambient breathing animation - core only */
+@keyframes orbit-breathe-core {
   0%, 100% {
-    opacity: 0.35;
-    transform: translate(-50%, -28%) scale(1);
+    opacity: 0.48;
+    transform: translate(-50%, -50%) scale(1);
   }
   50% {
-    opacity: 0.45;
-    transform: translate(-50%, -28%) scale(1.04);
+    opacity: 0.62;
+    transform: translate(-50%, -50%) scale(1.03);
   }
 }
 
-/* Apply breathing animation, respect prefers-reduced-motion */
+/* Subtle opacity breathe for spill */
+@keyframes orbit-breathe-spill {
+  0%, 100% {
+    opacity: 0.28;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Apply breathing animations, respect prefers-reduced-motion */
+.orbit-lightcore {
+  animation: orbit-breathe-core 8s ease-in-out infinite;
+}
+
 .orbit-lightspill {
-  animation: orbit-breathe 8s ease-in-out infinite;
+  animation: orbit-breathe-spill 8s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .orbit-lightcore,
   .orbit-lightspill {
     animation: none;
   }
+}
+
+/* Debug mode - verify positioning and centering */
+.orbit-lightcore.debug {
+  outline: 2px solid rgba(255, 0, 0, 0.35);
+  filter: blur(0) !important;
+  opacity: 1 !important;
+  animation: none !important;
+}
+
+.orbit-lightspill.debug {
+  outline: 2px solid rgba(0, 128, 255, 0.35);
+  filter: blur(0) !important;
+  opacity: 1 !important;
+  animation: none !important;
 }
 
