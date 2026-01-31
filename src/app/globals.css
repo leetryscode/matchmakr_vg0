@@ -127,7 +127,7 @@ body {
 
 /* Hero light - two-layer approach: core + spill */
 
-/* Core glow + rays - moonlight ivory, soft starlight */
+/* Core glow + rays - cool star-white, atmospheric light */
 .orbit-lightcore {
   position: absolute;
   width: 350px;
@@ -136,20 +136,20 @@ body {
   pointer-events: none;
   background:
     radial-gradient(circle at 50% 50%,
-      rgba(248, 245, 238, 0.34) 0%,
-      rgba(248, 245, 238, 0.16) 28%,
-      rgba(248, 245, 238, 0) 62%
+      rgba(232, 240, 255, 0.38) 0%,
+      rgba(232, 240, 255, 0.18) 28%,
+      rgba(232, 240, 255, 0) 62%
     ),
     conic-gradient(from 210deg at 50% 50%,
-      rgba(248, 245, 238, 0) 0deg,
-      rgba(248, 245, 238, 0.14) 14deg,
-      rgba(248, 245, 238, 0) 30deg,
-      rgba(248, 245, 238, 0.12) 46deg,
-      rgba(248, 245, 238, 0) 78deg,
-      rgba(248, 245, 238, 0.13) 96deg,
-      rgba(248, 245, 238, 0) 132deg,
-      rgba(248, 245, 238, 0.08) 170deg,
-      rgba(248, 245, 238, 0) 360deg
+      rgba(232, 240, 255, 0) 0deg,
+      rgba(232, 240, 255, 0.16) 14deg,
+      rgba(232, 240, 255, 0) 30deg,
+      rgba(232, 240, 255, 0.12) 46deg,
+      rgba(232, 240, 255, 0) 78deg,
+      rgba(232, 240, 255, 0.14) 96deg,
+      rgba(232, 240, 255, 0) 132deg,
+      rgba(232, 240, 255, 0.10) 170deg,
+      rgba(232, 240, 255, 0) 360deg
     );
   filter: blur(12px);
   opacity: 0.55;
@@ -163,9 +163,9 @@ body {
   border-radius: 999px;
   pointer-events: none;
   background: radial-gradient(ellipse 55% 85% at 50% 20%,
-    rgba(248, 245, 238, 0.18) 0%,
-    rgba(248, 245, 238, 0.08) 45%,
-    rgba(248, 245, 238, 0) 82%
+    rgba(232, 240, 255, 0.22) 0%,
+    rgba(232, 240, 255, 0.10) 45%,
+    rgba(232, 240, 255, 0) 82%
   );
   filter: blur(22px);
   opacity: 0.24;
