@@ -4,7 +4,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 // Orbit path constants (single source of truth)
-const HEADER_H = 220; // Must match Tailwind h-[220px]
+const HEADER_H = 240; // Must match Tailwind h-[240px]
 const CX = 0.52; // Fallback center X as fraction of width (used only if sponsor not measured yet)
 const CY = 0.48; // Fallback center Y as fraction of height (used only if sponsor not measured yet)
 // RX and RY are now calculated in pixel space based on container dimensions
@@ -62,9 +62,9 @@ const ORBIT_VISUALS = {
   },
   border: {
     width: '1px',
-    color: 'rgba(255, 255, 255, 0.15)',
+    color: 'rgba(15, 23, 42, 0.08)',
   },
-  sponsorShadow: '0 8px 24px rgba(0, 0, 0, 0.22)',
+  sponsorShadow: '0 10px 30px rgba(15, 23, 42, 0.14)',
 } as const;
 
 export type OrbitAvatar = {
@@ -368,7 +368,7 @@ export default function OrbitCarouselHeader({
   const anglesRad = parametricAnglesDeg.map(degToRad);
 
   // Compute satellites with geometry-driven depth
-  const SATELLITE_SIZE_PX = 56; // w-14 h-14 = 56px
+  const SATELLITE_SIZE_PX = 52; // w-[52px] h-[52px] = 52px
   
   // First pass: Get base orbit points and compute depthScore
   const satellitesWithDepth = displaySatellites.map((satellite, index) => {
@@ -648,7 +648,7 @@ export default function OrbitCarouselHeader({
       }} />
       <div 
         ref={containerRef} 
-        className="w-full h-[220px] relative px-4"
+        className="w-full h-[240px] relative px-4 pt-6 pb-6 overflow-hidden"
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerCancel={(e) => {
@@ -673,6 +673,16 @@ export default function OrbitCarouselHeader({
           }
         }}
       >
+      {/* HERO STAGE (no container) */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 1,
+          background:
+            `radial-gradient(120px 120px at 50% 52%, rgba(15, 23, 42, 0.06), rgba(15, 23, 42, 0.00) 62%),
+             radial-gradient(320px 180px at 50% 60%, rgba(15, 23, 42, 0.04), rgba(15, 23, 42, 0.00) 70%)`,
+        }}
+      />
       {/* Back arc SVG layer - behind everything (z-10) */}
       {containerSize.w > 0 && (
         <svg
@@ -685,10 +695,10 @@ export default function OrbitCarouselHeader({
         >
           <path
             d={backArcPath}
-            stroke="rgba(255, 255, 255, 0.10)"
-            strokeWidth="2"
+            stroke="rgba(15, 23, 42, 0.08)"
+            strokeWidth="1.5"
             fill="none"
-            strokeDasharray="4 10"
+            strokeDasharray="3 12"
           />
         </svg>
       )}
@@ -713,7 +723,7 @@ export default function OrbitCarouselHeader({
                     satelliteRefsRef.current.delete(satellite.id);
                   }
                 }}
-                className="orbit-avatar-highlight absolute left-1/2 top-1/2 w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-200"
+                className="orbit-avatar-highlight absolute left-1/2 top-1/2 w-[52px] h-[52px] rounded-full bg-gray-200 overflow-hidden flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-200"
                 style={{
                   transform: transform,
                   opacity: opacity,
@@ -756,7 +766,7 @@ export default function OrbitCarouselHeader({
           {/* Center avatar (sponsor) */}
           <div 
             ref={sponsorAvatarRef}
-            className="orbit-avatar-highlight orbit-avatar-sponsor w-20 h-20 rounded-full border border-white/15 bg-gray-200 overflow-hidden flex items-center justify-center relative cursor-pointer hover:scale-105 transition-transform duration-200"
+            className="orbit-avatar-highlight orbit-avatar-sponsor w-[84px] h-[84px] rounded-full border border-slate-900/10 bg-gray-200 overflow-hidden flex items-center justify-center relative cursor-pointer hover:scale-105 transition-transform duration-200 ring-4 ring-background-main/80"
             style={{
               boxShadow: ORBIT_VISUALS.sponsorShadow,
             }}
@@ -805,10 +815,10 @@ export default function OrbitCarouselHeader({
         >
           <path
             d={frontArcPath}
-            stroke="rgba(255, 255, 255, 0.22)"
-            strokeWidth="2"
+            stroke="rgba(15, 23, 42, 0.14)"
+            strokeWidth="1.5"
             fill="none"
-            strokeDasharray="4 10"
+            strokeDasharray="3 12"
           />
         </svg>
       )}
