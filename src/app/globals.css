@@ -112,5 +112,16 @@ body {
   .type-meta {
     @apply text-xs text-text-light leading-normal;
   }
+
+  /* Interactive row cards: chat rows, list items */
+  .ui-rowcard {
+    @apply rounded-card-lg bg-background-card shadow-card transition
+           px-5 py-4 flex items-center gap-4;
+  }
+
+  .ui-rowcard-hover {
+    @apply hover:shadow-card-hover hover:-translate-y-[1px]
+           active:translate-y-0 active:shadow-card;
+  }
 }
 

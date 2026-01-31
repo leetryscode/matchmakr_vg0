@@ -34,7 +34,7 @@ const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, 
     return (
         <div
             onClick={onClick}
-            className="bg-background-card hover:bg-background-card/95 rounded-card-lg shadow-card hover:shadow-card-hover transition-all duration-200 p-4 group cursor-pointer active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
+            className="bg-background-card hover:bg-background-card/95 rounded-card-lg shadow-card hover:shadow-card-hover hover:-translate-y-[1px] active:translate-y-0 active:shadow-card transition-all duration-200 p-4 group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {

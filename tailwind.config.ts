@@ -31,8 +31,8 @@ const config: Config = {
         'gradient-diagonal': `linear-gradient(45deg, ${palette.primary.blue} 0%, ${palette.primary.teal} 100%)`,
       },
       boxShadow: {
-        'card': '0 4px 24px rgba(15, 23, 42, 0.06)',
-        'card-hover': '0 12px 32px rgba(15, 23, 42, 0.08)',
+        'card': '0 6px 28px rgba(15, 23, 42, 0.07)',
+        'card-hover': '0 14px 36px rgba(15, 23, 42, 0.09)',
         'float': '0 4px 16px rgba(15, 23, 42, 0.10)',
         'deep': '0 6px 32px rgba(15, 23, 42, 0.10)',
         'deep-hover': '0 12px 48px rgba(15, 23, 42, 0.12)',

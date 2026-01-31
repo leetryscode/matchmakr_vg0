@@ -23,7 +23,7 @@ import { computeSingleStatus, type SingleStatus } from '@/lib/status/singleStatu
 const IntroductionsCard = () => (
     <Link 
         href="/pond"
-        className="block w-full bg-background-card hover:bg-background-card/90 rounded-card-lg shadow-card hover:shadow-card-hover transition-all duration-200 p-6 group cursor-pointer"
+        className="block w-full bg-background-card hover:bg-background-card/90 rounded-card-lg shadow-card hover:shadow-card-hover hover:-translate-y-[1px] active:translate-y-0 active:shadow-card transition-all duration-200 p-6 group cursor-pointer"
     >
         <div className="flex items-start justify-between">
             <div className="flex flex-col flex-1">
@@ -232,20 +232,24 @@ async function MatchMakrDashboardContent() {
             </div>
             
             {/* Consistent vertical rhythm between sections */}
-            <div className="flex flex-col space-y-8">
+            <div className="flex flex-col">
                 {/* Notifications */}
-                <NotificationsSection userId={user.id} />
+                <section className="mt-10 first:mt-0">
+                    <NotificationsSection userId={user.id} />
+                </section>
 
                 {/* Sponsor chat */}
-                <div>
+                <section className="mt-10">
                     <MatchMakrChatList userId={user.id} sponsoredSingles={processedSponsoredSingles || []} currentUserName={currentUserName} currentUserProfilePic={currentUserProfilePic} />
-                </div>
+                </section>
 
                 {/* Managed Singles */}
-                <ManagedSinglesGrid singles={processedSponsoredSingles} />
+                <section className="mt-10">
+                    <ManagedSinglesGrid singles={processedSponsoredSingles} />
+                </section>
 
                 {/* Chat with your singles */}
-                <div>
+                <section className="mt-10">
                     <SponsoredSinglesListClient 
                         sponsoredSingles={processedSponsoredSingles} 
                         singleChats={singleChats} 
@@ -253,16 +257,20 @@ async function MatchMakrDashboardContent() {
                         userName={currentUserName}
                         userProfilePic={currentUserProfilePic}
                     />
-                </div>
+                </section>
 
                 {/* Sneak peaks sent to my singles */}
-                <SneakPeeksSection 
-                    sponsorId={user.id}
-                    sponsoredSingles={processedSponsoredSingles}
-                />
+                <section className="mt-10">
+                    <SneakPeeksSection 
+                        sponsorId={user.id}
+                        sponsoredSingles={processedSponsoredSingles}
+                    />
+                </section>
 
                 {/* Introductions destination card */}
-                <IntroductionsCard />
+                <section className="mt-10">
+                    <IntroductionsCard />
+                </section>
                 
                 {/* Footer spacer with brand mark */}
                 <DashboardFooterSpacer />

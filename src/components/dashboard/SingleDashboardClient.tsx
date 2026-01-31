@@ -336,7 +336,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   // Helper: Render a chat row (used for both singles and matchmakr)
   const ChatRow = ({ photo, name, lastMessage, unreadCount, onClick, menu, timestamp, menuButton }: any) => (
     <div
-      className="flex items-center gap-4 py-2.5 w-full bg-background-card hover:bg-background-card/95 rounded-card-lg shadow-card hover:shadow-card-hover transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 mb-0.5 pl-3"
+      className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 mb-0.5"
       role="button"
       tabIndex={0}
       onClick={e => { if ((e.target as HTMLElement).closest('.menu-btn')) return; onClick && onClick(e); }}
@@ -358,17 +358,17 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         </div>
       </div>
       {timestamp && (
-        <div className="type-meta ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>
+        <div className="type-meta ml-3 whitespace-nowrap flex-shrink-0">
           {timestamp}
         </div>
       )}
       {unreadCount > 0 && (
-        <div className="ml-2 flex items-center">
+        <div className="ml-2 flex items-center flex-shrink-0">
           <FlameUnreadIcon count={unreadCount} />
         </div>
       )}
       {/* Three-dot menu button */}
-      <div className="relative menu-btn flex items-center justify-end ml-auto">
+      <div className="relative menu-btn flex items-center justify-end flex-shrink-0">
         {menuButton}
         {menu}
       </div>
@@ -392,23 +392,25 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
     return (
       <>
         <ProfileSection />
-        <div className="flex flex-col space-y-8 w-full">
+        <div className="flex flex-col w-full">
           {/* Notifications */}
-          <NotificationsSection />
+          <section className="mt-10 first:mt-0">
+            <NotificationsSection />
+          </section>
           
           {/* Get started section with inline invite */}
-          <div>
+          <section className="mt-10">
             <SectionHeader title="Get started" right={<InviteAction />} />
-            <div className="text-text-dark">Invite someone to be your sponsor to get started.</div>
-          </div>
+            <div className="mt-4 text-text-dark">Invite someone to be your sponsor to get started.</div>
+          </section>
           
           <InviteMatchMakrModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
           
           {/* My matches - empty state */}
-          <div>
+          <section className="mt-10">
             <SectionHeader title="Introduced by my sponsor" />
-            <div className="text-text-dark">No introductions yet. Once your sponsor agrees to the introduction, you can chat here.</div>
-          </div>
+            <div className="mt-4 text-text-dark">No introductions yet. Once your sponsor agrees to the introduction, you can chat here.</div>
+          </section>
           
           {/* Preview cards section - only renders when there are previews */}
           <PreviewCardsSection userId={userId} />
@@ -437,14 +439,17 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
       <ProfileSection />
       
       {/* Sections with proper spacing */}
-      <div className="flex flex-col space-y-8 w-full">
+      <div className="flex flex-col w-full">
         {/* Notifications */}
-        <NotificationsSection userId={userId} />
+        <section className="mt-10 first:mt-0">
+          <NotificationsSection userId={userId} />
+        </section>
         
         {/* My Sponsor Section */}
-        <div>
+        <section className="mt-10">
           <SectionHeader title="My Sponsor" right={<InviteSponsorAction />} />
-          <ChatRow
+          <div className="mt-4">
+            <ChatRow
             photo={sponsor.profile_pic_url}
             name={sponsor.name}
             lastMessage={sponsorLastMessage}
@@ -482,15 +487,16 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
               </div>
             )}
           />
-        </div>
+          </div>
+        </section>
         
         {/* My Matches Section */}
-        <div>
+        <section className="mt-10">
           <SectionHeader title="Introduced by my sponsor" />
           {singleChats.length === 0 ? (
-            <div className="text-text-dark">No introductions yet. Once your sponsor agrees to the introduction, you can chat here.</div>
+            <div className="mt-4 text-text-dark">No introductions yet. Once your sponsor agrees to the introduction, you can chat here.</div>
           ) : (
-            <div className="flex flex-col gap-1.5">
+            <div className="mt-4 space-y-4">
               {singleChats.map((row, idx) => (
                 <ChatRow
                   key={row.otherSingle.id}

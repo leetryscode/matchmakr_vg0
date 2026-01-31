@@ -389,6 +389,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     <div>
       {/* Section header */}
       <SectionHeader title="Sponsor chat" right={<InviteAction />} />
+      <div className="mt-4">
       {/* Chat rows for matchmakrs only */}
       {localConversations.length === 0 ||
         localConversations.filter((msg: any) => {
@@ -428,7 +429,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
               return (
                 <div
                   key={msg.id}
-                  className="flex items-center gap-4 py-3 pl-3 w-full bg-background-card hover:bg-background-card/95 rounded-card-lg shadow-card hover:shadow-card-hover transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
+                  className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
                   role="button"
                   tabIndex={0}
                   onClick={e => {
@@ -458,15 +459,15 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                     <div className="type-meta truncate mb-1">{singlesInfo}</div>
                     <div className="type-meta truncate">{msg.content}</div>
                   </div>
-                  <div className="type-meta ml-2 whitespace-nowrap" style={{marginRight: 'auto'}}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  <div className="type-meta ml-3 whitespace-nowrap flex-shrink-0">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                   {/* Unread icon, only show if unreadCount > 0 */}
                   {unreadCount > 0 && (
-                    <div className="ml-2 flex items-center">
+                    <div className="ml-2 flex items-center flex-shrink-0">
                       <FlameUnreadIcon count={unreadCount} />
                     </div>
                   )}
                   {/* Three dots menu */}
-                  <div className="relative menu-btn flex items-center justify-end ml-auto">
+                  <div className="relative menu-btn flex items-center justify-end flex-shrink-0">
                     <button
                       className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-background-card/50 focus:outline-none transition-colors text-text-light"
                       onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === msg.conversation.id ? null : msg.conversation.id); }}
@@ -498,10 +499,11 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             })}
         </div>
       )}
+      </div>
       {/* Sponsored Single Chat Row (if any) */}
       {sponsoredSingles && sponsoredSingles.length > 0 && (
         <div
-          className="flex items-center gap-4 py-3 pl-3 w-full bg-background-card hover:bg-background-card/95 rounded-card-lg shadow-card hover:shadow-card-hover transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 mb-2"
+          className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 mb-2"
           role="button"
           tabIndex={0}
           onClick={e => {

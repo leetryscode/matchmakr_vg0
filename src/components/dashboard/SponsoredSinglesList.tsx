@@ -88,14 +88,14 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
         <>
             {/* Section header */}
             <SectionHeader title="Chat with your singles" />
-            <div className="flex flex-col gap-2.5">
+            <div className="mt-4 flex flex-col gap-4">
                 {sponsoredSingles && sponsoredSingles.length > 0 ? (
                     sponsoredSingles.map(single => {
                         const lastMsg = latestMessages[single.id] || singleChats?.[single.id];
                         return (
                             <div
                                 key={single.id}
-                                className="flex items-center gap-4 py-3 px-4 w-full bg-background-card hover:bg-background-card/95 rounded-xl shadow-card hover:shadow-card-hover transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
+                                className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
                                 role="button"
                                 tabIndex={0}
                                 onClick={e => {
@@ -124,10 +124,10 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                                     )}
                                 </div>
                                 {lastMsg && (
-                                    <span className="text-xs text-text-light whitespace-nowrap mr-2">{new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                    <span className="text-xs text-text-light whitespace-nowrap ml-3 flex-shrink-0">{new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                 )}
                                 {unreadCounts[single.id] > 0 && (
-                                    <span className="ml-2 flex items-center">
+                                    <span className="ml-2 flex items-center flex-shrink-0">
                                         <FlameUnreadIcon count={unreadCounts[single.id]} />
                                     </span>
                                 )}

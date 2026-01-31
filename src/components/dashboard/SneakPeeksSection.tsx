@@ -63,10 +63,10 @@ const ExamplePreviewCard = () => {
             <div className="flex-1 min-w-0 flex flex-col justify-center">
                 {/* Actions - stacked vertically, narrower, quieter - matches real preview */}
                 <div className="flex flex-col gap-1.5">
-                    <div className="px-2.5 py-1 text-text-light bg-background-card rounded-lg text-xs max-w-[140px] shadow-sm">
+                    <div className="px-4 py-2 text-text-light bg-background-card rounded-lg text-xs max-w-[140px] shadow-sm">
                         I'm not sure yet
                     </div>
-                    <div className="px-2.5 py-1 text-text-light bg-background-card rounded-lg text-xs max-w-[140px] shadow-sm">
+                    <div className="px-4 py-2 text-text-light bg-background-card rounded-lg text-xs max-w-[140px] shadow-sm">
                         I'm open to it
                     </div>
                 </div>
@@ -110,7 +110,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
             {/* PILL CONTAINER - centered, smaller width */}
             <div
                 onClick={onClick}
-                className={`flex flex-col items-center justify-center h-[48px] w-[62%] mx-auto bg-background-card hover:bg-background-card/95 rounded-full shadow-card transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 ${
+                className={`flex flex-col items-center justify-center h-[48px] w-[62%] mx-auto bg-background-card hover:bg-background-card/95 rounded-full shadow-card hover:shadow-card-hover hover:-translate-y-[1px] active:translate-y-0 active:shadow-card transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 ${
                     isArchiving ? 'opacity-0 translate-x-2' : 'opacity-100 translate-x-0'
                 }`}
                 role="button"
@@ -280,26 +280,30 @@ export default function SneakPeeksSection({ sponsorId, sponsoredSingles }: Sneak
             {loading ? (
                 <div className="text-text-light text-sm">Loading...</div>
             ) : visibleSneakPeeks.length === 0 ? (
-                <div>
+                <div className="mt-4 rounded-card-lg bg-background-card shadow-card px-6 py-5">
                     <div className="mb-3">
                         <p className="text-xs text-text-light">No previews sent yet. This is what your single will see:</p>
                     </div>
-                    <ExamplePreviewCard />
+                    <div className="flex flex-col gap-3">
+                        <ExamplePreviewCard />
+                    </div>
                 </div>
             ) : (
-                <div className="flex flex-col gap-4">
-                    {visibleSneakPeeks.map((sneakPeek) => (
-                        <SneakPeekCard
-                            key={sneakPeek.id}
-                            sneakPeek={sneakPeek}
-                            targetName={targetNames[sneakPeek.target_single_id] || null}
-                            recipientName={recipientNameMap[sneakPeek.recipient_single_id] || null}
-                            recipientAvatarUrl={recipientAvatarMap[sneakPeek.recipient_single_id] || null}
-                            onClick={() => handleCardClick(sneakPeek.target_single_id)}
-                            onArchive={() => handleArchive(sneakPeek.id)}
-                            isArchiving={animatingOutIds.has(sneakPeek.id)}
-                        />
-                    ))}
+                <div className="mt-4 rounded-card-lg bg-background-card shadow-card px-6 py-5">
+                    <div className="flex flex-col gap-3">
+                        {visibleSneakPeeks.map((sneakPeek) => (
+                            <SneakPeekCard
+                                key={sneakPeek.id}
+                                sneakPeek={sneakPeek}
+                                targetName={targetNames[sneakPeek.target_single_id] || null}
+                                recipientName={recipientNameMap[sneakPeek.recipient_single_id] || null}
+                                recipientAvatarUrl={recipientAvatarMap[sneakPeek.recipient_single_id] || null}
+                                onClick={() => handleCardClick(sneakPeek.target_single_id)}
+                                onArchive={() => handleArchive(sneakPeek.id)}
+                                isArchiving={animatingOutIds.has(sneakPeek.id)}
+                            />
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
