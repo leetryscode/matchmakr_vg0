@@ -30,8 +30,8 @@ export const palette = {
     'gradient-end': '#3F6E73',
   },
   text: {
-    dark: '#F8FAFC',
-    light: '#D1D9E6',
+    dark: '#F6F8FC',
+    light: '#C9D3E2',
   },
   border: {
     light: 'rgba(255, 255, 255, 0.14)',

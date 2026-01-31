@@ -20,14 +20,14 @@ function PondBubble({ href }: { href: string }) {
     return (
         <Link href={href} className="flex items-center justify-center" aria-label="Pond">
             <div 
-                className="rounded-full flex items-center justify-center bg-background-card shadow-card"
+                className="rounded-full flex items-center justify-center bg-white/10 backdrop-blur-xl border border-white/15 shadow-card"
                 style={{ 
                     width: `${BOTTOM_NAV_HEIGHT_PX}px`,
                     height: `${BOTTOM_NAV_HEIGHT_PX}px`,
                 }}
             >
-                {/* Orbit brand mark: stylized "O" - larger to fill space */}
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary-blue">
+                {/* Orbit brand mark: stylized "O" - glass style */}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white/70">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
                     <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5" fill="none" />
                 </svg>
@@ -54,10 +54,10 @@ function NavItemButton({ onClick, icon, label }: NavItemButtonProps) {
             aria-label={label}
             title={label}
         >
-            <div className="flex items-center justify-center text-text-light hover:text-primary-blue transition-colors" style={{ width: '22px', height: '22px' }}>
+            <div className="flex items-center justify-center text-white/70 hover:text-white transition-colors" style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
-            <span className="type-meta mt-1 truncate max-w-full">{label}</span>
+            <span className="type-meta mt-1 truncate max-w-full text-white/70">{label}</span>
         </button>
     );
 }
@@ -77,10 +77,10 @@ function NavItemLink({ href, icon, label, isActive = false }: NavItemLinkProps) 
             aria-label={label}
             title={label}
         >
-            <div className={`flex items-center justify-center transition-colors ${isActive ? 'text-primary-blue' : 'text-text-light hover:text-primary-blue'}`} style={{ width: '22px', height: '22px' }}>
+            <div className={`flex items-center justify-center transition-colors ${isActive ? 'text-white' : 'text-white/70 hover:text-white'}`} style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
-            <span className={`type-meta mt-1 truncate max-w-full`}>{label}</span>
+            <span className={`type-meta mt-1 truncate max-w-full ${isActive ? 'text-white' : 'text-white/70'}`}>{label}</span>
         </Link>
     );
 }
@@ -204,9 +204,9 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
                 maxWidth: '400px'
             }}
         >
-            {/* Floating bottom navigation pill - with labels */}
+            {/* Floating bottom navigation pill - glass style */}
             <nav 
-                className="flex-1 rounded-card-lg px-4 py-3 overflow-hidden bg-background-card shadow-card"
+                className="flex-1 rounded-card-lg px-4 py-3 overflow-hidden bg-white/10 backdrop-blur-xl border border-white/15 shadow-card"
                 style={{ 
                     height: `${BOTTOM_NAV_HEIGHT_PX}px`,
                     minWidth: 0,
