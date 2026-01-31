@@ -4,7 +4,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 // Orbit path constants (single source of truth)
-const HEADER_H = 240; // Must match Tailwind h-[240px]
+const HEADER_H = 260; // Must match Tailwind h-[260px]
 const CX = 0.52; // Fallback center X as fraction of width (used only if sponsor not measured yet)
 const CY = 0.48; // Fallback center Y as fraction of height (used only if sponsor not measured yet)
 // RX and RY are now calculated in pixel space based on container dimensions
@@ -659,7 +659,7 @@ export default function OrbitCarouselHeader({
       }} />
       <div 
         ref={containerRef} 
-        className="w-full h-[240px] relative px-4 pt-6 pb-6 overflow-hidden"
+        className="w-full h-[260px] relative"
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerCancel={(e) => {
@@ -684,16 +684,36 @@ export default function OrbitCarouselHeader({
           }
         }}
       >
-      {/* HERO STAGE (no container) */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          zIndex: 1,
-          background:
-            `radial-gradient(120px 120px at 50% 52%, rgba(15, 23, 42, 0.06), rgba(15, 23, 42, 0.00) 62%),
-             radial-gradient(320px 180px at 50% 60%, rgba(15, 23, 42, 0.04), rgba(15, 23, 42, 0.00) 70%)`,
-        }}
-      />
+      {/* HERO STAGE - large rounded lighting blob (no rectangular boundaries) */}
+      {containerSize.w > 0 && (
+        <div
+          className="absolute left-1/2 top-1/2 pointer-events-none rounded-full"
+          style={{
+            zIndex: 1,
+            width: `${Math.max(containerSize.w * 1.2, 400)}px`,
+            height: `${Math.max(containerSize.h * 1.4, 360)}px`,
+            transform: 'translate(-50%, -50%)',
+            background:
+              `radial-gradient(120px 120px at 50% 52%, rgba(15, 23, 42, 0.06), rgba(15, 23, 42, 0.00) 62%),
+               radial-gradient(320px 180px at 50% 60%, rgba(15, 23, 42, 0.04), rgba(15, 23, 42, 0.00) 70%)`,
+          }}
+        />
+      )}
+      {/* Hero light spill layer - full-bleed wrapper extending beyond bounds */}
+      {sponsorCenter.x > 0 && sponsorCenter.y > 0 && (
+        <div 
+          className="absolute inset-[-80px] pointer-events-none"
+          style={{ zIndex: 5 }}
+        >
+          <div 
+            className="orbit-lightspill"
+            style={{
+              left: `${sponsorCenter.x}px`,
+              top: `${sponsorCenter.y}px`,
+            }}
+          />
+        </div>
+      )}
       {/* Back arc SVG layer - behind everything (z-10) */}
       {containerSize.w > 0 && (
         <svg
