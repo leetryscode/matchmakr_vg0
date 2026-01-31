@@ -73,6 +73,10 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
   const instanceIdRef = useRef<string>(`single-dashboard-${Math.random().toString(36).substr(2, 9)}`);
   const router = useRouter();
+  
+  // Modal states for both sponsored and unsponsored flows
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isInviteSponsorOpen, setIsInviteSponsorOpen] = useState(false);
 
   // Refactor fetchMatches to be callable - wrapped in useCallback for stable reference
   const fetchMatches = useCallback(async () => {
@@ -375,20 +379,28 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
     </div>
   );
 
+  // Inline invite action component for unsponsored state
+  const InviteAction = () => (
+    <button
+      onClick={() => setIsInviteOpen(true)}
+      className="type-meta bg-background-card hover:bg-background-card/90 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
+    >
+      Invite
+    </button>
+  );
+  
+  // Inline invite action component for sponsored state
+  const InviteSponsorAction = () => (
+    <button
+      onClick={() => setIsInviteSponsorOpen(true)}
+      className="type-meta bg-background-card hover:bg-background-card/90 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
+    >
+      Invite
+    </button>
+  );
+
   if (!sponsor) {
     // Unsponsored Single state: Invite Sponsor CTA + empty states
-    const [isInviteOpen, setIsInviteOpen] = useState(false);
-    
-    // Inline invite action component
-    const InviteAction = () => (
-      <button
-        onClick={() => setIsInviteOpen(true)}
-        className="type-meta bg-background-card hover:bg-background-card/90 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
-      >
-        Invite
-      </button>
-    );
-    
     return (
       <>
         <ProfileSection />
@@ -421,17 +433,6 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
       </>
     );
   }
-
-  // Inline invite action component for sponsored state
-  const [isInviteSponsorOpen, setIsInviteSponsorOpen] = useState(false);
-  const InviteSponsorAction = () => (
-    <button
-      onClick={() => setIsInviteSponsorOpen(true)}
-      className="type-meta bg-background-card hover:bg-background-card/90 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
-    >
-      Invite
-    </button>
-  );
 
   return (
     <>
