@@ -17,7 +17,7 @@ export default function HomePage() {
           <Link href="/onboarding" className="rounded-lg bg-gradient-primary px-8 py-3 font-light text-white shadow-button hover:shadow-button-hover hover:-translate-y-1 transition-all duration-300 text-center">
             Get Started
           </Link>
-          <Link href="/login" className="rounded-lg border border-border-light px-8 py-3 font-light text-gray-800 hover:shadow-button-hover hover:-translate-y-1 transition-all duration-300 text-center">
+          <Link href="/login" className="rounded-lg px-8 py-3 font-light text-gray-800 hover:shadow-button-hover hover:-translate-y-1 transition-all duration-300 text-center shadow-sm hover:shadow-md">
             Login
           </Link>
         </div>

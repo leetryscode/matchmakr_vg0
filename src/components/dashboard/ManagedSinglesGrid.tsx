@@ -38,7 +38,7 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
                 right={
                     <button
                         onClick={() => setIsInviteSingleModalOpen(true)}
-                        className="type-meta text-white/70 hover:text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-3 py-1 transition-colors"
+                        className="type-meta bg-background-card hover:bg-background-card/90 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
                     >
                         Invite
                     </button>
@@ -46,8 +46,8 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
             />
             
             {!singles || singles.length === 0 ? (
-                <div className="bg-white/5 rounded-card-lg border border-white/10 p-6 text-center mt-2">
-                    <p className="type-meta text-white/70">No managed singles yet</p>
+                <div className="bg-background-card rounded-card-lg shadow-card p-6 text-center mt-2">
+                    <p className="type-meta">No managed singles yet</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-2 gap-3 mt-2">

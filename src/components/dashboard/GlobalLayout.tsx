@@ -58,7 +58,7 @@ function GlobalLayoutContent({ children, showBottomNav = true }: GlobalLayoutPro
   }, [shouldShowBottomNav]);
 
   return (
-    <div className="min-h-[100dvh] bg-dashboard">
+    <div className="min-h-[100dvh] bg-background-main">
       {/* Persistent install bar - sticky at top, only shows when not standalone */}
       <InstallBar />
       {/* Main content with bottom padding to account for fixed navigation - always applied to prevent jump */}

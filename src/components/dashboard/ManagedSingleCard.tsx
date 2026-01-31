@@ -34,7 +34,7 @@ const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, 
     return (
         <div
             onClick={onClick}
-            className="bg-white/5 hover:bg-white/10 rounded-card-lg border border-white/10 hover:border-white/20 shadow-card hover:shadow-card-hover transition-all duration-200 p-4 group cursor-pointer active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-white"
+            className="bg-background-card hover:bg-background-card/95 rounded-card-lg shadow-card hover:shadow-card-hover transition-all duration-200 p-4 group cursor-pointer active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
@@ -46,7 +46,7 @@ const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, 
         >
             {/* Name row with chevron */}
             <div className="flex items-start justify-between mb-2">
-                <h3 className="text-base font-semibold text-white/90 flex-1 pr-2">
+                <h3 className="text-base font-semibold text-text-dark flex-1 pr-2">
                     {getDisplayName(single.name, single.sponsor_label)}
                 </h3>
                 {/* Right-facing chevron */}
@@ -59,7 +59,7 @@ const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, 
                     strokeLinecap="round" 
                     strokeLinejoin="round" 
                     viewBox="0 0 24 24"
-                    className="text-white/95 group-hover:text-white transition-colors flex-shrink-0"
+                    className="text-text-light group-hover:text-primary-blue transition-colors flex-shrink-0"
                 >
                     <polyline points="9,18 15,12 9,6" />
                 </svg>
@@ -73,7 +73,7 @@ const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, 
             </div>
 
             {/* Status description line */}
-            <div className="type-meta text-white/60">
+            <div className="type-meta">
                 {getStatusDescription(status, approvedMatchCount)}
             </div>
         </div>

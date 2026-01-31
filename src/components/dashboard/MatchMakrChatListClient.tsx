@@ -379,7 +379,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const InviteAction = () => (
     <button
       onClick={() => setIsInviteSponsorModalOpen(true)}
-      className="type-meta text-white/70 hover:text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-3 py-1 transition-colors"
+      className="type-meta bg-background-card hover:bg-background-card/90 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
     >
       Invite another sponsor
     </button>
@@ -400,8 +400,8 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
         }).length === 0 ? (
         <GlassCard variant="1" className="p-4 mb-6">
           <div className="text-center">
-            <h3 className="type-body mb-1 text-white/80">No sponsor chats yet</h3>
-            <p className="type-meta text-white/70">
+            <h3 className="type-body mb-1">No sponsor chats yet</h3>
+            <p className="type-meta">
               Message another sponsor to coordinate introductions.
             </p>
           </div>
@@ -428,7 +428,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
               return (
                 <div
                   key={msg.id}
-                  className="flex items-center gap-4 py-3 pl-3 w-full bg-white/5 hover:bg-white/10 rounded-card-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
+                  className="flex items-center gap-4 py-3 pl-3 w-full bg-background-card hover:bg-background-card/95 rounded-card-lg shadow-card hover:shadow-card-hover transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
                   role="button"
                   tabIndex={0}
                   onClick={e => {
@@ -444,11 +444,11 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                     }
                   }}
                 >
-                  <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white bg-gray-100 flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border-light bg-background-card flex-shrink-0">
                     {profile?.profile_pic_url ? (
                       <img src={profile.profile_pic_url} alt={profile.name || 'Sponsor'} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-white">
+                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-text-dark">
                         {profile?.name?.charAt(0).toUpperCase() || '?'}
                       </div>
                     )}
@@ -468,7 +468,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                   {/* Three dots menu */}
                   <div className="relative menu-btn flex items-center justify-end ml-auto">
                     <button
-                      className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-white/10 focus:outline-none transition-colors text-white"
+                      className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-background-card/50 focus:outline-none transition-colors text-text-light"
                       onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === msg.conversation.id ? null : msg.conversation.id); }}
                       tabIndex={-1}
                       aria-label="Open menu"
@@ -501,7 +501,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       {/* Sponsored Single Chat Row (if any) */}
       {sponsoredSingles && sponsoredSingles.length > 0 && (
         <div
-          className="flex items-center gap-4 py-3 pl-3 w-full bg-white/5 hover:bg-white/10 rounded-card-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-2"
+          className="flex items-center gap-4 py-3 pl-3 w-full bg-background-card hover:bg-background-card/95 rounded-card-lg shadow-card hover:shadow-card-hover transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 mb-2"
           role="button"
           tabIndex={0}
           onClick={e => {
@@ -532,11 +532,11 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             }
           }}
         >
-          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white bg-gray-100 flex-shrink-0">
+          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border-light bg-background-card flex-shrink-0">
             {sponsoredSingles[0].profile_pic_url ? (
               <img src={sponsoredSingles[0].profile_pic_url} alt={sponsoredSingles[0].name || 'Single'} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-white">
+              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-text-dark">
                 {sponsoredSingles[0].name?.charAt(0).toUpperCase() || '?'}
               </div>
             )}

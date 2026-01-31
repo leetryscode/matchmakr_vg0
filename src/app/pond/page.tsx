@@ -625,10 +625,10 @@ export default function PondPage() {
     // Show loading while auth is loading or if we're still loading data
     if (authLoading || (loading && profiles.length === 0 && !showingCachedData)) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-primary-blue to-primary-teal p-4 flex items-center justify-center">
+            <div className="min-h-screen bg-background-main p-4 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-                    <p className="mt-4 text-white">Loading...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mx-auto"></div>
+                    <p className="mt-4 text-text-dark">Loading...</p>
                 </div>
             </div>
         );
@@ -650,36 +650,36 @@ export default function PondPage() {
             showBackButton={true}
             backRoute="/dashboard"
         >
-        <div className="min-h-screen bg-gradient-to-br from-primary-blue to-primary-teal px-0 md:px-4">
+        <div className="min-h-screen bg-background-main px-0 md:px-4">
             <div className="max-w-none md:max-w-6xl md:mx-auto">
                 {/* Sticky Banner */}
-                <div className="sticky top-0 z-50 bg-black/35 backdrop-blur-md border-b border-white/10 shadow-sm shadow-black/20">
+                <div className="sticky top-0 z-50 bg-background-card shadow-sm">
                     <div className="px-4 md:px-0">
                         <div className="max-w-none md:max-w-6xl md:mx-auto">
                             {/* Row 1: Always visible - "Here for:" + selected single */}
                             <div className="flex items-center gap-3 py-3">
-                                <span className="text-white font-semibold text-base tracking-wide uppercase">Here for:</span>
+                                <span className="text-text-dark font-semibold text-base tracking-wide uppercase">Here for:</span>
                                 {currentSponsoredSingle ? (
                                     <div className="flex items-center gap-2">
                                         {currentSponsoredSingle.photo ? (
                                             <img 
                                                 src={currentSponsoredSingle.photo} 
                                                 alt={currentSponsoredSingle.name} 
-                                                className="w-8 h-8 rounded-full object-cover border border-white/30"
+                                                className="w-8 h-8 rounded-full object-cover border border-border-light"
                                             />
                                         ) : (
-                                            <div className="w-8 h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center">
-                                                <span className="text-white font-bold text-xs">
+                                            <div className="w-8 h-8 rounded-full bg-background-card border border-border-light flex items-center justify-center">
+                                                <span className="text-text-dark font-bold text-xs">
                                                     {currentSponsoredSingle.name?.charAt(0).toUpperCase() || '?'}
                                                 </span>
                                             </div>
                                         )}
-                                        <span className="text-white font-medium text-sm">{currentSponsoredSingle.name}</span>
+                                        <span className="text-text-dark font-medium text-sm">{currentSponsoredSingle.name}</span>
                                     </div>
                                 ) : (
                                     <button
                                         onClick={() => setShowInviteSingleModal(true)}
-                                        className="px-3 py-1 rounded-lg border border-white/20 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white transition-colors text-sm"
+                                        className="px-3 py-1 rounded-lg bg-background-card text-text-light hover:bg-background-card/90 hover:text-text-dark transition-colors text-sm shadow-sm hover:shadow-md"
                                     >
                                         Invite a single
                                     </button>
@@ -697,8 +697,8 @@ export default function PondPage() {
                                                     onClick={() => handleSingleSelect(single)}
                                                     className={`px-3 py-1 rounded-lg border transition-colors text-sm flex-shrink-0 ${
                                                         currentSponsoredSingle.id === single.id
-                                                            ? 'bg-white/20 border-white text-white'
-                                                            : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/15'
+                                                            ? 'bg-primary-blue border-primary-blue text-white'
+                                                            : 'bg-background-card border-border-light text-text-dark hover:bg-background-card/90'
                                                     }`}
                                                 >
                                                     {single.name}
@@ -709,14 +709,14 @@ export default function PondPage() {
                                     {/* Invite button */}
                                     <button
                                         onClick={() => setShowInviteSingleModal(true)}
-                                        className="px-3 py-1 rounded-lg border border-white/20 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white transition-colors text-sm flex-shrink-0"
+                                        className="px-3 py-1 rounded-lg bg-background-card text-text-light hover:bg-background-card/90 hover:text-text-dark transition-colors text-sm flex-shrink-0 shadow-sm hover:shadow-md"
                                     >
                                         Invite a single
                                     </button>
                                     {/* Tailor Search button */}
                                     <button
                                         onClick={() => setShowTailorSearchModal(true)}
-                                        className="px-3 py-1 rounded-lg border border-white/20 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white transition-colors text-sm flex-shrink-0"
+                                        className="px-3 py-1 rounded-lg bg-background-card text-text-light hover:bg-background-card/90 hover:text-text-dark transition-colors text-sm flex-shrink-0 shadow-sm hover:shadow-md"
                                     >
                                         Tailor Search
                                     </button>
@@ -729,13 +729,13 @@ export default function PondPage() {
                 {loading ? (
                     <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mx-auto"></div>
-                        <p className="mt-4 text-white">Loading profiles...</p>
-                        <p className="text-white text-sm">Debug: loading={loading.toString()}, profiles.length={profiles.length}</p>
+                        <p className="mt-4 text-text-dark">Loading profiles...</p>
+                        <p className="text-text-light text-sm">Debug: loading={loading.toString()}, profiles.length={profiles.length}</p>
                     </div>
                 ) : profiles.length === 0 ? (
                     <div className="text-center py-8">
-                        <p className="text-white text-lg">No singles found matching your criteria.</p>
-                        <p className="text-white mt-2">Try adjusting your search filters.</p>
+                        <p className="text-text-dark text-lg">No singles found matching your criteria.</p>
+                        <p className="text-text-light mt-2">Try adjusting your search filters.</p>
                     </div>
                 ) : (
                     <div>
@@ -748,7 +748,7 @@ export default function PondPage() {
                                 const isEndorsementTruncated = profile.matchmakr_endorsement && profile.matchmakr_endorsement.length > 140;
                                 return (
                                     <Link href={`/profile/${profile.id}`} key={profile.id} className="block">
-                                        <div className="md:rounded-2xl overflow-hidden border-0 md:border border-white/15 bg-white/5 md:bg-white/5">
+                                        <div className="md:rounded-2xl overflow-hidden bg-background-card md:bg-background-card shadow-card">
                                             {/* Image with overlay */}
                                             <div className="relative w-full aspect-[4/5] md:aspect-[1/1]">
                                                 {/* Send Preview Button */}
@@ -758,7 +758,7 @@ export default function PondPage() {
                                                         e.stopPropagation();
                                                         handleOpenSendPreview(profile);
                                                     }}
-                                                    className="absolute top-4 right-4 z-20 w-11 h-11 rounded-full flex items-center justify-center bg-transparent border border-white/70 hover:border-white hover:bg-white/5 active:scale-95 text-white shadow-md shadow-black/30 transition-transform duration-150 ease-out hover:scale-105"
+                                                    className="absolute top-4 right-4 z-20 w-11 h-11 rounded-full flex items-center justify-center bg-background-card/90 backdrop-blur-sm hover:bg-background-card active:scale-95 text-text-dark shadow-md transition-transform duration-150 ease-out hover:scale-105"
                                                     aria-label="Send preview"
                                                 >
                                                     <PaperAirplaneIcon className="w-5 h-5 -rotate-45" />
@@ -799,10 +799,10 @@ export default function PondPage() {
                                             {/* Endorsement caption */}
                                             {truncatedEndorsement && (
                                                 <div className="px-4 py-3">
-                                                    <p className="text-white/80 text-sm leading-relaxed line-clamp-2">
+                                                    <p className="text-text-dark text-sm leading-relaxed line-clamp-2">
                                                         <span className="font-semibold">{sponsorName} says:</span> {truncatedEndorsement}
                                                         {isEndorsementTruncated && (
-                                                            <span className="text-white/60"> More...</span>
+                                                            <span className="text-text-light"> More...</span>
                                                         )}
                                                     </p>
                                                 </div>
@@ -814,20 +814,20 @@ export default function PondPage() {
                                                         <img 
                                                             src={sponsorPhotoUrl} 
                                                             alt={sponsorName} 
-                                                            className="w-9 h-9 rounded-full object-cover border border-white/20" 
+                                                            className="w-9 h-9 rounded-full object-cover border border-border-light" 
                                                         />
                                                     ) : (
-                                                        <div className="w-9 h-9 rounded-full bg-white/20 border border-white/20 flex items-center justify-center">
-                                                            <span className="text-white font-bold text-xs">
+                                                        <div className="w-9 h-9 rounded-full bg-background-card border border-border-light flex items-center justify-center">
+                                                            <span className="text-text-dark font-bold text-xs">
                                                                 {sponsorName.charAt(0).toUpperCase()}
                                                             </span>
                                                         </div>
                                                     )}
-                                                    <span className="text-white/70 text-sm">{sponsorName}</span>
+                                                    <span className="text-text-light text-sm">{sponsorName}</span>
                                                 </div>
                                                 {profile.sponsored_by_id && (
                                                     <button
-                                                        className="px-4 py-1.5 rounded-full border border-accent-teal-light bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors"
+                                                        className="px-4 py-1.5 rounded-full border border-primary-teal bg-primary-teal/10 hover:bg-primary-teal/20 text-primary-teal text-sm font-medium transition-colors"
                                                         onClick={e => { e.preventDefault(); handleOpenChat(profile); }}
                                                     >
                                                         Message Sponsor
@@ -848,7 +848,7 @@ export default function PondPage() {
                         <button
                             onClick={loadMore}
                             disabled={loadingMore}
-                            className="px-8 py-3 bg-white/20 text-white rounded-lg border border-white/20 hover:bg-white/30 font-semibold transition-colors disabled:opacity-50"
+                            className="px-8 py-3 bg-primary-blue text-white rounded-lg border border-primary-blue hover:bg-primary-blue/90 font-semibold transition-colors disabled:opacity-50"
                         >
                             {loadingMore ? (
                                 <div className="flex items-center gap-2">

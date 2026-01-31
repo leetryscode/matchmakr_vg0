@@ -67,15 +67,15 @@ export default function NotificationNavItem({ userId, pathname }: NotificationNa
                 onClick={handleClick}
             >
                 {/* Bell SVG */}
-                <div className="flex items-center justify-center transition-colors text-white/75 hover:text-white" style={{ width: '22px', height: '22px' }}>
+                <div className={`flex items-center justify-center transition-colors ${activeCount > 0 ? 'text-primary-blue' : 'text-text-light hover:text-primary-blue'}`} style={{ width: '22px', height: '22px' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
                         <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                     </svg>
                 </div>
-                <span className="text-[10px] leading-none mt-1 text-white/60">Notifications</span>
+                <span className="type-meta mt-1 truncate max-w-full">Notifications</span>
                 {activeCount > 0 && !hideBadge && (
-                    <span className="absolute top-0 right-0 bg-white text-gray-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg border border-white/30" style={{transform: 'translate(50%,-50%)'}}>
+                    <span className="absolute top-0 right-0 bg-primary-teal text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg border border-primary-teal" style={{transform: 'translate(50%,-50%)'}}>
                         {activeCount}
                     </span>
                 )}

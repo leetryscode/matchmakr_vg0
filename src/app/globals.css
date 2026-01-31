@@ -97,20 +97,20 @@ body {
 /* Typography system - 3-tier hierarchy */
 @layer components {
   .type-display {
-    @apply font-brand text-2xl sm:text-3xl tracking-wide text-white leading-relaxed;
+    @apply font-brand text-2xl sm:text-3xl tracking-wide text-text-dark leading-relaxed;
   }
 
   .type-section {
-    @apply font-brand text-lg text-white/90 leading-normal;
+    @apply font-brand text-lg text-text-dark leading-normal;
     letter-spacing: 0.06em;
   }
 
   .type-body {
-    @apply text-sm sm:text-base text-white/80 leading-relaxed;
+    @apply text-sm sm:text-base text-text-dark leading-relaxed;
   }
 
   .type-meta {
-    @apply text-xs text-white/60 leading-normal;
+    @apply text-xs text-text-light leading-normal;
   }
 }
 

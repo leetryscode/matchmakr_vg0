@@ -20,19 +20,14 @@ function PondBubble({ href }: { href: string }) {
     return (
         <Link href={href} className="flex items-center justify-center" aria-label="Pond">
             <div 
-                className="rounded-full flex items-center justify-center border"
+                className="rounded-full flex items-center justify-center bg-background-card shadow-card"
                 style={{ 
                     width: `${BOTTOM_NAV_HEIGHT_PX}px`,
                     height: `${BOTTOM_NAV_HEIGHT_PX}px`,
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    borderColor: 'rgba(255, 255, 255, 0.25)',
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)',
-                    boxShadow: '0 8px 32px rgba(15, 23, 42, 0.08)'
                 }}
             >
                 {/* Orbit brand mark: stylized "O" - larger to fill space */}
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white/75">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary-blue">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
                     <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5" fill="none" />
                 </svg>
@@ -59,7 +54,7 @@ function NavItemButton({ onClick, icon, label }: NavItemButtonProps) {
             aria-label={label}
             title={label}
         >
-            <div className="flex items-center justify-center text-white/75 hover:text-white transition-colors" style={{ width: '22px', height: '22px' }}>
+            <div className="flex items-center justify-center text-text-light hover:text-primary-blue transition-colors" style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
             <span className="type-meta mt-1 truncate max-w-full">{label}</span>
@@ -82,7 +77,7 @@ function NavItemLink({ href, icon, label, isActive = false }: NavItemLinkProps) 
             aria-label={label}
             title={label}
         >
-            <div className={`flex items-center justify-center transition-colors ${isActive ? 'text-white' : 'text-white/75 hover:text-white'}`} style={{ width: '22px', height: '22px' }}>
+            <div className={`flex items-center justify-center transition-colors ${isActive ? 'text-primary-blue' : 'text-text-light hover:text-primary-blue'}`} style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
             <span className={`type-meta mt-1 truncate max-w-full`}>{label}</span>
@@ -211,15 +206,10 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
         >
             {/* Floating bottom navigation pill - with labels */}
             <nav 
-                className="flex-1 rounded-card-lg px-4 py-3 overflow-hidden border"
+                className="flex-1 rounded-card-lg px-4 py-3 overflow-hidden bg-background-card shadow-card"
                 style={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    borderColor: 'rgba(255, 255, 255, 0.25)',
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)',
                     height: `${BOTTOM_NAV_HEIGHT_PX}px`,
                     minWidth: 0,
-                    boxShadow: '0 8px 32px rgba(15, 23, 42, 0.08)'
                 }}
             >
                 {/* Inner container with full height - labels below icons */}

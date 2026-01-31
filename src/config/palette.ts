@@ -5,31 +5,36 @@
  * All color values should be defined here and imported elsewhere.
  * 
  * To change the theme colors, edit ONLY this file.
+ * 
+ * Current Palette: Pearl + Ink
+ * Design tone: clean, modern, light, calm, premium
+ * 
+ * Surface Experiment: All-white canvas - background.main and background.card are unified
  */
 
 export const palette = {
   primary: {
-    blue: '#4A5D7C',
-    teal: '#5B7396',
-    'blue-light': '#8E99A8',
-    'teal-light': '#A5B0C2',
+    blue: '#2F3A4A',
+    teal: '#3F6E73',
+    'blue-light': '#8E9AA9',
+    'teal-light': '#A9BDBC',
   },
   accent: {
-    'blue-light': '#8E99A8',
-    'teal-light': '#A5B0C2',
+    'blue-light': '#8E9AA9',
+    'teal-light': '#A9BDBC',
   },
   background: {
-    main: '#FAFAFA',
-    card: '#FFFFFF',
-    'gradient-start': '#4A5D7C',
-    'gradient-end': '#5B7396',
+    main: '#FFFDF7',
+    card: '#FFFDF7',
+    'gradient-start': '#2F3A4A',
+    'gradient-end': '#3F6E73',
   },
   text: {
-    dark: '#1F2937',
-    light: '#6B7280',
+    dark: '#1B2430',
+    light: '#5E6A75',
   },
   border: {
-    light: '#E5E7EB',
+    light: '#E2E6EA',
   },
 } as const;
 

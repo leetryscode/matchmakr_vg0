@@ -477,7 +477,7 @@ export default function ForumPage() {
   const selectedCategoryName = categories.find(cat => cat.id === selectedCategory)?.name;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-blue to-primary-teal">
+    <div className="min-h-screen bg-background-main">
       <div className="max-w-2xl mx-auto p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -489,15 +489,15 @@ export default function ForumPage() {
                 router.push('/dashboard/matchmakr');
               }
             }}
-            className="flex items-center gap-2 px-3 py-2 text-white/80 hover:text-white transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-text-light hover:text-text-dark transition-colors"
           >
             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
           </button>
           <div className="text-center">
-            <h1 className="text-xl font-light text-white tracking-[0.1em] uppercase font-brand">THE GREEN ROOM</h1>
-            <p className="text-sm text-white/60 mt-1">Help us build this platform by sharing your thoughts. The Dev Team is listening!</p>
+            <h1 className="text-xl font-light text-text-dark tracking-[0.1em] uppercase font-brand">THE GREEN ROOM</h1>
+            <p className="text-sm text-text-light mt-1">Help us build this platform by sharing your thoughts. The Dev Team is listening!</p>
           </div>
           <div className="w-8"></div> {/* Spacer for centering */}
         </div>
@@ -510,7 +510,7 @@ export default function ForumPage() {
               className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
                 selectedCategory === cat.id 
                   ? 'bg-primary-blue text-white border-primary-blue' 
-                  : 'bg-white/10 text-white/80 border-white/20 hover:bg-white/20'
+                  : 'bg-background-card text-text-dark border-border-light hover:bg-background-card/90'
               }`}
               onClick={() => setSelectedCategory(cat.id)}
             >
@@ -519,7 +519,7 @@ export default function ForumPage() {
           ))}
           {selectedCategory && (
             <button
-              className="px-3 py-1.5 rounded-lg border text-sm font-medium bg-white/10 text-white/80 border-white/20 hover:bg-white/20"
+              className="px-3 py-1.5 rounded-lg border text-sm font-medium bg-background-card text-text-dark border-border-light hover:bg-background-card/90"
               onClick={() => setSelectedCategory(null)}
             >
               Show All
@@ -529,25 +529,25 @@ export default function ForumPage() {
 
         {/* New Post Form - Twitter Style */}
         {selectedCategory && user && (
-          <div className="mb-6 bg-white/5 rounded-xl border border-white/10 p-4">
+          <div className="mb-6 bg-background-card rounded-xl shadow-card p-4">
             <div className="flex gap-3">
               <div className="flex-1">
                 <textarea
                   value={newPostContent}
                   onChange={(e) => setNewPostContent(e.target.value)}
                   placeholder="Post to the Green Room"
-                  className="w-full bg-transparent text-white placeholder-white/60 resize-none border-none outline-none text-lg"
+                  className="w-full bg-transparent text-text-dark placeholder-text-light resize-none border-none outline-none text-lg"
                   rows={1}
                   maxLength={280}
                 />
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
-                  <div className="text-sm text-white/60">
+                <div className="flex items-center justify-between mt-4 pt-4">
+                  <div className="text-sm text-text-light">
                     {newPostContent.length}/280
                   </div>
                   <button
                     onClick={handleCreatePost}
                     disabled={submitting || !newPostContent.trim()}
-                    className="bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:cursor-not-allowed border border-white/20"
+                    className="bg-primary-blue hover:bg-primary-blue/90 disabled:bg-primary-blue/50 text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:cursor-not-allowed border border-primary-blue"
                   >
                     {submitting ? 'Posting...' : 'Post'}
                   </button>
@@ -580,20 +580,20 @@ export default function ForumPage() {
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-blue-light mx-auto"></div>
-              <p className="mt-2 text-white/80">Loading posts...</p>
+              <p className="mt-2 text-text-light">Loading posts...</p>
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-white/80">No posts yet in this category.</p>
+              <p className="text-text-dark">No posts yet in this category.</p>
               {selectedCategory && (
-                <p className="text-sm text-white/60 mt-1">Be the first to start a conversation!</p>
+                <p className="text-sm text-text-light mt-1">Be the first to start a conversation!</p>
               )}
             </div>
           ) : (
             posts.map((post) => (
-              <div key={post.id} className="border-b border-white/10 p-4 hover:bg-white/5 transition-colors">
+              <div key={post.id} className="p-4 hover:bg-background-card/50 transition-colors">
                 <div className="flex gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/20 bg-gray-200 flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-border-light bg-background-card flex-shrink-0">
                     {post.user_photos && post.user_photos.length > 0 ? (
                       <img 
                         src={post.user_photos[0]} 
@@ -601,14 +601,14 @@ export default function ForumPage() {
                         className="w-full h-full object-cover" 
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-sm font-bold text-white">
+                      <div className="w-full h-full flex items-center justify-center text-sm font-bold text-text-dark">
                         {post.user_name?.charAt(0).toUpperCase() || ''}
                       </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-white text-sm">
+                      <span className="font-semibold text-text-dark text-sm">
                         {currentUserType === 'MATCHMAKR' ? (
                           <Link 
                             href={`/profile/${post.user_id}`}
@@ -620,16 +620,16 @@ export default function ForumPage() {
                           post.user_name
                         )}
                       </span>
-                      <span className="text-white/60 text-sm">·</span>
-                      <span className="text-white/60 text-sm">{formatRelativeTime(post.created_at)}</span>
-                      <span className="text-white/60 text-sm">·</span>
-                      <span className="text-white/60 text-sm">{formatUserType(post.user_type)}</span>
+                      <span className="text-text-light text-sm">·</span>
+                      <span className="text-text-light text-sm">{formatRelativeTime(post.created_at)}</span>
+                      <span className="text-text-light text-sm">·</span>
+                      <span className="text-text-light text-sm">{formatUserType(post.user_type)}</span>
                     </div>
-                    <div className="text-white text-sm leading-relaxed mb-3">{post.content}</div>
+                    <div className="text-text-dark text-sm leading-relaxed mb-3">{post.content}</div>
                     
                     {/* Action buttons */}
                     <div className="flex items-center justify-between max-w-md">
-                      <button className="flex items-center gap-2 text-white/60 hover:text-primary-blue text-sm transition-colors">
+                      <button className="flex items-center gap-2 text-text-light hover:text-primary-blue text-sm transition-colors">
                         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path d="M14 9V5a3 3 0 0 0-6 0v4" />
                           <rect x="2" y="9" width="20" height="12" rx="2" ry="2" />
@@ -638,7 +638,7 @@ export default function ForumPage() {
                       </button>
                       <button 
                         onClick={() => handleReplyClick(post.id)}
-                        className="flex items-center gap-2 text-white/60 hover:text-primary-blue text-sm transition-colors"
+                        className="flex items-center gap-2 text-text-light hover:text-primary-blue text-sm transition-colors"
                       >
                         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -648,7 +648,7 @@ export default function ForumPage() {
                       {post.reply_count > 0 && (
                         <button 
                           onClick={() => toggleReplies(post.id)}
-                          className="flex items-center gap-2 text-white/60 hover:text-primary-blue text-sm transition-colors"
+                          className="flex items-center gap-2 text-text-light hover:text-primary-blue text-sm transition-colors"
                         >
                           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path d="M7 8l4-4 4 4M7 16l4 4 4-4" />
@@ -660,7 +660,7 @@ export default function ForumPage() {
                         <button 
                           onClick={() => openDeleteModal('post', post.id)}
                           disabled={deletingPost === post.id}
-                          className="flex items-center gap-2 text-white/60 hover:text-red-400 text-sm transition-colors disabled:opacity-50"
+                          className="flex items-center gap-2 text-text-light hover:text-red-400 text-sm transition-colors disabled:opacity-50"
                         >
                           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
@@ -671,32 +671,32 @@ export default function ForumPage() {
 
                     {/* Reply Form */}
                     {replyingTo === post.id && user && (
-                      <div className="mt-4 pt-4 border-t border-white/10">
+                      <div className="mt-6 pt-6">
                         <div className="flex gap-3">
                           <div className="flex-1">
                             <textarea
                               value={replyContent}
                               onChange={(e) => setReplyContent(e.target.value)}
                               placeholder="Post your reply"
-                              className="w-full bg-transparent text-white placeholder-white/60 resize-none border-none outline-none text-sm"
+                              className="w-full bg-transparent text-text-dark placeholder-text-light resize-none border-none outline-none text-sm"
                               rows={2}
                               maxLength={140}
                             />
                             <div className="flex items-center justify-between mt-2">
-                              <div className="text-xs text-white/60">
+                              <div className="text-xs text-text-light">
                                 {replyContent.length}/140
                               </div>
                               <div className="flex gap-2">
                                 <button
                                   onClick={() => setReplyingTo(null)}
-                                  className="px-3 py-1 text-white/60 hover:text-white text-sm"
+                                  className="px-3 py-1 text-text-light hover:text-text-dark text-sm"
                                 >
                                   Cancel
                                 </button>
                                 <button
                                   onClick={() => handleCreateReply(post.id)}
                                   disabled={submittingReply || !replyContent.trim()}
-                                  className="bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white px-4 py-1 rounded-lg text-sm font-semibold transition-colors disabled:cursor-not-allowed border border-white/20"
+                                  className="bg-primary-blue hover:bg-primary-blue/90 disabled:bg-primary-blue/50 text-white px-4 py-1 rounded-lg text-sm font-semibold transition-colors disabled:cursor-not-allowed border border-primary-blue"
                                 >
                                   {submittingReply ? 'Posting...' : 'Reply'}
                                 </button>

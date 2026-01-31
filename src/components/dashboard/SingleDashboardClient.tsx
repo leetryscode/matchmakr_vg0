@@ -336,13 +336,13 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   // Helper: Render a chat row (used for both singles and matchmakr)
   const ChatRow = ({ photo, name, lastMessage, unreadCount, onClick, menu, timestamp, menuButton }: any) => (
     <div
-      className="flex items-center gap-4 py-2.5 w-full bg-white/10 rounded-card-lg border border-white/20 shadow-card transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white mb-0.5 pl-3"
+      className="flex items-center gap-4 py-2.5 w-full bg-background-card hover:bg-background-card/95 rounded-card-lg shadow-card hover:shadow-card-hover transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 mb-0.5 pl-3"
       role="button"
       tabIndex={0}
       onClick={e => { if ((e.target as HTMLElement).closest('.menu-btn')) return; onClick && onClick(e); }}
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick && onClick(e); } }}
     >
-      <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white bg-gray-100 flex-shrink-0">
+      <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border-light bg-background-card flex-shrink-0">
         {photo ? (
           <Image src={photo} alt={name} width={48} height={48} className="w-full h-full object-cover" />
         ) : (
@@ -383,7 +383,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
     const InviteAction = () => (
       <button
         onClick={() => setIsInviteOpen(true)}
-        className="type-meta text-white/70 hover:text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-3 py-1 transition-colors"
+        className="type-meta bg-background-card hover:bg-background-card/90 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
       >
         Invite
       </button>
@@ -399,7 +399,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           {/* Get started section with inline invite */}
           <div>
             <SectionHeader title="Get started" right={<InviteAction />} />
-            <div className="text-white/90">Invite someone to be your sponsor to get started.</div>
+            <div className="text-text-dark">Invite someone to be your sponsor to get started.</div>
           </div>
           
           <InviteMatchMakrModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
@@ -407,7 +407,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           {/* My matches - empty state */}
           <div>
             <SectionHeader title="Introduced by my sponsor" />
-            <div className="text-white/90">No introductions yet. Once your sponsor agrees to the introduction, you can chat here.</div>
+            <div className="text-text-dark">No introductions yet. Once your sponsor agrees to the introduction, you can chat here.</div>
           </div>
           
           {/* Preview cards section - only renders when there are previews */}
@@ -425,7 +425,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   const InviteSponsorAction = () => (
     <button
       onClick={() => setIsInviteSponsorOpen(true)}
-      className="type-meta text-white/70 hover:text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-3 py-1 transition-colors"
+      className="type-meta bg-background-card hover:bg-background-card/90 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
     >
       Invite
     </button>
@@ -453,7 +453,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             timestamp={sponsorTimestamp}
             menuButton={
               <button
-                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors text-white"
+                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-background-card/50 focus:outline-none transition-colors text-text-light"
                 onClick={e => { e.stopPropagation(); setSponsorMenuOpen(!sponsorMenuOpen); setMenuOpenIdx(null); }}
                 tabIndex={-1}
                 aria-label="Open menu"
@@ -488,7 +488,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         <div>
           <SectionHeader title="Introduced by my sponsor" />
           {singleChats.length === 0 ? (
-            <div className="text-white/90">No introductions yet. Once your sponsor agrees to the introduction, you can chat here.</div>
+            <div className="text-text-dark">No introductions yet. Once your sponsor agrees to the introduction, you can chat here.</div>
           ) : (
             <div className="flex flex-col gap-1.5">
               {singleChats.map((row, idx) => (
@@ -502,7 +502,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                   timestamp={row.lastMessage ? new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                   menuButton={
                     <button
-                      className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 focus:outline-none transition-colors text-white"
+                      className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-background-card/50 focus:outline-none transition-colors text-text-light"
                       onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); setSponsorMenuOpen(false); }}
                       tabIndex={-1}
                       aria-label="Open menu"

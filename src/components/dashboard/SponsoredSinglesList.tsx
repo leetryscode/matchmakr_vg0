@@ -95,7 +95,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                         return (
                             <div
                                 key={single.id}
-                                className="flex items-center gap-4 py-3 pl-3 w-full bg-white/5 hover:bg-white/10 rounded-card-lg transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
+                                className="flex items-center gap-4 py-3 px-4 w-full bg-background-card hover:bg-background-card/95 rounded-xl shadow-card hover:shadow-card-hover transition group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
                                 role="button"
                                 tabIndex={0}
                                 onClick={e => {
@@ -110,21 +110,21 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                                     } 
                                 }}
                             >
-                                <div className="w-14 h-14 rounded-full flex items-center justify-center bg-gradient-primary text-white font-bold text-xl overflow-hidden">
+                                <div className="w-14 h-14 rounded-full flex items-center justify-center bg-background-card border-2 border-border-light overflow-hidden flex-shrink-0">
                                     {single.profile_pic_url ? (
                                         <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full rounded-full object-cover" />
                                     ) : (
-                                        <span>{single.name?.charAt(0).toUpperCase() || '?'}</span>
+                                        <span className="text-text-dark font-bold text-xl">{single.name?.charAt(0).toUpperCase() || '?'}</span>
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <span className="type-body block">{single.name}</span>
+                                    <span className="type-body block text-text-dark">{single.name}</span>
                                     {lastMsg && (
-                                        <span className="type-meta block truncate max-w-xs">{lastMsg.content}</span>
+                                        <span className="type-meta block truncate max-w-xs text-text-light">{lastMsg.content}</span>
                                     )}
                                 </div>
                                 {lastMsg && (
-                                    <span className="text-xs text-white/60 whitespace-nowrap mr-2">{new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                    <span className="text-xs text-text-light whitespace-nowrap mr-2">{new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                 )}
                                 {unreadCounts[single.id] > 0 && (
                                     <span className="ml-2 flex items-center">
@@ -135,7 +135,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                         );
                     })
                 ) : (
-                    <div className="text-white/90 mb-6 w-full text-center">No sponsored singles</div>
+                    <div className="text-text-dark mb-6 w-full text-center">No sponsored singles</div>
                 )}
             </div>
         </>

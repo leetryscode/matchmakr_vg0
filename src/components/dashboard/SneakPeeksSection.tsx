@@ -32,18 +32,18 @@ interface SneakPeeksSectionProps {
 // Example preview card for empty state - matches real single preview structure, but smaller and lighter
 const ExamplePreviewCard = () => {
     return (
-        <div className="relative w-full bg-white/10 rounded-card-lg border border-white/20 p-3 flex items-center gap-3 opacity-80 pointer-events-none" style={{ maxWidth: '90%' }}>
+        <div className="relative w-full bg-background-card rounded-xl shadow-card p-3 flex items-center gap-3 opacity-80 pointer-events-none" style={{ maxWidth: '90%' }}>
             {/* X button - absolutely positioned, subtle overlay */}
-            <div className="absolute top-2 right-2 text-white/15 p-1">
+            <div className="absolute top-2 right-2 text-text-light/30 p-1">
                 <XMarkIcon className="w-3 h-3" />
             </div>
 
             {/* Left: Smaller rounded-rectangle image - matches real preview structure */}
             <div className="flex-shrink-0">
-                <div className="relative rounded-[18px] overflow-hidden border border-white/20 bg-gray-100" style={{ width: '64px', height: '64px' }}>
+                <div className="relative rounded-[18px] overflow-hidden bg-background-card" style={{ width: '64px', height: '64px' }}>
                     {/* Generic placeholder - simple outline person */}
-                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-gray-400">
+                    <div className="w-full h-full flex items-center justify-center bg-background-main">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-text-light">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                             <circle cx="12" cy="7" r="4" />
                         </svg>
@@ -63,10 +63,10 @@ const ExamplePreviewCard = () => {
             <div className="flex-1 min-w-0 flex flex-col justify-center">
                 {/* Actions - stacked vertically, narrower, quieter - matches real preview */}
                 <div className="flex flex-col gap-1.5">
-                    <div className="px-2.5 py-1 text-white/60 bg-white/5 hover:bg-white/8 border border-white/15 rounded-lg text-xs max-w-[140px]">
+                    <div className="px-2.5 py-1 text-text-light bg-background-card rounded-lg text-xs max-w-[140px] shadow-sm">
                         I'm not sure yet
                     </div>
-                    <div className="px-2.5 py-1 text-white/60 bg-white/5 hover:bg-white/8 border border-white/15 rounded-lg text-xs max-w-[140px]">
+                    <div className="px-2.5 py-1 text-text-light bg-background-card rounded-lg text-xs max-w-[140px] shadow-sm">
                         I'm open to it
                     </div>
                 </div>
@@ -110,7 +110,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
             {/* PILL CONTAINER - centered, smaller width */}
             <div
                 onClick={onClick}
-                className={`flex flex-col items-center justify-center h-[48px] w-[62%] mx-auto bg-white/3 hover:bg-white/5 rounded-full transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/30 ${
+                className={`flex flex-col items-center justify-center h-[48px] w-[62%] mx-auto bg-background-card hover:bg-background-card/95 rounded-full shadow-card transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 ${
                     isArchiving ? 'opacity-0 translate-x-2' : 'opacity-100 translate-x-0'
                 }`}
                 role="button"
@@ -124,7 +124,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
             >
                 <div className="flex items-center gap-2.5 px-3 w-full">
                     {/* Left end: Recipient avatar (normal emphasis) */}
-                    <div className="w-[40px] h-[40px] rounded-full flex items-center justify-center bg-gray-100 overflow-hidden flex-shrink-0 border border-white/10">
+                    <div className="w-[40px] h-[40px] rounded-full flex items-center justify-center bg-background-card overflow-hidden flex-shrink-0">
                         {recipientAvatarUrl ? (
                             <Image
                                 src={recipientAvatarUrl}
@@ -134,7 +134,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <span className="text-gray-400 text-sm font-bold">
+                            <span className="text-text-dark text-sm font-bold">
                                 {recipientName?.charAt(0).toUpperCase() || '?'}
                             </span>
                         )}
@@ -144,23 +144,23 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
                     <div className="flex-1 flex flex-col items-center justify-center min-w-0">
                         {/* LINE 1: RecipientName · TargetName */}
                         <div className="flex items-center gap-1.5 text-sm">
-                            <span className="text-white/90 font-semibold whitespace-nowrap">
+                            <span className="text-text-dark font-semibold whitespace-nowrap">
                                 {recipientName || 'Your single'}
                             </span>
-                            <span className="text-white/40">·</span>
-                            <span className="text-white/70 truncate min-w-0">
+                            <span className="text-text-light">·</span>
+                            <span className="text-text-light truncate min-w-0">
                                 {targetName || 'Someone'}
                             </span>
                         </div>
 
                         {/* LINE 2: Status pill (centered below names, with more spacing) */}
-                        <span className="px-2 py-0.5 text-[10px] text-white/50 border border-white/15 rounded-full bg-transparent mt-1.5">
+                        <span className="px-2 py-0.5 text-[10px] text-text-light rounded-full bg-background-main mt-1.5 shadow-sm">
                             {getStatusLabel(sneakPeek.status)}
                         </span>
                     </div>
 
                     {/* Right end: Target avatar (secondary - smaller and lower opacity) */}
-                    <div className="w-[32px] h-[32px] rounded-full flex items-center justify-center bg-gray-100 overflow-hidden flex-shrink-0 border border-white/10 opacity-75">
+                    <div className="w-[32px] h-[32px] rounded-full flex items-center justify-center bg-background-card overflow-hidden flex-shrink-0 opacity-75">
                         {sneakPeek.photo_url ? (
                             <Image
                                 src={sneakPeek.photo_url}
@@ -170,7 +170,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <span className="text-gray-400 text-xs font-bold">
+                            <span className="text-text-dark text-xs font-bold">
                                 {targetName?.charAt(0).toUpperCase() || '?'}
                             </span>
                         )}
@@ -181,7 +181,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
             {/* Dismiss X - OUTSIDE pill, absolute right, very subtle */}
             <button
                 onClick={handleArchiveClick}
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-white/15 hover:text-white/40 transition-colors p-1 flex-shrink-0"
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-text-light/30 hover:text-text-light transition-colors p-1 flex-shrink-0"
                 aria-label="Archive"
                 tabIndex={-1}
             >
@@ -272,17 +272,17 @@ export default function SneakPeeksSection({ sponsorId, sponsoredSingles }: Sneak
     return (
         <div>
             <div className="mb-3 mt-8 first:mt-0">
-                <h2 className="type-section">
+                <h2 className="type-section text-text-dark">
                     Preview responses
                 </h2>
             </div>
             
             {loading ? (
-                <div className="text-white/60 text-sm">Loading...</div>
+                <div className="text-text-light text-sm">Loading...</div>
             ) : visibleSneakPeeks.length === 0 ? (
                 <div>
                     <div className="mb-3">
-                        <p className="text-xs text-white/50">No previews sent yet. This is what your single will see:</p>
+                        <p className="text-xs text-text-light">No previews sent yet. This is what your single will see:</p>
                     </div>
                     <ExamplePreviewCard />
                 </div>
