@@ -9,7 +9,7 @@
  * Current Palette: Pearl + Ink
  * Design tone: clean, modern, light, calm, premium
  * 
- * Surface Experiment: All-white canvas - background.main and background.card are unified
+ * Surface Experiment: Soft blue-grey canvas - cards float above blue-slate
  */
 
 export const palette = {
@@ -24,8 +24,8 @@ export const palette = {
     'teal-light': '#A9BDBC',
   },
   background: {
-    main: '#FFFDF7',
-    card: '#FFFDF7',
+    main: '#F2F5F9',
+    card: '#FFFFFF',
     'gradient-start': '#2F3A4A',
     'gradient-end': '#3F6E73',
   },
