@@ -535,7 +535,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
               ))}
             </div>
           )}
-        </div>
+        </section>
         
         {/* Preview cards section - only renders when there are previews */}
         <PreviewCardsSection userId={userId} />
