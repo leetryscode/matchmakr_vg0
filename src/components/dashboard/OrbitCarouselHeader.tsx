@@ -637,12 +637,23 @@ export default function OrbitCarouselHeader({
             );
           }
           .orbit-avatar-sponsor::after {
+            background: none;
+          }
+          .orbit-sponsor-glow::before {
+            content: '';
+            position: absolute;
+            inset: -40px;
+            border-radius: 999px;
+            pointer-events: none;
             background: radial-gradient(
-              circle at top left,
-              rgba(255, 255, 255, 0.10),
-              rgba(255, 255, 255, 0.05) 30%,
-              rgba(255, 255, 255, 0.0) 60%
+              circle,
+              rgba(15, 23, 42, 0.12) 0%,
+              rgba(15, 23, 42, 0.06) 35%,
+              rgba(15, 23, 42, 0.00) 70%
             );
+            filter: blur(18px);
+            opacity: 1;
+            z-index: 0;
           }
         `
       }} />
@@ -764,12 +775,10 @@ export default function OrbitCarouselHeader({
       <div className="relative h-full flex items-center justify-center" style={{ zIndex: 35 }}>
         <div className="flex flex-col items-center justify-center gap-4">
           {/* Center avatar (sponsor) */}
-          <div 
+          <div
             ref={sponsorAvatarRef}
-            className="orbit-avatar-highlight orbit-avatar-sponsor w-[84px] h-[84px] rounded-full border border-slate-900/10 bg-gray-200 overflow-hidden flex items-center justify-center relative cursor-pointer hover:scale-105 transition-transform duration-200 ring-4 ring-background-main/80"
-            style={{
-              boxShadow: ORBIT_VISUALS.sponsorShadow,
-            }}
+            className="relative orbit-sponsor-glow cursor-pointer transition-transform duration-200 hover:scale-105"
+            style={{ zIndex: 1 }}
             onClick={() => router.push(`/profile/${centerUser.id}`)}
             role="button"
             tabIndex={0}
@@ -781,17 +790,25 @@ export default function OrbitCarouselHeader({
             }}
             aria-label={`View ${centerUser.name}'s profile`}
           >
-            {centerUser.avatarUrl ? (
-              <img
-                src={centerUser.avatarUrl}
-                alt={centerUser.name}
-                className="object-cover w-full h-full"
-              />
-            ) : (
-              <span className="text-white font-bold text-2xl">
-                {centerUser.name?.charAt(0).toUpperCase() || '?'}
-              </span>
-            )}
+            <div
+              className="orbit-avatar-highlight orbit-avatar-sponsor w-[84px] h-[84px] rounded-full border border-slate-900/10 bg-gray-200 overflow-hidden flex items-center justify-center relative"
+              style={{ 
+                boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)',
+                zIndex: 10
+              }}
+            >
+              {centerUser.avatarUrl ? (
+                <img
+                  src={centerUser.avatarUrl}
+                  alt={centerUser.name}
+                  className="object-cover w-full h-full"
+                />
+              ) : (
+                <span className="text-white font-bold text-2xl">
+                  {centerUser.name?.charAt(0).toUpperCase() || '?'}
+                </span>
+              )}
+            </div>
           </div>
           
           {/* Debug: minimal spacing info (development only, behind feature flag) */}
