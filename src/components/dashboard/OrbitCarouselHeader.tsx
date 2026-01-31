@@ -699,9 +699,18 @@ export default function OrbitCarouselHeader({
           }}
         />
       )}
-      {/* Hero light - two layers: spill (below) + core (centered) */}
+      {/* Hero light - feather (edge dissolve) + spill + core */}
       {sponsorCenter.x > 0 && sponsorCenter.y > 0 && (
         <>
+          <div
+            className="absolute pointer-events-none orbit-lightfeather"
+            style={{
+              left: sponsorCenter.x,
+              top: sponsorCenter.y,
+              transform: 'translate(-50%, -50%)',
+              zIndex: 4,
+            }}
+          />
           <div
             className="absolute pointer-events-none orbit-lightspill"
             style={{

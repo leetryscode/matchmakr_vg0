@@ -40,7 +40,7 @@ const IntroductionsCard = () => (
                 strokeLinecap="round" 
                 strokeLinejoin="round" 
                 viewBox="0 0 24 24"
-                className="text-primary-blue group-hover:text-primary-blue/80 transition-colors flex-shrink-0 ml-4"
+                className="text-text-dark group-hover:text-white/90 transition-colors flex-shrink-0 ml-4"
             >
                 <polyline points="9,18 15,12 9,6" />
             </svg>

@@ -125,9 +125,9 @@ body {
   }
 }
 
-/* Hero light - two-layer approach: core + spill */
+/* Hero light - core + spill + feather (lamplight, no visible edge) */
 
-/* Core glow + rays - cool star-white, atmospheric light */
+/* Core glow + rays - cool star-white, lamplight (balanced) */
 .orbit-lightcore {
   position: absolute;
   width: 350px;
@@ -137,25 +137,27 @@ body {
   background:
     radial-gradient(circle at 50% 50%,
       rgba(232, 240, 255, 0.48) 0%,
-      rgba(232, 240, 255, 0.22) 28%,
-      rgba(232, 240, 255, 0) 62%
+      rgba(232, 240, 255, 0.20) 28%,
+      rgba(232, 240, 255, 0.04) 55%,
+      rgba(232, 240, 255, 0) 72%
     ),
     conic-gradient(from 210deg at 50% 50%,
       rgba(232, 240, 255, 0) 0deg,
-      rgba(232, 240, 255, 0.22) 14deg,
-      rgba(232, 240, 255, 0) 30deg,
-      rgba(232, 240, 255, 0.16) 46deg,
-      rgba(232, 240, 255, 0) 78deg,
-      rgba(232, 240, 255, 0.20) 96deg,
-      rgba(232, 240, 255, 0) 132deg,
-      rgba(232, 240, 255, 0.14) 170deg,
+      rgba(232, 240, 255, 0.15) 14deg,
+      rgba(232, 240, 255, 0) 28deg,
+      rgba(232, 240, 255, 0.11) 46deg,
+      rgba(232, 240, 255, 0) 60deg,
+      rgba(232, 240, 255, 0.13) 96deg,
+      rgba(232, 240, 255, 0) 112deg,
+      rgba(232, 240, 255, 0.10) 170deg,
+      rgba(232, 240, 255, 0) 184deg,
       rgba(232, 240, 255, 0) 360deg
     );
-  filter: blur(10px);
+  filter: blur(11px);
   opacity: 0.55;
 }
 
-/* Downward spill - narrower, longer, positioned at sponsor level */
+/* Downward spill - balanced fade */
 .orbit-lightspill {
   position: absolute;
   width: 420px;
@@ -163,23 +165,41 @@ body {
   border-radius: 999px;
   pointer-events: none;
   background: radial-gradient(ellipse 55% 85% at 50% 20%,
-    rgba(232, 240, 255, 0.26) 0%,
-    rgba(232, 240, 255, 0.12) 45%,
-    rgba(232, 240, 255, 0) 82%
+    rgba(232, 240, 255, 0.25) 0%,
+    rgba(232, 240, 255, 0.11) 42%,
+    rgba(232, 240, 255, 0.03) 60%,
+    rgba(232, 240, 255, 0) 86%
   );
-  filter: blur(22px);
+  filter: blur(23px);
   opacity: 0.30;
 }
 
-/* Ambient breathing animation - core (opacity + tiny scale) */
+/* Outer feather - dissolves visible edge, no animation */
+.orbit-lightfeather {
+  position: absolute;
+  width: 1000px;
+  height: 1000px;
+  border-radius: 999px;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(232, 240, 255, 0.07) 0%,
+    rgba(232, 240, 255, 0.028) 40%,
+    rgba(232, 240, 255, 0.005) 70%,
+    rgba(232, 240, 255, 0) 94%
+  );
+  filter: blur(40px);
+  opacity: 0.34;
+}
+
+/* Ambient breathing animation - core (opacity only, no scale) */
 @keyframes orbit-breathe-core {
   0%, 100% {
-    opacity: 0.46;
-    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.52;
+    transform: translate(-50%, -50%);
   }
   50% {
-    opacity: 0.68;
-    transform: translate(-50%, -50%) scale(1.035);
+    opacity: 0.64;
+    transform: translate(-50%, -50%);
   }
 }
 
@@ -195,7 +215,7 @@ body {
 
 /* Apply breathing animations, respect prefers-reduced-motion */
 .orbit-lightcore {
-  animation: orbit-breathe-core 7s ease-in-out infinite;
+  animation: orbit-breathe-core 9s ease-in-out infinite;
 }
 
 .orbit-lightspill {
