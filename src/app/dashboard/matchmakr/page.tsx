@@ -215,8 +215,8 @@ async function MatchMakrDashboardContent() {
                 <div className="type-display mb-1">Hello, {firstName}</div>
             </div>
             
-            {/* Orbit Carousel Header */}
-            <div className="mt-1">
+            {/* Orbit Carousel Header - full-bleed on mobile, clip horizontal overflow */}
+            <div className="mt-1 min-h-0 -mx-4 sm:-mx-6 md:-mx-8" style={{ overflowX: 'clip' }}>
                 <OrbitCarouselHeader
                 centerUser={{
                     id: user.id,

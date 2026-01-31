@@ -659,7 +659,7 @@ export default function OrbitCarouselHeader({
       }} />
       <div 
         ref={containerRef} 
-        className="w-full h-[260px] relative"
+        className="w-full h-[260px] relative overflow-visible"
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerCancel={(e) => {
