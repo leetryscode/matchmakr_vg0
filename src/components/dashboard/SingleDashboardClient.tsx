@@ -496,7 +496,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           {singleChats.length === 0 ? (
             <div className="mt-4 text-text-dark">No introductions yet. Once your sponsor agrees to the introduction, you can chat here.</div>
           ) : (
-            <div className="mt-4 space-y-4">
+            <div className="mt-4 flex flex-col gap-4">
               {singleChats.map((row, idx) => (
                 <ChatRow
                   key={row.otherSingle.id}
