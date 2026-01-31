@@ -136,22 +136,22 @@ body {
   pointer-events: none;
   background:
     radial-gradient(circle at 50% 50%,
-      rgba(232, 240, 255, 0.38) 0%,
-      rgba(232, 240, 255, 0.18) 28%,
+      rgba(232, 240, 255, 0.48) 0%,
+      rgba(232, 240, 255, 0.22) 28%,
       rgba(232, 240, 255, 0) 62%
     ),
     conic-gradient(from 210deg at 50% 50%,
       rgba(232, 240, 255, 0) 0deg,
-      rgba(232, 240, 255, 0.16) 14deg,
+      rgba(232, 240, 255, 0.22) 14deg,
       rgba(232, 240, 255, 0) 30deg,
-      rgba(232, 240, 255, 0.12) 46deg,
+      rgba(232, 240, 255, 0.16) 46deg,
       rgba(232, 240, 255, 0) 78deg,
-      rgba(232, 240, 255, 0.14) 96deg,
+      rgba(232, 240, 255, 0.20) 96deg,
       rgba(232, 240, 255, 0) 132deg,
-      rgba(232, 240, 255, 0.10) 170deg,
+      rgba(232, 240, 255, 0.14) 170deg,
       rgba(232, 240, 255, 0) 360deg
     );
-  filter: blur(12px);
+  filter: blur(10px);
   opacity: 0.55;
 }
 
@@ -163,23 +163,23 @@ body {
   border-radius: 999px;
   pointer-events: none;
   background: radial-gradient(ellipse 55% 85% at 50% 20%,
-    rgba(232, 240, 255, 0.22) 0%,
-    rgba(232, 240, 255, 0.10) 45%,
+    rgba(232, 240, 255, 0.26) 0%,
+    rgba(232, 240, 255, 0.12) 45%,
     rgba(232, 240, 255, 0) 82%
   );
   filter: blur(22px);
-  opacity: 0.24;
+  opacity: 0.30;
 }
 
 /* Ambient breathing animation - core (opacity + tiny scale) */
 @keyframes orbit-breathe-core {
   0%, 100% {
-    opacity: 0.48;
+    opacity: 0.46;
     transform: translate(-50%, -50%) scale(1);
   }
   50% {
-    opacity: 0.62;
-    transform: translate(-50%, -50%) scale(1.025);
+    opacity: 0.68;
+    transform: translate(-50%, -50%) scale(1.035);
   }
 }
 
@@ -189,17 +189,17 @@ body {
     opacity: 0.22;
   }
   50% {
-    opacity: 0.26;
+    opacity: 0.30;
   }
 }
 
 /* Apply breathing animations, respect prefers-reduced-motion */
 .orbit-lightcore {
-  animation: orbit-breathe-core 8s ease-in-out infinite;
+  animation: orbit-breathe-core 7s ease-in-out infinite;
 }
 
 .orbit-lightspill {
-  animation: orbit-breathe-spill 8s ease-in-out infinite;
+  animation: orbit-breathe-spill 7s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

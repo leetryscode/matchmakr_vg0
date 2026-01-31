@@ -647,7 +647,7 @@ export default function OrbitCarouselHeader({
             pointer-events: none;
             background: radial-gradient(
               circle,
-              rgba(15, 23, 42, 0.12) 0%,
+              rgba(15, 23, 42, 0.09) 0%,
               rgba(15, 23, 42, 0.06) 35%,
               rgba(15, 23, 42, 0.00) 70%
             );
