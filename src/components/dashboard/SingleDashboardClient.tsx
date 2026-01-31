@@ -407,7 +407,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         <div className="flex flex-col w-full">
           {/* Notifications */}
           <section className="mt-10 first:mt-0">
-            <NotificationsSection />
+            <NotificationsSection userId={userId} />
           </section>
           
           {/* Get started section with inline invite */}
