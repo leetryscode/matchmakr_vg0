@@ -703,16 +703,16 @@ export default function OrbitCarouselHeader({
       {sponsorCenter.x > 0 && sponsorCenter.y > 0 && (
         <>
           <div
-            className="absolute pointer-events-none orbit-lightspill debug"
+            className="absolute pointer-events-none orbit-lightspill"
             style={{
               left: sponsorCenter.x,
               top: sponsorCenter.y,
-              transform: 'translate(-50%, -10%)',
+              transform: 'translate(-50%, 0%)',
               zIndex: 5,
             }}
           />
           <div
-            className="absolute pointer-events-none orbit-lightcore debug"
+            className="absolute pointer-events-none orbit-lightcore"
             style={{
               left: sponsorCenter.x,
               top: sponsorCenter.y,

@@ -127,17 +127,17 @@ body {
 
 /* Hero light - two-layer approach: core + spill */
 
-/* Core glow + rays - centered on sponsor */
+/* Core glow + rays - centered on sponsor (tighter, brighter source) */
 .orbit-lightcore {
   position: absolute;
-  width: 420px;
-  height: 420px;
+  width: 350px;
+  height: 350px;
   border-radius: 999px;
   pointer-events: none;
   background:
     radial-gradient(circle at 50% 50%,
-      rgba(255, 196, 107, 0.38) 0%,
-      rgba(255, 196, 107, 0.16) 28%,
+      rgba(255, 196, 107, 0.44) 0%,
+      rgba(255, 196, 107, 0.18) 28%,
       rgba(255, 196, 107, 0.00) 62%
     ),
     conic-gradient(from 210deg at 50% 50%,
@@ -155,11 +155,11 @@ body {
   opacity: 0.55;
 }
 
-/* Downward spill - positioned slightly below sponsor */
+/* Downward spill - narrower, longer, positioned at sponsor level */
 .orbit-lightspill {
   position: absolute;
-  width: 520px;
-  height: 640px;
+  width: 420px;
+  height: 760px;
   border-radius: 999px;
   pointer-events: none;
   background: radial-gradient(ellipse 55% 85% at 50% 20%,
@@ -168,10 +168,10 @@ body {
     rgba(255, 196, 107, 0.00) 82%
   );
   filter: blur(22px);
-  opacity: 0.30;
+  opacity: 0.24;
 }
 
-/* Ambient breathing animation - core only */
+/* Ambient breathing animation - core (opacity + tiny scale) */
 @keyframes orbit-breathe-core {
   0%, 100% {
     opacity: 0.48;
@@ -179,17 +179,17 @@ body {
   }
   50% {
     opacity: 0.62;
-    transform: translate(-50%, -50%) scale(1.03);
+    transform: translate(-50%, -50%) scale(1.025);
   }
 }
 
-/* Subtle opacity breathe for spill */
+/* Subtle opacity breathe for spill (no scale) */
 @keyframes orbit-breathe-spill {
   0%, 100% {
-    opacity: 0.28;
+    opacity: 0.22;
   }
   50% {
-    opacity: 0.35;
+    opacity: 0.26;
   }
 }
 
