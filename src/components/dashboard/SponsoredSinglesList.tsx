@@ -6,6 +6,7 @@ import Link from 'next/link';
 import FlameUnreadIcon from './FlameUnreadIcon';
 import { useRouter, usePathname } from 'next/navigation';
 import SectionHeader from '@/components/ui/SectionHeader';
+import PreviewRow from '@/components/ui/PreviewRow';
 
 interface SponsoredSingle {
     id: string;
@@ -135,7 +136,14 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                         );
                     })
                 ) : (
-                    <div className="text-text-dark mb-6 w-full text-center">No sponsored singles</div>
+                    <>
+                        <p className="type-meta text-text-light">
+                            Conversations with singles you sponsor will appear here.
+                        </p>
+                        <div className="mt-2">
+                            <PreviewRow title="Single Name" subtitle="Chat with your sponsored single" label="Preview" />
+                        </div>
+                    </>
                 )}
             </div>
         </>
