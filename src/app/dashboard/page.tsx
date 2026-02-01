@@ -144,7 +144,7 @@ export default function DashboardBootPage() {
       });
 
       const result = await Promise.race([
-        boot().then((ok) => (ok ? 'done' : 'redirected') as const),
+        boot().then((ok): 'done' | 'redirected' => (ok ? 'done' : 'redirected')),
         ceiling,
       ]);
 
