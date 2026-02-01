@@ -139,45 +139,42 @@ export function getStatusDescription(status: SingleStatus, approvedMatchCount: n
   }
 }
 
+/** Base classes for all status pills (outline-only, no fill; border-2; text matches border). */
+const STATUS_PILL_BASE =
+  'inline-flex items-center rounded-full border-2 px-3 py-1 text-[11px] font-semibold tracking-wide uppercase bg-transparent';
+
+/** Sponsor/MatchMakr: color classes only (border + text) per status. */
+const STATUS_COLOR: Record<SingleStatus, string> = {
+  PAUSED: 'border-status-paused text-status-paused',
+  INVITED: 'border-status-invited text-status-invited',
+  NEEDS_ATTENTION: 'border-status-needs-attention text-status-needs-attention',
+  IN_MOTION: 'border-status-in-motion text-status-in-motion',
+  NEEDS_INTRODUCTION: 'border-status-needs-introduction text-status-needs-introduction',
+};
+
+/** Single-facing: same tokens; INVITED uses needs_introduction color (shown as "Available"). */
+const SINGLE_FACING_STATUS_COLOR: Record<SingleStatus, string> = {
+  PAUSED: 'border-status-paused text-status-paused',
+  INVITED: 'border-status-needs-introduction text-status-needs-introduction',
+  NEEDS_ATTENTION: 'border-status-needs-attention text-status-needs-attention',
+  IN_MOTION: 'border-status-in-motion text-status-in-motion',
+  NEEDS_INTRODUCTION: 'border-status-needs-introduction text-status-needs-introduction',
+};
+
 /**
- * Gets the status pill styling classes
+ * Gets the status pill styling classes (sponsor/MatchMakr).
+ * Outline-only: bg-transparent, border + text use status tokens.
  */
 export function getStatusStyles(status: SingleStatus): string {
-  switch (status) {
-    case 'PAUSED':
-      return 'bg-gray-500/15 text-gray-300 border-gray-500/20';
-    case 'INVITED':
-      return 'bg-blue-500/15 text-blue-300 border-blue-500/20';
-    case 'NEEDS_ATTENTION':
-      return 'bg-yellow-500/15 text-yellow-300 border-yellow-500/20';
-    case 'IN_MOTION':
-      return 'bg-green-500/15 text-green-300 border-green-500/20';
-    case 'NEEDS_INTRODUCTION':
-      return 'bg-white/10 text-white/90 border-white/10';
-  }
+  return `${STATUS_PILL_BASE} ${STATUS_COLOR[status]}`;
 }
 
 /**
- * Gets the single-facing status pill styling classes
- * Softer, more reassuring tones compared to sponsor-facing pills
+ * Gets the single-facing status pill styling classes.
+ * Same outline-only pattern; INVITED uses needs_introduction color (label "Available").
  */
 export function getSingleFacingStatusStyles(status: SingleStatus): string {
-  switch (status) {
-    case 'PAUSED':
-      return 'bg-gray-500/15 text-gray-300 border-gray-500/20';
-    case 'NEEDS_ATTENTION':
-      return 'bg-yellow-500/15 text-yellow-300 border-yellow-500/20';
-    case 'IN_MOTION':
-      // Softer, desaturated green for single-facing (reassuring, not urgent)
-      return 'bg-emerald-500/12 text-emerald-200 border-emerald-500/15';
-    case 'NEEDS_INTRODUCTION':
-      return 'bg-white/10 text-white/90 border-white/10';
-    case 'INVITED':
-      // This should never be shown to singles, but provide fallback
-      return 'bg-white/10 text-white/90 border-white/10';
-    default:
-      return 'bg-white/10 text-white/90 border-white/10';
-  }
+  return `${STATUS_PILL_BASE} ${SINGLE_FACING_STATUS_COLOR[status]}`;
 }
 
 // Example test cases (for documentation/sanity checking):

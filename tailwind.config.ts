@@ -7,6 +7,19 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+    // Status pill colors (used dynamically via getStatusStyles / getSingleFacingStatusStyles)
+    'border-status-paused',
+    'text-status-paused',
+    'border-status-invited',
+    'text-status-invited',
+    'border-status-needs-attention',
+    'text-status-needs-attention',
+    'border-status-in-motion',
+    'text-status-in-motion',
+    'border-status-needs-introduction',
+    'text-status-needs-introduction',
+  ],
   theme: {
     extend: {
       colors: {
@@ -16,6 +29,13 @@ const config: Config = {
         text: palette.text,
         border: palette.border,
         action: palette.action,
+        status: {
+          paused: palette.status.paused,
+          invited: palette.status.invited,
+          'needs-attention': palette.status.needs_attention,
+          'in-motion': palette.status.in_motion,
+          'needs-introduction': palette.status.needs_introduction,
+        },
       },
       fontFamily: {
         'inter': ['Inter', 'sans-serif'],

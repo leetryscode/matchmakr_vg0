@@ -36,6 +36,17 @@ export const palette = {
   border: {
     light: 'rgba(255, 255, 255, 0.14)',
   },
+  /**
+   * Status colors — semantic metadata for pill outlines/text and small indicators only.
+   * Brighter, higher contrast on blue-grey canvas. Outline-only pills; text matches border.
+   */
+  status: {
+    paused: '#8B8AB3',             // brighter slate violet
+    invited: '#5F86C4',            // brighter blue
+    needs_attention: '#E0AA3E',   // warmer amber
+    in_motion: '#5FB58C',          // brighter green
+    needs_introduction: '#5F86C4', // same as invited
+  },
   /** Primary CTA: white fill, slate blue text. No gradients, no teal. */
   action: {
     entry: '#FFFFFF',

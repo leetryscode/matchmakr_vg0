@@ -86,7 +86,7 @@ const AvailabilitySection: React.FC<AvailabilitySectionProps> = ({ status, userI
       {/* Always visible: Status pill and explanation */}
       {/* Row 1: Pill (left) + Chevron (right) */}
       <div className="flex items-center justify-between mb-2">
-        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium border uppercase tracking-wide transition-colors duration-150 ${getSingleFacingStatusStyles(currentStatus)}`}>
+        <span className={`${getSingleFacingStatusStyles(currentStatus)} transition-colors duration-150`}>
           {getSingleFacingStatusLabel(currentStatus)}
         </span>
         

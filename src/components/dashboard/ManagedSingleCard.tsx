@@ -67,7 +67,7 @@ const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, 
 
             {/* Status chip row */}
             <div className="mb-2">
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium border uppercase tracking-wide ${getStatusStyles(status)}`}>
+                <span className={getStatusStyles(status)}>
                     {getStatusLabel(status)}
                 </span>
             </div>
