@@ -35,7 +35,7 @@ export default function PreviewRow({
       <div
         className={cn(
           'ui-rowcard flex items-center gap-3 select-none',
-          'opacity-[0.78] cursor-default pointer-events-none',
+          'opacity-[0.88] cursor-default pointer-events-none',
           'rounded-card-lg bg-background-card shadow-card px-5 py-3',
           'border border-border-light/60'
         )}

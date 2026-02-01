@@ -63,39 +63,34 @@ export default function TrustLockup({
   const router = useRouter();
   const config = TRUST_LOCKUP_CONFIG;
   
-  const hasSponsor = !!secondaryAvatarUrl && !!secondaryName && !!secondaryId;
-  
+  const hasSponsor = secondaryId != null;
+  const showSecondary = true; // Always show secondary (sponsor or placeholder) for layout continuity
+
   // Circle radii (half of size)
   const r1 = config.primarySizePx / 2;
   const r2 = config.secondarySizePx / 2;
-  
+
   // Primary circle center (we'll position relative to this, then translate)
   const primaryCenterX = r1;
   const primaryCenterY = r1;
-  
+
   // Calculate direction vector from offsetX/offsetY
   const directionLength = Math.sqrt(config.offsetX * config.offsetX + config.offsetY * config.offsetY);
-  
-  // Calculate desired center-to-center distance based on mode
-  let desiredDistance: number;
-  if (hasSponsor) {
-    if (config.overlapMode === 'gap') {
-      desiredDistance = r1 + r2 + config.gapPx;
-    } else {
-      desiredDistance = r1 + r2 - config.overlapPx;
-    }
-  } else {
-    desiredDistance = 0; // No sponsor, no need to calculate
-  }
+
+  // Calculate desired center-to-center distance (same whether sponsor or placeholder, so layout never jumps)
+  const desiredDistance =
+    config.overlapMode === 'gap'
+      ? r1 + r2 + config.gapPx
+      : r1 + r2 - config.overlapPx;
   
   // Normalize direction vector and scale to desired distance
   let secondaryCenterX = primaryCenterX;
   let secondaryCenterY = primaryCenterY;
-  
-  if (hasSponsor && directionLength > 0) {
+
+  if (showSecondary && directionLength > 0) {
     const normalizedX = config.offsetX / directionLength;
     const normalizedY = config.offsetY / directionLength;
-    
+
     secondaryCenterX = primaryCenterX + normalizedX * desiredDistance;
     secondaryCenterY = primaryCenterY + normalizedY * desiredDistance;
   }
@@ -214,52 +209,75 @@ export default function TrustLockup({
           )}
         </button>
         
-        {/* Secondary circle (Sponsor) - only render if sponsor exists */}
-        {hasSponsor && (
-          <button
-            onClick={() => router.push(`/profile/${secondaryId}`)}
-            className="absolute rounded-full overflow-hidden flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent-teal-light transition-transform hover:scale-105"
-            style={{
-              left: `${secondaryLeftFinal}px`,
-              top: `${secondaryTopFinal}px`,
-              width: `${config.secondarySizePx}px`,
-              height: `${config.secondarySizePx}px`,
-              border: `${config.borderWidth} solid ${config.borderColor}`,
-              boxShadow: config.secondaryShadow,
-              backgroundColor: palette.border.light,
-              zIndex: secondaryZIndex,
-            }}
-            aria-label={`View ${secondaryName}'s profile`}
-          >
-            {secondaryAvatarUrl ? (
-              <>
-                <Image 
-                  src={secondaryAvatarUrl} 
-                  alt={secondaryName || 'Sponsor'} 
-                  width={config.secondarySizePx} 
-                  height={config.secondarySizePx} 
-                  className="object-cover w-full h-full"
-                />
-                {/* Lens highlight overlay */}
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    borderRadius: '50%',
-                    background: 'radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04) 30%, rgba(255, 255, 255, 0.0) 60%)',
-                  }}
-                />
-              </>
-            ) : (
-              <span className="text-primary-blue font-bold" style={{ fontSize: `${config.secondarySizePx * 0.4}px` }}>
-                {secondaryName?.charAt(0).toUpperCase() || '?'}
+        {/* Secondary circle (Sponsor or placeholder) - always render for layout continuity */}
+        {showSecondary &&
+          (hasSponsor ? (
+            <button
+              onClick={() => router.push(`/profile/${secondaryId}`)}
+              className="absolute rounded-full overflow-hidden flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent-teal-light transition-transform hover:scale-105"
+              style={{
+                left: `${secondaryLeftFinal}px`,
+                top: `${secondaryTopFinal}px`,
+                width: `${config.secondarySizePx}px`,
+                height: `${config.secondarySizePx}px`,
+                border: `${config.borderWidth} solid ${config.borderColor}`,
+                boxShadow: config.secondaryShadow,
+                backgroundColor: palette.border.light,
+                zIndex: secondaryZIndex,
+              }}
+              aria-label={`View ${secondaryName}'s profile`}
+            >
+              {secondaryAvatarUrl ? (
+                <>
+                  <Image
+                    src={secondaryAvatarUrl}
+                    alt={secondaryName || 'Sponsor'}
+                    width={config.secondarySizePx}
+                    height={config.secondarySizePx}
+                    className="object-cover w-full h-full"
+                  />
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      borderRadius: '50%',
+                      background: 'radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04) 30%, rgba(255, 255, 255, 0.0) 60%)',
+                    }}
+                  />
+                </>
+              ) : (
+                <span className="text-primary-blue font-bold" style={{ fontSize: `${config.secondarySizePx * 0.4}px` }}>
+                  {secondaryName?.charAt(0).toUpperCase() || '?'}
+                </span>
+              )}
+            </button>
+          ) : (
+            <div
+              className="absolute rounded-full overflow-hidden flex items-center justify-center pointer-events-none select-none"
+              style={{
+                left: `${secondaryLeftFinal}px`,
+                top: `${secondaryTopFinal}px`,
+                width: `${config.secondarySizePx}px`,
+                height: `${config.secondarySizePx}px`,
+                border: `${config.borderWidth} solid ${config.borderColor}`,
+                boxShadow: config.secondaryShadow,
+                backgroundColor: palette.border.light,
+                zIndex: secondaryZIndex,
+                opacity: 0.8,
+              }}
+              aria-hidden
+            >
+              <span
+                className="text-primary-blue/70 font-bold"
+                style={{ fontSize: `${config.secondarySizePx * 0.4}px` }}
+              >
+                ?
               </span>
-            )}
-          </button>
-        )}
+            </div>
+          ))}
       </div>
       
-      {/* Single contextual label - only show if sponsor exists */}
-      {hasSponsor && secondaryName && (
+      {/* Relationship label - always show (sponsor name or placeholder copy) */}
+      {hasSponsor && secondaryName ? (
         <button
           onClick={() => router.push(`/profile/${secondaryId}`)}
           className="type-body text-white/70 hover:text-white/90 hover:underline focus:outline-none focus:underline transition-colors mt-4"
@@ -267,6 +285,10 @@ export default function TrustLockup({
         >
           Introduced by {secondaryName}
         </button>
+      ) : (
+        <span className="type-body text-white/70 mt-4 block" aria-hidden>
+          Introduced by your sponsor
+        </span>
       )}
     </div>
   );

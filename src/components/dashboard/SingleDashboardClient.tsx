@@ -418,7 +418,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
               Invite someone to be your sponsor to get started.
             </p>
             <div className="mt-4">
-              <PreviewRow title="Sponsor Name" subtitle="Chat with your sponsor about connections" label="Preview" />
+              <PreviewRow title="Sponsor Name" subtitle="Chat with your sponsor about connections" />
             </div>
           </section>
           
@@ -428,7 +428,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           <section className="mt-10">
             <SectionHeader title="Introduced by my sponsor" />
             <p className="mt-4 type-meta text-text-light">
-              Where conversation will begin after a connection is made by your sponsor.
+              Conversations begin here after your sponsor makes an introduction.
             </p>
             <div className="mt-4">
               <PreviewRow title="Alex" subtitle="Introduced by Paula" label="Preview" />
@@ -517,7 +517,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           {singleChats.length === 0 ? (
             <>
               <p className="mt-4 type-meta text-text-light">
-                Where conversation will begin after a connection is made by your sponsor.
+                Conversations begin here after your sponsor makes an introduction.
               </p>
               <div className="mt-4">
                 <PreviewRow title="Alex" subtitle={`Introduced by ${sponsor?.name || 'your sponsor'}`} label="Preview" />
