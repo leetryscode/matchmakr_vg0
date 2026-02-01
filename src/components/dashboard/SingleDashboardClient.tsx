@@ -411,10 +411,15 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             <NotificationsSection userId={userId} />
           </section>
           
-          {/* Get started section with inline invite */}
+          {/* Sponsor chat section — same Preview Row pattern when no sponsor */}
           <section className="mt-10">
-            <SectionHeader title="Get started" right={<InviteAction />} />
-            <div className="mt-4 text-text-dark">Invite someone to be your sponsor to get started.</div>
+            <SectionHeader title="Sponsor chat" right={<InviteAction />} />
+            <p className="mt-4 type-meta text-text-light">
+              Invite someone to be your sponsor to get started.
+            </p>
+            <div className="mt-4">
+              <PreviewRow title="Sponsor Name" subtitle="Chat with your sponsor about connections" label="Preview" />
+            </div>
           </section>
           
           <InviteMatchMakrModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
@@ -432,6 +437,15 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           
           {/* Preview cards section - only renders when there are previews */}
           <PreviewCardsSection userId={userId} />
+          
+          {/* Availability section - underneath the chat sections */}
+          <div>
+            <SectionHeader title="Availability" />
+            <AvailabilitySection 
+              status={displayStatus}
+              userId={userId}
+            />
+          </div>
           
           {/* Footer spacer with brand mark */}
           <DashboardFooterSpacer />
@@ -506,7 +520,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                 Where conversation will begin after a connection is made by your sponsor.
               </p>
               <div className="mt-4">
-                <PreviewRow title="Alex" subtitle="Introduced by Paula" label="Preview" />
+                <PreviewRow title="Alex" subtitle={`Introduced by ${sponsor?.name || 'your sponsor'}`} label="Preview" />
               </div>
             </>
           ) : (
