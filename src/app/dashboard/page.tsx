@@ -89,7 +89,7 @@ export default function DashboardBootPage() {
     const run = async () => {
       const supabase = createClient();
       const splashStart = Date.now();
-      let ceilingId: ReturnType<typeof setTimeout>;
+      let ceilingId: ReturnType<typeof setTimeout> | undefined = undefined;
 
       const boot = async (): Promise<boolean> => {
         // 1. Wait for auth to settle (getSession + onAuthStateChange window)
@@ -152,7 +152,7 @@ export default function DashboardBootPage() {
         bootDebug(debug, 'hard ceiling triggered, redirecting to /?boot_timeout=1');
         router.replace('/?boot_timeout=1');
       } else {
-        clearTimeout(ceilingId);
+        if (ceilingId != null) clearTimeout(ceilingId);
       }
     };
 
