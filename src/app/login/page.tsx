@@ -48,9 +48,9 @@ export default function LoginPage() {
   // Always show the login form - no redirects, no cached user checks
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-text-dark">
       <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 text-center">
-        <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] bg-gradient-primary bg-clip-text text-transparent leading-[1.1]">
+        <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] text-text-dark leading-[1.1]">
           Login
         </h1>
         <form
@@ -63,7 +63,7 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+            className="w-full rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
           />
           <input
             type="password"
@@ -71,18 +71,18 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+            className="w-full rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
           />
           {error && <p className="text-red-500 font-light">{error}</p>}
           <button
             type="submit"
             disabled={loadingSignIn}
-            className="rounded-lg bg-gradient-primary px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-light hover:-translate-y-1 shadow-button hover:shadow-button-hover disabled:opacity-50"
+            className="rounded-cta min-h-[48px] bg-action-entry text-primary-blue font-semibold shadow-cta-entry hover:bg-action-entry-hover active:bg-action-entry-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 px-10 py-3 text-base tracking-[0.02em] no-underline disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-entry"
           >
             {loadingSignIn ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-        <a href="/" className="text-primary-blue underline mt-4 hover:text-primary-blue-light transition-colors font-light">
+        <a href="/" className="text-text-dark no-underline mt-4 hover:text-white transition-colors font-light">
           Back
         </a>
       </div>

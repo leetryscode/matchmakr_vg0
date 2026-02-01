@@ -15,6 +15,7 @@ const config: Config = {
         background: palette.background,
         text: palette.text,
         border: palette.border,
+        action: palette.action,
       },
       fontFamily: {
         'inter': ['Inter', 'sans-serif'],
@@ -46,6 +47,8 @@ const config: Config = {
         'button-hover': '0 4px 20px rgba(15, 23, 42, 0.12)',
         'avatar': '0 2px 8px rgba(15, 23, 42, 0.08)',
         'avatar-hover': '0 4px 16px rgba(15, 23, 42, 0.12)',
+        /** Entry CTA: soft lift only, no glow */
+        'cta-entry': '0 4px 12px rgba(0, 0, 0, 0.12)',
       },
       borderRadius: {
         'xl': '20px',
@@ -56,6 +59,8 @@ const config: Config = {
         'card': '12px',
         'card-lg': '16px',
         'pill': '9999px',
+        /** Entry CTA: 14–16px rounded, not pill */
+        'cta': '14px',
       },
     },
   },

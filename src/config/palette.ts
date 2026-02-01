@@ -14,14 +14,14 @@
 
 export const palette = {
   primary: {
-    blue: '#2F3A4A',
-    teal: '#3F6E73',
+    blue: '#344B63',        // clear slate blue (cool, confident)
+    teal: '#2F7F86',        // fresher teal with more chroma
     'blue-light': '#8E9AA9',
-    'teal-light': '#A9BDBC',
+    'teal-light': '#AFCFD1',
   },
   accent: {
     'blue-light': '#8E9AA9',
-    'teal-light': '#A9BDBC',
+    'teal-light': '#AFCFD1',
   },
   background: {
     main: '#566B89',
@@ -35,6 +35,12 @@ export const palette = {
   },
   border: {
     light: 'rgba(255, 255, 255, 0.14)',
+  },
+  /** Entry CTA: white fill, slate blue text. For home, login, and other pre-dashboard flows only. */
+  action: {
+    entry: '#FFFFFF',
+    'entry-hover': '#F2F5FA',
+    'entry-active': '#E7EBF2',
   },
 } as const;
 
