@@ -25,7 +25,7 @@ const InviteOtherMatchMakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClo
                     <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
                         Cancel
                     </button>
-                    <button onClick={() => alert(`(Not implemented) Invite would be sent to ${email}`)} className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1">
+                    <button onClick={() => alert(`(Not implemented) Invite would be sent to ${email}`)} className="rounded-cta px-6 py-3 min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200">
                         Send invite
                     </button>
                 </div>
@@ -47,7 +47,7 @@ export default function InviteOtherMatchMakrs() {
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="w-full bg-gradient-primary text-white py-4 px-8 rounded-lg font-semibold text-lg shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-2"
+                    className="w-full rounded-cta min-h-[48px] bg-action-primary text-primary-blue font-semibold text-lg shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 py-4 px-8"
                 >
                     Invite a sponsor
                 </button>

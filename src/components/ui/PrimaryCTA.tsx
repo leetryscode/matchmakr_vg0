@@ -12,11 +12,11 @@ type PrimaryCTAProps = {
 };
 
 export default function PrimaryCTA({ children, onClick, href, className }: PrimaryCTAProps) {
-  const baseClasses = 'bg-gradient-to-br from-primary-blue to-primary-teal text-white rounded-pill font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300';
+  const baseClasses = 'rounded-cta bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200';
   
   const buttonClasses = cn(
     baseClasses,
-    'px-12 py-4 text-xl hover:-translate-y-2 border-2 border-white',
+    'px-12 py-4 text-xl min-h-[48px] tracking-[0.02em]',
     className
   );
 

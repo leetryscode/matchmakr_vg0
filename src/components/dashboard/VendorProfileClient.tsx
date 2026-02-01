@@ -164,7 +164,7 @@ const VendorProfileClient: React.FC<VendorProfileClientProps> = ({ vendorProfile
             <h2 className="text-2xl font-light text-white mb-4">Business Overview</h2>
             <div className="grid grid-cols-3 gap-6 text-center">
               <div>
-                <div className="text-3xl font-light text-primary-teal">
+                <div className="text-3xl font-light text-primary-blue">
                   {offers.filter(o => o.is_active).length}
                 </div>
                 <div className="text-sm font-light text-white/80 mt-1">Active Offers</div>

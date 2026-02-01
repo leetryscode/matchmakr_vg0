@@ -211,7 +211,7 @@ export default function PairingsModal({
                         className={`
                           px-3 py-1 rounded-full text-[13px] leading-snug border transition-all
                           ${isSelected
-                            ? 'bg-primary-blue/90 text-white border-primary-blue'
+                            ? 'bg-background-card border-border-light text-text-dark ring-2 ring-primary-blue/50'
                             : isDisabled
                             ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                             : 'bg-white text-gray-900 border-gray-300 hover:border-primary-blue/50 hover:bg-gray-50'
@@ -246,8 +246,7 @@ export default function PairingsModal({
                     disabled={saving}
                     className={`
                       px-3 py-1 rounded-full text-[13px] leading-snug border transition-all
-                      bg-primary-blue/90 text-white border-primary-blue
-                      hover:bg-primary-blue/80
+                      bg-background-card border-border-light text-text-dark hover:bg-background-card/90 hover:border-text-dark/30
                       ${saving ? 'opacity-50 cursor-not-allowed' : ''}
                     `}
                   >
@@ -337,7 +336,7 @@ export default function PairingsModal({
           <button
             onClick={handleSave}
             disabled={!canSave}
-            className="flex-1 h-11 rounded-xl bg-primary-blue/90 text-white hover:bg-primary-blue transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 h-11 min-h-[44px] rounded-cta bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>

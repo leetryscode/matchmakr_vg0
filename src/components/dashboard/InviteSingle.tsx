@@ -59,7 +59,7 @@ const InviteSingleModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover" disabled={isLoading}>
                         Cancel
                     </button>
-                    <button onClick={handleSendInvite} className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1" disabled={isLoading}>
+                    <button onClick={handleSendInvite} className="rounded-cta px-6 py-3 min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary" disabled={isLoading}>
                         {isLoading ? 'Sending...' : 'Send invite'}
                     </button>
                 </div>

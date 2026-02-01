@@ -36,11 +36,16 @@ export const palette = {
   border: {
     light: 'rgba(255, 255, 255, 0.14)',
   },
-  /** Entry CTA: white fill, slate blue text. For home, login, and other pre-dashboard flows only. */
+  /** Primary CTA: white fill, slate blue text. No gradients, no teal. */
   action: {
     entry: '#FFFFFF',
     'entry-hover': '#F2F5FA',
     'entry-active': '#E7EBF2',
+    primary: '#FFFFFF',
+    'primary-hover': '#F2F5FA',
+    'primary-active': '#E7EBF2',
+    secondary: '#E9EDF3',
+    'secondary-hover': '#DEE3EB',
   },
 } as const;
 

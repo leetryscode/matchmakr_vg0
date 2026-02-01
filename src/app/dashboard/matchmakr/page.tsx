@@ -61,7 +61,7 @@ const ManageSinglesList = () => (
         <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
              <p className="text-center type-meta">Chats with the singles you manage.</p>
         </div>
-        <button className="mt-4 w-full bg-gradient-light text-white py-3 rounded-lg hover:bg-gradient-primary font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
+        <button className="mt-4 w-full rounded-cta min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 py-3">
             Invite a Sponsor!
         </button>
     </div>

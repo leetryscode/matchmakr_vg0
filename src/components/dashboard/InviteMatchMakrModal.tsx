@@ -61,7 +61,7 @@ const InviteMatchMakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                     <button onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors" disabled={isLoading}>
                         Cancel
                     </button>
-                    <button onClick={handleSendInvite} className="px-4 py-2 bg-gradient-primary text-white rounded-md hover:bg-gradient-light transition-all duration-300 shadow-button hover:shadow-button-hover" disabled={isLoading}>
+                    <button onClick={handleSendInvite} className="rounded-cta px-4 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200" disabled={isLoading}>
                         {isLoading ? 'Sending...' : 'Send Invite'}
                     </button>
                 </div>

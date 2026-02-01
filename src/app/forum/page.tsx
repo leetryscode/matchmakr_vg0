@@ -509,7 +509,7 @@ export default function ForumPage() {
               key={cat.id}
               className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
                 selectedCategory === cat.id 
-                  ? 'bg-primary-blue text-white border-primary-blue' 
+                  ? 'bg-background-card border-border-light text-text-dark ring-2 ring-primary-blue/50' 
                   : 'bg-background-card text-text-dark border-border-light hover:bg-background-card/90'
               }`}
               onClick={() => setSelectedCategory(cat.id)}
@@ -547,7 +547,7 @@ export default function ForumPage() {
                   <button
                     onClick={handleCreatePost}
                     disabled={submitting || !newPostContent.trim()}
-                    className="bg-primary-blue hover:bg-primary-blue/90 disabled:bg-primary-blue/50 text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:cursor-not-allowed border border-primary-blue"
+                    className="rounded-cta min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary px-6 py-2 border-0"
                   >
                     {submitting ? 'Posting...' : 'Post'}
                   </button>
@@ -696,7 +696,7 @@ export default function ForumPage() {
                                 <button
                                   onClick={() => handleCreateReply(post.id)}
                                   disabled={submittingReply || !replyContent.trim()}
-                                  className="bg-primary-blue hover:bg-primary-blue/90 disabled:bg-primary-blue/50 text-white px-4 py-1 rounded-lg text-sm font-semibold transition-colors disabled:cursor-not-allowed border border-primary-blue"
+                                  className="rounded-cta min-h-[40px] bg-action-primary text-primary-blue text-sm font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary px-4 py-1 border-0"
                                 >
                                   {submittingReply ? 'Posting...' : 'Reply'}
                                 </button>

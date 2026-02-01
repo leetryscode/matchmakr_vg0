@@ -696,7 +696,7 @@ export default function PondPage() {
                                                     onClick={() => handleSingleSelect(single)}
                                                     className={`px-3 py-1 rounded-lg border transition-colors text-sm flex-shrink-0 ${
                                                         currentSponsoredSingle.id === single.id
-                                                            ? 'bg-primary-blue border-primary-blue text-white'
+                                                            ? 'bg-background-card border-border-light text-text-dark ring-2 ring-primary-blue/50'
                                                             : 'bg-background-card border-border-light text-text-dark hover:bg-background-card/90'
                                                     }`}
                                                 >
@@ -769,7 +769,7 @@ export default function PondPage() {
                                                         className="w-full h-full object-cover" 
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-blue/50 to-primary-teal/50">
+                                                    <div className="w-full h-full flex items-center justify-center bg-background-card border border-border-light">
                                                         <span className="text-6xl font-bold text-white">{profile.name?.charAt(0).toUpperCase() || '?'}</span>
                                                     </div>
                                                 )}
@@ -826,7 +826,7 @@ export default function PondPage() {
                                                 </div>
                                                 {profile.sponsored_by_id && (
                                                     <button
-                                                        className="px-4 py-1.5 rounded-full border border-primary-teal bg-primary-teal/10 hover:bg-primary-teal/20 text-primary-teal text-sm font-medium transition-colors"
+                                                        className="px-4 py-1.5 rounded-full border border-border-light bg-background-card text-text-dark hover:bg-background-card/90 hover:border-text-dark/30 text-sm font-medium transition-colors"
                                                         onClick={e => { e.preventDefault(); handleOpenChat(profile); }}
                                                     >
                                                         Message Sponsor
@@ -847,7 +847,7 @@ export default function PondPage() {
                         <button
                             onClick={loadMore}
                             disabled={loadingMore}
-                            className="px-8 py-3 bg-primary-blue text-white rounded-lg border border-primary-blue hover:bg-primary-blue/90 font-semibold transition-colors disabled:opacity-50"
+                            className="rounded-cta min-h-[48px] px-8 py-3 bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
                         >
                             {loadingMore ? (
                                 <div className="flex items-center gap-2">
@@ -957,7 +957,7 @@ export default function PondPage() {
                             {/* Interest filter */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Interests</label>
-                                <div className="bg-gradient-to-br from-primary-blue to-primary-teal rounded-md p-3">
+                                <div className="bg-background-card border border-border-light rounded-md p-3">
                                     <InterestsInput
                                         value={selectedInterests}
                                         onChange={setSelectedInterests}
@@ -969,7 +969,7 @@ export default function PondPage() {
                             <div className="flex gap-2 pt-2">
                                 <button
                                     onClick={handleSearchFromModal}
-                                    className="flex-1 px-6 py-2 bg-primary-blue text-white rounded-md hover:bg-primary-blue/90 font-semibold transition-colors"
+                                    className="flex-1 rounded-cta min-h-[44px] px-6 py-2 bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200"
                                 >
                                     Search
                                 </button>
@@ -978,7 +978,7 @@ export default function PondPage() {
                                         handleClearSearch();
                                         setShowTailorSearchModal(false);
                                     }}
-                                    className="flex-1 px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors"
+                                    className="flex-1 rounded-cta min-h-[44px] px-6 py-2 bg-action-secondary text-primary-blue font-semibold hover:bg-action-secondary-hover focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200"
                                 >
                                     Clear
                                 </button>

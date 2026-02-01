@@ -104,8 +104,8 @@ export default function GroupedMessageList({
               <div
                 className={`px-4 py-2.5 ${getBubbleRadiusClass(isMine, isFirstInGroup, isLastInGroup)} ${msg.optimistic ? 'opacity-60' : ''} ${
                   isMine
-                    ? 'bg-gradient-diagonal text-white font-medium'
-                    : 'bg-gradient-light text-white font-medium'
+                    ? 'bg-background-card text-text-dark font-medium border border-border-light'
+                    : 'bg-background-card text-text-dark font-medium border border-border-light'
                 }`}
               >
                 {msg.content}

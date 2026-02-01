@@ -27,7 +27,7 @@ function EndSponsorshipModal({ isOpen, onClose, onConfirm, sponsorName }: { isOp
                     <button onClick={onClose} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors">
                         Cancel
                     </button>
-                    <button onClick={onConfirm} className="px-6 py-2 bg-gradient-primary text-white rounded-md hover:bg-gradient-light font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
+                    <button onClick={onConfirm} className="rounded-cta px-6 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200">
                         Yes, End Sponsorship
                     </button>
                 </div>
@@ -71,7 +71,7 @@ export default function SponsorDisplay({ sponsor }: SponsorDisplayProps) {
                     </div>
                     <p className="text-xl font-semibold text-gray-800 group-hover:text-primary-blue transition-colors">{sponsor.name}</p>
                 </Link>
-                <button className="mt-4 w-full bg-gradient-primary text-white py-3 rounded-lg hover:bg-gradient-light font-semibold transition-all duration-300 shadow-button hover:shadow-button-hover">
+                <button className="mt-4 w-full rounded-cta min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 py-3">
                     Chat with your Sponsor
                 </button>
                 <button

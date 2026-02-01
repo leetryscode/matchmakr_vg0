@@ -273,7 +273,7 @@ export default function CreateOfferModal({ isOpen, onClose, onOfferCreated }: Cr
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-primary-blue text-white py-3 px-4 rounded-lg hover:bg-primary-blue-dark transition-colors font-light disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full rounded-cta min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 py-3 px-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
                         >
                             {isSubmitting ? 'Creating...' : 'Create Offer'}
                         </button>

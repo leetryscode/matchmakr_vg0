@@ -178,7 +178,7 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
                                         setInviteError(errorData?.error || 'An error occurred. Please try again.');
                                     }
                                 }} 
-                                className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold shadow-deep hover:shadow-deep-hover transition-all duration-300 hover:-translate-y-1"
+                                className="rounded-cta px-6 py-3 min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200"
                             >
                                 Link account
                             </button>

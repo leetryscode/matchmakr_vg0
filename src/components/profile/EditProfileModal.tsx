@@ -196,7 +196,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
                     <button onClick={onClose} className="px-5 py-2 bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-full font-semibold transition-colors">
                         Cancel
                     </button>
-                    <button onClick={handleSave} className="px-5 py-2 bg-primary-blue text-white hover:bg-primary-blue/90 rounded-full font-semibold transition-colors">
+                    <button onClick={handleSave} className="rounded-cta min-h-[44px] px-5 py-2 bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200">
                         Save
                     </button>
                 </div>

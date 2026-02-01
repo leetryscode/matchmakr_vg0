@@ -75,7 +75,7 @@ export default function NotificationNavItem({ userId, pathname }: NotificationNa
                 </div>
                 <span className={`type-meta mt-1 truncate max-w-full ${activeCount > 0 ? 'text-white' : 'text-white/70'}`}>Notifications</span>
                 {activeCount > 0 && !hideBadge && (
-                    <span className="absolute top-0 right-0 bg-primary-teal text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg border border-primary-teal" style={{transform: 'translate(50%,-50%)'}}>
+                    <span className="absolute top-0 right-0 bg-action-primary text-primary-blue text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-cta-entry border-0" style={{transform: 'translate(50%,-50%)'}}>
                         {activeCount}
                     </span>
                 )}

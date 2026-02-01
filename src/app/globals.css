@@ -11,8 +11,8 @@
   --background-start-rgb: 248, 250, 252;
   --background-end-rgb: 255, 255, 255;
   /* Legacy CSS vars - not currently referenced. Color tokens are managed via tailwind.config.ts */
-  --primary-blue: 0, 102, 255;
-  --primary-teal: 0, 201, 167;
+  --primary-blue: 52, 75, 99;
+  /* primary-teal removed; use palette / Tailwind action tokens */
 }
 
 html, body {

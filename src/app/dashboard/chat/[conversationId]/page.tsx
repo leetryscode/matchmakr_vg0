@@ -470,7 +470,7 @@ export default function ChatPage() {
                   <div className="text-xs text-yellow-600 font-semibold whitespace-nowrap">Waiting for the other sponsor</div>
                 ) : matchStatus === 'can-approve' ? (
                   <button
-                    className="h-8 px-4 text-sm bg-gradient-primary text-white rounded-lg font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    className="h-10 min-h-[44px] px-4 text-sm rounded-cta bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary whitespace-nowrap"
                     onClick={() => setShowApprovalModal(true)}
                     disabled={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id || matchLoading}
                     title={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id ? 'Both singles must be present to make the introduction.' : ''}
@@ -561,7 +561,7 @@ export default function ChatPage() {
           />
           {messageText.trim() && (
             <button
-              className="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-primary-blue-light to-accent-teal-light shadow-md hover:scale-105 transition-transform border-2 border-border-light text-white"
+              className="flex items-center justify-center w-14 h-14 rounded-full bg-action-primary shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active transition-colors border-0 text-primary-blue"
               onClick={handleSendMessage}
               disabled={sending}
             >
@@ -590,7 +590,7 @@ export default function ChatPage() {
                 Cancel
               </button>
               <button
-                className="px-6 py-2 bg-gradient-primary text-white rounded-md font-semibold hover:bg-gradient-light transition-all duration-300 shadow-button hover:shadow-button-hover disabled:opacity-50"
+                className="rounded-cta px-6 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
                 onClick={handleApproveMatch}
                 disabled={approvalLoading}
               >

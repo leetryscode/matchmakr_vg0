@@ -15,13 +15,13 @@ export default function SexStep({ onNext }: SexStepProps) {
       <div className="flex gap-4">
         <button
           onClick={() => onNext('Male')}
-          className="rounded-full bg-gradient-primary px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-light hover:-translate-y-1 shadow-button hover:shadow-button-hover"
+          className="rounded-cta min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 px-10 py-3 no-underline"
         >
           Male
         </button>
         <button
           onClick={() => onNext('Female')}
-          className="rounded-full bg-gradient-light px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-primary hover:-translate-y-1 shadow-button hover:shadow-button-hover"
+          className="rounded-cta min-h-[48px] bg-action-secondary text-primary-blue font-semibold hover:bg-action-secondary-hover focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 px-10 py-3 no-underline"
         >
           Female
         </button>

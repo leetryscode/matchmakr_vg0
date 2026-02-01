@@ -585,7 +585,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                   <div className="text-yellow-600 font-semibold">Waiting for the other sponsor</div>
                 ) : matchStatus === 'can-approve' ? (
                   <button
-                    className="px-6 py-2 bg-gradient-primary text-white rounded-lg font-semibold shadow-button hover:shadow-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="rounded-cta px-6 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
                     onClick={handleApproveMatch}
                     disabled={!ourSingle?.id || !theirSingle?.id || matchLoading}
                     title={!ourSingle?.id || !theirSingle?.id ? 'Both singles must be present to make the introduction.' : ''}
@@ -674,7 +674,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
           />
           {messageText.trim() && (
             <button
-              className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-primary-blue-light to-accent-teal-light shadow-md hover:scale-105 transition-transform border-2 border-border-light text-white"
+              className="flex items-center justify-center w-12 h-12 rounded-full bg-action-primary shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active transition-colors border-0 text-primary-blue"
               onClick={handleSendMessage}
               disabled={sending || (isSingleToSingle && !canChat)}
             >

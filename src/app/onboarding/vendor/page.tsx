@@ -161,7 +161,7 @@ export default function VendorOnboardingPage() {
             <button
               onClick={handleNext}
               disabled={!vendorData.businessName || !vendorData.industry}
-              className="rounded-full bg-gradient-primary px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-light hover:-translate-y-1 shadow-button hover:shadow-button-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:transform-none"
+              className="rounded-cta min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 px-10 py-3 no-underline disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
             >
               Next
             </button>
@@ -215,7 +215,7 @@ export default function VendorOnboardingPage() {
             <button
               onClick={handleNext}
               disabled={!vendorData.streetAddress || !vendorData.city || !vendorData.state || !vendorData.zipCode}
-              className="rounded-full bg-gradient-primary px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-light hover:-translate-y-1 shadow-button hover:shadow-button-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:transform-none"
+              className="rounded-cta min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 px-10 py-3 no-underline disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
             >
               Next
             </button>
@@ -253,7 +253,7 @@ export default function VendorOnboardingPage() {
             <button
               onClick={handleComplete}
               disabled={loading || !vendorData.email || vendorData.password.length < 6}
-              className="rounded-full bg-gradient-primary px-10 py-3 font-light text-white no-underline transition-all duration-300 hover:bg-gradient-light hover:-translate-y-1 shadow-button hover:shadow-button-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:transform-none"
+              className="rounded-cta min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 px-10 py-3 no-underline disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
             >
               {loading ? 'Creating Account...' : 'Complete Sign Up'}
             </button>

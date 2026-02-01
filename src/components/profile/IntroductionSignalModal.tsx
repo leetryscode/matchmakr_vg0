@@ -248,7 +248,7 @@ export default function IntroductionSignalModal({
           <button
             onClick={handleSave}
             disabled={!canSave}
-            className="flex-1 h-11 rounded-xl bg-primary-blue/90 text-white hover:bg-primary-blue transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 h-11 min-h-[44px] rounded-cta bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>

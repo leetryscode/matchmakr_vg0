@@ -340,7 +340,7 @@ export default function SingleChatPage() {
           />
           {messageText.trim() && (
             <button
-              className="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-primary-blue-light to-accent-teal-light shadow-md hover:scale-105 transition-transform border-2 border-border-light text-white"
+              className="flex items-center justify-center w-14 h-14 rounded-full bg-action-primary shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active transition-colors border-0 text-primary-blue"
               onClick={handleSendMessage}
               disabled={sending}
             >

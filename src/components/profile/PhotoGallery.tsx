@@ -442,7 +442,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                         {displayItems.map((item, idx) => (
                             <div className="keen-slider__slide relative w-full min-w-full h-full flex items-center justify-center" key={idx}>
                                 {item === ADD_PHOTO_SLOT && photos.length === 0 ? (
-                                    <div className="relative w-full h-full bg-gradient-to-br from-primary-blue/50 to-primary-teal/50 flex items-center justify-center">
+                                    <div className="relative w-full h-full bg-background-card border border-border-light flex items-center justify-center">
                                         <span className="text-6xl font-bold text-white">
                                             {profileName?.charAt(0).toUpperCase() || '?'}
                                         </span>
@@ -486,7 +486,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                 ) : item === ADD_PHOTO_SLOT ? (
                                     canEdit && (
                                         <button
-                                            className="flex flex-col items-center justify-center w-full h-full text-white/80 hover:text-accent-teal-light transition-colors"
+                                            className="flex flex-col items-center justify-center w-full h-full text-white/80 hover:text-primary-blue transition-colors"
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
@@ -572,7 +572,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                 ) : (
                     <>
                         {photos.length === 0 ? (
-                            <div className="relative w-full h-full bg-gradient-to-br from-primary-blue/50 to-primary-teal/50 flex items-center justify-center">
+                            <div className="relative w-full h-full bg-background-card border border-border-light flex items-center justify-center">
                                 <span className="text-6xl font-bold text-white">
                                     {profileName?.charAt(0).toUpperCase() || '?'}
                                 </span>
@@ -623,7 +623,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                         ) : displayItems[0] === ADD_PHOTO_SLOT ? (
                             canEdit && (
                                 <button
-                                    className="flex flex-col items-center justify-center w-full h-full text-white/80 hover:text-accent-teal-light transition-colors"
+                                    className="flex flex-col items-center justify-center w-full h-full text-white/80 hover:text-primary-blue transition-colors"
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();

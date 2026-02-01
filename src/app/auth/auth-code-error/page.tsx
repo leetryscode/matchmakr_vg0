@@ -13,7 +13,7 @@ export default function AuthErrorPage() {
         <p className="text-lg text-text-light">
           Please try signing in again. If the problem persists, please contact support.
         </p>
-        <a href="/login" className="text-primary-teal underline">
+        <a href="/login" className="text-primary-blue underline">
           Go to Login
         </a>
       </div>
