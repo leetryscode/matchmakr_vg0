@@ -19,6 +19,13 @@ import { createSponsorLoginNotifications } from '@/lib/notifications/sponsor-log
 import { checkAndCreateSingleNotSeenIntroNotifications } from '@/lib/notifications/single-not-seen-intro';
 import { computeSingleStatus, type SingleStatus } from '@/lib/status/singleStatus';
 
+// Placeholder orbit satellites when sponsor has no managed singles (visual preview only)
+const PREVIEW_ORBIT_SATELLITES = [
+    { id: 'orbit-preview-1', name: '', avatarUrl: null as string | null, isPreview: true },
+    { id: 'orbit-preview-2', name: '', avatarUrl: null as string | null, isPreview: true },
+    { id: 'orbit-preview-3', name: '', avatarUrl: null as string | null, isPreview: true },
+];
+
 // Introductions destination card - WHOOP-style navigation card
 const IntroductionsCard = () => (
     <Link 
@@ -223,11 +230,15 @@ async function MatchMakrDashboardContent() {
                     name: currentUserName,
                     avatarUrl: currentUserProfilePic,
                 }}
-                satellites={processedSponsoredSingles.map(single => ({
-                    id: single.id,
-                    name: single.name || '',
-                    avatarUrl: single.profile_pic_url,
-                }))}
+                satellites={
+                    processedSponsoredSingles.length === 0
+                        ? PREVIEW_ORBIT_SATELLITES
+                        : processedSponsoredSingles.map(single => ({
+                              id: single.id,
+                              name: single.name || '',
+                              avatarUrl: single.profile_pic_url,
+                          }))
+                }
                 />
             </div>
             

@@ -71,6 +71,8 @@ export type OrbitAvatar = {
   id: string;
   name: string;
   avatarUrl?: string | null;
+  /** When true, render as non-interactive placeholder (e.g. "?" avatar, muted) for orbit preview when no singles exist */
+  isPreview?: boolean;
 };
 
 export type OrbitCarouselHeaderProps = {
@@ -488,10 +490,11 @@ export default function OrbitCarouselHeader({
       const dy = orbitPoint.y - containerH / 2;
       const transform = `translate3d(${dx}px, ${dy}px, 0) translate3d(-50%, -50%, 0) scale(${scale})`;
 
-      // Update DOM directly
+      // Update DOM directly (preview satellites get reduced opacity)
+      const effectiveOpacity = satellite.isPreview ? opacity * 0.62 : opacity;
       el.style.transform = transform;
       el.style.zIndex = String(zIndex);
-      el.style.opacity = String(opacity);
+      el.style.opacity = String(effectiveOpacity);
       el.style.boxShadow = boxShadow;
     });
   };
@@ -760,6 +763,8 @@ export default function OrbitCarouselHeader({
             const dy = orbitPoint.y - containerSize.h / 2;
             const transform = `translate3d(${dx}px, ${dy}px, 0) translate3d(-50%, -50%, 0) scale(${scale})`;
             const boxShadow = computeShadow(depth01, ORBIT_VISUALS);
+            const isPreview = !!satellite.isPreview;
+            const effectiveOpacity = isPreview ? opacity * 0.62 : opacity;
 
             return (
               <div
@@ -771,37 +776,47 @@ export default function OrbitCarouselHeader({
                     satelliteRefsRef.current.delete(satellite.id);
                   }
                 }}
-                className="orbit-avatar-highlight absolute left-1/2 top-1/2 w-[52px] h-[52px] rounded-full bg-gray-200 overflow-hidden flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-200"
+                className={
+                  isPreview
+                    ? 'absolute left-1/2 top-1/2 w-[52px] h-[52px] rounded-full bg-gray-200 overflow-hidden flex items-center justify-center pointer-events-none select-none'
+                    : 'orbit-avatar-highlight absolute left-1/2 top-1/2 w-[52px] h-[52px] rounded-full bg-gray-200 overflow-hidden flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-200'
+                }
                 style={{
                   transform: transform,
-                  opacity: opacity,
+                  opacity: effectiveOpacity,
                   zIndex: zIndex,
                   willChange: 'transform',
                   border: `${ORBIT_VISUALS.border.width} solid ${ORBIT_VISUALS.border.color}`,
                   boxShadow: boxShadow,
                 }}
-                onClick={() => router.push(`/profile/${satellite.id}`)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    router.push(`/profile/${satellite.id}`);
-                  }
-                }}
-                aria-label={`View ${satellite.name}'s profile`}
+                {...(isPreview
+                  ? { 'aria-hidden': true }
+                  : {
+                      onClick: () => router.push(`/profile/${satellite.id}`),
+                      role: 'button',
+                      tabIndex: 0,
+                      onKeyDown: (e: React.KeyboardEvent) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          router.push(`/profile/${satellite.id}`);
+                        }
+                      },
+                      'aria-label': `View ${satellite.name}'s profile`,
+                    })}
               >
-              {satellite.avatarUrl ? (
-                <img
-                  src={satellite.avatarUrl}
-                  alt={satellite.name}
-                  className="object-cover w-full h-full"
-                />
-              ) : (
-                <span className="text-white font-bold text-sm">
-                  {satellite.name?.charAt(0).toUpperCase() || '?'}
-                </span>
-              )}
+                {isPreview ? (
+                  <span className="text-white font-bold text-sm inline-block scale-95 drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]" aria-hidden>?</span>
+                ) : satellite.avatarUrl ? (
+                  <img
+                    src={satellite.avatarUrl}
+                    alt={satellite.name}
+                    className="object-cover w-full h-full"
+                  />
+                ) : (
+                  <span className="text-white font-bold text-sm">
+                    {satellite.name?.charAt(0).toUpperCase() || '?'}
+                  </span>
+                )}
               </div>
             );
           })}
