@@ -379,7 +379,6 @@ export default function ChatPage() {
       title="Install Orbit to access Chat"
       body="Chat is available in app mode only. Install Orbit for full access."
       showBackButton={true}
-      backRoute="/dashboard"
     >
     <div className="h-[100dvh] flex flex-col p-0 sm:p-2 bg-white">
       {/* Fixed header section */}

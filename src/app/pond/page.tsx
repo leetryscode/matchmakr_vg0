@@ -648,7 +648,6 @@ export default function PondPage() {
             title="Install Orbit to access the Pond"
             body="The Pond is available in app mode only. Install Orbit for full access."
             showBackButton={true}
-            backRoute="/dashboard"
         >
         <div className="min-h-screen bg-background-main px-0 md:px-4">
             <div className="max-w-none md:max-w-6xl md:mx-auto">

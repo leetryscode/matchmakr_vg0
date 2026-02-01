@@ -17,7 +17,11 @@ export function getDashboardHref(userType?: string | null): string {
         return '/dashboard/matchmakr';
     }
     
-    // Default fallback for unknown, null, undefined, or other user types (e.g., "VENDOR")
+    if (userType === 'VENDOR') {
+        return '/dashboard/vendor';
+    }
+    
+    // Default fallback for unknown, null, undefined
     return '/dashboard/matchmakr';
 }
 

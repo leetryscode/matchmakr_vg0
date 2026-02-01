@@ -21,6 +21,9 @@ function shouldShowBottomNavForPath(pathname: string): boolean {
   // Disallowed routes (hide nav)
   if (pathname === '/') return false;
   if (pathname === '/login') return false;
+  // Boot gate — no dashboard chrome (handles /dashboard and /dashboard/ trailing slash)
+  const basePath = pathname.replace(/\/$/, '') || '/';
+  if (basePath === '/dashboard') return false;
   if (pathname.startsWith('/onboarding')) return false;
   if (pathname.startsWith('/auth/')) return false;
   // Hide nav on all chat routes (single-single, sponsor-sponsor, sponsor-single)

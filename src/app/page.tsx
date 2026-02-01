@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
+import BootTimeoutMessage from '@/components/BootTimeoutMessage';
 
 export default function HomePage() {
   return (
@@ -9,6 +10,10 @@ export default function HomePage() {
           <span className="text-2xl sm:text-3xl md:text-4xl font-extralight text-gray-600 block mb-2">Welcome to</span>
           <span className="font-light tracking-[0.15em] uppercase text-gradient-light font-brand">Orbit</span>
         </h1>
+        
+        <Suspense fallback={null}>
+          <BootTimeoutMessage />
+        </Suspense>
         
         {/* Space for future slogan */}
         <div className="h-12 sm:h-16 md:h-20"></div>
