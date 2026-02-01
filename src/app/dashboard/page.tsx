@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
@@ -67,6 +67,25 @@ async function waitForAuthSettle(
   });
 }
 
+function DashboardBootSplash() {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center"
+      style={{ backgroundColor }}
+    >
+      <div className="flex flex-col items-center gap-8">
+        <h1 className="font-light tracking-[0.2em] uppercase text-white/95 text-2xl sm:text-3xl">
+          Orbit
+        </h1>
+        <div
+          className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white"
+          aria-hidden
+        />
+      </div>
+    </div>
+  );
+}
+
 /**
  * Dashboard Boot / AppGate page
  *
@@ -74,7 +93,7 @@ async function waitForAuthSettle(
  * Never 404s — shows branded loading screen during resolution.
  * Resilient when middleware profile fetch fails (e.g. cold Supabase start).
  */
-export default function DashboardBootPage() {
+function DashboardBootContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasRedirectedRef = useRef(false);
@@ -159,21 +178,13 @@ export default function DashboardBootPage() {
     run();
   }, [router, searchParams]);
 
+  return <DashboardBootSplash />;
+}
+
+export default function DashboardBootPage() {
   return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center"
-      style={{ backgroundColor }}
-    >
-      {/* Orbit branded splash */}
-      <div className="flex flex-col items-center gap-8">
-        <h1 className="font-light tracking-[0.2em] uppercase text-white/95 text-2xl sm:text-3xl">
-          Orbit
-        </h1>
-        <div
-          className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white"
-          aria-hidden
-        />
-      </div>
-    </div>
+    <Suspense fallback={<DashboardBootSplash />}>
+      <DashboardBootContent />
+    </Suspense>
   );
 }
