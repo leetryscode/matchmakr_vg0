@@ -10,6 +10,7 @@ import EndSponsorshipModal from './EndSponsorshipModal';
 import NotificationsSection from '@/components/dashboard/NotificationsSection';
 import PreviewCardsSection from '@/components/dashboard/PreviewCardsSection';
 import SectionHeader from '@/components/ui/SectionHeader';
+import PreviewRow from '@/components/ui/PreviewRow';
 import GlassCard from '@/components/ui/GlassCard';
 import PrimaryCTA from '@/components/ui/PrimaryCTA';
 import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
@@ -418,10 +419,15 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           
           <InviteMatchMakrModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
           
-          {/* My matches - empty state */}
+          {/* My matches - empty state (Preview Row pattern for cold-start; reuse for other chat empty states later) */}
           <section className="mt-10">
             <SectionHeader title="Introduced by my sponsor" />
-            <div className="mt-4 text-text-dark">No introductions yet. Once your sponsor agrees to the introduction, you can chat here.</div>
+            <p className="mt-4 type-meta text-text-light">
+              Where conversation will begin after a connection is made by your sponsor.
+            </p>
+            <div className="mt-4">
+              <PreviewRow title="Alex" subtitle="Introduced by Paula" label="Preview" />
+            </div>
           </section>
           
           {/* Preview cards section - only renders when there are previews */}
@@ -491,11 +497,18 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           </div>
         </section>
         
-        {/* My Matches Section */}
+        {/* My Matches Section — when empty, show Preview Row (cold-start); real intros render unchanged */}
         <section className="mt-10">
           <SectionHeader title="Introduced by my sponsor" />
           {singleChats.length === 0 ? (
-            <div className="mt-4 text-text-dark">No introductions yet. Once your sponsor agrees to the introduction, you can chat here.</div>
+            <>
+              <p className="mt-4 type-meta text-text-light">
+                Where conversation will begin after a connection is made by your sponsor.
+              </p>
+              <div className="mt-4">
+                <PreviewRow title="Alex" subtitle="Introduced by Paula" label="Preview" />
+              </div>
+            </>
           ) : (
             <div className="mt-4 flex flex-col gap-4">
               {singleChats.map((row, idx) => (
