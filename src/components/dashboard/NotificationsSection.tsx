@@ -129,6 +129,8 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
         return 'Invite a sponsor';
       case 'nudge_invite_single':
         return 'Sponsor a single';
+      case 'sponsor_updated_profile':
+        return 'Profile updated';
       default:
         return type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     }
@@ -167,6 +169,9 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
     }
     if (notification.type === 'nudge_invite_single') {
       return 'Invite a single to sponsor so you can start making introductions.';
+    }
+    if (notification.type === 'sponsor_updated_profile') {
+      return 'Your sponsor made a change to your profile.';
     }
     return notification.data?.message || 'You have a new notification.';
   };

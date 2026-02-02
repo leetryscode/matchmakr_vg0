@@ -45,9 +45,11 @@ export async function POST(req: NextRequest) {
   // Randomly choose between two types unless specified via query param
   const type = notificationType || (Math.random() > 0.5 ? 'system_reassurance' : 'matchmakr_chat');
 
-  let data;
+  let data: Record<string, unknown>;
   if (type === 'system_reassurance') {
     data = { message: 'No updates yet — but you are still in active consideration.' };
+  } else if (type === 'sponsor_updated_profile') {
+    data = { reason: 'sponsor_edit', created_by: 'system' };
   } else {
     // matchmakr_chat
     data = { message: 'Your sponsor is talking to another sponsor about you.' };
