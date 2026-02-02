@@ -23,6 +23,8 @@ const config: Config = {
     'border-status-needs-attention/50',
     'border-status-in-motion/50',
     'border-status-paused/50',
+    // Notification dismiss ACK (status pill green)
+    'bg-status-in-motion/20',
   ],
   theme: {
     extend: {

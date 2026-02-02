@@ -9,6 +9,10 @@ interface NotificationsSectionProps {
   userId?: string;
 }
 
+const ACK_MS = 260;
+const HOLD_MS = 220;
+const SLIDE_MS = 420;
+
 /**
  * Shared NotificationsSection component for both Sponsor and Single dashboards.
  * Displays notifications as stacked cards with dismiss functionality.
@@ -23,20 +27,15 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
   const prevActiveCountRef = React.useRef<number>(0);
+  // setTimeout returns number in browser; use number for ref to avoid Node/browser type conflicts
   const timeoutsRef = React.useRef<
     Record<string, { ack?: number; dismiss?: number }>
   >({});
 
-  const ACK_MS = 260;
-  const HOLD_MS = 220;
-  const SLIDE_MS = 420;
-
   // Refresh notifications when user is present
   useEffect(() => {
-    if (user) {
-      refresh();
-    }
-  }, [user, refresh]);
+    if (user?.id) refresh();
+  }, [user?.id, refresh]);
 
   // Track when section appears (activeCount goes from 0 → 1) for fade-in animation
   useEffect(() => {
@@ -137,40 +136,39 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
     // Phase 1: acknowledge
     setAcknowledging((prev) => new Set(prev).add(notificationId));
 
-    timeoutsRef.current[notificationId] = {
-      ack: window.setTimeout(() => {
-        setAcknowledging((prev) => {
+    const ackId = window.setTimeout(() => {
+      setAcknowledging((prev) => {
+        const next = new Set(prev);
+        next.delete(notificationId);
+        return next;
+      });
+      setDismissing((prev) => new Set(prev).add(notificationId));
+      setOptimisticallyDismissed((prev) => new Set(prev).add(notificationId));
+
+      const dismissId = window.setTimeout(() => {
+        setDismissing((prev) => {
           const next = new Set(prev);
           next.delete(notificationId);
           return next;
         });
-        setDismissing((prev) => new Set(prev).add(notificationId));
-        setOptimisticallyDismissed((prev) => new Set(prev).add(notificationId));
 
-        // Phase 3: after slide duration, clear dismissing (card filters out) and fire API
-        timeoutsRef.current[notificationId] = {
-          dismiss: window.setTimeout(() => {
-            setDismissing((prev) => {
+        dismissNotification(notificationId)
+          .catch(() => {
+            setOptimisticallyDismissed((prev) => {
               const next = new Set(prev);
               next.delete(notificationId);
               return next;
             });
+          })
+          .finally(() => {
+            delete timeoutsRef.current[notificationId];
+          });
+      }, SLIDE_MS);
 
-            dismissNotification(notificationId)
-              .catch(() => {
-                setOptimisticallyDismissed((prev) => {
-                  const next = new Set(prev);
-                  next.delete(notificationId);
-                  return next;
-                });
-              })
-              .finally(() => {
-                delete timeoutsRef.current[notificationId];
-              });
-          }, SLIDE_MS),
-        };
-      }, ACK_MS + HOLD_MS),
-    };
+      timeoutsRef.current[notificationId] = { dismiss: dismissId };
+    }, ACK_MS + HOLD_MS);
+
+    timeoutsRef.current[notificationId] = { ack: ackId };
   };
 
   const getNotificationTitle = (type: string) => {
@@ -285,21 +283,23 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
                 <GlassCard
                   key={notification.id}
                   variant="1"
-                  className={`p-4 relative transition-[transform,opacity] duration-[420ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
+                  className={`p-4 relative transition-[transform,opacity] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
                     isDismissing
                       ? '-translate-x-[140%] opacity-0 scale-[0.99] pointer-events-none'
                       : 'translate-x-0 opacity-100 scale-100'
                   }`}
+                  style={{ transitionDuration: `${SLIDE_MS}ms` }}
                 >
                   {/* Dismiss button - boxed checkmark, status pill green on ACK */}
                   <button
                     onClick={() => handleDismiss(notification.id)}
                     disabled={isAcknowledging || isDismissing}
-                    className={`absolute top-4 right-3 p-1.5 rounded-md border transition-all duration-[260ms] ease-out focus:outline-none focus:ring-2 focus:ring-white/30 ${
+                    className={`absolute top-4 right-3 p-1.5 rounded-md border transition-all ease-out focus:outline-none focus:ring-2 focus:ring-white/30 ${
                       isAcknowledging
                         ? 'bg-status-in-motion/20 border-status-in-motion/50 scale-[1.06]'
                         : 'bg-transparent border-white/20 hover:bg-white/10 hover:border-white/30'
                     } ${isDismissing ? 'opacity-60' : 'opacity-100'}`}
+                    style={{ transitionDuration: `${ACK_MS}ms` }}
                     aria-label="Dismiss notification"
                   >
                     <svg
@@ -311,9 +311,10 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
                       strokeWidth={isAcknowledging ? 2.75 : 2}
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className={`transition-all duration-[260ms] ease-out ${
+                      className={`transition-all ease-out ${
                         isAcknowledging ? 'text-white scale-[1.06]' : 'text-white/70 hover:text-white'
                       }`}
+                      style={{ transitionDuration: `${ACK_MS}ms` }}
                     >
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
