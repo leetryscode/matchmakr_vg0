@@ -42,10 +42,10 @@ export const palette = {
    */
   status: {
     paused: '#A39AD6',             // brighter violet for NOT_SURE_YET on blue-grey
-    invited: '#5F86C4',            // brighter blue
+    invited: '#B7B0A6',            // warm neutral stone (idle/available)
     needs_attention: '#E0AA3E',   // warmer amber
     in_motion: '#5FB58C',          // brighter green
-    needs_introduction: '#5F86C4', // same as invited
+    needs_introduction: '#B7B0A6', // same as invited
   },
   /** Primary CTA: white fill, slate blue text. No gradients, no teal. */
   action: {
