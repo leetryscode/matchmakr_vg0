@@ -373,6 +373,14 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
 
   const [inviteSponsorEmail, setInviteSponsorEmail] = useState('');
   const [isInviteSponsorModalOpen, setIsInviteSponsorModalOpen] = useState(false);
+  const [showSponsorChatFade, setShowSponsorChatFade] = useState(true);
+  const sponsorChatScrollRef = useRef<HTMLDivElement>(null);
+
+  const handleSponsorChatScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 4;
+    setShowSponsorChatFade(!atBottom);
+  }, []);
 
   // Inline invite action component
   const InviteAction = () => (
@@ -390,33 +398,30 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       <SectionHeader title="Sponsor chat" right={<InviteAction />} />
       <div className="mt-4">
       {/* Chat rows for matchmakrs only */}
-      {localConversations.length === 0 ||
-        localConversations.filter((msg: any) => {
+      {(() => {
+        const sponsorChatFilter = (msg: any) => {
           const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
-          // Exclude the sponsored single from the MatchMakr Chat section
           if (sponsoredSingleId && otherId === sponsoredSingleId) return false;
-          // Only show chats with other matchmakrs
           return !sponsoredSingles.some(s => s.id === otherId);
-        }).length === 0 ? (
-        <GlassCard variant="1" className="p-4 mb-6">
-          <div className="text-center">
-            <h3 className="type-body mb-1">No sponsor chats yet</h3>
-            <p className="type-meta">
-              Message another sponsor to coordinate introductions.
-            </p>
-          </div>
-        </GlassCard>
-      ) : (
-        <div className="mb-6 flex flex-col gap-2.5">
-          {localConversations
-            .filter((msg: any) => {
-              const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
-              // Exclude the sponsored single from the MatchMakr Chat section
-              if (sponsoredSingleId && otherId === sponsoredSingleId) return false;
-              // Only show chats with other matchmakrs
-              return !sponsoredSingles.some(s => s.id === otherId);
-            })
-            .map((msg: any) => {
+        };
+        const sponsorChats = localConversations.filter(sponsorChatFilter);
+        const sponsorChatCount = sponsorChats.length;
+        const useScrollContainer = sponsorChatCount > 7;
+
+        if (sponsorChatCount === 0) {
+          return (
+            <GlassCard variant="1" className="p-4 mb-6">
+              <div className="text-center">
+                <h3 className="type-body mb-1">No sponsor chats yet</h3>
+                <p className="type-meta">
+                  Message another sponsor to coordinate introductions.
+                </p>
+              </div>
+            </GlassCard>
+          );
+        }
+
+        const chatRows = sponsorChats.map((msg: any) => {
               const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
               const profile = otherProfiles[otherId];
               const conversation = msg.conversation;
@@ -493,9 +498,36 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                   </div>
                 </div>
               );
-            })}
-        </div>
-      )}
+        });
+
+        const listContent = (
+          <div className={`flex flex-col gap-2.5 ${useScrollContainer ? '' : 'mb-6'}`}>
+            {chatRows}
+          </div>
+        );
+
+        if (useScrollContainer) {
+          return (
+            <div className="relative mb-6">
+              <div
+                ref={sponsorChatScrollRef}
+                className="max-h-[420px] overflow-y-auto no-scrollbar pr-1"
+                onScroll={handleSponsorChatScroll}
+              >
+                {listContent}
+              </div>
+              {/* Subtle "more below" fade — hides when scrolled to bottom */}
+              <div
+                className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none bg-gradient-to-b from-transparent to-background-main transition-opacity duration-200"
+                style={{ opacity: showSponsorChatFade ? 1 : 0 }}
+                aria-hidden
+              />
+            </div>
+          );
+        }
+
+        return listContent;
+      })()}
       </div>
       {/* Sponsored Single Chat Row (if any) */}
       {sponsoredSingles && sponsoredSingles.length > 0 && (
