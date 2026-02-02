@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { useRouter, usePathname } from 'next/navigation';
@@ -343,7 +343,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   };
 
   // Function to update unread count when navigating to chat page
-  const handleNavigateToChat = async (conversationId: string, otherId: string) => {
+  const handleNavigateToChat = useCallback(async (conversationId: string, otherId: string) => {
     // Mark messages as read for this specific conversation
     await fetch('/api/messages/mark-read', {
       method: 'POST',
@@ -362,7 +362,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
     
     // Navigate to chat page
     router.push(`/dashboard/chat/${conversationId}`);
-  };
+  }, [userId, unreadCounts, router]);
 
 
 
@@ -375,12 +375,114 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const [isInviteSponsorModalOpen, setIsInviteSponsorModalOpen] = useState(false);
   const [showSponsorChatFade, setShowSponsorChatFade] = useState(true);
   const sponsorChatScrollRef = useRef<HTMLDivElement>(null);
+  const sponsorChatScrollRafRef = useRef<number | null>(null);
 
-  const handleSponsorChatScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget;
-    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 4;
-    setShowSponsorChatFade(!atBottom);
+  const handleSponsorChatScroll = useCallback(() => {
+    if (sponsorChatScrollRafRef.current != null) return;
+
+    sponsorChatScrollRafRef.current = requestAnimationFrame(() => {
+      sponsorChatScrollRafRef.current = null;
+      const el = sponsorChatScrollRef.current;
+      if (!el) return;
+      const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 4;
+      const newFade = !atBottom;
+      setShowSponsorChatFade(prev => (prev === newFade ? prev : newFade));
+    });
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (sponsorChatScrollRafRef.current != null) cancelAnimationFrame(sponsorChatScrollRafRef.current);
+    };
+  }, []);
+
+  // Memoize sponsor chat list to avoid rebuilding on unrelated rerenders
+  const sponsorChats = useMemo(() => {
+    const sponsorChatFilter = (msg: any) => {
+      const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+      if (sponsoredSingleId && otherId === sponsoredSingleId) return false;
+      return !sponsoredSingles.some(s => s.id === otherId);
+    };
+    return localConversations.filter(sponsorChatFilter);
+  }, [localConversations, userId, sponsoredSingleId, sponsoredSingles]);
+
+  const chatRows = useMemo(() => {
+    return sponsorChats.map((msg: any) => {
+      const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+      const profile = otherProfiles[otherId];
+      const conversation = msg.conversation;
+      const singlesInfo = conversation?.about_single && conversation?.clicked_single ?
+        `${conversation.about_single.name} & ${conversation.clicked_single.name}` :
+        'About singles';
+      const unreadCount = msg.unreadCount || unreadCounts[conversation?.id] || 0;
+
+      return (
+        <div
+          key={msg.id}
+          className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
+          role="button"
+          tabIndex={0}
+          onClick={e => {
+            if ((e.target as HTMLElement).closest('button')) return;
+            handleNavigateToChat(msg.conversation.id, otherId);
+          }}
+          onKeyDown={e => {
+            if ((e.target as HTMLElement).closest('button')) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleNavigateToChat(msg.conversation.id, otherId);
+            }
+          }}
+        >
+          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border-light bg-background-card flex-shrink-0">
+            {profile?.profile_pic_url ? (
+              <img src={profile.profile_pic_url} alt={profile.name || 'Sponsor'} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-text-dark">
+                {profile?.name?.charAt(0).toUpperCase() || '?'}
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="type-body truncate drop-shadow">{profile?.name || 'Unknown sponsor'}</div>
+            <div className="type-meta truncate mb-1">{singlesInfo}</div>
+            <div className={`type-meta truncate ${unreadCount > 0 ? 'font-semibold tracking-[0.01em]' : ''}`}>{msg.content}</div>
+          </div>
+          <div className="w-[56px] flex items-center justify-end flex-shrink-0 ml-3">
+            <span className="type-meta text-text-light text-right whitespace-nowrap">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            <span className="w-2 h-2 rounded-full bg-status-needs-attention ml-1.5 flex-shrink-0" style={{ opacity: unreadCount > 0 ? 1 : 0 }} aria-hidden />
+          </div>
+          <div className="relative menu-btn flex items-center justify-end flex-shrink-0">
+            <button
+              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-background-card/50 focus:outline-none transition-colors text-text-light"
+              onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === msg.conversation.id ? null : msg.conversation.id); }}
+              tabIndex={-1}
+              aria-label="Open menu"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
+                <circle cx="12" cy="5" r="2" fill="currentColor"/>
+                <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                <circle cx="12" cy="19" r="2" fill="currentColor"/>
+              </svg>
+            </button>
+            {menuOpen === msg.conversation.id && (
+              <div
+                ref={el => { menuRefs.current[msg.conversation.id] = el; }}
+                className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
+              >
+                <button
+                  className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-t-lg"
+                  onClick={e => { e.stopPropagation(); setConfirmDelete({otherId, profileName: profile?.name || 'this sponsor'}); setMenuOpen(null); }}
+                >
+                  Delete chat
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    });
+  }, [sponsorChats, otherProfiles, userId, unreadCounts, menuOpen, handleNavigateToChat]);
 
   // Inline invite action component
   const InviteAction = () => (
@@ -398,108 +500,17 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       <SectionHeader title="Sponsor chat" right={<InviteAction />} />
       <div className="mt-4">
       {/* Chat rows for matchmakrs only */}
-      {(() => {
-        const sponsorChatFilter = (msg: any) => {
-          const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
-          if (sponsoredSingleId && otherId === sponsoredSingleId) return false;
-          return !sponsoredSingles.some(s => s.id === otherId);
-        };
-        const sponsorChats = localConversations.filter(sponsorChatFilter);
-        const sponsorChatCount = sponsorChats.length;
-        const useScrollContainer = sponsorChatCount > 7;
-
-        if (sponsorChatCount === 0) {
-          return (
-            <GlassCard variant="1" className="p-4 mb-6">
-              <div className="text-center">
-                <h3 className="type-body mb-1">No sponsor chats yet</h3>
-                <p className="type-meta">
-                  Message another sponsor to coordinate introductions.
-                </p>
-              </div>
-            </GlassCard>
-          );
-        }
-
-        const chatRows = sponsorChats.map((msg: any) => {
-              const otherId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
-              const profile = otherProfiles[otherId];
-              const conversation = msg.conversation;
-              const singlesInfo = conversation?.about_single && conversation?.clicked_single ? 
-                `${conversation.about_single.name} & ${conversation.clicked_single.name}` : 
-                'About singles';
-              const unreadCount = msg.unreadCount || unreadCounts[conversation?.id] || 0;
-              
-              return (
-                <div
-                  key={msg.id}
-                  className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
-                  role="button"
-                  tabIndex={0}
-                  onClick={e => {
-                    if ((e.target as HTMLElement).closest('button')) return;
-                    // Use the new function to handle navigation and unread count update
-                    handleNavigateToChat(msg.conversation.id, otherId);
-                  }}
-                  onKeyDown={e => {
-                    if ((e.target as HTMLElement).closest('button')) return;
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleNavigateToChat(msg.conversation.id, otherId);
-                    }
-                  }}
-                >
-                  <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border-light bg-background-card flex-shrink-0">
-                    {profile?.profile_pic_url ? (
-                      <img src={profile.profile_pic_url} alt={profile.name || 'Sponsor'} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-text-dark">
-                        {profile?.name?.charAt(0).toUpperCase() || '?'}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="type-body truncate drop-shadow">{profile?.name || 'Unknown sponsor'}</div>
-                    <div className="type-meta truncate mb-1">{singlesInfo}</div>
-                    <div className={`type-meta truncate ${unreadCount > 0 ? 'font-semibold tracking-[0.01em]' : ''}`}>{msg.content}</div>
-                  </div>
-                  {/* Fixed metadata block: timestamp + inline unread dot. Unread is a state, not a badge. */}
-                  <div className="w-[56px] flex items-center justify-end flex-shrink-0 ml-3">
-                    <span className="type-meta text-text-light text-right whitespace-nowrap">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    <span className="w-2 h-2 rounded-full bg-status-needs-attention ml-1.5 flex-shrink-0" style={{ opacity: unreadCount > 0 ? 1 : 0 }} aria-hidden />
-                  </div>
-                  {/* Three dots menu */}
-                  <div className="relative menu-btn flex items-center justify-end flex-shrink-0">
-                    <button
-                      className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-background-card/50 focus:outline-none transition-colors text-text-light"
-                      onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === msg.conversation.id ? null : msg.conversation.id); }}
-                      tabIndex={-1}
-                      aria-label="Open menu"
-                    >
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
-                        <circle cx="12" cy="5" r="2" fill="currentColor"/>
-                        <circle cx="12" cy="12" r="2" fill="currentColor"/>
-                        <circle cx="12" cy="19" r="2" fill="currentColor"/>
-                      </svg>
-                    </button>
-                    {menuOpen === msg.conversation.id && (
-                      <div 
-                        ref={el => { menuRefs.current[msg.conversation.id] = el; }}
-                        className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
-                      >
-                        <button
-                          className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-t-lg"
-                          onClick={e => { e.stopPropagation(); setConfirmDelete({otherId, profileName: profile?.name || 'this sponsor'}); setMenuOpen(null); }}
-                        >
-                          Delete chat
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-        });
-
+      {sponsorChats.length === 0 ? (
+        <GlassCard variant="1" className="p-4 mb-6">
+          <div className="text-center">
+            <h3 className="type-body mb-1">No sponsor chats yet</h3>
+            <p className="type-meta">
+              Message another sponsor to coordinate introductions.
+            </p>
+          </div>
+        </GlassCard>
+      ) : (() => {
+        const useScrollContainer = sponsorChats.length > 7;
         const listContent = (
           <div className={`flex flex-col gap-2.5 ${useScrollContainer ? '' : 'mb-6'}`}>
             {chatRows}
