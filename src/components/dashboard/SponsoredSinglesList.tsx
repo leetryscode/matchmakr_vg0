@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
-import FlameUnreadIcon from './FlameUnreadIcon';
 import { useRouter, usePathname } from 'next/navigation';
 import SectionHeader from '@/components/ui/SectionHeader';
 import PreviewRow from '@/components/ui/PreviewRow';
@@ -120,18 +119,15 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <span className="type-body block text-text-dark">{single.name}</span>
-                                    {lastMsg && (
-                                        <span className="type-meta block truncate max-w-xs text-text-light">{lastMsg.content}</span>
-                                    )}
+                                    {lastMsg ? (
+                                        <span className={`type-meta block truncate max-w-xs text-text-light ${unreadCounts[single.id] > 0 ? 'font-semibold tracking-[0.01em]' : ''}`}>{lastMsg.content}</span>
+                                    ) : null}
                                 </div>
-                                {lastMsg && (
-                                    <span className="text-xs text-text-light whitespace-nowrap ml-3 flex-shrink-0">{new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                )}
-                                {unreadCounts[single.id] > 0 && (
-                                    <span className="ml-2 flex items-center flex-shrink-0">
-                                        <FlameUnreadIcon count={unreadCounts[single.id]} />
-                                    </span>
-                                )}
+                                {/* Fixed metadata block: timestamp + inline unread dot. Unread is a state, not a badge. */}
+                                <div className="w-[56px] flex items-center justify-end flex-shrink-0 ml-3">
+                                    <span className="type-meta text-text-light text-right whitespace-nowrap">{lastMsg ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                                    <span className="w-2 h-2 rounded-full bg-status-needs-attention ml-1.5 flex-shrink-0" style={{ opacity: unreadCounts[single.id] > 0 ? 1 : 0 }} aria-hidden />
+                                </div>
                             </div>
                         );
                     })

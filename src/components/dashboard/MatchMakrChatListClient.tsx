@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { getSupabaseClient } from '@/lib/supabase/client';
-import FlameUnreadIcon from './FlameUnreadIcon';
 import { useRouter, usePathname } from 'next/navigation';
 import SectionHeader from '@/components/ui/SectionHeader';
 import GlassCard from '@/components/ui/GlassCard';
@@ -457,15 +456,13 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                   <div className="flex-1 min-w-0">
                     <div className="type-body truncate drop-shadow">{profile?.name || 'Unknown sponsor'}</div>
                     <div className="type-meta truncate mb-1">{singlesInfo}</div>
-                    <div className="type-meta truncate">{msg.content}</div>
+                    <div className={`type-meta truncate ${unreadCount > 0 ? 'font-semibold tracking-[0.01em]' : ''}`}>{msg.content}</div>
                   </div>
-                  <div className="type-meta ml-3 whitespace-nowrap flex-shrink-0">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                  {/* Unread icon, only show if unreadCount > 0 */}
-                  {unreadCount > 0 && (
-                    <div className="ml-2 flex items-center flex-shrink-0">
-                      <FlameUnreadIcon count={unreadCount} />
-                    </div>
-                  )}
+                  {/* Fixed metadata block: timestamp + inline unread dot. Unread is a state, not a badge. */}
+                  <div className="w-[56px] flex items-center justify-end flex-shrink-0 ml-3">
+                    <span className="type-meta text-text-light text-right whitespace-nowrap">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span className="w-2 h-2 rounded-full bg-status-needs-attention ml-1.5 flex-shrink-0" style={{ opacity: unreadCount > 0 ? 1 : 0 }} aria-hidden />
+                  </div>
                   {/* Three dots menu */}
                   <div className="relative menu-btn flex items-center justify-end flex-shrink-0">
                     <button
@@ -545,14 +542,13 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           </div>
           <div className="flex-1 min-w-0">
             <div className="type-body truncate drop-shadow">{sponsoredSingles[0].name}</div>
-            <div className="type-meta truncate">Chat with your sponsored single</div>
+            <div className={`type-meta truncate ${sponsoredSingleUnreadCount > 0 ? 'font-semibold tracking-[0.01em]' : ''}`}>Chat with your sponsored single</div>
           </div>
-          {/* Unread icon, only show if unreadCount > 0 */}
-          {sponsoredSingleUnreadCount > 0 && (
-            <div className="ml-2 flex items-center">
-              <FlameUnreadIcon count={sponsoredSingleUnreadCount} />
-            </div>
-          )}
+          {/* Fixed metadata block: timestamp + inline unread dot. Unread is a state, not a badge. */}
+          <div className="w-[56px] flex items-center justify-end flex-shrink-0 ml-3">
+            <span className="type-meta text-text-light text-right whitespace-nowrap">—</span>
+            <span className="w-2 h-2 rounded-full bg-status-needs-attention ml-1.5 flex-shrink-0" style={{ opacity: sponsoredSingleUnreadCount > 0 ? 1 : 0 }} aria-hidden />
+          </div>
 
         </div>
       )}

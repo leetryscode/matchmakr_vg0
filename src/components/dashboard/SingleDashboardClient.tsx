@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ChatModal from '@/components/chat/ChatModal';
 import { getSupabaseClient } from '@/lib/supabase/client';
-import FlameUnreadIcon from './FlameUnreadIcon';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import InviteMatchMakrModal from '@/components/dashboard/InviteMatchMakrModal';
@@ -358,20 +357,15 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
       </div>
       <div className="flex-1 min-w-0">
         <div className="type-body truncate drop-shadow">{name}</div>
-        <div className="type-meta truncate">
+        <div className={`type-meta truncate ${unreadCount > 0 ? 'font-semibold tracking-[0.01em]' : ''}`}>
           {lastMessage || 'Click to chat'}
         </div>
       </div>
-      {timestamp && (
-        <div className="type-meta ml-3 whitespace-nowrap flex-shrink-0">
-          {timestamp}
-        </div>
-      )}
-      {unreadCount > 0 && (
-        <div className="ml-2 flex items-center flex-shrink-0">
-          <FlameUnreadIcon count={unreadCount} />
-        </div>
-      )}
+      {/* Fixed metadata block: timestamp + inline unread dot. Unread is a state, not a badge. */}
+      <div className="w-[56px] flex items-center justify-end flex-shrink-0 ml-3">
+        <span className="type-meta text-text-light text-right whitespace-nowrap">{timestamp || '—'}</span>
+        <span className="w-2 h-2 rounded-full bg-status-needs-attention ml-1.5 flex-shrink-0" style={{ opacity: unreadCount > 0 ? 1 : 0 }} aria-hidden />
+      </div>
       {/* Three-dot menu button */}
       <div className="relative menu-btn flex items-center justify-end flex-shrink-0">
         {menuButton}
