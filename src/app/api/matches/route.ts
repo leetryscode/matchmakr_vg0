@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { createIntroductionLiveNotifications } from '@/lib/notifications/introduction-live';
 
 export async function POST(req: NextRequest) {
   const supabase = createClient();
@@ -137,6 +138,24 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: updateError.message }, { status: 500 });
       }
       match = updated;
+
+      // Notify both sponsors when introduction goes live (both agreed)
+      if (updateFields.approved_at !== undefined) {
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (serviceRoleKey) {
+          createIntroductionLiveNotifications(
+            match.id,
+            match.matchmakr_a_id,
+            match.matchmakr_b_id,
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            serviceRoleKey,
+            match.single_a_id,
+            match.single_b_id
+          ).catch((err) => {
+            console.error('[Matches] Failed to create introduction_live notifications:', err);
+          });
+        }
+      }
     }
   }
   // Determine if this is first approval or match completion

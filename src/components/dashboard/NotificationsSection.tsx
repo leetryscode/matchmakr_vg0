@@ -123,6 +123,8 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
         return 'Sponsor activity';
       case 'single_not_seen_intro':
         return 'Introduction not yet viewed';
+      case 'introduction_live':
+        return 'Introduction live';
       default:
         return type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     }
@@ -147,6 +149,14 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
     }
     if (notification.type === 'single_not_seen_intro') {
       return "Your single hasn't logged in yet to view the introduction.";
+    }
+    if (notification.type === 'introduction_live') {
+      const a = notification.data?.single_a_name;
+      const b = notification.data?.single_b_name;
+      if (a && b) {
+        return `Both sponsors agreed to introduce ${a} and ${b}.`;
+      }
+      return 'Both sponsors agreed — the introduction is live.';
     }
     return notification.data?.message || 'You have a new notification.';
   };
