@@ -177,6 +177,44 @@ export function getSingleFacingStatusStyles(status: SingleStatus): string {
   return `${STATUS_PILL_BASE} ${SINGLE_FACING_STATUS_COLOR[status]}`;
 }
 
+/** Preview response statuses shown to sponsor (PENDING, OPEN_TO_IT, NOT_SURE_YET). */
+export type PreviewResponseStatus = 'PENDING' | 'OPEN_TO_IT' | 'NOT_SURE_YET';
+
+/**
+ * Color mapping for preview response pills (SneakPeeksSection).
+ * PENDING → needs_attention (amber, sponsor action needed)
+ * OPEN_TO_IT → in_motion (green, positive momentum)
+ * NOT_SURE_YET → paused (violet, neutral/reflective)
+ */
+const PREVIEW_RESPONSE_STATUS_COLOR: Record<PreviewResponseStatus, string> = {
+  PENDING: 'border-status-needs-attention text-status-needs-attention',
+  OPEN_TO_IT: 'border-status-in-motion text-status-in-motion',
+  NOT_SURE_YET: 'border-status-paused text-status-paused',
+};
+
+/**
+ * Gets the status pill styling for preview response statuses (sponsor view).
+ * Reuses same outline-only base as managed single pills.
+ */
+export function getPreviewResponseStatusStyles(status: PreviewResponseStatus): string {
+  return `${STATUS_PILL_BASE} ${PREVIEW_RESPONSE_STATUS_COLOR[status]}`;
+}
+
+/**
+ * Gets the capsule outline class for preview response items.
+ * Uses status color at ~50% opacity; thinner than pill (border, not border-2).
+ * Creates visual link between capsule and status pill.
+ */
+const PREVIEW_RESPONSE_CAPSULE_BORDER: Record<PreviewResponseStatus, string> = {
+  PENDING: 'border-status-needs-attention/50',
+  OPEN_TO_IT: 'border-status-in-motion/50',
+  NOT_SURE_YET: 'border-status-paused/50',
+};
+
+export function getPreviewResponseCapsuleBorder(status: PreviewResponseStatus): string {
+  return `border ${PREVIEW_RESPONSE_CAPSULE_BORDER[status]}`;
+}
+
 // Example test cases (for documentation/sanity checking):
 // 
 // Example 1: INVITED

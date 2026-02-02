@@ -19,6 +19,10 @@ const config: Config = {
     'text-status-in-motion',
     'border-status-needs-introduction',
     'text-status-needs-introduction',
+    // Preview response capsule borders (status color at 50% opacity)
+    'border-status-needs-attention/50',
+    'border-status-in-motion/50',
+    'border-status-paused/50',
   ],
   theme: {
     extend: {

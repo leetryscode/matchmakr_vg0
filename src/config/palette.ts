@@ -41,7 +41,7 @@ export const palette = {
    * Brighter, higher contrast on blue-grey canvas. Outline-only pills; text matches border.
    */
   status: {
-    paused: '#8B8AB3',             // brighter slate violet
+    paused: '#A39AD6',             // brighter violet for NOT_SURE_YET on blue-grey
     invited: '#5F86C4',            // brighter blue
     needs_attention: '#E0AA3E',   // warmer amber
     in_motion: '#5FB58C',          // brighter green

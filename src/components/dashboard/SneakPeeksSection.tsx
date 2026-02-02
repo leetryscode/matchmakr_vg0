@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Image from 'next/image';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { getPreviewResponseStatusStyles, getPreviewResponseCapsuleBorder, type PreviewResponseStatus } from '@/lib/status/singleStatus';
 import { createClient } from '@/lib/supabase/client';
 
 interface SneakPeek {
@@ -29,10 +30,10 @@ interface SneakPeeksSectionProps {
     sponsoredSingles: SponsoredSingle[];
 }
 
-// Example preview card for empty state - matches real single preview structure, but smaller and lighter
+// Example preview card for empty state - matches pair-capsule style (transparent, bordered)
 const ExamplePreviewCard = () => {
     return (
-        <div className="relative w-full bg-background-card rounded-xl shadow-card p-3 flex items-center gap-3 opacity-80 pointer-events-none" style={{ maxWidth: '90%' }}>
+        <div className="relative w-full bg-transparent border border-border-light/50 rounded-2xl p-3 flex items-center gap-3 opacity-80 pointer-events-none" style={{ maxWidth: '90%' }}>
             {/* X button - absolutely positioned, subtle overlay */}
             <div className="absolute top-2 right-2 text-text-light/30 p-1">
                 <XMarkIcon className="w-3 h-3" />
@@ -106,11 +107,18 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
     };
 
     return (
-        <div className="relative w-full transition-all" style={{ transitionDuration: isArchiving ? '200ms' : '150ms' }}>
-            {/* PILL CONTAINER - centered, smaller width */}
+        <div
+            className={`flex items-center gap-0.5 w-full transition-all`}
+            style={{ transitionDuration: isArchiving ? '200ms' : '150ms' }}
+        >
+            {/* Capsule: left avatar + names + status pill + right avatar — tinted outline matches status */}
             <div
                 onClick={onClick}
-                className={`flex flex-col items-center justify-center h-[48px] w-[62%] mx-auto bg-background-card hover:bg-background-card/95 rounded-full shadow-card hover:shadow-card-hover hover:-translate-y-[1px] active:translate-y-0 active:shadow-card transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 ${
+                className={`flex-1 flex items-center gap-4 px-4 py-3 bg-transparent rounded-full min-w-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 ${
+                    ['PENDING', 'OPEN_TO_IT', 'NOT_SURE_YET'].includes(sneakPeek.status)
+                        ? getPreviewResponseCapsuleBorder(sneakPeek.status as PreviewResponseStatus)
+                        : 'border border-border-light/50'
+                } ${
                     isArchiving ? 'opacity-0 translate-x-2' : 'opacity-100 translate-x-0'
                 }`}
                 role="button"
@@ -122,70 +130,67 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
                     }
                 }}
             >
-                <div className="flex items-center gap-2.5 px-3 w-full">
-                    {/* Left end: Recipient avatar (normal emphasis) */}
-                    <div className="w-[40px] h-[40px] rounded-full flex items-center justify-center bg-background-card overflow-hidden flex-shrink-0">
-                        {recipientAvatarUrl ? (
-                            <Image
-                                src={recipientAvatarUrl}
-                                alt={recipientName || 'Recipient'}
-                                width={40}
-                                height={40}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <span className="text-text-dark text-sm font-bold">
-                                {recipientName?.charAt(0).toUpperCase() || '?'}
-                            </span>
-                        )}
-                    </div>
+                {/* Left: Single avatar (48px) */}
+                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-background-card overflow-hidden flex-shrink-0">
+                    {recipientAvatarUrl ? (
+                        <Image
+                            src={recipientAvatarUrl}
+                            alt={recipientName || 'Recipient'}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <span className="text-text-dark text-base font-bold">
+                            {recipientName?.charAt(0).toUpperCase() || '?'}
+                        </span>
+                    )}
+                </div>
 
-                    {/* Center: Two-line content */}
-                    <div className="flex-1 flex flex-col items-center justify-center min-w-0">
-                        {/* LINE 1: RecipientName · TargetName */}
-                        <div className="flex items-center gap-1.5 text-sm">
-                            <span className="text-text-dark font-semibold whitespace-nowrap">
-                                {recipientName || 'Your single'}
-                            </span>
-                            <span className="text-text-light">·</span>
-                            <span className="text-text-light truncate min-w-0">
-                                {targetName || 'Someone'}
-                            </span>
-                        </div>
-
-                        {/* LINE 2: Status pill (centered below names, with more spacing) */}
-                        <span className="px-2 py-0.5 text-[10px] text-text-light rounded-full bg-background-main mt-1.5 shadow-sm">
-                            {getStatusLabel(sneakPeek.status)}
+                {/* Center: Names + status pill (primary metadata) */}
+                <div className="flex-1 flex flex-col items-center justify-center min-w-0">
+                    <div className="flex items-center gap-1.5 text-sm">
+                        <span className="text-text-dark font-semibold whitespace-nowrap">
+                            {recipientName || 'Your single'}
+                        </span>
+                        <span className="text-text-light">·</span>
+                        <span className="text-text-light truncate min-w-0">
+                            {targetName || 'Someone'}
                         </span>
                     </div>
+                    {['PENDING', 'OPEN_TO_IT', 'NOT_SURE_YET'].includes(sneakPeek.status) && (
+                        <span className={`${getPreviewResponseStatusStyles(sneakPeek.status as PreviewResponseStatus)} mt-1.5 -translate-y-[2px] whitespace-nowrap`}>
+                            {getStatusLabel(sneakPeek.status)}
+                        </span>
+                    )}
+                </div>
 
-                    {/* Right end: Target avatar (secondary - smaller and lower opacity) */}
-                    <div className="w-[32px] h-[32px] rounded-full flex items-center justify-center bg-background-card overflow-hidden flex-shrink-0 opacity-75">
-                        {sneakPeek.photo_url ? (
-                            <Image
-                                src={sneakPeek.photo_url}
-                                alt={targetName || 'Target'}
-                                width={32}
-                                height={32}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <span className="text-text-dark text-xs font-bold">
-                                {targetName?.charAt(0).toUpperCase() || '?'}
-                            </span>
-                        )}
-                    </div>
+                {/* Right: Match avatar (48px) */}
+                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-background-card overflow-hidden flex-shrink-0 opacity-90">
+                    {sneakPeek.photo_url ? (
+                        <Image
+                            src={sneakPeek.photo_url}
+                            alt={targetName || 'Target'}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <span className="text-text-dark text-base font-bold">
+                            {targetName?.charAt(0).toUpperCase() || '?'}
+                        </span>
+                    )}
                 </div>
             </div>
 
-            {/* Dismiss X - OUTSIDE pill, absolute right, very subtle */}
+            {/* Per-item X — outside capsule, in gutter */}
             <button
                 onClick={handleArchiveClick}
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-text-light/30 hover:text-text-light transition-colors p-1 flex-shrink-0"
-                aria-label="Archive"
+                className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] flex items-center justify-center rounded-lg text-text-light/70 hover:bg-white/10 hover:text-text-dark active:bg-white/15 transition-colors flex-shrink-0"
+                aria-label="Dismiss"
                 tabIndex={-1}
             >
-                <XMarkIcon className="w-4 h-4" />
+                <XMarkIcon className="w-5 h-5" />
             </button>
         </div>
     );
@@ -289,8 +294,8 @@ export default function SneakPeeksSection({ sponsorId, sponsoredSingles }: Sneak
                     </div>
                 </div>
             ) : (
-                <div className="mt-4 rounded-card-lg bg-background-card shadow-card px-6 py-5">
-                    <div className="flex flex-col gap-3">
+                <div className="mt-4 px-2 py-4">
+                    <div className="flex flex-col space-y-3">
                         {visibleSneakPeeks.map((sneakPeek) => (
                             <SneakPeekCard
                                 key={sneakPeek.id}
