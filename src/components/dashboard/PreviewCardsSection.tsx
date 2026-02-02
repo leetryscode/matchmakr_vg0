@@ -96,33 +96,27 @@ export default function PreviewCardsSection({ userId }: PreviewCardsSectionProps
 
     return (
         <>
-            {/* Single header above the preview */}
-            <div className="mb-4">
-                <h2 className="type-section">
-                    Your sponsor shared someone they think you might like.
+            <section className="mt-6 first:mt-0">
+                <h2 className="type-section text-text-dark">
+                    Your sponsor shared someone
                 </h2>
-            </div>
-
-            <div className="flex flex-col gap-3">
-                {previews.map((preview) => (
-                    <PreviewCard
-                        key={preview.id}
-                        id={preview.id}
-                        photoUrl={preview.photo_url}
-                        onOpenToIt={() => handleResponse(preview.id, 'OPEN_TO_IT')}
-                        onNotSureYet={() => handleResponse(preview.id, 'NOT_SURE_YET')}
-                        onDismiss={() => handleResponse(preview.id, 'DISMISSED')}
-                        isProcessing={processingIds.has(preview.id)}
-                    />
-                ))}
-            </div>
-
-            {/* Reassurance text below the preview card(s) */}
-            <div className="mt-4">
-                <p className="type-meta">
+                <p className="mt-4 type-meta text-text-light">
                     The other person won't see this. Your response only helps your sponsor understand how you feel — nothing happens automatically.
                 </p>
-            </div>
+                <div className="mt-4 flex flex-col gap-3">
+                    {previews.map((preview) => (
+                        <PreviewCard
+                            key={preview.id}
+                            id={preview.id}
+                            photoUrl={preview.photo_url}
+                            onOpenToIt={() => handleResponse(preview.id, 'OPEN_TO_IT')}
+                            onNotSureYet={() => handleResponse(preview.id, 'NOT_SURE_YET')}
+                            onDismiss={() => handleResponse(preview.id, 'DISMISSED')}
+                            isProcessing={processingIds.has(preview.id)}
+                        />
+                    ))}
+                </div>
+            </section>
 
             {/* Toast for errors only */}
             {toast && (

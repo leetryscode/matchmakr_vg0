@@ -439,7 +439,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           <PreviewCardsSection userId={userId} />
           
           {/* Availability section - underneath the chat sections */}
-          <div>
+          <div className="mt-12">
             <SectionHeader title="Availability" />
             <AvailabilitySection 
               status={displayStatus}
@@ -568,7 +568,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         <PreviewCardsSection userId={userId} />
         
         {/* Availability section - at the very bottom */}
-        <div>
+        <div className="mt-12">
           <SectionHeader title="Availability" />
           <AvailabilitySection 
             status={displayStatus}

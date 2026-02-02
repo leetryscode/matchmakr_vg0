@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { getPreviewResponseOptionStyles } from '@/lib/status/singleStatus';
 
 interface PreviewCardProps {
     id: string;
@@ -69,14 +70,14 @@ export default function PreviewCard({
                     <button
                         onClick={onNotSureYet}
                         disabled={isProcessing}
-                        className="px-3 py-1 text-white/80 bg-white/3 hover:bg-white/5 border border-white/10 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-w-[160px]"
+                        className={`${getPreviewResponseOptionStyles('NOT_SURE_YET')} hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-w-[160px]`}
                     >
                         I'm not sure yet
                     </button>
                     <button
                         onClick={onOpenToIt}
                         disabled={isProcessing}
-                        className="px-3 py-1 text-white/80 bg-white/3 hover:bg-white/5 border border-white/10 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-w-[160px]"
+                        className={`${getPreviewResponseOptionStyles('OPEN_TO_IT')} hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-w-[160px]`}
                     >
                         I'm open to it
                     </button>

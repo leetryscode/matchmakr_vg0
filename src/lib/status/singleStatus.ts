@@ -215,6 +215,22 @@ export function getPreviewResponseCapsuleBorder(status: PreviewResponseStatus): 
   return `border ${PREVIEW_RESPONSE_CAPSULE_BORDER[status]}`;
 }
 
+/** Base for single-facing preview response option pills (no uppercase, sentence case). */
+const PREVIEW_OPTION_PILL_BASE =
+  'inline-flex items-center rounded-full border-2 px-3 py-1 text-sm font-semibold bg-transparent';
+
+/**
+ * Gets pill styling for single's preview response options ("I'm open to it", "I'm not sure yet").
+ * Same colors as sponsor view; no uppercase so copy stays sentence case.
+ */
+export function getPreviewResponseOptionStyles(status: 'OPEN_TO_IT' | 'NOT_SURE_YET'): string {
+  const colors: Record<'OPEN_TO_IT' | 'NOT_SURE_YET', string> = {
+    OPEN_TO_IT: 'border-status-in-motion text-status-in-motion',
+    NOT_SURE_YET: 'border-status-paused text-status-paused',
+  };
+  return `${PREVIEW_OPTION_PILL_BASE} ${colors[status]}`;
+}
+
 // Example test cases (for documentation/sanity checking):
 // 
 // Example 1: INVITED
