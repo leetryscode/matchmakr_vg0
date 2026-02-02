@@ -125,6 +125,10 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
         return 'Introduction not yet viewed';
       case 'introduction_live':
         return 'Introduction live';
+      case 'nudge_invite_sponsor':
+        return 'Invite a sponsor';
+      case 'nudge_invite_single':
+        return 'Sponsor a single';
       default:
         return type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     }
@@ -157,6 +161,12 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
         return `Both sponsors agreed to introduce ${a} and ${b}.`;
       }
       return 'Both sponsors agreed — the introduction is live.';
+    }
+    if (notification.type === 'nudge_invite_sponsor') {
+      return 'Invite a trusted sponsor to get started.';
+    }
+    if (notification.type === 'nudge_invite_single') {
+      return 'Invite a single to sponsor so you can start making introductions.';
     }
     return notification.data?.message || 'You have a new notification.';
   };

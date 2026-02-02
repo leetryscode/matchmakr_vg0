@@ -8,6 +8,9 @@ import { orbitConfig } from '@/config/orbitConfig';
 import { normalizeToOrbitRole, OrbitUserRole } from '@/types/orbit';
 import { NotificationsProvider } from './NotificationsContext';
 
+/** Session guard: avoid spamming ensure-nudges API within same app session per user+type */
+const nudgeCheckRanThisSession = new Set<string>();
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -36,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // First try to get user type from profiles table (SINGLE/SPONSOR users)
       let { data: profile, error } = await supabase
         .from('profiles')
-        .select('user_type')
+        .select('user_type, sponsored_by_id')
         .eq('id', userId)
         .single();
 
@@ -79,6 +82,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('AuthContext: userType state updated to:', profile.user_type);
         console.log('AuthContext: orbitRole updated to:', normalized);
         console.log('AuthContext: userTypeRef.current is now:', userTypeRef.current);
+
+        // Fire-and-forget: ensure nudges (invite sponsor / invite single)
+        // Route derives userType + sponsoredById server-side; body is ignored
+        if (profile.user_type === 'SINGLE' || profile.user_type === 'MATCHMAKR') {
+          const key = `${userId}:${profile.user_type}:nudges`;
+          if (!nudgeCheckRanThisSession.has(key)) {
+            nudgeCheckRanThisSession.add(key);
+            fetch('/api/notifications/ensure-nudges', { method: 'POST' }).catch((err) => {
+              console.error('[AuthContext] ensure-nudges failed:', err);
+              nudgeCheckRanThisSession.delete(key); // Allow retry on next auth event
+            });
+          }
+        }
       } else {
         console.log('AuthContext: No user_type found in profile:', profile);
       }
@@ -147,6 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Clear any cached data and redirect to welcome page
           setUserType(null);
           setOrbitRole(null);
+          nudgeCheckRanThisSession.clear();
           router.push('/');
         } else if (event === 'SIGNED_IN' && session?.user) {
           // Check current path FIRST before doing anything else
