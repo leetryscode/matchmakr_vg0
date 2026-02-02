@@ -13,58 +13,50 @@ interface NotificationsSectionProps {
  * Shared NotificationsSection component for both Sponsor and Single dashboards.
  * Displays notifications as stacked cards with dismiss functionality.
  */
-export default function NotificationsSection({ userId: userIdProp }: NotificationsSectionProps) {
+export default function NotificationsSection({ userId: _userIdProp }: NotificationsSectionProps) {
   const { user } = useAuth();
-  const userId = userIdProp || user?.id || '';
-  
-  // Notifications come from context (NotificationsProvider) - userId parameter is ignored
+  // Notifications come from context (NotificationsProvider) - userId prop is ignored
   const { notifications, activeCount, loading, refresh, dismissNotification } = useNotifications();
   const [dismissing, setDismissing] = useState<Set<string>>(new Set());
   const [shouldAnimate, setShouldAnimate] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
   const prevActiveCountRef = React.useRef<number>(0);
 
-  // Refresh notifications on mount
+  // Refresh notifications when user is present
   useEffect(() => {
-    if (userId) {
+    if (user) {
       refresh();
     }
-  }, [userId, refresh]);
+  }, [user, refresh]);
 
   // Track when section appears (activeCount goes from 0 → 1) for fade-in animation
   useEffect(() => {
-    const wasHidden = prevActiveCountRef.current === 0;
+    const prev = prevActiveCountRef.current;
+    prevActiveCountRef.current = activeCount;
+
+    const wasHidden = prev === 0;
     const isNowVisible = activeCount > 0;
-    
+
     if (wasHidden && isNowVisible && !loading) {
-      // Section is appearing for the first time - trigger fade-in animation
-      // Works in both production and dev mode
       setShouldAnimate(true);
-      // Reset animation flag after animation completes (300ms)
-      const timer = setTimeout(() => {
-        setShouldAnimate(false);
-      }, 300);
+      const timer = setTimeout(() => setShouldAnimate(false), 300);
       return () => clearTimeout(timer);
-    } else if (activeCount === 0) {
-      // Section is hidden - reset animation state
+    }
+
+    if (activeCount === 0) {
       setShouldAnimate(false);
     }
-    
-    prevActiveCountRef.current = activeCount;
   }, [activeCount, loading]);
 
-  // Handle hash navigation - scroll to top if URL has #notifications
+  // Handle hash navigation - scroll to notifications element when URL has #notifications
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.hash === '#notifications') {
-      // Small delay to ensure DOM is ready, then scroll to top
-      const timer = setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [notifications]); // Re-run when notifications load/change
+    if (typeof window === 'undefined' || window.location.hash !== '#notifications') return;
+    if (loading) return;
+    document.getElementById('notifications')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [loading]);
 
-  // Early return if no userId
-  if (!userId) {
+  // Early return if no user
+  if (!user) {
     return null;
   }
 
@@ -80,24 +72,22 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
   const showAnimation = shouldAnimate;
 
   const handleSeedNotification = async () => {
+    setIsSeeding(true);
     try {
       const response = await fetch('/api/debug/notifications/seed', {
         method: 'POST',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to seed notification');
       }
-      
-      // Refresh notifications after seeding
+
       await refresh();
-      
-      // Scroll to top of page (same view as when dashboard opens)
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 100);
+      document.getElementById('notifications')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (error) {
       console.error('Error seeding notification:', error);
+    } finally {
+      setIsSeeding(false);
     }
   };
 
@@ -185,9 +175,10 @@ export default function NotificationsSection({ userId: userIdProp }: Notificatio
         <div className="mb-3 flex justify-end">
           <button
             onClick={handleSeedNotification}
-            className="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white/80 hover:text-white transition-colors"
+            disabled={isSeeding}
+            className="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white/80 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Add example
+            {isSeeding ? 'Adding…' : 'Add example'}
           </button>
         </div>
       )}
