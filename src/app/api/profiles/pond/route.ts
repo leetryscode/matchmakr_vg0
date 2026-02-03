@@ -56,10 +56,11 @@ export async function GET(req: NextRequest) {
         .in('profile_id', profileIds);
 
       for (const row of profileInterests || []) {
-        const pi = row as { profile_id: string; interest_id: number; interests: { id: number; name: string } | null };
-        if (pi.interests) {
+        const pi = row as unknown as { profile_id: string; interest_id: number; interests: { id: number; name: string } | { id: number; name: string }[] | null };
+        const interest = Array.isArray(pi.interests) ? pi.interests[0] : pi.interests;
+        if (interest) {
           const list = interestsMap.get(pi.profile_id) || [];
-          list.push({ id: pi.interests.id, name: pi.interests.name });
+          list.push({ id: interest.id, name: interest.name });
           interestsMap.set(pi.profile_id, list);
         }
       }
