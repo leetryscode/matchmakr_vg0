@@ -15,6 +15,7 @@ import {
   renderIntroductionPrompt,
 } from '@/lib/introductionSignal';
 import IntroductionSignalModal from './IntroductionSignalModal';
+import { clearPondCache } from '@/lib/pond-cache';
 
 interface IntroductionSignalSectionProps {
   introductionSignal: any | null; // JSONB from database
@@ -23,6 +24,7 @@ interface IntroductionSignalSectionProps {
   profileName: string | null;
   canEdit?: boolean; // isSponsorOfThisSingle
   viewerIsProfileOwner?: boolean; // isViewingOwnSingleProfile
+  compact?: boolean; // tighter spacing for PondView
 }
 
 /**
@@ -59,6 +61,7 @@ export default function IntroductionSignalSection({
   profileName,
   canEdit = false,
   viewerIsProfileOwner = false,
+  compact = false,
 }: IntroductionSignalSectionProps) {
   const supabase = createClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -111,10 +114,7 @@ export default function IntroductionSignalSection({
     // Update local state immediately
     setLocalSignal(newSignal);
 
-    // Clear pond cache (match existing pattern)
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('pond_cache');
-    }
+    clearPondCache();
 
     // Close modal on success
     setIsModalOpen(false);
@@ -139,7 +139,7 @@ export default function IntroductionSignalSection({
               Add
             </button>
           )}
-          <p className="text-white/90 text-lg font-medium leading-relaxed text-center">
+          <p className={`text-white/90 font-medium leading-relaxed text-center ${compact ? 'text-base' : 'text-lg'}`}>
             {renderedPrompt}
           </p>
           {saveError && (
@@ -160,14 +160,13 @@ export default function IntroductionSignalSection({
   }
 
   // Filled state - combine prompt_text and response
-  // prompt_text contains "___" placeholder which we replace with the response
   const parts = signal.prompt_text.split('___');
   const beforeResponse = parts[0];
   const afterResponse = parts[1] || '';
 
   return (
     <>
-      <div className="py-6 relative">
+      <div className={`relative ${compact ? 'py-4' : 'py-6'}`}>
         {canEdit && (
           <button
             onClick={handleEdit}
@@ -177,7 +176,7 @@ export default function IntroductionSignalSection({
             Edit
           </button>
         )}
-        <p className="text-white/90 text-lg font-medium leading-relaxed text-center">
+        <p className={`text-white/90 font-medium leading-relaxed text-center ${compact ? 'text-base' : 'text-lg'}`}>
           {beforeResponse}
           <span className="text-white font-semibold">{signal.response}</span>
           {afterResponse}

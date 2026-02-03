@@ -17,9 +17,12 @@ export async function GET(req: NextRequest) {
   try {
     console.log('Pond API - starting request processing');
 
+    // Query profiles directly (includes pairings_signal, introduction_signal, city, state, etc.)
     let query = supabase
-      .from('profile_with_interests')
+      .from('profiles')
       .select('*')
+      .eq('user_type', 'SINGLE')
+      .not('sponsored_by_id', 'is', null)
       .range((page - 1) * limit, page * limit - 1);
 
     // Build filter conditions for partial matches
@@ -42,16 +45,35 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
+    const profileIds = (profiles || []).map((p: any) => p.id);
+
+    // Fetch interests for all profiles in a single batch query
+    let interestsMap = new Map<string, { id: number; name: string }[]>();
+    if (profileIds.length > 0) {
+      const { data: profileInterests } = await supabase
+        .from('profile_interests')
+        .select('profile_id, interest_id, interests(id, name)')
+        .in('profile_id', profileIds);
+
+      for (const row of profileInterests || []) {
+        const pi = row as { profile_id: string; interest_id: number; interests: { id: number; name: string } | null };
+        if (pi.interests) {
+          const list = interestsMap.get(pi.profile_id) || [];
+          list.push({ id: pi.interests.id, name: pi.interests.name });
+          interestsMap.set(pi.profile_id, list);
+        }
+      }
+    }
+
     // Fetch sponsor info for all profiles in a single batch query (no N+1)
     const sponsorIds = Array.from(new Set((profiles || []).map((p: any) => p.sponsored_by_id).filter(Boolean)));
     let sponsorMap = new Map();
-    
     if (sponsorIds.length > 0) {
       const { data: sponsors } = await supabase
         .from('profiles')
         .select('id, name, photos')
         .in('id', sponsorIds);
-      
+
       sponsorMap = new Map(
         sponsors?.map(s => [
           s.id,
@@ -67,10 +89,7 @@ export async function GET(req: NextRequest) {
     const transformedProfiles = (profiles || []).map(profile => ({
       ...profile,
       profile_pic_url: profile.photos && profile.photos.length > 0 ? profile.photos[0] : null,
-      interests: profile.interest_names ? profile.interest_names.map((name: string, index: number) => ({
-        id: profile.interest_ids[index],
-        name: name
-      })) : [],
+      interests: interestsMap.get(profile.id) || [],
       sponsor_name: sponsorMap.get(profile.sponsored_by_id)?.name || null,
       sponsor_photo_url: sponsorMap.get(profile.sponsored_by_id)?.photo_url || null
     }));

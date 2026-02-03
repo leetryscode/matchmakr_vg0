@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { clearPondCache } from '@/lib/pond-cache';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { PlusIcon, EllipsisVerticalIcon } from '@heroicons/react/24/solid';
@@ -310,10 +311,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                 }
             }
 
-            // Invalidate pond cache after successful photo update
-            if (typeof window !== 'undefined') {
-                localStorage.removeItem('pond_cache');
-            }
+            clearPondCache();
 
             setPhotos(updatedPhotos);
             setEditingPhotoUrl(null);
@@ -381,10 +379,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                 throw dbError;
             }
 
-            // Invalidate pond cache after successful photo deletion
-            if (typeof window !== 'undefined') {
-                localStorage.removeItem('pond_cache');
-            }
+            clearPondCache();
 
             // Delete from storage
             const fileName = new URL(photoUrlToDelete).pathname.split('/').pop();

@@ -13,9 +13,11 @@ import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer'
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import RequireStandaloneGate from '@/components/pwa/RequireStandaloneGate';
 import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
+import PairingsSection from '@/components/profile/PairingsSection';
+import IntroductionSignalSection from '@/components/profile/IntroductionSignalSection';
+import { POND_CACHE_KEY } from '@/lib/pond-cache';
 
 interface PondProfile extends Profile {
     profile_pic_url: string | null;
@@ -36,7 +38,7 @@ interface PondCache {
     timestamp: number;
 }
 
-const CACHE_KEY = 'pond_cache';
+const CACHE_KEY = POND_CACHE_KEY;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const DEBUG = false; // Set to true to enable console logging
 
@@ -452,13 +454,6 @@ export default function PondPage() {
         return currentYear - birthYear;
     };
 
-    // Helper function to truncate text for endorsement captions
-    const truncateEndorsement = (text: string | null, maxLength: number = 140): string | null => {
-        if (!text) return null;
-        if (text.length <= maxLength) return text;
-        return text.slice(0, maxLength).trim() + '...';
-    };
-
     // Handler to open chat modal and fetch matchmakr info
     const handleOpenChat = async (profile: PondProfile) => {
         if (!profile.sponsored_by_id) return;
@@ -729,7 +724,6 @@ export default function PondPage() {
                     <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mx-auto"></div>
                         <p className="mt-4 text-text-dark">Loading profiles...</p>
-                        <p className="text-text-light text-sm">Debug: loading={loading.toString()}, profiles.length={profiles.length}</p>
                     </div>
                 ) : profiles.length === 0 ? (
                     <div className="text-center py-8">
@@ -738,30 +732,17 @@ export default function PondPage() {
                     </div>
                 ) : (
                     <div>
-                        <div key={`profiles-${profiles.length}`} className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:gap-6">
+                        <div key={`profiles-${profiles.length}`} className="flex flex-col gap-14 lg:grid lg:grid-cols-2 lg:gap-14">
                             {profiles.map((profile) => {
                                 const age = calculateAge(profile.birth_year);
                                 const sponsorName = profile.sponsor_name || 'Sponsor';
                                 const sponsorPhotoUrl = profile.sponsor_photo_url;
-                                const truncatedEndorsement = truncateEndorsement(profile.matchmakr_endorsement);
-                                const isEndorsementTruncated = profile.matchmakr_endorsement && profile.matchmakr_endorsement.length > 140;
+                                const hasEndorsement = profile.matchmakr_endorsement && profile.matchmakr_endorsement.trim().length > 0;
                                 return (
-                                    <Link href={`/profile/${profile.id}`} key={profile.id} className="block">
-                                        <div className="md:rounded-2xl overflow-hidden bg-background-card md:bg-background-card shadow-card">
-                                            {/* Image with overlay */}
+                                    <Link href={`/profile/${profile.id}`} key={profile.id} className="block relative">
+                                        <div className="md:rounded-2xl overflow-hidden bg-background-main shadow-card">
+                                            {/* A) Hero — Pond-specific: large photo, Name/Age overlay, optional occupation */}
                                             <div className="relative w-full aspect-[4/5] md:aspect-[1/1]">
-                                                {/* Send Preview Button */}
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        handleOpenSendPreview(profile);
-                                                    }}
-                                                    className="absolute top-4 right-4 z-20 w-11 h-11 rounded-full flex items-center justify-center bg-background-card/90 backdrop-blur-sm hover:bg-background-card active:scale-95 text-text-dark shadow-md transition-transform duration-150 ease-out hover:scale-105"
-                                                    aria-label="Send preview"
-                                                >
-                                                    <PaperAirplaneIcon className="w-5 h-5 -rotate-45" />
-                                                </button>
                                                 {profile.profile_pic_url ? (
                                                     <img 
                                                         src={profile.profile_pic_url} 
@@ -773,66 +754,115 @@ export default function PondPage() {
                                                         <span className="text-6xl font-bold text-white">{profile.name?.charAt(0).toUpperCase() || '?'}</span>
                                                     </div>
                                                 )}
-                                                {/* Gradient overlay */}
-                                                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
-                                                {/* Name/Age overlay */}
-                                                <div className="absolute bottom-4 left-4 z-10">
-                                                    <div className="text-white font-semibold text-xl mb-2">
+                                                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 to-transparent" />
+                                                <div className="absolute bottom-5 left-4 right-4 z-10 text-white pb-1">
+                                                    <div className="text-white font-bold text-2xl mb-1">
                                                         {profile.name}{age ? `, ${age}` : ''}
                                                     </div>
-                                                    {/* Interest chips */}
+                                                    {profile.occupation && (
+                                                        <div className="text-white/90 text-sm">{profile.occupation}</div>
+                                                    )}
+                                                </div>
+                                                <button
+                                                    className="absolute bottom-5 right-4 z-10 px-3 py-1.5 rounded-full text-white text-xs font-medium bg-white/20 backdrop-blur-sm border border-white/25 hover:bg-white/30 active:scale-95 transition-colors"
+                                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenSendPreview(profile); }}
+                                                >
+                                                    Send preview
+                                                </button>
+                                            </div>
+                                            {/* Content: endorsement (outside gradient zone) */}
+                                            {hasEndorsement && (
+                                                <div className="px-4 sm:px-6 md:px-8 pt-5 pb-2">
+                                                    <div>
+                                                        <div className="flex justify-between items-center mb-3">
+                                                            <h2 className="text-white/90 text-base font-semibold">Why I&apos;d introduce them</h2>
+                                                            <div className="flex items-center gap-2">
+                                                                {sponsorPhotoUrl ? (
+                                                                    <img src={sponsorPhotoUrl} alt={sponsorName} className="w-6 h-6 rounded-full object-cover border border-white/20 shrink-0" />
+                                                                ) : (
+                                                                    <div className="w-6 h-6 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+                                                                        <span className="text-white font-bold text-[9px]">{sponsorName.charAt(0).toUpperCase()}</span>
+                                                                    </div>
+                                                                )}
+                                                                <span className="text-white/80 text-sm whitespace-nowrap">{sponsorName}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="relative pt-1.5 pb-1.5 pl-3 pr-4">
+                                                            <span aria-hidden className="pointer-events-none select-none absolute left-0 top-0 text-white/40 text-3xl leading-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>"</span>
+                                                            <p className="text-white/70 text-base font-normal leading-snug">{profile.matchmakr_endorsement}</p>
+                                                            <span aria-hidden className="pointer-events-none select-none absolute right-0 bottom-0 text-white/40 text-3xl leading-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>"</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {/* Action gradient zone: pairings → intro → interests → coordinate */}
+                                            <div className="bg-gradient-to-b from-transparent via-black/5 to-black/15">
+                                                <div className={`px-4 sm:px-6 md:px-8 space-y-4 ${hasEndorsement ? 'pt-4 pb-2' : 'pt-5 pb-2'}`}>
+                                                    <div className="-mt-1">
+                                                        <PairingsSection
+                                                            profileId={profile.id}
+                                                            pairingsSignal={profile.pairings_signal}
+                                                            canEdit={false}
+                                                            viewerIsProfileOwner={false}
+                                                            compact={true}
+                                                        />
+                                                    </div>
+                                                    <div className="-mt-2">
+                                                        <IntroductionSignalSection
+                                                            introductionSignal={profile.introduction_signal}
+                                                            firstName={profile.name?.split(' ')[0] || ''}
+                                                            profileId={profile.id}
+                                                            profileName={profile.name}
+                                                            canEdit={false}
+                                                            viewerIsProfileOwner={false}
+                                                            compact={true}
+                                                        />
+                                                    </div>
                                                     {profile.interests && profile.interests.length > 0 && (
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {profile.interests.slice(0, 3).map(interest => (
-                                                                <span 
-                                                                    key={interest.id} 
-                                                                    className="bg-white/20 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs"
-                                                                >
-                                                                    {interest.name}
-                                                                </span>
-                                                            ))}
+                                                        <div className="-mt-1">
+                                                            <div className="text-white/50 text-sm font-medium mb-1.5">Interests</div>
+                                                            <div className="flex flex-wrap items-center gap-2">
+                                                                {profile.interests.slice(0, 6).map((interest) => (
+                                                                    <span key={interest.id} className="bg-white/5 text-white/75 px-2.5 py-0.5 rounded-full text-xs font-medium border border-white/5">
+                                                                        {interest.name}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
-                                            {/* Endorsement caption */}
-                                            {truncatedEndorsement && (
-                                                <div className="px-4 py-3">
-                                                    <p className="text-text-dark text-sm leading-relaxed line-clamp-2">
-                                                        <span className="font-semibold">{sponsorName} says:</span> {truncatedEndorsement}
-                                                        {isEndorsementTruncated && (
-                                                            <span className="text-text-light"> More...</span>
-                                                        )}
-                                                    </p>
-                                                </div>
-                                            )}
-                                            {/* Footer with sponsor info */}
-                                            <div className="flex items-center justify-between px-4 py-3">
-                                                <div className="flex items-center gap-2">
+                                            {/* C) Action rail — attached to profile, single primary action */}
+                                            <div className="pt-4 pb-3 px-6 md:px-10 flex items-center justify-between gap-3 bg-background-main">
+                                                <div className="flex items-center gap-2 min-w-0">
                                                     {sponsorPhotoUrl ? (
                                                         <img 
                                                             src={sponsorPhotoUrl} 
                                                             alt={sponsorName} 
-                                                            className="w-9 h-9 rounded-full object-cover border border-border-light" 
+                                                            className="w-9 h-9 rounded-full object-cover shrink-0" 
                                                         />
                                                     ) : (
-                                                        <div className="w-9 h-9 rounded-full bg-background-card border border-border-light flex items-center justify-center">
-                                                            <span className="text-text-dark font-bold text-xs">
+                                                        <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                                                            <span className="text-white/70 font-bold text-xs">
                                                                 {sponsorName.charAt(0).toUpperCase()}
                                                             </span>
                                                         </div>
                                                     )}
-                                                    <span className="text-text-light text-sm">{sponsorName}</span>
+                                                    <span className="text-white/55 text-sm">Coordinate with {sponsorName}</span>
                                                 </div>
                                                 {profile.sponsored_by_id && (
                                                     <button
-                                                        className="px-4 py-1.5 rounded-full border border-border-light bg-background-card text-text-dark hover:bg-background-card/90 hover:border-text-dark/30 text-sm font-medium transition-colors"
-                                                        onClick={e => { e.preventDefault(); handleOpenChat(profile); }}
+                                                        className="shrink-0 min-h-[44px] px-5 py-2.5 text-sm rounded-full bg-white text-primary-blue font-semibold hover:bg-white/90 active:scale-95 transition-colors"
+                                                        onClick={(e) => { e.preventDefault(); handleOpenChat(profile); }}
                                                     >
                                                         Message Sponsor
                                                     </button>
                                                 )}
                                             </div>
+                                        </div>
+                                        {/* Separator dot between profiles (placeholder for logo) */}
+                                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-7 flex justify-center pointer-events-none">
+                                            <div className="w-2.5 h-2.5 rounded-full bg-white/70" />
                                         </div>
                                     </Link>
                                 );

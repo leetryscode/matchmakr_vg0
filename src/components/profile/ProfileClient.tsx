@@ -14,6 +14,7 @@ import EndSponsorshipModal from '../dashboard/EndSponsorshipModal';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
+import { clearPondCache } from '@/lib/pond-cache';
 
 // Types for sponsored singles and matchmakr
 interface SponsoredSingle {
@@ -156,10 +157,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
       body: JSON.stringify({ interestIds: newInterests.map(i => i.id) })
     });
     if (response.ok) {
-      // Invalidate pond cache after successful interests save
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('pond_cache');
-      }
+      clearPondCache();
     }
     setInterests(newInterests);
     setShowInterestsInput(false);
@@ -285,13 +283,10 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           {profile.user_type === 'SINGLE' && sponsors.length > 0 && (
             <>
               {sponsors.map((sponsor) => {
-                // Blank definition: missing/null OR empty after trim
                 const endorsementBlank = !sponsor.endorsement || sponsor.endorsement.trim() === '';
-                // Hide section if blank AND viewer is not sponsor-of-record AND not profile owner
                 if (endorsementBlank && !isSponsorOfThisSingle && !isViewingOwnSingleProfile) {
                   return null;
                 }
-                
                 return (
                   <div key={sponsor.id}>
                     <div className="flex justify-between items-center mb-3">
@@ -372,12 +367,10 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           {/* Interests Block */}
           {profile.user_type === 'SINGLE' && (
             <>
-              {/* Hide section if interests are empty AND viewer is not sponsor AND not profile owner */}
               {interests.length === 0 && !isSponsorOfThisSingle && !isViewingOwnSingleProfile ? null : (
                 <div>
                   <div className="text-white/70 text-base font-semibold mb-2">Interests</div>
                   <div className="flex flex-wrap items-center gap-2">
-                    {/* Interest chips - hide when input is open to avoid duplication */}
                     {!showInterestsInput && interests.slice(0, 6).map(interest => (
                       <span key={interest.id} className="bg-white/10 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 border border-white/10">
                         {interest.name}
@@ -394,10 +387,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                                 body: JSON.stringify({ interestIds: newInterests.map(i => i.id) })
                               });
                               if (response.ok) {
-                                // Invalidate pond cache after successful interests deletion
-                                if (typeof window !== 'undefined') {
-                                  localStorage.removeItem('pond_cache');
-                                }
+                                clearPondCache();
                               }
                               setInterests(newInterests);
                               setSavingInterests(false);
@@ -410,7 +400,6 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                         )}
                       </span>
                     ))}
-                    {/* Add Interest chip */}
                     {canEditProfile && (
                       <button
                         className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
@@ -421,7 +410,6 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                       </button>
                     )}
                   </div>
-                  {/* InterestsInput when expanded */}
                   {showInterestsInput && canEditProfile && (
                     <div className="mt-2">
                       <InterestsInput
@@ -484,7 +472,6 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                     <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                       <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        {/* Avatar */}
                         <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 shrink-0">
                           {matchmakrProfile.profile_pic_url ? (
                             <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'Sponsor'} className="w-full h-full object-cover" />
@@ -503,7 +490,6 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                           </Link>
                         </div>
                       </div>
-                      {/* Show Message button only if current user is a matchmakr */}
                       {currentUserProfile?.user_type === 'MATCHMAKR' && (
                         <button
                           className="shrink-0 px-5 py-2 text-sm rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 active:scale-95 transition-colors"

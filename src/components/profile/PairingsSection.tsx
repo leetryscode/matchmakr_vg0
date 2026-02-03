@@ -12,12 +12,14 @@ import { createClient } from '@/lib/supabase/client';
 import type { PairingsSignal } from '@/types/pairings';
 import { getPairingQualityById } from '@/lib/pairings';
 import PairingsModal from './PairingsModal';
+import { clearPondCache } from '@/lib/pond-cache';
 
 interface PairingsSectionProps {
   profileId: string;
   pairingsSignal: any | null; // JSONB from database
   canEdit?: boolean; // isSponsorOfThisSingle
   viewerIsProfileOwner?: boolean; // isViewingOwnSingleProfile
+  compact?: boolean; // tighter spacing for PondView
 }
 
 /**
@@ -50,6 +52,7 @@ export default function PairingsSection({
   pairingsSignal,
   canEdit = false,
   viewerIsProfileOwner = false,
+  compact = false,
 }: PairingsSectionProps) {
   const supabase = createClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -103,10 +106,7 @@ export default function PairingsSection({
     // Update local state immediately
     setLocalSignal(newSignal);
 
-    // Clear pond cache (match existing pattern)
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('pond_cache');
-    }
+    clearPondCache();
 
     // Close modal on success
     setIsModalOpen(false);
@@ -116,7 +116,7 @@ export default function PairingsSection({
   if (isEmpty) {
     return (
       <>
-        <div className="flex justify-between items-center mb-2">
+        <div className={`flex justify-between items-center ${compact ? 'mb-1.5' : 'mb-2'}`}>
           <h2 className="text-white/70 text-base font-semibold">Pairs naturally with…</h2>
           {canEdit && (
             <button
@@ -152,7 +152,7 @@ export default function PairingsSection({
 
   return (
     <>
-      <div className="flex justify-between items-center mb-3">
+      <div className={`flex justify-between items-center ${compact ? 'mb-2' : 'mb-3'}`}>
         <h2 className="text-white/90 text-base font-semibold">Pairs naturally with</h2>
         {canEdit && (
           <button
@@ -164,17 +164,17 @@ export default function PairingsSection({
           </button>
         )}
       </div>
-      <div className="flex flex-wrap items-center gap-2 justify-start">
+      <div className={`flex flex-wrap items-center justify-center ${compact ? 'gap-x-2 gap-y-1.5' : 'gap-2'}`}>
         {qualities.map((quality) => (
           <span
             key={quality.id}
-            className="bg-white/10 text-white px-3 py-1 rounded-full text-sm font-medium border border-white/10"
+            className="bg-white/10 text-white px-4 py-1.5 rounded-full text-base font-medium border border-white/10"
           >
             {quality.label}
           </span>
         ))}
         {signal.custom_quality && (
-          <span className="bg-white/8 text-white px-3 py-1 rounded-full text-sm font-medium border border-white/20">
+          <span className="bg-white/8 text-white px-4 py-1.5 rounded-full text-base font-medium border border-white/20">
             {signal.custom_quality}
           </span>
         )}
