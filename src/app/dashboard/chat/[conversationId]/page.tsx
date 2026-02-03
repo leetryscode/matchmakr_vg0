@@ -7,6 +7,7 @@ import { getSupabaseClient } from '@/lib/supabase/client';
 import GroupedMessageList from '@/components/chat/GroupedMessageList';
 import RequireStandaloneGate from '@/components/pwa/RequireStandaloneGate';
 import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
+import { SCROLL_PIN_THRESHOLD_PX } from '@/constants/chat';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -22,6 +23,8 @@ export default function ChatPage() {
   const shouldAutoScrollRef = useRef<boolean>(true);
   const didInitialScrollRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const chatMessagesRef = useRef<any[]>([]);
+
   const supabase = getSupabaseClient();
   const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
   const instanceIdRef = useRef<string>(`chat-${conversationId}-${Math.random().toString(36).substr(2, 9)}`);
@@ -58,9 +61,18 @@ export default function ChatPage() {
         if (newMessage.conversation_id === conversationId) {
           console.log('Adding message to chat:', newMessage);
           setChatMessages(prev => {
-            // Filter out any optimistic messages with the same content
-            const filteredPrev = prev.filter(msg => !msg.optimistic || msg.content !== newMessage.content);
-            return [...filteredPrev, newMessage];
+            // Replace optimistic in place to avoid DOM churn and scroll jump
+            let idx = -1;
+            for (let i = prev.length - 1; i >= 0; i--) {
+              if (prev[i].optimistic && prev[i].content === newMessage.content && prev[i].sender_id === newMessage.sender_id) {
+                idx = i;
+                break;
+              }
+            }
+            if (idx === -1) return [...prev, newMessage];
+            const copy = prev.slice();
+            copy[idx] = newMessage;
+            return copy;
           });
           
           // Clear any pending fallback timeout since we got the real message
@@ -128,6 +140,18 @@ export default function ChatPage() {
     });
   }, [chatContext, currentUserId]);
 
+  // Keep chatMessagesRef in sync for use in timeouts/callbacks
+  useEffect(() => {
+    chatMessagesRef.current = chatMessages;
+  }, [chatMessages]);
+
+  const isNearBottomNow = () => {
+    const c = chatContainerRef.current;
+    if (!c) return true;
+    const dist = c.scrollHeight - (c.scrollTop + c.clientHeight);
+    return dist < SCROLL_PIN_THRESHOLD_PX;
+  };
+
   // Helper to scroll to bottom
   const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
     bottomRef.current?.scrollIntoView({ behavior, block: 'end' });
@@ -152,13 +176,16 @@ export default function ChatPage() {
     }
   }, [chatLoading, chatMessages.length]);
 
-  // B) New messages (respect shouldAutoScrollRef)
+  // B) New messages — only scroll if user is near bottom *now*
   useEffect(() => {
-    if (didInitialScrollRef.current && shouldAutoScrollRef.current && chatMessages.length > 0) {
+    if (!didInitialScrollRef.current || chatMessages.length === 0) return;
+    if (!isNearBottomNow()) return;
+
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         scrollToBottom();
       });
-    }
+    });
   }, [chatMessages.length]);
 
   // Handle scroll events to determine if we should auto-scroll
@@ -167,11 +194,9 @@ export default function ChatPage() {
     if (!container) return;
 
     const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      // If user is near the bottom (within 50px), enable auto-scroll
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
-      shouldAutoScrollRef.current = isNearBottom;
-      setShowScrollToBottom(!isNearBottom);
+      const near = isNearBottomNow();
+      shouldAutoScrollRef.current = near;
+      setShowScrollToBottom(!near);
     };
 
     container.addEventListener('scroll', handleScroll);
@@ -329,7 +354,16 @@ export default function ChatPage() {
       optimistic: true
     };
     setChatMessages(prev => [...prev, optimisticMessage]);
-    
+
+    // Explicit intent: after sending, user wants to be at the bottom
+    shouldAutoScrollRef.current = true;
+    setShowScrollToBottom(false);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    });
+
     try {
       await fetch('/api/messages', {
         method: 'POST',
@@ -346,10 +380,9 @@ export default function ChatPage() {
       
       // Set up fallback refetch if realtime doesn't work
       fallbackTimeoutRef.current = setTimeout(async () => {
-        // Check if the message appeared via realtime
-        const hasRealMessage = chatMessages.some(msg => 
-          !msg.optimistic && 
-          msg.content === messageContent && 
+        const hasRealMessage = chatMessagesRef.current.some(msg =>
+          !msg.optimistic &&
+          msg.content === messageContent &&
           msg.sender_id === currentUserId
         );
         
@@ -380,7 +413,10 @@ export default function ChatPage() {
       body="Chat is available in app mode only. Install Orbit for full access."
       showBackButton={true}
     >
-    <div className="h-[100dvh] flex flex-col p-0 sm:p-2 bg-white">
+    <div
+      className="h-[100dvh] flex flex-col overflow-hidden p-0 sm:p-2 bg-white"
+      style={{ paddingBottom: 'calc(var(--bottom-nav-h,0px) + env(safe-area-inset-bottom))' }}
+    >
       {/* Fixed header section */}
       <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-sm w-full bg-white/80 rounded-none shadow-2xl">
           {/* New sticky top bar */}
@@ -485,7 +521,7 @@ export default function ChatPage() {
       </div>
       
       {/* Scrollable chat area */}
-      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto px-2 py-4 pb-[140px] text-left bg-white relative">
+      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 py-4 text-left bg-white relative">
           <div className="flex flex-col">
             {chatMessages.length > 0 && (
               <GroupedMessageList
@@ -509,26 +545,26 @@ export default function ChatPage() {
                 }}
               />
             )}
+            {/* Typing indicator — inside flex column so it participates in scroll height */}
+            {isTyping && (
+              <div className="flex justify-end items-center my-4">
+                <div className="max-w-[70%] flex flex-col items-end">
+                  <div className="font-semibold text-primary-blue text-xs mb-1 text-right">
+                    You
+                  </div>
+                  <div className="px-5 py-3 rounded-2xl bg-gray-100 text-gray-500 italic">
+                    typing...
+                  </div>
+                </div>
+                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light ml-4 flex-shrink-0 flex items-center justify-center">
+                  <div className="w-full h-full bg-background-main flex items-center justify-center">
+                    <span className="text-lg font-bold text-text-light">M</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef} className="h-px" />
           </div>
-          <div ref={bottomRef} />
-          {/* Typing indicator - show on right side for current user */}
-          {isTyping && (
-            <div className="flex justify-end items-center my-4">
-              <div className="max-w-[70%] flex flex-col items-end">
-                <div className="font-semibold text-primary-blue text-xs mb-1 text-right">
-                  You
-                </div>
-                <div className="px-5 py-3 rounded-2xl bg-gray-100 text-gray-500 italic">
-                  typing...
-                </div>
-              </div>
-              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light ml-4 flex-shrink-0 flex items-center justify-center">
-                <div className="w-full h-full bg-background-main flex items-center justify-center">
-                  <span className="text-lg font-bold text-text-light">M</span>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Scroll to bottom button */}
           {showScrollToBottom && (
@@ -548,8 +584,8 @@ export default function ChatPage() {
           )}
       </div>
       
-      {/* Input Section */}
-      <div className="fixed left-0 right-0 bottom-[calc(var(--bottom-nav-h,0px)+env(safe-area-inset-bottom))] z-30 bg-white border-t border-border-light px-4 py-4 flex items-center gap-3">
+      {/* Input Section — non-fixed so keyboard shrinks viewport naturally */}
+      <div className="z-30 bg-white border-t border-border-light px-4 py-4 flex items-center gap-3 flex-shrink-0">
           <input
             type="text"
             className="flex-1 border border-gray-300 rounded-2xl px-4 py-4 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 placeholder:text-gray-400 placeholder:italic text-base bg-white/90"
@@ -571,10 +607,7 @@ export default function ChatPage() {
             </button>
           )}
       </div>
-      
-      {/* Bottom spacer for bottom nav */}
-      <div className="h-[var(--bottom-nav-h,0px)]" aria-hidden="true" />
-      
+
       {/* Approval Confirmation Modal */}
       {showApprovalModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">

@@ -81,22 +81,26 @@ export default function GroupedMessageList({
         // Spacing: tight within group, larger between groups
         const spacingClass = prevSameSender ? 'mt-[2px]' : 'mt-2.5';
 
+        const formattedTime = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
         return (
           <div key={msg.id} className={`${spacingClass} flex ${isMine ? 'justify-end' : 'justify-start'} items-end`}>
-            {/* Left avatar for incoming messages (only on last message in group) */}
-            {!isMine && isLastInGroup && (
-              <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-accent-teal-light mr-2.5 flex-shrink-0 flex items-center justify-center self-end">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt={displayName || 'User'} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-background-main flex items-center justify-center">
-                    <span className="text-xs font-bold text-text-light">{initials}</span>
+            {/* Left avatar column — always reserved to avoid horizontal shift when avatar appears/disappears */}
+            {!isMine && (
+              <div className="w-10 h-8 flex-shrink-0 mr-2.5 flex items-center justify-end self-end">
+                {isLastInGroup ? (
+                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-accent-teal-light flex-shrink-0">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={displayName || 'User'} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-background-main flex items-center justify-center">
+                        <span className="text-xs font-bold text-text-light">{initials}</span>
+                      </div>
+                    )}
                   </div>
-                )}
+                ) : null}
               </div>
             )}
-            {/* Spacer for incoming messages when avatar is not shown */}
-            {!isMine && !isLastInGroup && <div className="w-8 mr-2.5 flex-shrink-0" />}
 
             {/* Message content */}
             <div className={`max-w-[72%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
@@ -111,28 +115,30 @@ export default function GroupedMessageList({
                 {msg.content}
               </div>
 
-              {/* Timestamp (only on last message in group) */}
-              {isLastInGroup && (
-                <div className={`text-[10px] text-gray-400 mt-0.5 px-4 ${isMine ? 'text-right' : 'text-left'}`}>
-                  {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
-              )}
+              {/* Timestamp — always rendered to reserve height; invisible when not last in group */}
+              <div
+                className={`text-[10px] text-gray-400 mt-0.5 px-4 min-h-[14px] ${isMine ? 'text-right' : 'text-left'} ${!isLastInGroup ? 'opacity-0 select-none' : ''}`}
+              >
+                {formattedTime}
+              </div>
             </div>
 
-            {/* Right avatar for outgoing messages (only on last message in group) */}
-            {isMine && isLastInGroup && (
-              <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-accent-teal-light ml-2.5 flex-shrink-0 flex items-center justify-center self-end">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt={displayName || 'User'} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-background-main flex items-center justify-center">
-                    <span className="text-xs font-bold text-text-light">{initials}</span>
+            {/* Right avatar column — always reserved to avoid horizontal shift */}
+            {isMine && (
+              <div className="w-10 h-8 flex-shrink-0 ml-2.5 flex items-center justify-start self-end">
+                {isLastInGroup ? (
+                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-accent-teal-light flex-shrink-0">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={displayName || 'User'} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-background-main flex items-center justify-center">
+                        <span className="text-xs font-bold text-text-light">{initials}</span>
+                      </div>
+                    )}
                   </div>
-                )}
+                ) : null}
               </div>
             )}
-            {/* Spacer for outgoing messages when avatar is not shown */}
-            {isMine && !isLastInGroup && <div className="w-8 ml-2.5 flex-shrink-0" />}
           </div>
         );
       })}

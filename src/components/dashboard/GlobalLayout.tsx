@@ -46,6 +46,9 @@ function GlobalLayoutContent({ children, showBottomNav = true }: GlobalLayoutPro
   // Hide bottom nav if any chat modal is open or if on a chat page route
   const shouldShowBottomNav = user && showBottomNav && shouldShowBottomNavForPath(pathname) && !isAnyChatModalOpen;
 
+  // On chat routes, chat pages handle their own padding; avoid extra padding that causes body scroll
+  const isChatRoute = pathname === '/dashboard/chat' || pathname.startsWith('/dashboard/chat/');
+
   // Always set CSS variable to prevent layout jumps - set to 0 when hidden
   useEffect(() => {
     const root = document.documentElement;
@@ -64,8 +67,14 @@ function GlobalLayoutContent({ children, showBottomNav = true }: GlobalLayoutPro
     <div className="min-h-[100dvh] bg-background-main">
       {/* Persistent install bar - sticky at top, only shows when not standalone */}
       <InstallBar />
-      {/* Main content with bottom padding to account for fixed navigation - always applied to prevent jump */}
-      <div className="pb-[calc(var(--bottom-nav-h,0px)+1rem+env(safe-area-inset-bottom))] transition-[padding-bottom] duration-200">
+      {/* Main content with bottom padding to account for fixed navigation - chat routes use pb-0 (pages handle their own) */}
+      <div
+        className={
+          isChatRoute
+            ? 'pb-0 transition-[padding-bottom] duration-200'
+            : 'pb-[calc(var(--bottom-nav-h,0px)+1rem+env(safe-area-inset-bottom))] transition-[padding-bottom] duration-200'
+        }
+      >
         {children}
       </div>
       {/* Show bottom navigation only for authenticated users on allowed routes */}

@@ -6,6 +6,7 @@ import { isStandaloneMode } from '@/utils/pwa';
 import RequireStandaloneGate from '../pwa/RequireStandaloneGate';
 import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
 import GroupedMessageList from './GroupedMessageList';
+import { SCROLL_PIN_THRESHOLD_PX } from '@/constants/chat';
 
 interface ChatModalProps {
   open: boolean;
@@ -52,25 +53,34 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   const [contextLoading, setContextLoading] = useState(false);
   const [currentUserSingles, setCurrentUserSingles] = useState<{ id: string }[]>([]);
 
-  // Update pinned state based on scroll position
+  // Recompute pinned state from container (avoids stale ref drift)
+  const isPinnedNow = () => {
+    const c = chatContainerRef.current;
+    if (!c) return true;
+    const dist = c.scrollHeight - (c.scrollTop + c.clientHeight);
+    return dist < SCROLL_PIN_THRESHOLD_PX;
+  };
+
+  // Update pinned state based on scroll position (for scroll listener)
   const updatePinnedState = () => {
     const container = chatContainerRef.current;
     if (!container) return;
-    
     const distanceFromBottom = container.scrollHeight - (container.scrollTop + container.clientHeight);
     isPinnedRef.current = distanceFromBottom < SCROLL_PIN_THRESHOLD_PX;
   };
 
-  // Scroll to bottom only if user is pinned to bottom
-  const scrollToBottomIfPinned = (reason: string) => {
-    if (!isPinnedRef.current) return;
-    
+  // Scroll to bottom only if user is pinned to bottom (recomputes pinned at scroll time)
+  const scrollToBottomIfPinned = (_reason: string) => {
     const sentinel = bottomRef.current;
-    if (sentinel) {
+    if (!sentinel) return;
+
+    if (!isPinnedNow()) return;
+
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         sentinel.scrollIntoView({ block: 'end' });
       });
-    }
+    });
   };
 
   // Register/unregister modal with context when open state changes
@@ -258,6 +268,14 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     setChatMessages(prev => [...prev, optimisticMsg]);
     setMessageText('');
     setSending(true);
+
+    // Treat sending as explicit intent to be at bottom; scroll after paint
+    isPinnedRef.current = true;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        bottomRef.current?.scrollIntoView({ block: 'end' });
+      });
+    });
     try {
       const messageData: any = {
         sender_id: currentUserId,
@@ -499,9 +517,9 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
       body="Chat is available in app mode only. Install Orbit for full access."
       showBackButton={false}
     >
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex sm:items-center sm:justify-center items-stretch justify-end z-[9999]">
       <div 
-        className="bg-white rounded-2xl p-0 shadow-xl w-[600px] h-[100dvh] flex flex-col text-center relative overflow-hidden"
+        className="bg-white w-full sm:w-[600px] sm:rounded-2xl p-0 shadow-xl h-[100dvh] flex flex-col text-center relative overflow-hidden"
         style={{
           paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)',
@@ -602,7 +620,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
           )}
         </div>
         {/* Chat History Section */}
-        <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto bg-background-main px-6 py-4 pb-20 text-left">
+        <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain bg-background-main px-6 py-4 pb-20 text-left">
           <div className="flex flex-col">
             {/* Scroll-away intro panel for single-to-single chats */}
             {isSingleToSingle && canChat && (
@@ -656,7 +674,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
               />
             )}
             {/* Bottom sentinel for scroll detection */}
-            <div ref={bottomRef} />
+            <div ref={bottomRef} className="h-px" />
           </div>
         </div>
         {/* Input Section */}

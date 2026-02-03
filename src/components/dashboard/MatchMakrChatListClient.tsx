@@ -41,10 +41,8 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const [messageText, setMessageText] = useState('');
   const [sending, setSending] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
   const loadingTimeout = useRef<NodeJS.Timeout | null>(null);
   const prevMsgCount = useRef<number>(0);
-  const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{otherId: string, profileName: string} | null>(null);
   const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
@@ -178,15 +176,6 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       fetchChatHistory();
     }
   }, [sending, messageText, openChat, userId, fetchChatHistory]);
-
-  // Always scroll to bottom when new messages arrive or modal opens
-  useEffect(() => {
-    if (!openChat) return;
-    const container = chatContainerRef.current;
-    if (container) {
-      container.scrollTop = container.scrollHeight;
-    }
-  }, [chatMessages, openChat]);
 
   // Optimized unread counts fetching - consolidated into single function
   const fetchUnreadCounts = useCallback(async (forceRefresh = false) => {

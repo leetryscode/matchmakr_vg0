@@ -1,10 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import GroupedMessageList from '@/components/chat/GroupedMessageList';
+import { SCROLL_PIN_THRESHOLD_PX } from '@/constants/chat';
 
 export default function SingleChatPage() {
   const router = useRouter();
@@ -17,70 +18,98 @@ export default function SingleChatPage() {
   const [currentUserInfo, setCurrentUserInfo] = useState<any>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserType, setCurrentUserType] = useState<string | null>(null);
-  const [sponsorInfo, setSponsorInfo] = useState<any>(null);
+  const [sponsorInfo, setSponsorInfo] = useState<{ id: string; name: string; photo: string | null } | null | undefined>(undefined);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const didInitialScrollRef = useRef(false);
+
+  const supabase = getSupabaseClient();
+
+  // Stable otherId — gate until we can disambiguate (SINGLE + sponsorInfo unknown = don't guess)
+  const resolvedOtherId = useMemo(() => {
+    if (!singleId) return null;
+    if (currentUserType !== 'SINGLE') return singleId;
+
+    if (sponsorInfo === undefined) return null;
+    return sponsorInfo?.id ?? singleId;
+  }, [singleId, currentUserType, sponsorInfo]);
+
+  const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
+    bottomRef.current?.scrollIntoView({ behavior, block: 'end' });
+  };
+
+  const isNearBottomNow = () => {
+    const c = chatContainerRef.current;
+    if (!c) return true;
+    const dist = c.scrollHeight - (c.scrollTop + c.clientHeight);
+    return dist < SCROLL_PIN_THRESHOLD_PX;
+  };
 
   // Fetch current user ID, profile info, and user_type
   useEffect(() => {
     const fetchUser = async () => {
-      const supabase = getSupabaseClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUserId(user?.id || null);
-      
-      if (user?.id) {
-        // Fetch current user's profile info and user_type
-        const { data: userProfile } = await supabase
-          .from('profiles')
-          .select('id, name, photos, user_type, sponsored_by_id')
-          .eq('id', user.id)
-          .single();
-        
-        if (userProfile) {
-          setCurrentUserInfo({
-            id: userProfile.id,
-            name: userProfile.name || 'You',
-            photo: userProfile.photos && userProfile.photos.length > 0 ? userProfile.photos[0] : null
-          });
-          setCurrentUserType(userProfile.user_type);
-          // If user is SINGLE, fetch sponsor info
-          if (userProfile.user_type === 'SINGLE' && userProfile.sponsored_by_id) {
-            const { data: sponsorProfile } = await supabase
-              .from('profiles')
-              .select('id, name, photos')
-              .eq('id', userProfile.sponsored_by_id)
-              .single();
-            if (sponsorProfile) {
-              setSponsorInfo({
-                id: sponsorProfile.id,
-                name: sponsorProfile.name || 'Sponsor',
-                photo: sponsorProfile.photos && sponsorProfile.photos.length > 0 ? sponsorProfile.photos[0] : null
-              });
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setCurrentUserId(user?.id || null);
+
+        if (user?.id) {
+          const { data: userProfile } = await supabase
+            .from('profiles')
+            .select('id, name, photos, user_type, sponsored_by_id')
+            .eq('id', user.id)
+            .single();
+
+          if (userProfile) {
+            setCurrentUserInfo({
+              id: userProfile.id,
+              name: userProfile.name || 'You',
+              photo: userProfile.photos && userProfile.photos.length > 0 ? userProfile.photos[0] : null
+            });
+            setCurrentUserType(userProfile.user_type);
+
+            if (userProfile.user_type === 'SINGLE') {
+              if (userProfile.sponsored_by_id) {
+                const { data: sponsorProfile } = await supabase
+                  .from('profiles')
+                  .select('id, name, photos')
+                  .eq('id', userProfile.sponsored_by_id)
+                  .single();
+                setSponsorInfo(sponsorProfile ? {
+                  id: sponsorProfile.id,
+                  name: sponsorProfile.name || 'Sponsor',
+                  photo: sponsorProfile.photos && sponsorProfile.photos.length > 0 ? sponsorProfile.photos[0] : null
+                } : null);
+              } else {
+                setSponsorInfo(null);
+              }
+            } else {
+              setSponsorInfo(null);
             }
+          } else {
+            setSponsorInfo(null);
           }
+        } else {
+          setSponsorInfo(null);
         }
+      } catch {
+        setSponsorInfo(null);
       }
     };
     fetchUser();
   }, []);
 
-  // Fetch single info and chat history
+  // Fetch single info and chat history (uses resolvedOtherId for consistency)
   useEffect(() => {
-    if (!singleId || !currentUserId) return;
-    // Determine the other user's ID for chat history
-    let otherId = singleId;
-    if (currentUserType === 'SINGLE' && sponsorInfo?.id) {
-      otherId = sponsorInfo.id;
-    }
+    if (!singleId || !currentUserId || !resolvedOtherId) return;
+
     setChatLoading(true);
     const fetchChatData = async () => {
-      // Fetch single info
-      const supabase = getSupabaseClient();
       const { data: singleData } = await supabase
         .from('profiles')
         .select('id, name, photos')
         .eq('id', singleId)
         .single();
-      
+
       if (singleData) {
         setSingleInfo({
           id: singleData.id,
@@ -89,13 +118,11 @@ export default function SingleChatPage() {
         });
       }
 
-      // Fetch chat history
-      const historyRes = await fetch(`/api/messages/history?userId=${currentUserId}&otherId=${otherId}`);
+      const historyRes = await fetch(`/api/messages/history?userId=${currentUserId}&otherId=${resolvedOtherId}`);
       const historyData = await historyRes.json();
       setChatMessages(historyData.success && historyData.messages ? historyData.messages : []);
       setChatLoading(false);
-      
-      // First-time chat tracking for singles - only when chatting with another single (not sponsor)
+
       if (currentUserType === 'SINGLE' && !sponsorInfo?.id) {
         const conversationKey = `firstChat_${currentUserId}_${singleId}`;
         const hasOpenedBefore = localStorage.getItem(conversationKey);
@@ -105,78 +132,96 @@ export default function SingleChatPage() {
       }
     };
     fetchChatData();
-  }, [singleId, currentUserId, currentUserType, sponsorInfo]);
+  }, [singleId, currentUserId, resolvedOtherId, currentUserType, sponsorInfo?.id]);
 
   // Mark messages as read as soon as chat is opened
   useEffect(() => {
-    if (!singleId || !currentUserId) return;
-    let otherId = singleId;
-    if (currentUserType === 'SINGLE' && sponsorInfo?.id) {
-      otherId = sponsorInfo.id;
-    }
+    if (!singleId || !currentUserId || !resolvedOtherId) return;
     fetch('/api/messages/mark-read', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: currentUserId, otherId }),
+      body: JSON.stringify({ userId: currentUserId, otherId: resolvedOtherId }),
     });
-  }, [singleId, currentUserId, currentUserType, sponsorInfo]);
+  }, [singleId, currentUserId, resolvedOtherId]);
 
-  // Scroll to bottom when chat loads or new messages arrive
+  // Reset initial scroll flag when conversation changes
   useEffect(() => {
-    if (!chatLoading && chatMessages.length > 0) {
-      const container = chatContainerRef.current;
-      if (container) {
-        // Use a longer delay to ensure all content is rendered
-        setTimeout(() => {
-          container.scrollTop = container.scrollHeight;
-        }, 300);
-      }
+    didInitialScrollRef.current = false;
+  }, [singleId]);
+
+  // Initial scroll once when chat loads
+  useEffect(() => {
+    if (!chatLoading && chatMessages.length > 0 && !didInitialScrollRef.current) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollToBottom();
+          didInitialScrollRef.current = true;
+        });
+      });
     }
   }, [chatLoading, chatMessages.length]);
+
+  // New messages — only scroll if user is near bottom *now*
+  useEffect(() => {
+    if (!didInitialScrollRef.current || chatMessages.length === 0) return;
+    if (!isNearBottomNow()) return;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    });
+  }, [chatMessages.length]);
 
   // Add typing indicator state
   const [isTyping, setIsTyping] = useState(false);
 
   // Realtime subscription for new messages
-  const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
+  const channelRef = useRef<any>(null);
   const instanceIdRef = useRef<string>(`single-chat-${singleId}-${Math.random().toString(36).substr(2, 9)}`);
-  const supabase = getSupabaseClient();
-  
+
+  // Realtime subscription — guard until resolvedOtherId exists (avoids sponsorInfo race)
   useEffect(() => {
-    if (!currentUserId) return;
-    
+    if (!currentUserId || !resolvedOtherId) return;
+
     const channelName = `single-messages-${currentUserId}-${singleId}`;
     const instanceId = instanceIdRef.current;
-    
+
     console.log(`[REALTIME-DEBUG] ${instanceId} | SingleChatPage | SUBSCRIBE | channel: ${channelName}`);
-    
-    // Cleanup previous channel if exists (guard against double-subscribe)
+
     if (channelRef.current) {
       console.log(`[REALTIME-DEBUG] ${instanceId} | SingleChatPage | CLEANUP-PREV | channel: ${channelName}`);
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
-    
+
     const channel = supabase.channel(channelName)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
         const newMessage = payload.new;
-        // If the new message is between current user and the other user, add it to chatMessages
-        const otherId = currentUserType === 'SINGLE' ? sponsorInfo?.id : singleId;
-        if ((newMessage.sender_id === currentUserId && newMessage.recipient_id === otherId) ||
-            (newMessage.sender_id === otherId && newMessage.recipient_id === currentUserId)) {
+        if ((newMessage.sender_id === currentUserId && newMessage.recipient_id === resolvedOtherId) ||
+            (newMessage.sender_id === resolvedOtherId && newMessage.recipient_id === currentUserId)) {
           setChatMessages(prev => {
-            // Remove any optimistic message with the same content to avoid duplicates
-            const filtered = prev.filter(msg => !(msg.optimistic && msg.content === newMessage.content));
-            return [...filtered, newMessage];
+            // Replace optimistic in place to avoid DOM churn and scroll jump
+            let idx = -1;
+            for (let i = prev.length - 1; i >= 0; i--) {
+              if (prev[i].optimistic && prev[i].content === newMessage.content && prev[i].sender_id === newMessage.sender_id) {
+                idx = i;
+                break;
+              }
+            }
+            if (idx === -1) return [...prev, newMessage];
+            const copy = prev.slice();
+            copy[idx] = newMessage;
+            return copy;
           });
         }
       })
       .subscribe((status) => {
         console.log(`[REALTIME-DEBUG] ${instanceId} | SingleChatPage | SUBSCRIBE-STATUS | channel: ${channelName} | status: ${status}`);
       });
-    
+
     channelRef.current = channel;
-    
+
     return () => {
       if (channelRef.current) {
         console.log(`[REALTIME-DEBUG] ${instanceId} | SingleChatPage | CLEANUP | channel: ${channelName}`);
@@ -184,34 +229,37 @@ export default function SingleChatPage() {
         channelRef.current = null;
       }
     };
-  }, [currentUserId, currentUserType, sponsorInfo?.id, singleId]); // supabase is singleton, stable
+  }, [currentUserId, resolvedOtherId, singleId]);
 
   // Send message
   const handleSendMessage = async () => {
-    if (!messageText.trim() || !singleId || !currentUserId) return;
+    if (!messageText.trim() || !singleId || !currentUserId || !resolvedOtherId) return;
     setSending(true);
-    // Determine correct recipient
-    let recipientId = singleId;
-    if (currentUserType === 'SINGLE' && sponsorInfo?.id) {
-      recipientId = sponsorInfo.id;
-    }
+
     const optimisticMsg = {
       id: `optimistic-${Date.now()}`,
       sender_id: currentUserId,
-      recipient_id: recipientId,
+      recipient_id: resolvedOtherId,
       content: messageText.trim(),
       created_at: new Date().toISOString(),
       optimistic: true,
     };
     setChatMessages(prev => [...prev, optimisticMsg]);
     setMessageText('');
+
+    // Explicit intent: after sending, user wants to be at the bottom
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    });
     try {
       await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sender_id: currentUserId,
-          recipient_id: recipientId,
+          recipient_id: resolvedOtherId,
           content: optimisticMsg.content,
         }),
       });
@@ -229,16 +277,16 @@ export default function SingleChatPage() {
     }
   }
 
-  // Helper: get the other user info for chat
-  let otherUserInfo = null;
-  if (currentUserType === 'SINGLE') {
-    otherUserInfo = sponsorInfo;
-  } else {
-    otherUserInfo = singleInfo;
-  }
+  // Helper: get the other user info for chat (sponsorInfo can be undefined during load)
+  const otherUserInfo = currentUserType === 'SINGLE'
+    ? (sponsorInfo && typeof sponsorInfo === 'object' ? sponsorInfo : singleInfo)
+    : singleInfo;
 
   return (
-    <div className="h-[100dvh] flex flex-col p-0 sm:p-2 bg-white">
+    <div
+      className="h-[100dvh] flex flex-col overflow-hidden p-0 sm:p-2 bg-white"
+      style={{ paddingBottom: 'calc(var(--bottom-nav-h,0px) + env(safe-area-inset-bottom))' }}
+    >
       {/* Sticky top bar */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100 w-full bg-white/80 rounded-none shadow-2xl">
           <div className="flex items-center gap-3 px-4 py-3">
@@ -282,7 +330,7 @@ export default function SingleChatPage() {
       </div>
       
       {/* Chat history */}
-      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto px-2 py-4 pb-[140px] text-left">
+      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 py-4 text-left">
           <div className="flex flex-col">
             {chatMessages.length > 0 && (
               <GroupedMessageList
@@ -306,29 +354,29 @@ export default function SingleChatPage() {
                 }}
               />
             )}
+            {isTyping && (
+              <div className="flex justify-end items-center my-4">
+                <div className="max-w-[70%] flex flex-col items-end">
+                  <div className="font-semibold text-primary-blue text-xs mb-1 text-right">
+                    You
+                  </div>
+                  <div className="px-5 py-3 rounded-2xl bg-gray-100 text-gray-500 italic">
+                    typing...
+                  </div>
+                </div>
+                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light ml-4 flex-shrink-0 flex items-center justify-center">
+                  <div className="w-full h-full bg-background-main flex items-center justify-center">
+                    <span className="text-lg font-bold text-text-light">M</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef} className="h-px" />
           </div>
-          {/* Typing indicator - show on right side for current user */}
-          {isTyping && (
-            <div className="flex justify-end items-center my-4">
-              <div className="max-w-[70%] flex flex-col items-end">
-                <div className="font-semibold text-primary-blue text-xs mb-1 text-right">
-                  You
-                </div>
-                <div className="px-5 py-3 rounded-2xl bg-gray-100 text-gray-500 italic">
-                  typing...
-                </div>
-              </div>
-              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light ml-4 flex-shrink-0 flex items-center justify-center">
-                <div className="w-full h-full bg-background-main flex items-center justify-center">
-                  <span className="text-lg font-bold text-text-light">M</span>
-                </div>
-              </div>
-            </div>
-          )}
       </div>
       
-      {/* Input Section */}
-      <div className="fixed left-0 right-0 bottom-[calc(var(--bottom-nav-h,0px)+env(safe-area-inset-bottom))] z-30 bg-white border-t border-border-light px-4 py-4 flex items-center gap-3">
+      {/* Input Section — non-fixed so keyboard shrinks viewport naturally */}
+      <div className="z-30 bg-white border-t border-border-light px-4 py-4 flex items-center gap-3 flex-shrink-0">
           <input
             type="text"
             className="flex-1 border border-gray-300 rounded-2xl px-4 py-4 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 placeholder:text-gray-400 placeholder:italic text-base bg-white/90"
@@ -350,9 +398,6 @@ export default function SingleChatPage() {
             </button>
           )}
       </div>
-      
-      {/* Bottom spacer for bottom nav */}
-      <div className="h-[var(--bottom-nav-h,0px)]" aria-hidden="true" />
     </div>
   );
 } 
