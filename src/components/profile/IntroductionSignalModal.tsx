@@ -212,7 +212,7 @@ export default function IntroductionSignalModal({
             }}
             placeholder="Enter your response..."
             rows={2}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue resize-none text-sm"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue resize-none text-sm"
             maxLength={INTRODUCTION_SIGNAL_MAX_CHARS}
           />
           <div className="flex justify-between items-center mt-2">

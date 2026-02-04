@@ -289,7 +289,7 @@ export default function PairingsModal({
                   placeholder="Enter a custom quality..."
                   maxLength={MAX_CUSTOM_QUALITY_CHARS}
                   disabled={saving}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <div className="flex justify-between items-center">
                   {error && (
