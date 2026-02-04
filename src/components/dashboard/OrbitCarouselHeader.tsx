@@ -30,6 +30,16 @@ const MOTION_ENABLED = true; // Feature flag
 const REVOLUTION_MINUTES = 1; // 1 minute per full rotation (1 revolution per minute) - production rate
 const ROTATION_RATE_DEG_PER_MS = 360 / (REVOLUTION_MINUTES * 60 * 1000); // degrees per millisecond
 
+// Orbit path stroke constants (dashed ellipse outlining satellite motion)
+// Both arcs render behind all satellite avatars (z < 10) so the path never obscures faces.
+// Depth is communicated via brightness (back dimmer, front brighter), not z-order over avatars.
+// Warm gray / moonlight tones avoid "sticker" feel; irregular dashes feel more astronomical.
+const ORBIT_STROKE_WIDTH = 2.25;
+const ORBIT_DASH_ARRAY = '10 8 6 12'; // Irregular: longer dashes, varying gaps
+const ORBIT_BACK_STROKE = 'rgba(195, 205, 222, 0.42)'; // Moonlight / warm gray
+const ORBIT_FRONT_STROKE = 'rgba(210, 218, 232, 0.52)'; // Slightly brighter moonlight
+const ORBIT_PATH_BLUR = 0.35; // Subtle softness, pushes path into mist
+
 // Orbit visual tuning constants (single source of truth)
 const ORBIT_VISUALS = {
   scale: {
@@ -734,22 +744,28 @@ export default function OrbitCarouselHeader({
           />
         </>
       )}
-      {/* Back arc SVG layer - behind everything (z-10) */}
+      {/* Back arc SVG layer - behind all satellites (z-7) so path never obscures avatars */}
       {containerSize.w > 0 && (
         <svg
           className="absolute inset-0 pointer-events-none"
-          style={{ zIndex: 10 }}
+          style={{ zIndex: 7 }}
           width="100%"
           height="100%"
           viewBox={`0 0 ${containerSize.w} ${containerSize.h}`}
           preserveAspectRatio="none"
         >
+          <defs>
+            <filter id="orbit-path-soft-back">
+              <feGaussianBlur in="SourceGraphic" stdDeviation={ORBIT_PATH_BLUR} />
+            </filter>
+          </defs>
           <path
             d={backArcPath}
-            stroke="rgba(15, 23, 42, 0.08)"
-            strokeWidth="1.5"
+            stroke={ORBIT_BACK_STROKE}
+            strokeWidth={ORBIT_STROKE_WIDTH}
             fill="none"
-            strokeDasharray="3 12"
+            strokeDasharray={ORBIT_DASH_ARRAY}
+            filter="url(#orbit-path-soft-back)"
           />
         </svg>
       )}
@@ -872,22 +888,28 @@ export default function OrbitCarouselHeader({
         </div>
       </div>
 
-      {/* Front arc SVG layer - above sponsor, below front satellites (z-38) */}
+      {/* Front arc SVG layer - behind all satellites (z-8) so path never obscures avatars */}
       {containerSize.w > 0 && (
         <svg
           className="absolute inset-0 pointer-events-none"
-          style={{ zIndex: 38 }}
+          style={{ zIndex: 8 }}
           width="100%"
           height="100%"
           viewBox={`0 0 ${containerSize.w} ${containerSize.h}`}
           preserveAspectRatio="none"
         >
+          <defs>
+            <filter id="orbit-path-soft-front">
+              <feGaussianBlur in="SourceGraphic" stdDeviation={ORBIT_PATH_BLUR} />
+            </filter>
+          </defs>
           <path
             d={frontArcPath}
-            stroke="rgba(15, 23, 42, 0.14)"
-            strokeWidth="1.5"
+            stroke={ORBIT_FRONT_STROKE}
+            strokeWidth={ORBIT_STROKE_WIDTH}
             fill="none"
-            strokeDasharray="3 12"
+            strokeDasharray={ORBIT_DASH_ARRAY}
+            filter="url(#orbit-path-soft-front)"
           />
         </svg>
       )}
