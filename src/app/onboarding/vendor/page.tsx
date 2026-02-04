@@ -132,16 +132,16 @@ export default function VendorOnboardingPage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-gray-800">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-text-dark">
        <div className="absolute top-4 left-4">
-        <button onClick={handleBack} className="text-primary-blue underline hover:text-primary-blue-light transition-colors font-light">
+        <button onClick={handleBack} className="text-text-dark underline hover:text-white transition-colors font-light">
           Back
         </button>
       </div>
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 text-center">
         {step === 1 && (
           <div className="flex flex-col items-center justify-center gap-8">
-            <h1 className="text-4xl font-light bg-gradient-primary bg-clip-text text-transparent leading-[1.1] tracking-tight sm:text-[4rem]">
+            <h1 className="text-4xl font-light text-text-dark leading-[1.1] tracking-tight sm:text-[4rem]">
               Tell us about your business
             </h1>
             <input
@@ -149,14 +149,14 @@ export default function VendorOnboardingPage() {
               value={vendorData.businessName}
               onChange={(e) => setVendorData({ ...vendorData, businessName: e.target.value })}
               placeholder="Business Name"
-              className="w-full max-w-md rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+              className="w-full max-w-md rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
             />
             <input
               type="text"
               value={vendorData.industry}
               onChange={(e) => setVendorData({ ...vendorData, industry: e.target.value })}
               placeholder="Industry (e.g., Restaurant, Bar, Cafe)"
-              className="w-full max-w-md rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+              className="w-full max-w-md rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
             />
             <button
               onClick={handleNext}
@@ -170,7 +170,7 @@ export default function VendorOnboardingPage() {
         
         {step === 2 && (
           <div className="flex flex-col items-center justify-center gap-8">
-            <h1 className="text-4xl font-light bg-gradient-primary bg-clip-text text-transparent leading-[1.1] tracking-tight sm:text-[4rem]">
+            <h1 className="text-4xl font-light text-text-dark leading-[1.1] tracking-tight sm:text-[4rem]">
               Business Address
             </h1>
             <div className="flex flex-col gap-4 w-full max-w-md">
@@ -179,14 +179,14 @@ export default function VendorOnboardingPage() {
                 value={vendorData.streetAddress}
                 onChange={(e) => setVendorData({ ...vendorData, streetAddress: e.target.value })}
                 placeholder="Street Address"
-                className="w-full rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+                className="w-full rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
               />
               <input
                 type="text"
                 value={vendorData.addressLine2}
                 onChange={(e) => setVendorData({ ...vendorData, addressLine2: e.target.value })}
                 placeholder="Apartment, Suite, etc. (Optional)"
-                className="w-full rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+                className="w-full rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
               />
               <div className="grid grid-cols-2 gap-4">
                 <input
@@ -194,14 +194,14 @@ export default function VendorOnboardingPage() {
                   value={vendorData.city}
                   onChange={(e) => setVendorData({ ...vendorData, city: e.target.value })}
                   placeholder="City"
-                  className="w-full rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+                  className="w-full rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
                 />
                 <input
                   type="text"
                   value={vendorData.state}
                   onChange={(e) => setVendorData({ ...vendorData, state: e.target.value })}
                   placeholder="State"
-                  className="w-full rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+                  className="w-full rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
                 />
               </div>
               <input
@@ -209,7 +209,7 @@ export default function VendorOnboardingPage() {
                 value={vendorData.zipCode}
                 onChange={(e) => setVendorData({ ...vendorData, zipCode: e.target.value })}
                 placeholder="ZIP Code"
-                className="w-full rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+                className="w-full rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
               />
             </div>
             <button
@@ -220,17 +220,17 @@ export default function VendorOnboardingPage() {
               Next
             </button>
             {(!vendorData.streetAddress || !vendorData.city || !vendorData.state || !vendorData.zipCode) && (
-              <p className="text-sm text-gray-500">Please fill in all address fields to continue</p>
+              <p className="text-sm text-text-light">Please fill in all address fields to continue</p>
             )}
           </div>
         )}
         
         {step === 3 && (
           <div className="flex flex-col items-center justify-center gap-8">
-            <h1 className="text-4xl font-light bg-gradient-primary bg-clip-text text-transparent leading-[1.1] tracking-tight sm:text-[4rem]">
+            <h1 className="text-4xl font-light text-text-dark leading-[1.1] tracking-tight sm:text-[4rem]">
               Create your account
             </h1>
-            <p className="text-xl text-gray-600 font-light">
+            <p className="text-xl text-text-light font-light">
               Almost there! Just a few more details to get you started.
             </p>
             <div className="flex flex-col gap-4 w-full max-w-md">
@@ -239,14 +239,14 @@ export default function VendorOnboardingPage() {
                 placeholder="Email"
                 value={vendorData.email}
                 onChange={(e) => setVendorData({ ...vendorData, email: e.target.value })}
-                className="w-full rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+                className="w-full rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
               />
               <input
                 type="password"
                 placeholder="Password (at least 6 characters)"
                 value={vendorData.password}
                 onChange={(e) => setVendorData({ ...vendorData, password: e.target.value })}
-                className="w-full rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+                className="w-full rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
               />
             </div>
             {error && <p className="text-red-500 font-light">{error}</p>}

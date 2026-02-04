@@ -98,20 +98,20 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
   
   return (
     <div className="flex flex-col items-center justify-center gap-8 text-center">
-      <h1 className="text-4xl font-light bg-gradient-primary bg-clip-text text-transparent leading-[1.1] tracking-tight sm:text-[4rem]">
+      <h1 className="text-4xl font-light text-text-dark leading-[1.1] tracking-tight sm:text-[4rem]">
         Create your account
       </h1>
       {isSingle ? (
         <>
-          <p className="text-xl text-gray-600 font-light max-w-md">
+          <p className="text-xl text-text-light font-light max-w-md">
             Your Sponsor will create your Orbit profile. You just need an account to get started.
           </p>
-          <p className="text-lg text-gray-500 font-light max-w-md">
+          <p className="text-lg text-text-light font-light max-w-md">
             Once you're signed up, your Sponsor can invite you and set up your profile for matching.
           </p>
         </>
       ) : (
-        <p className="text-xl text-gray-600 font-light">
+        <p className="text-xl text-text-light font-light">
           Almost there! Just a few more details to get you started.
         </p>
       )}
@@ -121,14 +121,14 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+          className="w-full rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
         />
         <input
           type="password"
           placeholder="Password (at least 6 characters)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+          className="w-full rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
         />
       </div>
       {error && <p className="text-red-500 font-light">{error}</p>}

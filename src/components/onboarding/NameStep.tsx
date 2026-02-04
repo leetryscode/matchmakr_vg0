@@ -18,14 +18,14 @@ const NameStep: React.FC<NameStepProps> = ({ onNext }) => {
 
   return (
     <div className="flex flex-col items-center justify-center h-full space-y-8">
-      <div className="w-full max-w-md p-8 space-y-6 bg-background-card rounded-xl shadow-card text-center border border-gray-200">
-        <h2 className="text-3xl font-light bg-gradient-primary bg-clip-text text-transparent leading-[1.1]">What's your name?</h2>
+      <div className="w-full max-w-md p-8 space-y-6 bg-background-card rounded-xl shadow-card text-center border border-white/20">
+        <h2 className="text-3xl font-light text-text-dark leading-[1.1]">What's your name?</h2>
         <input
           type="text"
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full max-w-md rounded-xl border border-gray-300 bg-background-card px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+          className="w-full max-w-md rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
           placeholder="Enter your name"
         />
       </div>
