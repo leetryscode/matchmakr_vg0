@@ -508,25 +508,15 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
               {isSponsorViewing && (
                 <div className="border-t border-white/10 mt-6">
                   <div className="px-4 py-4">
-                    <div className="text-white/90 text-base font-semibold mb-1">Sponsor tools</div>
-                    <div className="text-white/70 text-xs font-medium opacity-70 mb-3">Only you can see these actions.</div>
+                    <div className="text-white/90 text-base font-semibold mb-1">Sponsor-only actions</div>
+                    <div className="text-white/70 text-xs font-medium opacity-70 mb-3">Only you can do these.</div>
                     <div className="mt-3 rounded-xl border border-white/10 bg-white/5">
-                      {/* Edit profile row */}
-                      <button
-                        onClick={() => setIsEndorsementEditOpen(true)}
-                        className="w-full flex items-center justify-between py-3 px-4 border-b border-white/10 hover:bg-white/5 transition-colors text-left"
-                      >
-                        <span className="text-white/90 font-medium">Edit profile</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/60">
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
-                      </button>
-                      {/* Message as sponsor row */}
+                      {/* Message your single row */}
                       <button
                         onClick={handleMessageAsSponsor}
                         className="w-full flex items-center justify-between py-3 px-4 border-b border-white/10 hover:bg-white/5 transition-colors text-left"
                       >
-                        <span className="text-white/90 font-medium">Message as sponsor</span>
+                        <span className="text-white/90 font-medium">Message your single{profile.name ? `, ${profile.name}` : ''}</span>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/60">
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
