@@ -67,12 +67,12 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
             {/* NOTE: True invite-only onboarding will use an `invites` table to support pre-signup invites. */}
             {isInviteSingleModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-gray-200">
-                        <h2 className="type-section mb-4 text-primary-blue">Link a single account</h2>
-                        <p className="text-gray-600 mb-2 leading-relaxed">
+                    <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-white/20">
+                        <h2 className="type-section mb-4 text-text-dark">Link a single account</h2>
+                        <p className="text-text-light mb-2 leading-relaxed">
                             Link an existing Orbit account by email.
                         </p>
-                        <p className="text-xs text-gray-500 mb-6">
+                        <p className="text-xs text-text-light mb-6">
                             They must already have an Orbit account.
                         </p>
                         <div className="space-y-4 mb-6">
@@ -86,9 +86,9 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
                                     }}
                                     placeholder="Name (only visible to you)"
                                     required
-                                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                                    className="w-full border border-white/20 rounded-xl px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
                                 />
-                                <p className="text-xs text-gray-500 mt-1 text-left">
+                                <p className="text-xs text-text-light mt-1 text-left">
                                     This helps you keep track. They can change their name after joining.
                                 </p>
                             </div>
@@ -102,7 +102,7 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
                                     }}
                                     placeholder="Single user's email address"
                                     required
-                                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-800 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                                    className="w-full border border-white/20 rounded-xl px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
                                 />
                                 {inviteError && (
                                     <p className="text-sm text-red-600 mt-2 text-left">
@@ -117,7 +117,7 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
                                 setInviteSingleEmail(''); 
                                 setInviteSingleName('');
                                 setInviteError(null);
-                            }} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300 shadow-button hover:shadow-button-hover">
+                            }} className="px-6 py-3 bg-white/20 text-text-dark rounded-lg font-semibold hover:bg-white/30 transition-all duration-300 shadow-button hover:shadow-button-hover">
                                 Cancel
                             </button>
                             <button 

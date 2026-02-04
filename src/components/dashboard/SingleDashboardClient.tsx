@@ -621,13 +621,13 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
       {/* Unmatch Confirmation Modal */}
       {showUnmatchModal && unmatchTarget && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-          <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-gray-200">
-            <h2 className="type-section mb-4 text-primary-blue">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
-            <p className="text-gray-600 mb-6">
+          <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-white/20">
+            <h2 className="type-section mb-4 text-text-dark">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
+            <p className="text-text-light mb-6">
               This will permanently remove your match and chat history. You would need to be matched again to chat in the future.
             </p>
             <div className="flex justify-center gap-4">
-              <button onClick={() => { setShowUnmatchModal(false); setUnmatchTarget(null); }} className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold transition-colors">
+              <button onClick={() => { setShowUnmatchModal(false); setUnmatchTarget(null); }} className="px-6 py-2 bg-white/20 text-text-dark rounded-md hover:bg-white/30 font-semibold transition-colors">
                 Cancel
               </button>
               <button onClick={handleUnmatch} className="rounded-cta px-6 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200">
