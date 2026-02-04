@@ -615,7 +615,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
           <div className="bg-white rounded-2xl p-8 shadow-xl max-w-sm w-full text-center">
             <h3 className="type-section mb-4 text-primary-blue">Delete chat?</h3>
-            <p className="mb-6 text-gray-600">Delete chat for both parties? You can restart the conversation by finding them in the pond</p>
+            <p className="mb-6 text-gray-600">Delete chat for both parties? This clears the conversation for everyone. You can reconnect with this sponsor if you need to coordinate again.</p>
             <div className="flex gap-4 justify-center">
               <button
                 className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300"

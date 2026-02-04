@@ -640,8 +640,8 @@ export default function PondPage() {
     return (
         <RequireStandaloneGate
             enabled={REQUIRE_STANDALONE_ENABLED}
-            title="Install Orbit to access the Pond"
-            body="The Pond is available in app mode only. Install Orbit for full access."
+            title="Install Orbit to use Discover"
+            body="Discover is available in app mode only. Install Orbit to keep browsing."
             showBackButton={true}
         >
         <div className="min-h-screen bg-background-main px-0 md:px-4">

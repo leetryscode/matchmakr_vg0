@@ -18,7 +18,7 @@ interface BottomNavigationProps {
 // Container matches nav pill height for visual consistency
 function PondBubble({ href }: { href: string }) {
     return (
-        <Link href={href} className="flex items-center justify-center" aria-label="Pond">
+        <Link href={href} className="flex items-center justify-center" aria-label="Discover" title="Discover">
             <div 
                 className="rounded-full flex items-center justify-center bg-white/10 backdrop-blur-xl border border-white/15 shadow-card"
                 style={{ 
