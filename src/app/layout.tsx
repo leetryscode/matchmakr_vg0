@@ -1,8 +1,12 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { AuthProvider } from '../contexts/AuthContext';
 import GlobalLayout from '../components/dashboard/GlobalLayout';
 import { themeColor } from '../config/theme';
+
+export const viewport: Viewport = {
+  themeColor,
+};
 
 /**
  * PWA Metadata Configuration
@@ -18,7 +22,6 @@ export const metadata: Metadata = {
   title: 'Orbit',
   description: 'A matchmaking platform that connects singles through Sponsors',
   manifest: '/manifest.webmanifest',
-  themeColor: themeColor,
   icons: {
     icon: [
       { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },

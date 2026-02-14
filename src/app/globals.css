@@ -76,6 +76,11 @@ body {
 /* This step intentionally introduces tokens without enforcing usage;
    layout and visual unification will follow in subsequent steps. */
 @layer components {
+  /** Card-like buttons on dark canvas: subtle hover overlay so light text stays readable (no gray-50 washout). */
+  .card-hover-subtle {
+    @apply hover:bg-white/10;
+  }
+
   .glass-1 {
     background-color: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);

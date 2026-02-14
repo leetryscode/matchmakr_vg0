@@ -12,6 +12,7 @@ export type Database = {
       profiles: {
         Row: {
           bio: string | null
+          birth_date: string | null
           birth_year: number | null
           business_name: string | null
           city: string | null
@@ -23,6 +24,8 @@ export type Database = {
           occupation: string | null
           matchmakr_endorsement: string | null
           offer: string | null
+          open_to: string | null
+          orbit_community_slug: string | null
           photos: string[] | null
           sex: string | null
           sponsored_by_id: string | null
@@ -34,6 +37,7 @@ export type Database = {
         }
         Insert: {
           bio?: string | null
+          birth_date?: string | null
           birth_year?: number | null
           business_name?: string | null
           city?: string | null
@@ -45,6 +49,8 @@ export type Database = {
           occupation?: string | null
           matchmakr_endorsement?: string | null
           offer?: string | null
+          open_to?: string | null
+          orbit_community_slug?: string | null
           photos?: string[] | null
           sex?: string | null
           sponsored_by_id?: string | null
@@ -56,6 +62,7 @@ export type Database = {
         }
         Update: {
           bio?: string | null
+          birth_date?: string | null
           birth_year?: number | null
           business_name?: string | null
           city?: string | null
@@ -67,6 +74,8 @@ export type Database = {
           occupation?: string | null
           matchmakr_endorsement?: string | null
           offer?: string | null
+          open_to?: string | null
+          orbit_community_slug?: string | null
           photos?: string[] | null
           sex?: string | null
           sponsored_by_id?: string | null

@@ -3,8 +3,11 @@ export interface Profile {
     user_type: 'SINGLE' | 'MATCHMAKR' | 'VENDOR';
     name: string | null;
     sex: string | null;
+    birth_date: string | null;
     birth_year: number | null;
     profile_pic_url: string | null;
+    open_to: 'men' | 'women' | 'both' | string | null;
+    orbit_community_slug: string | null;
     bio: string | null;
     occupation: string | null;
     location: string | null;

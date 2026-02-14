@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import { clearPondCache } from '@/lib/pond-cache';
+import { calculateAge } from '@/lib/age';
 
 // Types for sponsored singles and matchmakr
 interface SponsoredSingle {
@@ -48,12 +49,6 @@ interface ProfileClientProps {
   currentUserSponsoredSingles?: { id: string; name: string | null; photo: string | null }[];
 }
 
-function calculateAge(birthYear: number | null): number | null {
-  if (!birthYear) return null;
-  const currentYear = new Date().getFullYear();
-  return currentYear - birthYear;
-}
-
 const ProfileClient: React.FC<ProfileClientProps> = ({
   profile,
   sponsoredSingles,
@@ -76,7 +71,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   const [isEndorsementEditOpen, setIsEndorsementEditOpen] = useState(false);
   const [showEndSponsorshipModal, setShowEndSponsorshipModal] = useState(false);
   const [endingSponsorship, setEndingSponsorship] = useState(false);
-  const age = calculateAge(profile.birth_year);
+  const age = calculateAge(profile);
   const firstName = profile.name?.split(' ')[0] || '';
   const router = useRouter();
   const { orbitRole } = useAuth();

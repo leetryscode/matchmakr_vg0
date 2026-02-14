@@ -18,6 +18,7 @@ import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
 import PairingsSection from '@/components/profile/PairingsSection';
 import IntroductionSignalSection from '@/components/profile/IntroductionSignalSection';
 import { POND_CACHE_KEY } from '@/lib/pond-cache';
+import { calculateAge } from '@/lib/age';
 
 interface PondProfile extends Profile {
     profile_pic_url: string | null;
@@ -448,12 +449,6 @@ export default function PondPage() {
         loadProfiles(false, 1);
     };
 
-    const calculateAge = (birthYear: number | null): number | null => {
-        if (!birthYear) return null;
-        const currentYear = new Date().getFullYear();
-        return currentYear - birthYear;
-    };
-
     // Handler to open chat modal and fetch matchmakr info
     const handleOpenChat = async (profile: PondProfile) => {
         if (!profile.sponsored_by_id) return;
@@ -734,7 +729,7 @@ export default function PondPage() {
                     <div>
                         <div key={`profiles-${profiles.length}`} className="flex flex-col gap-14 lg:grid lg:grid-cols-2 lg:gap-14">
                             {profiles.map((profile) => {
-                                const age = calculateAge(profile.birth_year);
+                                const age = calculateAge(profile);
                                 const sponsorName = profile.sponsor_name || 'Sponsor';
                                 const sponsorPhotoUrl = profile.sponsor_photo_url;
                                 const hasEndorsement = profile.matchmakr_endorsement && profile.matchmakr_endorsement.trim().length > 0;

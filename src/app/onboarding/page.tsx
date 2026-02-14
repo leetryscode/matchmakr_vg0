@@ -4,7 +4,9 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import NameStep from '@/components/onboarding/NameStep';
 import SexStep from '@/components/onboarding/SexStep';
-import AgeStep from '@/components/onboarding/AgeStep';
+import BirthdayStep from '@/components/onboarding/BirthdayStep';
+import OpenToStep from '@/components/onboarding/OpenToStep';
+import CommunityStep from '@/components/onboarding/CommunityStep';
 import AccountCreationStep from '@/components/onboarding/AccountCreationStep';
 import { orbitConfig } from '@/config/orbitConfig';
 
@@ -15,7 +17,9 @@ export default function OnboardingPage() {
     userType: null as string | null,
     name: null as string | null,
     sex: null as 'Male' | 'Female' | null,
-    birthYear: null as number | null,
+    birthDate: null as string | null,
+    openTo: null as 'men' | 'women' | 'both' | null,
+    orbitCommunitySlug: null as string | null,
     profilePicUrl: null as string | null,
   });
 
@@ -51,26 +55,26 @@ export default function OnboardingPage() {
             <div className={`grid grid-cols-1 gap-4 ${orbitConfig.enableVendors ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} md:gap-8`}>
               <button
                 onClick={() => handleUserTypeSelect('Single')}
-                className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-text-dark hover:bg-gray-50 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-gray-200"
+                className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-text-dark card-hover-subtle shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-gray-200"
               >
                 <h3 className="text-2xl font-light text-text-dark">Single →</h3>
                 <div className="text-lg font-light">
-                  I'm a single looking for a match.
+                  I'm open to being introduced.
                 </div>
               </button>
               <button
                 onClick={() => handleUserTypeSelect('Sponsor')}
-                className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-text-dark hover:bg-gray-50 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-gray-200"
+                className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-text-dark card-hover-subtle shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-gray-200"
               >
                 <h3 className="text-2xl font-light text-text-dark">Sponsor →</h3>
                 <div className="text-lg font-light">
-                  I want to find matches for my friends.
+                  I want to introduce my friends.
                 </div>
               </button>
               {orbitConfig.enableVendors && (
                 <button
                   onClick={() => handleUserTypeSelect('Vendor')}
-                  className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-text-dark hover:bg-gray-50 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-gray-200"
+                  className="flex max-w-xs flex-col gap-4 rounded-xl bg-background-card p-6 text-text-dark card-hover-subtle shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-gray-200"
                 >
                   <h3 className="text-2xl font-light text-text-dark">Vendor →</h3>
                   <div className="text-lg font-light">
@@ -84,10 +88,14 @@ export default function OnboardingPage() {
       case 2:
         return <NameStep onNext={(name) => { setOnboardingData({ ...onboardingData, name }); setStep(3); }} />;
       case 3:
-        return <SexStep onNext={(sex) => { setOnboardingData({ ...onboardingData, sex }); setStep(4); }} />;
+        return <BirthdayStep onNext={(birthDate) => { setOnboardingData({ ...onboardingData, birthDate }); setStep(4); }} onTooYoung={handleTooYoung} />;
       case 4:
-        return <AgeStep onNext={(birthYear) => { setOnboardingData({ ...onboardingData, birthYear }); setStep(5); }} onTooYoung={handleTooYoung} />;
+        return <SexStep onNext={(sex) => { setOnboardingData({ ...onboardingData, sex }); setStep(5); }} />;
       case 5:
+        return <OpenToStep onNext={(openTo) => { setOnboardingData({ ...onboardingData, openTo }); setStep(6); }} />;
+      case 6:
+        return <CommunityStep onNext={(orbitCommunitySlug) => { setOnboardingData({ ...onboardingData, orbitCommunitySlug }); setStep(7); }} />;
+      case 7:
         return <AccountCreationStep onboardingData={onboardingData} />;
       default:
         return <div>Unknown step</div>;

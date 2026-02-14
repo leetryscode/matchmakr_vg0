@@ -9,7 +9,9 @@ interface AccountCreationStepProps {
     userType: string | null;
     name: string | null;
     sex: 'Male' | 'Female' | null;
-    birthYear: number | null;
+    birthDate: string | null;
+    openTo: 'men' | 'women' | 'both' | null;
+    orbitCommunitySlug: string | null;
     profilePicUrl: string | null;
   };
 }
@@ -42,8 +44,9 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
           user_type: userTypeUpper,
           name: onboardingData.name,
           sex: onboardingData.sex,
-          birth_year: onboardingData.birthYear,
-          // Include additional fields that might be useful for future onboarding steps
+          birth_date: onboardingData.birthDate ?? undefined,
+          open_to: onboardingData.openTo ?? undefined,
+          orbit_community_slug: onboardingData.orbitCommunitySlug ?? undefined,
           bio: null,
           occupation: null,
           city: null,
@@ -59,9 +62,9 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
         },
       },
     };
-    
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp(signUpPayload);
-    
+
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp(signUpPayload);
+
     if (signUpError) {
       setError(signUpError.message);
       setLoading(false);
@@ -69,52 +72,43 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
     }
 
     if (signUpData.user) {
-      // The trigger function will automatically create the profile with correct user_type
-      // Now we need to update the profile with the additional onboarding data
+      const updatePayload: Record<string, unknown> = {
+        name: onboardingData.name,
+        sex: onboardingData.sex,
+      };
+      if (onboardingData.birthDate) updatePayload.birth_date = onboardingData.birthDate;
+      if (onboardingData.openTo) updatePayload.open_to = onboardingData.openTo;
+      if (onboardingData.orbitCommunitySlug) updatePayload.orbit_community_slug = onboardingData.orbitCommunitySlug;
+
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({
-          name: onboardingData.name,
-          sex: onboardingData.sex,
-          birth_year: onboardingData.birthYear,
-          // Add other fields as needed
-        })
+        .update(updatePayload)
         .eq('id', signUpData.user.id);
-      
+
       if (profileError) {
         console.error('Profile update error:', profileError);
-        // Don't fail the signup if profile update fails - user can still log in
-        // and complete their profile later
       }
-      
-      alert('Sign up successful! Please check your email to confirm your account.');
-      router.push('/login'); // Redirect to a login page after signup
+
+      if (signUpData.session) {
+        const role = onboardingData.userType === 'Single' ? 'single' : 'matchmakr';
+        router.push(`/dashboard/${role}`);
+      } else {
+        alert('Sign up successful! Please check your email to confirm your account.');
+        router.push('/login');
+      }
     }
 
     setLoading(false);
   };
 
-  const isSingle = onboardingData.userType === 'Single';
-  
   return (
     <div className="flex flex-col items-center justify-center gap-8 text-center">
       <h1 className="text-4xl font-light text-text-dark leading-[1.1] tracking-tight sm:text-[4rem]">
         Create your account
       </h1>
-      {isSingle ? (
-        <>
-          <p className="text-xl text-text-light font-light max-w-md">
-            Your Sponsor will create your Orbit profile. You just need an account to get started.
-          </p>
-          <p className="text-lg text-text-light font-light max-w-md">
-            Once you're signed up, your Sponsor can invite you and set up your profile for matching.
-          </p>
-        </>
-      ) : (
-        <p className="text-xl text-text-light font-light">
-          Almost there! Just a few more details to get you started.
-        </p>
-      )}
+      <p className="text-xl text-text-light font-light">
+        Almost there! No need to check your email after this step, you'll go straight to your dashboard.
+      </p>
       <div className="flex flex-col gap-4 w-full max-w-md">
         <input
           type="email"
