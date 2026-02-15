@@ -335,6 +335,8 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                 }
             }
 
+            router.refresh();
+
         } catch (error: any) {
             alert(error.message);
         } finally {
@@ -443,7 +445,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                         </span>
                                         {canEdit && (
                                             <button
-                                                className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-text-dark text-sm rounded-full border border-white/30 hover:bg-white transition-colors"
+                                                className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-slate-800 text-sm rounded-full border border-white/30 hover:bg-white transition-colors"
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
@@ -481,7 +483,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                 ) : item === ADD_PHOTO_SLOT ? (
                                     canEdit && (
                                         <button
-                                            className="flex flex-col items-center justify-center w-full h-full text-white/80 hover:text-primary-blue transition-colors"
+                                            className="flex flex-col items-center justify-center w-full h-full bg-black/40 rounded-2xl text-white hover:text-primary-blue transition-colors"
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
@@ -573,7 +575,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                 </span>
                                 {canEdit && (
                                     <button
-                                        className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-text-dark text-sm rounded-full border border-white/30 hover:bg-white transition-colors z-50"
+                                        className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-slate-800 text-sm rounded-full border border-white/30 hover:bg-white transition-colors z-50"
                                         style={{ pointerEvents: 'auto', zIndex: 50 }}
                                         onClick={(e) => {
                                             e.preventDefault();
@@ -618,7 +620,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                         ) : displayItems[0] === ADD_PHOTO_SLOT ? (
                             canEdit && (
                                 <button
-                                    className="flex flex-col items-center justify-center w-full h-full text-white/80 hover:text-primary-blue transition-colors"
+                                    className="flex flex-col items-center justify-center w-full h-full bg-black/40 rounded-2xl text-white hover:text-primary-blue transition-colors"
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
