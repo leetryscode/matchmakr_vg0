@@ -92,9 +92,15 @@ export default function OnboardingPage() {
       case 4:
         return <SexStep onNext={(sex) => { setOnboardingData({ ...onboardingData, sex }); setStep(5); }} />;
       case 5:
+        if (onboardingData.userType === 'Sponsor') {
+          return <CommunityStep variant="sponsor" onNext={(orbitCommunitySlug) => { setOnboardingData({ ...onboardingData, orbitCommunitySlug }); setStep(6); }} />;
+        }
         return <OpenToStep onNext={(openTo) => { setOnboardingData({ ...onboardingData, openTo }); setStep(6); }} />;
       case 6:
-        return <CommunityStep onNext={(orbitCommunitySlug) => { setOnboardingData({ ...onboardingData, orbitCommunitySlug }); setStep(7); }} />;
+        if (onboardingData.userType === 'Sponsor') {
+          return <AccountCreationStep onboardingData={onboardingData} />;
+        }
+        return <CommunityStep variant="single" onNext={(orbitCommunitySlug) => { setOnboardingData({ ...onboardingData, orbitCommunitySlug }); setStep(7); }} />;
       case 7:
         return <AccountCreationStep onboardingData={onboardingData} />;
       default:

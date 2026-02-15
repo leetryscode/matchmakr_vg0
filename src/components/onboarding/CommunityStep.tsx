@@ -12,6 +12,8 @@ export type OrbitCommunitySlug = (typeof ORBIT_COMMUNITY_SLUGS)[number];
 
 interface CommunityStepProps {
   onNext: (slug: OrbitCommunitySlug) => void;
+  /** UI intent for copy; keeps component agnostic of full user-type set. */
+  variant?: 'single' | 'sponsor';
 }
 
 const CARDS: { slug: OrbitCommunitySlug; label: string }[] = [
@@ -20,12 +22,23 @@ const CARDS: { slug: OrbitCommunitySlug; label: string }[] = [
   { slug: 'bring-orbit-waitlist', label: 'Bring Orbit to my community' },
 ];
 
-export default function CommunityStep({ onNext }: CommunityStepProps) {
+const SUBTEXT: Record<'single' | 'sponsor', string> = {
+  single: 'Orbit is growing deliberately, community by community.',
+  sponsor: 'Where do you make introductions? Orbit is growing gradually, one community at a time.',
+};
+
+export default function CommunityStep({ onNext, variant }: CommunityStepProps) {
+  const subtext = variant ? SUBTEXT[variant] : '';
   return (
     <div className="flex flex-col items-center justify-center gap-8">
       <h1 className="text-4xl font-light text-text-dark leading-[1.1] tracking-tight sm:text-[4rem]">
         Orbit Community
       </h1>
+      {subtext && (
+        <p className="text-text-light font-light text-center max-w-md">
+          {subtext}
+        </p>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
         {CARDS.map((card) => (
           <button
