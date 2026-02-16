@@ -204,14 +204,16 @@ export default function PondPage() {
 
         if (DEBUG) console.log('Pond page useEffect triggered');
         
-        // Always load user data (sponsored singles) - this is needed for the selector
-        // This should run every time the page loads, regardless of cache
-        loadUserData();
-        
-        // Try to load from cache first for profile data (key includes selected_single_id + search params)
-        const cacheKey = getCacheKey();
-        const cached = loadFromCache(cacheKey);
-        if (cached) {
+        let cancelled = false;
+        (async () => {
+          // Load user data (sponsored singles) first - needed for selector and selected_single_id in API
+          const effectiveSingle = await loadUserData();
+          if (cancelled) return;
+          
+          // Try to load from cache first (key uses effective single + search params)
+          const cacheKey = getCacheKey(effectiveSingle?.id ?? null);
+          const cached = loadFromCache(cacheKey);
+          if (cached) {
             if (DEBUG) console.log('Using cached data');
             cacheKeyRef.current = cacheKey;
             setProfiles(cached.profiles);
@@ -230,12 +232,14 @@ export default function PondPage() {
             if (cached.scrollPosition > 0) {
                 setIsScrolled(true);
             }
-        } else {
+          } else {
             if (DEBUG) console.log('No cache found, loading fresh data');
             setLoading(true);
             setShowingCachedData(false);
-            loadProfiles(false, 1);
-        }
+            loadProfiles(false, 1, false, effectiveSingle?.id ?? null);
+          }
+        })();
+        return () => { cancelled = true; };
     }, [authLoading, user, orbitRole, router]); // Run when auth state changes
 
     // Save to cache when data changes (not on scroll events)
@@ -290,9 +294,10 @@ export default function PondPage() {
         if (DEBUG) console.log('Pond page loading state changed:', { loading, profilesCount: profiles.length });
     }, [loading, profiles.length]);
 
-    // Load user profile data and sponsored singles (separate from profile loading)
-    const loadUserData = async () => {
-        if (!user) return;
+    // Load user profile data and sponsored singles (separate from profile loading).
+    // Returns the effective selected single (for use before state has updated).
+    const loadUserData = async (): Promise<{ id: string; name: string; photo: string | null } | null> => {
+        if (!user) return null;
         
         if (DEBUG) console.log('Pond page loadUserData started');
         try {
@@ -324,18 +329,17 @@ export default function PondPage() {
             })) : [];
             
             setSponsoredSingles(sponsoredSingles);
+            const effectiveSingle = sponsoredSingles.length > 0 ? sponsoredSingles[0] : null;
             // Always set currentSponsoredSingle - use first single if available, otherwise null
             // Only update if not already set (preserve user's selection when navigating back)
             setCurrentSponsoredSingle(prev => {
-                // If already set and still valid, keep it
-                if (prev && sponsoredSingles.some(s => s.id === prev.id)) {
-                    return prev;
-                }
-                // Otherwise set to first single or null
-                return sponsoredSingles.length > 0 ? sponsoredSingles[0] : null;
+                if (prev && sponsoredSingles.some(s => s.id === prev.id)) return prev;
+                return effectiveSingle;
             });
+            return effectiveSingle;
         } catch (error) {
             console.error('Error in loadUserData:', error);
+            return null;
         }
     };
 
@@ -746,8 +750,25 @@ export default function PondPage() {
                     </div>
                 ) : profiles.length === 0 ? (
                     <div className="text-center py-8">
-                        <p className="text-text-dark text-lg">No singles found matching your criteria.</p>
-                        <p className="text-text-light mt-2">Try adjusting your search filters.</p>
+                        {currentSponsoredSingle ? (
+                            <>
+                                <p className="text-text-dark text-lg">
+                                    No sponsored singles match {currentSponsoredSingle.name}&apos;s criteria in this community yet.
+                                </p>
+                                <p className="text-text-light mt-2">Orbit is still growing — help shape it by inviting someone.</p>
+                                <button
+                                    onClick={() => setShowInviteSingleModal(true)}
+                                    className="mt-4 rounded-cta min-h-[44px] px-6 py-2 bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200"
+                                >
+                                    Invite a single
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-text-dark text-lg">No singles found matching your criteria.</p>
+                                <p className="text-text-light mt-2">Try adjusting your search filters.</p>
+                            </>
+                        )}
                     </div>
                 ) : (
                     <div>

@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 export async function GET(req: NextRequest) {
   const supabase = createClient();
   const { searchParams } = new URL(req.url);
-  
+
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '20');
   const searchCity = searchParams.get('city') || '';
@@ -13,43 +13,32 @@ export async function GET(req: NextRequest) {
   const selectedSingleId = searchParams.get('selected_single_id') || '';
   const selectedInterests = searchParams.get('interests') ? JSON.parse(searchParams.get('interests')!) : [];
 
-  console.log('Pond API called with params:', { page, limit, searchCity, searchState, searchZip, selectedSingleId, selectedInterests });
-
   try {
-    console.log('Pond API - starting request processing');
-
-    // Explicit select: only fields used by Pond cards + transforms. Excludes bio, street_address, etc.
-    const POND_PROFILE_COLUMNS = 'id, name, birth_date, birth_year, occupation, sponsored_by_id, matchmakr_endorsement, pairings_signal, introduction_signal, photos';
-    let query = supabase
-      .from('profiles')
-      .select(POND_PROFILE_COLUMNS)
-      .eq('user_type', 'SINGLE')
-      .not('sponsored_by_id', 'is', null)
-      .order('created_at', { ascending: false })
-      .order('id', { ascending: false })
-      .range((page - 1) * limit, page * limit - 1);
-
-    // Build filter conditions for partial matches
-    if (searchCity.trim() !== '') {
-      query = query.ilike('city', `%${searchCity}%`);
-    }
-    if (searchState.trim() !== '') {
-      query = query.ilike('state', `%${searchState}%`);
-    }
-    if (searchZip.trim() !== '') {
-      query = query.ilike('zip_code', `%${searchZip}%`);
+    // Require selected_single_id for filtered Pond; return empty list if missing
+    if (!selectedSingleId || selectedSingleId.trim() === '') {
+      return NextResponse.json({
+        success: true,
+        profiles: [],
+        hasMore: false,
+        total: 0,
+      });
     }
 
-    const { data: profiles, error } = await query;
-
-    console.log('Pond API query result:', { profilesCount: profiles?.length || 0, error: error?.message });
+    const { data: profiles, error } = await supabase.rpc('get_pond_candidates', {
+      selected_single_id: selectedSingleId,
+      page,
+      limit,
+      city: searchCity.trim() || null,
+      state: searchState.trim() || null,
+      zip: searchZip.trim() || null,
+    });
 
     if (error) {
-      console.error('Error fetching profiles:', error);
+      console.error('Pond API get_pond_candidates error:', error);
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    const profileIds = (profiles || []).map((p: any) => p.id);
+    const profileIds = (profiles || []).map((p: { id: string }) => p.id);
 
     // Fetch interests for all profiles in a single batch query
     let interestsMap = new Map<string, { id: number; name: string }[]>();
@@ -91,7 +80,8 @@ export async function GET(req: NextRequest) {
     }
 
     // Transform data to match expected format
-    const transformedProfiles = (profiles || []).map(profile => ({
+    type PondRow = { id: string; photos: string[] | null; sponsored_by_id: string | null; [k: string]: unknown };
+    const transformedProfiles = (profiles || []).map((profile: PondRow) => ({
       ...profile,
       profile_pic_url: profile.photos && profile.photos.length > 0 ? profile.photos[0] : null,
       interests: interestsMap.get(profile.id) || [],
@@ -100,15 +90,16 @@ export async function GET(req: NextRequest) {
     }));
 
     // Rank profiles: those matching selected interests first, then the rest
+    type TransformedProfile = { interests?: { id: number; name: string }[] };
     let rankedProfiles = transformedProfiles;
     if (selectedInterests.length > 0) {
-      const selectedIds = selectedInterests.map((i: any) => i.id);
+      const selectedIds = selectedInterests.map((i: { id: number }) => i.id);
       rankedProfiles = [
-        ...transformedProfiles.filter(p => 
-          p.interests && p.interests.some((interest: any) => selectedIds.includes(interest.id))
+        ...transformedProfiles.filter((p: TransformedProfile) =>
+          p.interests && p.interests.some((interest: { id: number }) => selectedIds.includes(interest.id))
         ),
-        ...transformedProfiles.filter(p => 
-          !p.interests || !p.interests.some((interest: any) => selectedIds.includes(interest.id))
+        ...transformedProfiles.filter((p: TransformedProfile) =>
+          !p.interests || !p.interests.some((interest: { id: number }) => selectedIds.includes(interest.id))
         )
       ];
     }
