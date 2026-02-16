@@ -17,7 +17,7 @@ import RequireStandaloneGate from '@/components/pwa/RequireStandaloneGate';
 import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
 import PairingsSection from '@/components/profile/PairingsSection';
 import IntroductionSignalSection from '@/components/profile/IntroductionSignalSection';
-import { POND_CACHE_KEY } from '@/lib/pond-cache';
+import { getPondCacheKey } from '@/lib/pond-cache';
 import { calculateAge } from '@/lib/age';
 
 interface PondProfile extends Profile {
@@ -39,7 +39,6 @@ interface PondCache {
     timestamp: number;
 }
 
-const CACHE_KEY = POND_CACHE_KEY;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const DEBUG = false; // Set to true to enable console logging
 
@@ -82,34 +81,50 @@ export default function PondPage() {
     const pathname = usePathname();
     // Store scroll position in a ref to avoid re-renders
     const scrollPositionRef = useRef<number>(0);
+    // Store current cache key for saveScrollPositionToCache on unmount
+    const cacheKeyRef = useRef<string>('');
+
+    const getCacheKey = (selectedSingleIdOverride?: string | null) => {
+        const singleId = selectedSingleIdOverride !== undefined
+            ? (selectedSingleIdOverride || 'none')
+            : (currentSponsoredSingle?.id || 'none');
+        return getPondCacheKey({
+            selectedSingleId: singleId === 'none' ? null : singleId,
+            city: searchCity,
+            state: searchState,
+            zip: searchZip,
+            selectedInterests
+        });
+    };
 
     // Cache management functions
-    const saveToCache = (data: Omit<PondCache, 'timestamp'>) => {
+    const saveToCache = (key: string, data: Omit<PondCache, 'timestamp'>) => {
         try {
             const cacheData: PondCache = {
                 ...data,
                 timestamp: Date.now()
             };
-            localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+            localStorage.setItem(key, JSON.stringify(cacheData));
+            cacheKeyRef.current = key;
             if (DEBUG) console.log('Saved to cache:', cacheData);
         } catch (error) {
             console.error('Error saving to cache:', error);
         }
     };
 
-    const loadFromCache = (): PondCache | null => {
+    const loadFromCache = (key: string): PondCache | null => {
         try {
-            const cached = localStorage.getItem(CACHE_KEY);
+            const cached = localStorage.getItem(key);
             if (!cached) return null;
-            
+
             const cacheData: PondCache = JSON.parse(cached);
             const isExpired = Date.now() - cacheData.timestamp > CACHE_DURATION;
-            
+
             if (isExpired) {
-                localStorage.removeItem(CACHE_KEY);
+                localStorage.removeItem(key);
                 return null;
             }
-            
+
             if (DEBUG) console.log('Loaded from cache:', cacheData);
             return cacheData;
         } catch (error) {
@@ -118,9 +133,9 @@ export default function PondPage() {
         }
     };
 
-    const clearCache = () => {
+    const clearCache = (key: string) => {
         try {
-            localStorage.removeItem(CACHE_KEY);
+            localStorage.removeItem(key);
             if (DEBUG) console.log('Cache cleared');
         } catch (error) {
             console.error('Error clearing cache:', error);
@@ -148,10 +163,12 @@ export default function PondPage() {
 
     // Save scroll position to localStorage (only called on unmount or when saving cache)
     const saveScrollPositionToCache = () => {
+        const key = cacheKeyRef.current;
+        if (!key) return;
         const position = scrollPositionRef.current;
-        const currentCache = loadFromCache();
+        const currentCache = loadFromCache(key);
         if (currentCache) {
-            saveToCache({
+            saveToCache(key, {
                 ...currentCache,
                 scrollPosition: position
             });
@@ -191,10 +208,12 @@ export default function PondPage() {
         // This should run every time the page loads, regardless of cache
         loadUserData();
         
-        // Try to load from cache first for profile data
-        const cached = loadFromCache();
+        // Try to load from cache first for profile data (key includes selected_single_id + search params)
+        const cacheKey = getCacheKey();
+        const cached = loadFromCache(cacheKey);
         if (cached) {
             if (DEBUG) console.log('Using cached data');
+            cacheKeyRef.current = cacheKey;
             setProfiles(cached.profiles);
             setPage(cached.page);
             setHasMore(cached.hasMore);
@@ -223,7 +242,8 @@ export default function PondPage() {
     // Read current scroll position from ref at save time
     useEffect(() => {
         if (!loading && profiles.length > 0) {
-            saveToCache({
+            const key = getCacheKey();
+            saveToCache(key, {
                 profiles,
                 page,
                 hasMore,
@@ -234,7 +254,7 @@ export default function PondPage() {
                 scrollPosition: scrollPositionRef.current
             });
         }
-    }, [profiles, page, hasMore, searchCity, searchState, searchZip, selectedInterests, loading]);
+    }, [profiles, page, hasMore, searchCity, searchState, searchZip, selectedInterests, loading, currentSponsoredSingle]);
 
     // Update scroll position ref on scroll (throttled for performance)
     // Save to localStorage only on unmount to avoid churn
@@ -319,14 +339,17 @@ export default function PondPage() {
         }
     };
 
-    const loadProfiles = async (isLoadMore = false, currentPage = page, forceRefresh = false) => {
-        if (DEBUG) console.log('Pond page loadProfiles called with:', { isLoadMore, currentPage, page, forceRefresh });
+    const loadProfiles = async (isLoadMore = false, currentPage = page, forceRefresh = false, selectedSingleIdOverride?: string | null) => {
+        const effectiveSingleId = selectedSingleIdOverride !== undefined ? selectedSingleIdOverride : currentSponsoredSingle?.id;
+        if (DEBUG) console.log('Pond page loadProfiles called with:', { isLoadMore, currentPage, page, forceRefresh, selectedSingleIdOverride });
         
         // If we have cached data and this isn't a forced refresh, show cached data immediately
         if (!forceRefresh && !isLoadMore) {
-            const cached = loadFromCache();
+            const cacheKey = getCacheKey(effectiveSingleId ?? undefined);
+            const cached = loadFromCache(cacheKey);
             if (cached && cached.profiles.length > 0) {
                 if (DEBUG) console.log('Showing cached data immediately');
+                cacheKeyRef.current = cacheKey;
                 setProfiles(cached.profiles);
                 setPage(cached.page);
                 setHasMore(cached.hasMore);
@@ -366,13 +389,14 @@ export default function PondPage() {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
             
-            // Use the new optimized API endpoint
+            // Use the new optimized API endpoint (selected_single_id passed for Step 2 filtering, not used yet)
             const params = new URLSearchParams({
                 page: currentPage.toString(),
                 limit: ITEMS_PER_PAGE.toString(),
                 city: searchCity,
                 state: searchState,
                 zip: searchZip,
+                selected_single_id: effectiveSingleId || '',
                 interests: JSON.stringify(selectedInterests)
             });
 
@@ -628,7 +652,7 @@ export default function PondPage() {
     const handleSingleSelect = (single: { id: string, name: string, photo: string | null }) => {
         setCurrentSponsoredSingle(single);
         setPage(1);
-        loadProfiles(false, 1);
+        loadProfiles(false, 1, false, single.id);
         window.scrollTo(0, 0);
     };
 

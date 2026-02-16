@@ -10,19 +10,23 @@ export async function GET(req: NextRequest) {
   const searchCity = searchParams.get('city') || '';
   const searchState = searchParams.get('state') || '';
   const searchZip = searchParams.get('zip') || '';
+  const selectedSingleId = searchParams.get('selected_single_id') || '';
   const selectedInterests = searchParams.get('interests') ? JSON.parse(searchParams.get('interests')!) : [];
 
-  console.log('Pond API called with params:', { page, limit, searchCity, searchState, searchZip, selectedInterests });
+  console.log('Pond API called with params:', { page, limit, searchCity, searchState, searchZip, selectedSingleId, selectedInterests });
 
   try {
     console.log('Pond API - starting request processing');
 
-    // Query profiles directly (includes pairings_signal, introduction_signal, city, state, etc.)
+    // Explicit select: only fields used by Pond cards + transforms. Excludes bio, street_address, etc.
+    const POND_PROFILE_COLUMNS = 'id, name, birth_date, birth_year, occupation, sponsored_by_id, matchmakr_endorsement, pairings_signal, introduction_signal, photos';
     let query = supabase
       .from('profiles')
-      .select('*')
+      .select(POND_PROFILE_COLUMNS)
       .eq('user_type', 'SINGLE')
       .not('sponsored_by_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
       .range((page - 1) * limit, page * limit - 1);
 
     // Build filter conditions for partial matches
