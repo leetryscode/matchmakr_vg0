@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { createSponsorLoginNotifications } from '@/lib/notifications/sponsor-login';
 import { checkAndCreateSingleNotSeenIntroNotifications } from '@/lib/notifications/single-not-seen-intro';
 import { computeSingleStatus, type SingleStatus } from '@/lib/status/singleStatus';
+import { getInviteDisplayStatus } from '@/lib/invites/status';
 
 // Placeholder orbit satellites when sponsor has no managed singles (visual preview only)
 const PREVIEW_ORBIT_SATELLITES = [
@@ -118,6 +119,27 @@ async function MatchMakrDashboardContent() {
         .eq('user_type', 'SINGLE')
         .order('created_at', { ascending: true });
 
+    // Fetch invites created by this sponsor
+    const { data: invites } = await supabase
+        .from('invites')
+        .select('id, invitee_email, invitee_phone_e164, invitee_user_id, status, created_at, claimed_at')
+        .eq('inviter_id', user.id)
+        .order('created_at', { ascending: false });
+
+    // Fetch sponsorship_requests for those invites
+    const inviteIds = (invites ?? []).map((i: { id: string }) => i.id);
+    const { data: requests } = inviteIds.length > 0
+        ? await supabase
+            .from('sponsorship_requests')
+            .select('id, invite_id, single_id, sponsor_id, status, created_at, updated_at')
+            .in('invite_id', inviteIds)
+        : { data: [] };
+
+    const requestByInviteId: Record<string, { id: string; single_id: string; status: string }> = {};
+    (requests ?? []).forEach((r: { invite_id: string; id: string; single_id: string; status: string }) => {
+        if (r.invite_id) requestByInviteId[r.invite_id] = { id: r.id, single_id: r.single_id, status: r.status };
+    });
+
     // Fetch approved match counts for all sponsored singles (efficient two-query approach)
     // Approved match = match where approved_at IS NOT NULL (both matchmakrs approved)
     const singleIds = sponsoredSingles?.map(s => s.id) || [];
@@ -184,6 +206,35 @@ async function MatchMakrDashboardContent() {
             sponsor_label: single.sponsor_label
         };
     }) || [];
+
+    const realSingleIds = new Set(processedSponsoredSingles.map((s: { id: string }) => s.id));
+
+    // Build invite rows (exclude invites that are already real sponsored singles).
+    // When single accepts, profiles.sponsored_by_id is set → they appear in sponsoredSingles →
+    // invitee_user_id is filtered out → accepted invite row disappears. Sponsor sees update on next page load.
+    // Status: prefer request.status when request exists; otherwise use invite.status
+    const inviteRows = (invites ?? [])
+        .filter((inv: { invitee_user_id: string | null }) => !inv.invitee_user_id || !realSingleIds.has(inv.invitee_user_id))
+        .map((inv: { id: string; invitee_email: string | null; invitee_phone_e164?: string | null; invitee_user_id: string | null; status: string; created_at: string }) => {
+            const req = requestByInviteId[inv.id];
+            const { displayStatus, subtext: declineSubtext, isClickable } = getInviteDisplayStatus(
+                inv.status,
+                req?.status,
+                inv.invitee_user_id
+            );
+            return {
+                type: 'invite' as const,
+                id: inv.id,
+                invitee_email: inv.invitee_email ?? '',
+                invitee_phone_e164: inv.invitee_phone_e164 ?? null,
+                invitee_user_id: inv.invitee_user_id,
+                status: displayStatus,
+                profile_id: inv.invitee_user_id,
+                created_at: inv.created_at,
+                decline_subtext: declineSubtext,
+                is_clickable: isClickable,
+            };
+        });
 
     const firstName = profile.name?.split(' ')[0] || profile.name || 'User';
 
@@ -256,7 +307,7 @@ async function MatchMakrDashboardContent() {
 
                 {/* Managed Singles */}
                 <section className="mt-10">
-                    <ManagedSinglesGrid singles={processedSponsoredSingles} />
+                    <ManagedSinglesGrid singles={processedSponsoredSingles} inviteRows={inviteRows} userId={user.id} />
                 </section>
 
                 {/* Chat with your singles */}

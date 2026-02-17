@@ -15,7 +15,16 @@ import PrimaryCTA from '@/components/ui/PrimaryCTA';
 import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
 import TrustLockup from '@/components/dashboard/TrustLockup';
 import AvailabilitySection from '@/components/dashboard/AvailabilitySection';
+import Toast from '@/components/ui/Toast';
 import { computeSingleStatus, SingleStatus } from '@/lib/status/singleStatus';
+
+interface PendingSponsorshipRequest {
+  id: string;
+  sponsor_id: string;
+  status: string;
+  invite_id: string | null;
+  created_at: string;
+}
 
 interface SingleDashboardClientProps {
   userId: string;
@@ -28,6 +37,8 @@ interface SingleDashboardClientProps {
   photos: (string | null)[] | null;
   matchmakrEndorsement: string | null;
   approvedMatchCount: number;
+  pendingSponsorshipRequests?: PendingSponsorshipRequest[];
+  sponsorNameMap?: Record<string, string>;
 }
 
 const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ 
@@ -40,7 +51,9 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   onboardedAt,
   photos,
   matchmakrEndorsement,
-  approvedMatchCount
+  approvedMatchCount,
+  pendingSponsorshipRequests = [],
+  sponsorNameMap = {},
 }) => {
   // Compute status for availability section
   const computedStatus = computeSingleStatus({
@@ -67,7 +80,14 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   const [sponsorMenuOpen, setSponsorMenuOpen] = useState(false);
   const [showEndSponsorshipModal, setShowEndSponsorshipModal] = useState(false);
   const [endingSponsorship, setEndingSponsorship] = useState(false);
+  const [pendingRequests, setPendingRequests] = useState<PendingSponsorshipRequest[]>(pendingSponsorshipRequests);
+  const [requestActionLoading, setRequestActionLoading] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const supabase = getSupabaseClient();
+
+  useEffect(() => {
+    setPendingRequests(pendingSponsorshipRequests);
+  }, [pendingSponsorshipRequests]);
   const menuRefs = useRef<(HTMLDivElement | null)[]>([]);
   const sponsorMenuRef = useRef<HTMLDivElement | null>(null);
   const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
@@ -318,6 +338,41 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
     }
   };
 
+  const handleAcceptSponsorship = async (requestId: string) => {
+    setRequestActionLoading(requestId);
+    try {
+      const { data, error } = await supabase.rpc('accept_sponsorship_request', { p_request_id: requestId });
+      if (error) throw new Error(error.message);
+      if (data?.ok) {
+        setPendingRequests((prev) => prev.filter((r) => r.id !== requestId));
+        router.refresh();
+      }
+    } catch (err: unknown) {
+      console.error('Error accepting sponsorship:', err);
+      alert(err instanceof Error ? err.message : 'Failed to accept');
+    } finally {
+      setRequestActionLoading(null);
+    }
+  };
+
+  const handleDeclineSponsorship = async (requestId: string) => {
+    setRequestActionLoading(requestId);
+    try {
+      const { data, error } = await supabase.rpc('decline_sponsorship_request', { p_request_id: requestId });
+      if (error) throw new Error(error.message);
+      if (data?.ok) {
+        setPendingRequests((prev) => prev.filter((r) => r.id !== requestId));
+        setToast({ message: 'Declined', type: 'success' });
+        router.refresh();
+      }
+    } catch (err: unknown) {
+      console.error('Error declining sponsorship:', err);
+      alert(err instanceof Error ? err.message : 'Failed to decline');
+    } finally {
+      setRequestActionLoading(null);
+    }
+  };
+
   // Profile section at the top with Trust Lockup
   const ProfileSection = () => (
     <div className="flex flex-col">
@@ -404,6 +459,38 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           <section className="mt-10 first:mt-0">
             <NotificationsSection userId={userId} />
           </section>
+
+          {/* Pending sponsorship requests */}
+          {pendingRequests.length > 0 && (
+            <section className="mt-10">
+              <SectionHeader title="Pending invitations" />
+              <div className="mt-4 flex flex-col gap-3">
+                {pendingRequests.map((req) => (
+                  <GlassCard key={req.id} className="p-4">
+                    <p className="type-body text-text-dark mb-4">
+                      {sponsorNameMap[req.sponsor_id] || 'Someone'} invited you to connect
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleAcceptSponsorship(req.id)}
+                        disabled={requestActionLoading === req.id}
+                        className="rounded-cta px-4 py-2 min-h-[40px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {requestActionLoading === req.id ? 'Accepting...' : 'Accept'}
+                      </button>
+                      <button
+                        onClick={() => handleDeclineSponsorship(req.id)}
+                        disabled={requestActionLoading === req.id}
+                        className="px-4 py-2 min-h-[40px] rounded-lg bg-white/20 text-text-dark font-semibold hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </GlassCard>
+                ))}
+              </div>
+            </section>
+          )}
           
           {/* Sponsor chat section — same Preview Row pattern when no sponsor */}
           <section className="mt-10">
@@ -444,6 +531,14 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           {/* Footer spacer with brand mark */}
           <DashboardFooterSpacer />
         </div>
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            isVisible={!!toast}
+            onClose={() => setToast(null)}
+          />
+        )}
       </>
     );
   }
@@ -459,6 +554,38 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         <section className="mt-10 first:mt-0">
           <NotificationsSection userId={userId} />
         </section>
+
+        {/* Pending sponsorship requests */}
+        {pendingRequests.length > 0 && (
+          <section className="mt-10">
+            <SectionHeader title="Pending invitations" />
+            <div className="mt-4 flex flex-col gap-3">
+              {pendingRequests.map((req) => (
+                <GlassCard key={req.id} className="p-4">
+                  <p className="type-body text-text-dark mb-4">
+                    {sponsorNameMap[req.sponsor_id] || 'Someone'} invited you to connect
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => handleAcceptSponsorship(req.id)}
+                      disabled={requestActionLoading === req.id}
+                      className="rounded-cta px-4 py-2 min-h-[40px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {requestActionLoading === req.id ? 'Accepting...' : 'Accept'}
+                    </button>
+                    <button
+                      onClick={() => handleDeclineSponsorship(req.id)}
+                      disabled={requestActionLoading === req.id}
+                      className="px-4 py-2 min-h-[40px] rounded-lg bg-white/20 text-text-dark font-semibold hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </GlassCard>
+              ))}
+            </div>
+          </section>
+        )}
         
         {/* My Sponsor Section */}
         <section className="mt-10">
@@ -636,6 +763,14 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             </div>
           </div>
         </div>
+      )}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          isVisible={!!toast}
+          onClose={() => setToast(null)}
+        />
       )}
     </>
   );

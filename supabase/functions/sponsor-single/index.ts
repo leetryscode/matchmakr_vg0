@@ -14,169 +14,239 @@ const corsHeaders = {
 
 console.log(`Function "sponsor-single" up and running!`);
 
-// NOTE: This function currently only links existing users. Pre-signup invites will be handled by `invites` table + acceptance flow.
+// Creates invites + sponsorship_requests. Does NOT set profiles.sponsored_by_id.
+// Single must approve before link is established.
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  const jsonResponse = (body: object, status: number) =>
+    new Response(JSON.stringify(body), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status,
+    });
+
   try {
     const { single_email, sponsor_label } = await req.json();
 
-    // Create a Supabase client with the user's auth token
+    const normalizedEmail = (single_email || '').trim().toLowerCase();
+    if (!normalizedEmail) {
+      return jsonResponse({ error: 'Email is required.', code: 'INVALID_INPUT' }, 400);
+    }
+
     const userSupabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
-    // Get the current user from the token
     const { data: { user }, error: userError } = await userSupabaseClient.auth.getUser();
     if (userError) {
-      return new Response(JSON.stringify({ 
-        error: 'Authentication failed.',
-        code: 'AUTH_ERROR'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 401,
-      });
+      return jsonResponse({ error: 'Authentication failed.', code: 'AUTH_ERROR' }, 401);
     }
 
-    // Create a Supabase admin client to perform privileged operations
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // 1. Check if the current user is a MatchMakr
     const { data: matchmakrProfile, error: matchmakrProfileError } = await supabaseAdmin
       .from('profiles')
-      .select('user_type')
+      .select('user_type, name')
       .eq('id', user.id)
       .single();
 
     if (matchmakrProfileError || !matchmakrProfile) {
-      return new Response(JSON.stringify({ 
-        error: 'Could not find your profile.',
-        code: 'PROFILE_NOT_FOUND'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 404,
-      });
+      return jsonResponse({ error: 'Could not find your profile.', code: 'PROFILE_NOT_FOUND' }, 404);
     }
 
     if (matchmakrProfile.user_type !== 'MATCHMAKR') {
-      return new Response(JSON.stringify({ 
-        error: 'You must be a MatchMakr to sponsor a Single.',
-        code: 'INVALID_USER_TYPE'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      });
+      return jsonResponse({ error: 'You must be a MatchMakr to sponsor a Single.', code: 'INVALID_USER_TYPE' }, 400);
     }
 
-    // 2. Find the Single user by their email
+    // Look up existing user by email
     const { data: { users: allUsers }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-
     if (listError) {
       console.error('Error listing users:', listError);
-      return new Response(JSON.stringify({ 
-        error: 'Failed to search for user.',
-        code: 'SEARCH_ERROR'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      });
+      return jsonResponse({ error: 'Failed to search for user.', code: 'SEARCH_ERROR' }, 500);
     }
 
-    // Workaround for local dev where listUsers doesn't filter by email.
-    // This is safe for production as well.
-    const singleUser = allUsers.find(u => u.email === single_email);
+    const singleUser = allUsers.find(u => (u.email || '').trim().toLowerCase() === normalizedEmail);
+    const singleId = singleUser?.id ?? null;
 
-    if (!singleUser) {
-      return new Response(JSON.stringify({ 
-        error: 'Single user not found with that email.',
-        code: 'USER_NOT_FOUND'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 404,
-      });
+    // 1) User exists but not SINGLE: return 400, do not create invite
+    if (singleId) {
+      const { data: singleProfile, error: singleProfileError } = await supabaseAdmin
+        .from('profiles')
+        .select('user_type')
+        .eq('id', singleId)
+        .single();
+
+      if (!singleProfileError && singleProfile && singleProfile.user_type !== 'SINGLE') {
+        const role = singleProfile.user_type === 'MATCHMAKR' ? 'Sponsor' : 'Vendor';
+        return jsonResponse({
+          error: `That email belongs to a ${role}. You can only invite Singles here.`,
+          code: 'INVALID_TARGET_USER_TYPE',
+        }, 400);
+      }
     }
 
-    const singleId = singleUser.id;
+    // 2) Dedupe invites: reuse if active invite exists for (inviter_id, invitee_email)
+    const { data: existingInvite } = await supabaseAdmin
+      .from('invites')
+      .select('id, status, invitee_user_id')
+      .eq('inviter_id', user.id)
+      .eq('invitee_email', normalizedEmail)
+      .in('status', ['PENDING', 'CLAIMED'])
+      .limit(1)
+      .maybeSingle();
 
-    console.log('Found user:', { email: single_email, id: singleId });
+    if (existingInvite) {
+      if (existingInvite.status === 'PENDING') {
+        return jsonResponse({
+          message: 'Invite already pending for this email.',
+          invite_id: existingInvite.id,
+          status: 'already_pending',
+        }, 200);
+      }
 
-    // 3. Check if the found user is actually a 'SINGLE'
-    const { data: singleProfile, error: singleProfileError } = await supabaseAdmin
-      .from('profiles')
-      .select('user_type')
-      .eq('id', singleId)
+      // CLAIMED: check sponsorship_request
+      const singleIdFromInvite = existingInvite.invitee_user_id;
+      if (singleIdFromInvite) {
+        const { data: existingRequest } = await supabaseAdmin
+          .from('sponsorship_requests')
+          .select('id, status')
+          .eq('sponsor_id', user.id)
+          .eq('single_id', singleIdFromInvite)
+          .maybeSingle();
+
+        if (existingRequest) {
+          const status = existingRequest.status === 'ACCEPTED' ? 'already_sponsoring' : 'already_requested';
+          return jsonResponse({
+            message: existingRequest.status === 'ACCEPTED'
+              ? 'You are already sponsoring this person.'
+              : 'You already have a pending request for this person.',
+            invite_id: existingInvite.id,
+            request_id: existingRequest.id,
+            status,
+          }, 200);
+        }
+      }
+    }
+
+    // 3) Create invite and optionally sponsorship_request
+    if (singleId) {
+      // User exists and is SINGLE: create sponsorship_request first, then invite
+      const { data: request, error: requestError } = await supabaseAdmin
+        .from('sponsorship_requests')
+        .insert({
+          sponsor_id: user.id,
+          single_id: singleId,
+          invite_id: null,
+          status: 'PENDING_SINGLE_APPROVAL',
+        })
+        .select('id')
+        .single();
+
+      if (requestError) {
+        if (requestError.code === '23505') {
+          const { data: dupRequest } = await supabaseAdmin
+            .from('sponsorship_requests')
+            .select('id, status, invite_id')
+            .eq('sponsor_id', user.id)
+            .eq('single_id', singleId)
+            .single();
+          const status = dupRequest?.status === 'ACCEPTED' ? 'already_sponsoring' : 'already_requested';
+          return jsonResponse({
+            message: dupRequest?.status === 'ACCEPTED'
+              ? 'You are already sponsoring this person.'
+              : 'You already have a pending request for this person.',
+            invite_id: dupRequest?.invite_id ?? undefined,
+            request_id: dupRequest?.id,
+            status,
+          }, 200);
+        }
+        console.error('Sponsorship request insert error:', requestError);
+        return jsonResponse({ error: 'Failed to create sponsorship request.', code: 'REQUEST_ERROR' }, 500);
+      }
+
+      const { data: invite, error: inviteError } = await supabaseAdmin
+        .from('invites')
+        .insert({
+          inviter_id: user.id,
+          invitee_email: normalizedEmail,
+          invitee_phone_e164: null,
+          invitee_user_id: singleId,
+          target_user_type: 'SINGLE',
+          status: 'CLAIMED',
+        })
+        .select('id')
+        .single();
+
+      if (inviteError) {
+        console.error('Invite insert error:', inviteError);
+        return jsonResponse({ error: 'Failed to create invite.', code: 'INVITE_ERROR' }, 500);
+      }
+
+      await supabaseAdmin
+        .from('sponsorship_requests')
+        .update({ invite_id: invite.id, updated_at: new Date().toISOString() })
+        .eq('id', request.id);
+
+      // 4) Notification only on new request (we just inserted)
+      const sponsorName = matchmakrProfile.name || 'Someone';
+      const { error: notifError } = await supabaseAdmin
+        .from('notifications')
+        .insert({
+          user_id: singleId,
+          type: 'sponsorship_request',
+          data: {
+            request_id: request.id,
+            sponsor_id: user.id,
+            sponsor_name: sponsorName,
+            sponsor_label: sponsor_label?.trim() || null,
+          },
+          read: false,
+          dismissed_at: null,
+        });
+      if (notifError) console.error('Notification insert error (non-fatal):', notifError);
+
+      return jsonResponse({
+        message: 'Invite sent! They need to approve before you can manage their profile.',
+        invite_id: invite.id,
+        request_id: request.id,
+        status: 'request_sent',
+      }, 200);
+    }
+
+    // User does not exist: create PENDING invite
+    const { data: invite, error: inviteError } = await supabaseAdmin
+      .from('invites')
+      .insert({
+        inviter_id: user.id,
+        invitee_email: normalizedEmail,
+        invitee_phone_e164: null,
+        invitee_user_id: null,
+        target_user_type: 'SINGLE',
+        status: 'PENDING',
+      })
+      .select('id')
       .single();
 
-    console.log('Profile lookup result:', { singleProfile, singleProfileError });
-
-    if (singleProfileError || !singleProfile) {
-      return new Response(JSON.stringify({ 
-        error: 'Could not find a profile for the specified Single.',
-        code: 'PROFILE_NOT_FOUND'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 404,
-      });
+    if (inviteError) {
+      console.error('Invite insert error:', inviteError);
+      return jsonResponse({ error: 'Failed to create invite.', code: 'INVITE_ERROR' }, 500);
     }
 
-    console.log('User type check:', { 
-      expected: 'SINGLE', 
-      actual: singleProfile.user_type, 
-      isMatch: singleProfile.user_type === 'SINGLE' 
-    });
-
-    if (singleProfile.user_type !== 'SINGLE') {
-      return new Response(JSON.stringify({ 
-        error: 'This user is not a Single.',
-        code: 'INVALID_USER_TYPE'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      });
-    }
-
-    // 4. Update the single user's profile with the sponsor's ID and label
-    // Always set sponsor_label when provided (display logic prefers name over sponsor_label)
-    // Never overwrite profiles.name - display logic will prefer name if it exists
-    const updateData: { sponsored_by_id: string; sponsor_label?: string } = {
-      sponsored_by_id: user.id
-    };
-    
-    // Set sponsor_label if provided (display logic will prefer name if it exists)
-    if (sponsor_label && sponsor_label.trim() !== '') {
-      updateData.sponsor_label = sponsor_label.trim();
-    }
-    
-    const { error: updateError } = await supabaseAdmin
-      .from('profiles')
-      .update(updateData)
-      .eq('id', singleId);
-
-    if (updateError) {
-      console.error('Update Error:', updateError);
-      return new Response(JSON.stringify({ 
-        error: 'Failed to link account.',
-        code: 'UPDATE_ERROR'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      });
-    }
-
-    return new Response(JSON.stringify({ message: 'Successfully linked account!' }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
+    return jsonResponse({
+      message: 'Invite saved. They will need to create an Orbit account to accept.',
+      invite_id: invite.id,
+      status: 'pending',
+    }, 200);
   } catch (error) {
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: error.message || 'An unexpected error occurred.',
       code: 'UNKNOWN_ERROR'
     }), {
@@ -184,4 +254,4 @@ Deno.serve(async (req) => {
       status: 400,
     });
   }
-}); 
+});

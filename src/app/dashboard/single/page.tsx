@@ -64,6 +64,27 @@ async function SingleDashboardContent() {
     
     approvedMatchCount = (matchesAsA?.length || 0) + (matchesAsB?.length || 0);
 
+    // Fetch pending sponsorship requests for this single
+    const { data: pendingRequests } = await supabase
+        .from('sponsorship_requests')
+        .select('id, sponsor_id, status, invite_id, created_at')
+        .eq('single_id', user.id)
+        .eq('status', 'PENDING_SINGLE_APPROVAL')
+        .order('created_at', { ascending: false });
+
+    const sponsorIds = [...new Set((pendingRequests ?? []).map((r: { sponsor_id: string }) => r.sponsor_id))];
+    const { data: sponsors } = sponsorIds.length > 0
+        ? await supabase
+            .from('profiles')
+            .select('id, name')
+            .in('id', sponsorIds)
+        : { data: [] };
+
+    const sponsorNameMap: Record<string, string> = {};
+    (sponsors ?? []).forEach((s: { id: string; name: string | null }) => {
+        sponsorNameMap[s.id] = s.name || 'Someone';
+    });
+
     return (
         <DashboardLayout firstName={firstName} userId={user.id} userType="SINGLE">
             <SingleDashboardClient
@@ -77,6 +98,8 @@ async function SingleDashboardContent() {
                 photos={profile.photos}
                 matchmakrEndorsement={profile.matchmakr_endorsement}
                 approvedMatchCount={approvedMatchCount}
+                pendingSponsorshipRequests={pendingRequests ?? []}
+                sponsorNameMap={sponsorNameMap}
             />
         </DashboardLayout>
     );
