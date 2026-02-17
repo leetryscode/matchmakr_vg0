@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { inviteSingleByEmail } from '@/lib/invite';
-import { useRegisterInviteSingleModal } from '@/contexts/InviteSingleModalContext';
 import SectionHeader from '@/components/ui/SectionHeader';
 import ManagedSingleCard from './ManagedSingleCard';
 import TemplateManagedSingleCard from './TemplateManagedSingleCard';
@@ -48,8 +47,6 @@ export default function ManagedSinglesGrid({ singles, inviteRows = [], userId }:
   };
 
   const openInviteModal = () => setIsInviteSingleModalOpen(true);
-
-  useRegisterInviteSingleModal(openInviteModal);
 
   const hasAnyRows = (singles?.length ?? 0) > 0 || inviteRows.length > 0;
 

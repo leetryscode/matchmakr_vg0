@@ -2,8 +2,6 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useInviteSingleModal } from '@/contexts/InviteSingleModalContext';
-import AddSingleButton from './AddSingleButton';
 
 // Orbit path constants (single source of truth)
 const HEADER_H = 260; // Must match Tailwind h-[260px]
@@ -202,7 +200,6 @@ export default function OrbitCarouselHeader({
   centerUser,
   satellites,
 }: OrbitCarouselHeaderProps) {
-  const openInviteModal = useInviteSingleModal();
   const router = useRouter();
   
   // Cap satellites to 5 for now
@@ -881,13 +878,6 @@ export default function OrbitCarouselHeader({
               )}
             </div>
           </div>
-          
-          {/* Add Single button when showing preview orbit (no real singles yet) */}
-          {displaySatellites.some((s) => s.isPreview) && openInviteModal && (
-            <div className="mt-3">
-              <AddSingleButton onOpenInvite={openInviteModal} />
-            </div>
-          )}
 
           {/* Debug: minimal spacing info (development only, behind feature flag) */}
           {process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_SHOW_ORBIT_DEBUG === 'true' && (
