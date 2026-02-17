@@ -12,6 +12,7 @@ import NotificationsSection from '@/components/dashboard/NotificationsSection';
 import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
 import ManagedSinglesGrid from '@/components/dashboard/ManagedSinglesGrid';
 import SneakPeeksSection from '@/components/dashboard/SneakPeeksSection';
+import SponsorshipRequestsSection from '@/components/dashboard/SponsorshipRequestsSection';
 import Link from 'next/link';
 import { createSponsorLoginNotifications } from '@/lib/notifications/sponsor-login';
 import { checkAndCreateSingleNotSeenIntroNotifications } from '@/lib/notifications/single-not-seen-intro';
@@ -136,6 +137,27 @@ async function MatchMakrDashboardContent() {
     const requestByInviteId: Record<string, { id: string; single_id: string; status: string }> = {};
     (requests ?? []).forEach((r: { invite_id: string; id: string; single_id: string; status: string }) => {
         if (r.invite_id) requestByInviteId[r.invite_id] = { id: r.id, single_id: r.single_id, status: r.status };
+    });
+
+    // Fetch sponsorship requests where single invited this sponsor (PENDING_SPONSOR_APPROVAL)
+    const { data: pendingSponsorRequests } = await supabase
+        .from('sponsorship_requests')
+        .select('id, single_id, status, invite_id, created_at')
+        .eq('sponsor_id', user.id)
+        .eq('status', 'PENDING_SPONSOR_APPROVAL')
+        .order('created_at', { ascending: false });
+
+    const pendingSponsorSingleIds = [...new Set((pendingSponsorRequests ?? []).map((r: { single_id: string }) => r.single_id))];
+    const { data: pendingSponsorSingles } = pendingSponsorSingleIds.length > 0
+        ? await supabase
+            .from('profiles')
+            .select('id, name')
+            .in('id', pendingSponsorSingleIds)
+        : { data: [] };
+
+    const pendingSponsorSingleNameMap: Record<string, string> = {};
+    (pendingSponsorSingles ?? []).forEach((s: { id: string; name: string | null }) => {
+        pendingSponsorSingleNameMap[s.id] = s.name || 'Someone';
     });
 
     // Fetch approved match counts for all sponsored singles (efficient two-query approach)
@@ -298,6 +320,12 @@ async function MatchMakrDashboardContent() {
                 <section className="mt-10 first:mt-0">
                     <NotificationsSection userId={user.id} />
                 </section>
+
+                {/* Sponsorship requests (singles who invited this sponsor) */}
+                <SponsorshipRequestsSection
+                    requests={pendingSponsorRequests ?? []}
+                    singleNameMap={pendingSponsorSingleNameMap}
+                />
 
                 {/* Sponsor chat */}
                 <section className="mt-10">

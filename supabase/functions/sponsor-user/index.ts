@@ -1,13 +1,9 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+// Single invites sponsor: creates invite + sponsorship_request (PENDING_SPONSOR_APPROVAL).
+// Does NOT set profiles.sponsored_by_id. Sponsor must accept via accept_sponsorship_request_as_sponsor RPC.
 
-// Setup type definitions for built-in Supabase Runtime APIs
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// Define CORS headers directly in the function file for debugging
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -16,7 +12,6 @@ const corsHeaders = {
 console.log(`Function "sponsor-user" up and running!`);
 
 Deno.serve(async (req) => {
-  // This is needed if you're planning to invoke your function from a browser.
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -31,36 +26,60 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create a Supabase client with the user's auth token
     const userSupabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
-    // Get the current user from the token
     const { data: { user }, error: userError } = await userSupabaseClient.auth.getUser();
     if (userError) throw userError;
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Not authenticated.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
 
-    // Create a Supabase admin client to perform privileged operations
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // 1. Find the matchmaker's user by their email using the admin API
-    const { data: { users: allUsers }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    // 1) Verify current user is a SINGLE
+    const { data: callerProfile, error: callerError } = await supabaseAdmin
+      .from('profiles')
+      .select('id, user_type')
+      .eq('id', user.id)
+      .single();
 
+    if (callerError || !callerProfile) {
+      return new Response(JSON.stringify({ error: 'Could not find your profile.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 404,
+      });
+    }
+
+    if (callerProfile.user_type !== 'SINGLE') {
+      return new Response(JSON.stringify({ error: 'Only singles can invite a sponsor.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+
+    const singleId = callerProfile.id;
+
+    // 2) Find sponsor by email (must be MATCHMAKR)
+    const { data: { users: allUsers }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
     if (listError) {
       console.error('Error listing users:', listError);
       throw listError;
     }
 
-    // Workaround for local dev where listUsers doesn't filter by email.
     const matchmakrUser = allUsers.find(
       (u) => (u.email ?? '').trim().toLowerCase() === normalizedEmail
     );
-    
+
     if (!matchmakrUser) {
       return new Response(JSON.stringify({ error: 'MatchMakr not found with that email.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -68,41 +87,106 @@ Deno.serve(async (req) => {
       });
     }
 
-    const matchmakrId = matchmakrUser.id;
+    const sponsorId = matchmakrUser.id;
 
-    // 2. Check if the found user is actually a 'MATCHMAKR'
-    const { data: matchmakrProfile, error: profileError } = await supabaseAdmin
+    const { data: sponsorProfile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('user_type')
-      .eq('id', matchmakrId)
+      .select('id, name, user_type')
+      .eq('id', sponsorId)
       .single();
 
-    if (profileError || !matchmakrProfile) {
+    if (profileError || !sponsorProfile) {
       return new Response(JSON.stringify({ error: 'Could not find a profile for the specified MatchMakr.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 404,
       });
     }
 
-    if (matchmakrProfile.user_type !== 'MATCHMAKR') {
+    if (sponsorProfile.user_type !== 'MATCHMAKR') {
       return new Response(JSON.stringify({ error: 'This user is not a MatchMakr.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
     }
 
-    // 3. Update the single user's profile with the sponsor's ID
-    const { error: updateError } = await supabaseAdmin
-      .from('profiles')
-      .update({ sponsored_by_id: matchmakrId })
-      .eq('id', user.id);
+    // 3) Create invite: inviter_id=single, invitee_email=sponsor email, invitee_user_id=sponsor, status=CLAIMED
+    const { data: invite, error: inviteError } = await supabaseAdmin
+      .from('invites')
+      .insert({
+        inviter_id: singleId,
+        invitee_email: normalizedEmail,
+        invitee_phone_e164: null,
+        invitee_user_id: sponsorId,
+        target_user_type: 'MATCHMAKR',
+        status: 'CLAIMED',
+      })
+      .select('id')
+      .single();
 
-    if (updateError) {
-      console.error('Update Error:', updateError);
-      throw updateError;
+    if (inviteError) {
+      console.error('Invite insert error:', inviteError);
+      return new Response(JSON.stringify({ error: 'Failed to create invite.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
     }
 
-    return new Response(JSON.stringify({ message: 'Successfully sponsored by MatchMakr!' }), {
+    // 4) Create sponsorship_request: ON CONFLICT (sponsor_id, single_id) DO NOTHING
+    const { data: request, error: requestError } = await supabaseAdmin
+      .from('sponsorship_requests')
+      .upsert(
+        {
+          sponsor_id: sponsorId,
+          single_id: singleId,
+          invite_id: invite.id,
+          status: 'PENDING_SPONSOR_APPROVAL',
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'sponsor_id,single_id',
+          ignoreDuplicates: true,
+        }
+      )
+      .select('id')
+      .single();
+
+    // If conflict (already exists), we may get no row; that's ok - return success
+    if (requestError && requestError.code !== 'PGRST116') {
+      console.error('Sponsorship request insert error:', requestError);
+      return new Response(JSON.stringify({ error: 'Failed to create sponsorship request.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
+    const requestId = request?.id ?? null;
+
+    // 5) Create notification for sponsor
+    const singleName = (await supabaseAdmin
+      .from('profiles')
+      .select('name')
+      .eq('id', singleId)
+      .single()).data?.name ?? 'Someone';
+
+    if (requestId) {
+      await supabaseAdmin
+        .from('notifications')
+        .insert({
+          user_id: sponsorId,
+          type: 'sponsorship_request',
+          data: {
+            request_id: requestId,
+            single_id: singleId,
+            single_name: singleName,
+          },
+          read: false,
+          dismissed_at: null,
+        });
+    }
+
+    return new Response(JSON.stringify({
+      message: 'Invite sent! The MatchMakr will need to approve before you can connect.',
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
@@ -113,15 +197,3 @@ Deno.serve(async (req) => {
     });
   }
 });
-
-/* To invoke locally:
-
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
-
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/sponsor-user' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
-*/
