@@ -1,10 +1,14 @@
 "use client";
 import React from "react";
 
-export default function AddSingleButton() {
+interface AddSingleButtonProps {
+  onOpenInvite: () => void;
+}
+
+export default function AddSingleButton({ onOpenInvite }: AddSingleButtonProps) {
   return (
     <button
-      onClick={() => document.getElementById('invite-single-modal')?.click()}
+      onClick={onOpenInvite}
       className="flex flex-col items-center group w-20 focus:outline-none"
     >
       <div className="w-14 h-14 rounded-full border-2 border-white bg-white/10 hover:bg-white/20 flex items-center justify-center shadow-md group-hover:scale-105 transition">

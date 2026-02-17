@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { inviteSingleByEmail } from '@/lib/invite';
+import { useRegisterInviteSingleModal } from '@/contexts/InviteSingleModalContext';
 import SectionHeader from '@/components/ui/SectionHeader';
 import ManagedSingleCard from './ManagedSingleCard';
 import TemplateManagedSingleCard from './TemplateManagedSingleCard';
@@ -35,9 +36,8 @@ interface ManagedSinglesGridProps {
   userId?: string;
 }
 
-const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles, inviteRows = [], userId }) => {
+export default function ManagedSinglesGrid({ singles, inviteRows = [], userId }: ManagedSinglesGridProps) {
   const router = useRouter();
-  const supabase = createClient();
   const [isInviteSingleModalOpen, setIsInviteSingleModalOpen] = useState(false);
   const [inviteSingleEmail, setInviteSingleEmail] = useState('');
   const [inviteSingleName, setInviteSingleName] = useState('');
@@ -48,6 +48,8 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles, invite
   };
 
   const openInviteModal = () => setIsInviteSingleModalOpen(true);
+
+  useRegisterInviteSingleModal(openInviteModal);
 
   const hasAnyRows = (singles?.length ?? 0) > 0 || inviteRows.length > 0;
 
@@ -169,30 +171,14 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles, invite
                   setInviteError(null);
 
                   try {
-                    const { data, error } = await supabase.functions.invoke('sponsor-single', {
-                      body: {
-                        single_email: inviteSingleEmail,
-                        sponsor_label: inviteSingleName.trim(),
-                      },
-                    });
-
-                    if (error) {
-                      const errorData = error.data as { error?: string; code?: string } | undefined;
-                      const friendlyMessage =
-                        errorData?.error || 'An error occurred. Please try again.';
-                      setInviteError(friendlyMessage);
-                      return;
-                    }
-
-                    // Success - close modal and reload
+                    await inviteSingleByEmail(inviteSingleEmail, inviteSingleName.trim());
                     setIsInviteSingleModalOpen(false);
                     setInviteSingleEmail('');
                     setInviteSingleName('');
                     setInviteError(null);
-                    window.location.reload();
-                  } catch (err: unknown) {
-                    const errorData = (err as { data?: { error?: string } })?.data;
-                    setInviteError(errorData?.error || 'An error occurred. Please try again.');
+                    router.refresh();
+                  } catch (e) {
+                    setInviteError(e instanceof Error ? e.message : 'An error occurred. Please try again.');
                   }
                 }}
                 className="rounded-cta px-6 py-3 min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200"
@@ -205,6 +191,4 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles, invite
       )}
     </div>
   );
-};
-
-export default ManagedSinglesGrid;
+}

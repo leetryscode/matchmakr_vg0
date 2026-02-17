@@ -4,12 +4,10 @@ import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import DashboardWrapper from '@/components/dashboard/DashboardWrapper';
 import React from 'react';
-import InviteSingle from '@/components/dashboard/InviteSingle';
-import InviteOtherMatchMakrs from '@/components/dashboard/InviteOtherMatchMakrs';
 import SponsoredSinglesListClient from '@/components/dashboard/SponsoredSinglesListClient';
 import MatchMakrChatList from '@/components/dashboard/MatchMakrChatList';
-import AddSingleButton from '@/components/dashboard/AddSingleButton';
 import OrbitCarouselHeader from '@/components/dashboard/OrbitCarouselHeader';
+import { InviteSingleModalProvider } from '@/contexts/InviteSingleModalContext';
 import NotificationsSection from '@/components/dashboard/NotificationsSection';
 import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
 import ManagedSinglesGrid from '@/components/dashboard/ManagedSinglesGrid';
@@ -268,6 +266,7 @@ async function MatchMakrDashboardContent() {
 
     return (
         <DashboardLayout firstName={firstName} userId={user.id} userType="MATCHMAKR">
+            <InviteSingleModalProvider>
             {/* Greeting */}
             <div className="pt-0 px-4">
                 <div className="type-display mb-1">Hello, {firstName}</div>
@@ -337,6 +336,7 @@ async function MatchMakrDashboardContent() {
                 {/* Footer spacer with brand mark */}
                 <DashboardFooterSpacer />
             </div>
+            </InviteSingleModalProvider>
         </DashboardLayout>
     );
 }

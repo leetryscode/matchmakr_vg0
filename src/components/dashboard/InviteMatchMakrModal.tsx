@@ -1,41 +1,29 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
+import { inviteSponsorByEmail } from '@/lib/invite';
 
 const InviteMatchMakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     if (!isOpen) return null;
 
+    const router = useRouter();
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState('');
-    const supabase = createClient();
 
     const handleSendInvite = async () => {
         setIsLoading(true);
         setMessage('');
 
         try {
-            const { data, error } = await supabase.functions.invoke('sponsor-user', {
-                body: { matchmakr_email: email },
-            });
-
-            if (error) {
-                let errorMsg = error.message;
-                if (error?.data?.error) {
-                    errorMsg = error.data.error;
-                } else if (typeof error === 'string') {
-                    errorMsg = error;
-                }
-                throw new Error(errorMsg || 'An error occurred.');
-            }
-            setMessage(data.message || 'Invite sent successfully!');
-            setTimeout(() => {
-              onClose();
-              window.location.reload();
-            }, 2000);
-        } catch (error: any) {
-            setMessage(error.message || 'An error occurred.');
+            const result = await inviteSponsorByEmail(email);
+            setMessage(result.message);
+            setEmail('');
+            onClose();
+            router.refresh();
+        } catch (error: unknown) {
+            setMessage(error instanceof Error ? error.message : 'An error occurred.');
         } finally {
             setIsLoading(false);
         }

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { inviteSingleByEmail } from '@/lib/invite';
 
 interface InviteSingleModalProps {
@@ -9,6 +10,7 @@ interface InviteSingleModalProps {
 }
 
 export default function InviteSingleModal({ open, onClose }: InviteSingleModalProps) {
+    const router = useRouter();
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -23,21 +25,13 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
 
         try {
             const result = await inviteSingleByEmail(email);
-            if (result.success) {
-                setSuccess(true);
-                setMessage(result.message);
-                // Close modal after 2 seconds
-                setTimeout(() => {
-                    setEmail('');
-                    setMessage('');
-                    setSuccess(false);
-                    onClose();
-                }, 2000);
-            } else {
-                setMessage(result.message);
-            }
-        } catch (error: any) {
-            setMessage(error.message || 'An error occurred.');
+            setSuccess(true);
+            setMessage(result.message);
+            setEmail('');
+            onClose();
+            router.refresh();
+        } catch (error: unknown) {
+            setMessage(error instanceof Error ? error.message : 'An error occurred.');
         } finally {
             setIsLoading(false);
         }

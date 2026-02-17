@@ -1,20 +1,75 @@
 /**
- * Stub function for inviting a single by email (MVP)
- * TODO: Replace with actual API call to sponsor-single edge function
+ * Canonical invite helpers. Callers handle router.refresh().
  */
-export async function inviteSingleByEmail(email: string): Promise<{ success: boolean; message: string }> {
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return { success: false, message: 'Please enter a valid email address' };
-    }
 
-    // For MVP: just log and return success
-    console.log('Invite single by email (stub):', email);
-    
-    // Simulate async operation
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return { success: true, message: 'Invite sent.' };
+function normalizeEmail(email: string): string {
+  return (email ?? '').trim().toLowerCase();
 }
 
+/**
+ * Invite a single by email via the invite-single API route.
+ * Requires the caller to be a MatchMakr (sponsor); the edge function enforces this.
+ * @throws Error with friendly message on non-2xx
+ */
+export async function inviteSingleByEmail(
+  email: string,
+  sponsorLabel?: string | null
+): Promise<{ success: true; message: string }> {
+  const normalized = normalizeEmail(email);
+  if (!normalized) {
+    throw new Error('Please enter a valid email address');
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(normalized)) {
+    throw new Error('Please enter a valid email address');
+  }
+
+  const res = await fetch('/api/invite-single', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      single_email: normalized,
+      sponsor_label: typeof sponsorLabel === 'string' ? sponsorLabel.trim() || null : null,
+    }),
+  });
+
+  const data = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+
+  if (!res.ok) {
+    throw new Error(data?.error || 'An error occurred.');
+  }
+
+  return { success: true, message: data?.message || 'Invite sent.' };
+}
+
+/**
+ * Invite a sponsor (MatchMakr) by email via the invite-sponsor API route.
+ * Single chooses a sponsor; the edge function links them directly.
+ * @throws Error with friendly message on non-2xx
+ */
+export async function inviteSponsorByEmail(email: string): Promise<{ success: true; message: string }> {
+  const normalized = normalizeEmail(email);
+  if (!normalized) {
+    throw new Error('Please enter a valid email address');
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(normalized)) {
+    throw new Error('Please enter a valid email address');
+  }
+
+  const res = await fetch('/api/invite-sponsor', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ matchmakr_email: normalized }),
+  });
+
+  const data = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+
+  if (!res.ok) {
+    throw new Error(data?.error || 'An error occurred.');
+  }
+
+  return { success: true, message: data?.message || 'Invite sent successfully!' };
+}

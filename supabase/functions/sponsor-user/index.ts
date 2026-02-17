@@ -23,6 +23,13 @@ Deno.serve(async (req) => {
 
   try {
     const { matchmakr_email } = await req.json();
+    const normalizedEmail = (matchmakr_email ?? '').trim().toLowerCase();
+    if (!normalizedEmail) {
+      return new Response(JSON.stringify({ error: 'Email is required.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
 
     // Create a Supabase client with the user's auth token
     const userSupabaseClient = createClient(
@@ -50,7 +57,9 @@ Deno.serve(async (req) => {
     }
 
     // Workaround for local dev where listUsers doesn't filter by email.
-    const matchmakrUser = allUsers.find(u => u.email === matchmakr_email);
+    const matchmakrUser = allUsers.find(
+      (u) => (u.email ?? '').trim().toLowerCase() === normalizedEmail
+    );
     
     if (!matchmakrUser) {
       return new Response(JSON.stringify({ error: 'MatchMakr not found with that email.' }), {

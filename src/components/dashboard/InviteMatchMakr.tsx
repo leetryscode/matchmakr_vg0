@@ -1,45 +1,29 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
+import { inviteSponsorByEmail } from '@/lib/invite';
 
 const InviteMatchmakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     if (!isOpen) return null;
 
+    const router = useRouter();
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState('');
-    const supabase = createClient();
 
     const handleSendInvite = async () => {
-        console.log('Attempting to invoke function. Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
         setIsLoading(true);
         setMessage('');
 
         try {
-            const { data, error } = await supabase.functions.invoke('sponsor-user', {
-                body: { matchmakr_email: email },
-            });
-
-            if (error) {
-                // Try to show the most informative error message
-                let errorMsg = error.message;
-                if (error?.data?.error) {
-                    errorMsg = error.data.error;
-                } else if (typeof error === 'string') {
-                    errorMsg = error;
-                }
-                throw new Error(errorMsg || 'An error occurred.');
-            }
-            
-            setMessage(data.message || 'Invite sent successfully!');
-            setTimeout(() => {
-              onClose(); // Close modal on success
-              window.location.reload(); // Refresh to show updated state
-            }, 2000);
-
-        } catch (error: any) {
-            setMessage(error.message || 'An error occurred.');
+            const result = await inviteSponsorByEmail(email);
+            setMessage(result.message);
+            setEmail('');
+            onClose();
+            router.refresh();
+        } catch (error: unknown) {
+            setMessage(error instanceof Error ? error.message : 'An error occurred.');
         } finally {
             setIsLoading(false);
         }
@@ -76,14 +60,6 @@ const InviteMatchmakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
 
 export default function InviteMatchMakr() {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const supabase = createClient();
-
-    const handleInvite = async (email: string) => {
-        console.log('Attempting to invoke function. Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-
-        // This is a placeholder for the actual logic that will be inside the modal
-        alert(`(Not implemented) Invite would be sent to ${email}`);
-    };
 
     return (
         <>
