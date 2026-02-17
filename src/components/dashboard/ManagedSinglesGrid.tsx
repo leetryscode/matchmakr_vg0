@@ -81,6 +81,7 @@ export default function ManagedSinglesGrid({ singles, inviteRows = [], userId }:
           {inviteRows.map((row) => (
             <InviteRowCard
               key={row.id}
+              inviteId={row.id}
               inviteeEmail={row.invitee_email}
               inviteePhoneE164={row.invitee_phone_e164}
               inviteeLabel={row.invitee_label}

@@ -1,10 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getSupabaseClient } from '@/lib/supabase/client';
 
 export type InviteRowStatus = 'INVITED' | 'AWAITING_APPROVAL' | 'ACCEPTED' | 'DECLINED';
 
 interface InviteRowCardProps {
+  inviteId: string;
   inviteeEmail: string;
   inviteePhoneE164?: string | null;
   inviteeLabel?: string | null;
@@ -42,6 +45,7 @@ function formatInviteDate(iso: string | undefined): string {
 }
 
 const InviteRowCard: React.FC<InviteRowCardProps> = ({
+  inviteId,
   inviteeEmail,
   inviteePhoneE164,
   inviteeLabel,
@@ -51,9 +55,31 @@ const InviteRowCard: React.FC<InviteRowCardProps> = ({
   declineSubtext,
   onClick,
 }) => {
+  const router = useRouter();
+  const [rescindLoading, setRescindLoading] = useState(false);
   const primaryLabel = inviteeLabel || inviteeEmail || inviteePhoneE164 || 'Invited';
   const dateStr = formatInviteDate(createdAt);
   const isClickable = status === 'ACCEPTED' && !!inviteeUserId && !!onClick;
+  const canRescind = (status === 'INVITED' || status === 'AWAITING_APPROVAL') && !rescindLoading;
+
+  const handleRescind = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!canRescind) return;
+    setRescindLoading(true);
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase.rpc('cancel_invite_as_inviter', {
+        p_invite_id: inviteId,
+      });
+      if (error) throw error;
+      if (data?.ok) {
+        router.refresh();
+      }
+    } catch (err) {
+      console.error('Rescind error:', err);
+      setRescindLoading(false);
+    }
+  };
 
   let description: string;
   if (status === 'INVITED') {
@@ -109,10 +135,20 @@ const InviteRowCard: React.FC<InviteRowCardProps> = ({
           </svg>
         )}
       </div>
-      <div className="mb-2">
+      <div className="mb-2 flex flex-wrap items-center gap-2">
         <span className={`${STATUS_PILL_BASE} ${STATUS_STYLES[status]}`}>
           {STATUS_LABELS[status]}
         </span>
+        {canRescind && (
+          <button
+            type="button"
+            onClick={handleRescind}
+            disabled={rescindLoading}
+            className="type-meta text-status-paused hover:text-status-paused/80 underline underline-offset-2 transition-colors disabled:opacity-50"
+          >
+            {rescindLoading ? 'Rescinding…' : 'Rescind'}
+          </button>
+        )}
       </div>
       <div className="type-meta">
         {description}

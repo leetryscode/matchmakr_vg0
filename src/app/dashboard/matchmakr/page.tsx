@@ -231,9 +231,14 @@ async function MatchMakrDashboardContent() {
     // Build invite rows (exclude invites that are already real sponsored singles).
     // When single accepts, profiles.sponsored_by_id is set → they appear in sponsoredSingles →
     // invitee_user_id is filtered out → accepted invite row disappears. Sponsor sees update on next page load.
+    // Filter out CANCELLED/EXPIRED invites (rescinded or expired).
     // Status: prefer request.status when request exists; otherwise use invite.status
     const inviteRows = (invites ?? [])
-        .filter((inv: { invitee_user_id: string | null }) => !inv.invitee_user_id || !realSingleIds.has(inv.invitee_user_id))
+        .filter((inv: { invitee_user_id: string | null; status: string }) => {
+            if (inv.invitee_user_id && realSingleIds.has(inv.invitee_user_id)) return false;
+            if (['CANCELLED', 'EXPIRED'].includes(inv.status)) return false;
+            return true;
+        })
         .map((inv: { id: string; invitee_email: string | null; invitee_phone_e164?: string | null; invitee_user_id: string | null; invitee_label?: string | null; status: string; created_at: string }) => {
             const req = requestByInviteId[inv.id];
             const { displayStatus, subtext: declineSubtext, isClickable } = getInviteDisplayStatus(
