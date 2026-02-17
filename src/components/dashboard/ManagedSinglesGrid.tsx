@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import SectionHeader from '@/components/ui/SectionHeader';
 import ManagedSingleCard from './ManagedSingleCard';
+import TemplateManagedSingleCard from './TemplateManagedSingleCard';
 
 import { SingleStatus } from '@/lib/status/singleStatus';
 
@@ -30,6 +31,8 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
         router.push(`/profile/${singleId}`);
     };
 
+    const openInviteModal = () => setIsInviteSingleModalOpen(true);
+
     return (
         <div>
             <SectionHeader 
@@ -37,7 +40,7 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
                 className="mt-10"
                 right={
                     <button
-                        onClick={() => setIsInviteSingleModalOpen(true)}
+                        onClick={openInviteModal}
                         className="type-meta bg-background-card hover:bg-background-card/90 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
                     >
                         Invite
@@ -46,8 +49,8 @@ const ManagedSinglesGrid: React.FC<ManagedSinglesGridProps> = ({ singles }) => {
             />
             
             {!singles || singles.length === 0 ? (
-                <div className="bg-background-card rounded-card-lg shadow-card p-6 text-center mt-2">
-                    <p className="type-meta">No managed singles yet</p>
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                    <TemplateManagedSingleCard onInviteClick={openInviteModal} />
                 </div>
             ) : (
                 <div className="grid grid-cols-2 gap-3 mt-2">
