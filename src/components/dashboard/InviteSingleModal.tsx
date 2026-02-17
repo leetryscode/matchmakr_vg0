@@ -12,6 +12,7 @@ interface InviteSingleModalProps {
 export default function InviteSingleModal({ open, onClose }: InviteSingleModalProps) {
     const router = useRouter();
     const [email, setEmail] = useState('');
+    const [label, setLabel] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [success, setSuccess] = useState(false);
@@ -24,10 +25,11 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
         setSuccess(false);
 
         try {
-            const result = await inviteSingleByEmail(email);
+            const result = await inviteSingleByEmail(email, label.trim() || undefined);
             setSuccess(true);
             setMessage(result.message);
             setEmail('');
+            setLabel('');
             onClose();
             router.refresh();
         } catch (error: unknown) {
@@ -39,6 +41,7 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
 
     const handleClose = () => {
         setEmail('');
+        setLabel('');
         setMessage('');
         setSuccess(false);
         onClose();
@@ -60,19 +63,34 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
                 </div>
 
                 <div className="space-y-4 mb-6">
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="name@email.com"
-                        className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-900 bg-white focus:border-accent-teal-light focus:outline-none focus:ring-2 focus:ring-accent-teal-light focus:ring-opacity-50"
-                        disabled={isLoading || success}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !isLoading && !success) {
-                                handleSendInvite();
-                            }
-                        }}
-                    />
+                    <div>
+                        <input
+                            type="text"
+                            value={label}
+                            onChange={(e) => setLabel(e.target.value)}
+                            placeholder="Name (for your reference)"
+                            className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-900 bg-white focus:border-accent-teal-light focus:outline-none focus:ring-2 focus:ring-accent-teal-light focus:ring-opacity-50"
+                            disabled={isLoading || success}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            This helps you keep track. They can change their name after joining.
+                        </p>
+                    </div>
+                    <div>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="name@email.com"
+                            className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-900 bg-white focus:border-accent-teal-light focus:outline-none focus:ring-2 focus:ring-accent-teal-light focus:ring-opacity-50"
+                            disabled={isLoading || success}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !isLoading && !success) {
+                                    handleSendInvite();
+                                }
+                            }}
+                        />
+                    </div>
                     {message && (
                         <p className={`text-sm ${success ? 'text-green-600' : 'text-red-600'}`}>
                             {message}

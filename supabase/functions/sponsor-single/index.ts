@@ -29,9 +29,12 @@ Deno.serve(async (req) => {
     });
 
   try {
-    const { single_email, sponsor_label } = await req.json();
+    const { single_email, sponsor_label, invitee_label } = await req.json();
 
     const normalizedEmail = (single_email || '').trim().toLowerCase();
+    const normalizedInviteeLabel = typeof invitee_label === 'string' && invitee_label.trim()
+      ? invitee_label.trim()
+      : null;
     if (!normalizedEmail) {
       return jsonResponse({ error: 'Email is required.', code: 'INVALID_INPUT' }, 400);
     }
@@ -179,6 +182,7 @@ Deno.serve(async (req) => {
           invitee_email: normalizedEmail,
           invitee_phone_e164: null,
           invitee_user_id: singleId,
+          invitee_label: normalizedInviteeLabel,
           target_user_type: 'SINGLE',
           status: 'CLAIMED',
         })
@@ -229,6 +233,7 @@ Deno.serve(async (req) => {
         invitee_email: normalizedEmail,
         invitee_phone_e164: null,
         invitee_user_id: null,
+        invitee_label: normalizedInviteeLabel,
         target_user_type: 'SINGLE',
         status: 'PENDING',
       })

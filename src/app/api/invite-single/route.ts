@@ -5,7 +5,7 @@ export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
   try {
-    const { single_email, sponsor_label } = await request.json();
+    const { single_email, sponsor_label, invitee_label } = await request.json();
 
     if (!single_email || typeof single_email !== 'string') {
       return NextResponse.json({ error: 'Email is required.' }, { status: 400 });
@@ -38,6 +38,9 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         single_email,
         sponsor_label: typeof sponsor_label === 'string' ? sponsor_label.trim() : null,
+        invitee_label: typeof invitee_label === 'string' && invitee_label.trim()
+          ? invitee_label.trim()
+          : null,
       }),
     });
 

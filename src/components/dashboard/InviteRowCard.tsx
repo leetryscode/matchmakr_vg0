@@ -7,6 +7,7 @@ export type InviteRowStatus = 'INVITED' | 'AWAITING_APPROVAL' | 'ACCEPTED' | 'DE
 interface InviteRowCardProps {
   inviteeEmail: string;
   inviteePhoneE164?: string | null;
+  inviteeLabel?: string | null;
   inviteeUserId: string | null;
   status: InviteRowStatus;
   createdAt?: string;
@@ -43,13 +44,14 @@ function formatInviteDate(iso: string | undefined): string {
 const InviteRowCard: React.FC<InviteRowCardProps> = ({
   inviteeEmail,
   inviteePhoneE164,
+  inviteeLabel,
   inviteeUserId,
   status,
   createdAt,
   declineSubtext,
   onClick,
 }) => {
-  const primaryLabel = inviteeEmail || inviteePhoneE164 || 'Invited';
+  const primaryLabel = inviteeLabel || inviteeEmail || inviteePhoneE164 || 'Invited';
   const dateStr = formatInviteDate(createdAt);
   const isClickable = status === 'ACCEPTED' && !!inviteeUserId && !!onClick;
 

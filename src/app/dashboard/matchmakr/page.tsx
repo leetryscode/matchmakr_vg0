@@ -120,7 +120,7 @@ async function MatchMakrDashboardContent() {
     // Fetch invites created by this sponsor
     const { data: invites } = await supabase
         .from('invites')
-        .select('id, invitee_email, invitee_phone_e164, invitee_user_id, status, created_at, claimed_at')
+        .select('id, invitee_email, invitee_phone_e164, invitee_user_id, invitee_label, status, created_at, claimed_at')
         .eq('inviter_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -234,7 +234,7 @@ async function MatchMakrDashboardContent() {
     // Status: prefer request.status when request exists; otherwise use invite.status
     const inviteRows = (invites ?? [])
         .filter((inv: { invitee_user_id: string | null }) => !inv.invitee_user_id || !realSingleIds.has(inv.invitee_user_id))
-        .map((inv: { id: string; invitee_email: string | null; invitee_phone_e164?: string | null; invitee_user_id: string | null; status: string; created_at: string }) => {
+        .map((inv: { id: string; invitee_email: string | null; invitee_phone_e164?: string | null; invitee_user_id: string | null; invitee_label?: string | null; status: string; created_at: string }) => {
             const req = requestByInviteId[inv.id];
             const { displayStatus, subtext: declineSubtext, isClickable } = getInviteDisplayStatus(
                 inv.status,
@@ -246,6 +246,7 @@ async function MatchMakrDashboardContent() {
                 id: inv.id,
                 invitee_email: inv.invitee_email ?? '',
                 invitee_phone_e164: inv.invitee_phone_e164 ?? null,
+                invitee_label: inv.invitee_label ?? null,
                 invitee_user_id: inv.invitee_user_id,
                 status: displayStatus,
                 profile_id: inv.invitee_user_id,

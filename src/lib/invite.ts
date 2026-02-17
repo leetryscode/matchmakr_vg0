@@ -9,11 +9,13 @@ function normalizeEmail(email: string): string {
 /**
  * Invite a single by email via the invite-single API route.
  * Requires the caller to be a MatchMakr (sponsor); the edge function enforces this.
+ * @param email - Invitee email address
+ * @param inviteeLabel - Optional friendly label for display (e.g. "Pam"). Stored for sponsor dashboard cards.
  * @throws Error with friendly message on non-2xx
  */
 export async function inviteSingleByEmail(
   email: string,
-  sponsorLabel?: string | null
+  inviteeLabel?: string | null
 ): Promise<{ success: true; message: string }> {
   const normalized = normalizeEmail(email);
   if (!normalized) {
@@ -30,7 +32,9 @@ export async function inviteSingleByEmail(
     credentials: 'include',
     body: JSON.stringify({
       single_email: normalized,
-      sponsor_label: typeof sponsorLabel === 'string' ? sponsorLabel.trim() || null : null,
+      invitee_label: typeof inviteeLabel === 'string' && inviteeLabel.trim()
+        ? inviteeLabel.trim()
+        : null,
     }),
   });
 
