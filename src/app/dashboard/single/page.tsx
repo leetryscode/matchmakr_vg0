@@ -76,13 +76,15 @@ async function SingleDashboardContent() {
     const { data: sponsors } = sponsorIds.length > 0
         ? await supabase
             .from('profiles')
-            .select('id, name')
+            .select('id, name, photos')
             .in('id', sponsorIds)
         : { data: [] };
 
     const sponsorNameMap: Record<string, string> = {};
-    (sponsors ?? []).forEach((s: { id: string; name: string | null }) => {
+    const sponsorPhotoMap: Record<string, string | null> = {};
+    (sponsors ?? []).forEach((s: { id: string; name: string | null; photos: string[] | null }) => {
         sponsorNameMap[s.id] = s.name || 'Someone';
+        sponsorPhotoMap[s.id] = s.photos && s.photos.length > 0 ? s.photos[0] : null;
     });
 
     return (
@@ -100,6 +102,7 @@ async function SingleDashboardContent() {
                 approvedMatchCount={approvedMatchCount}
                 pendingSponsorshipRequests={pendingRequests ?? []}
                 sponsorNameMap={sponsorNameMap}
+                sponsorPhotoMap={sponsorPhotoMap}
             />
         </DashboardLayout>
     );

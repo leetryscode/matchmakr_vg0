@@ -18,6 +18,14 @@ import AvailabilitySection from '@/components/dashboard/AvailabilitySection';
 import Toast from '@/components/ui/Toast';
 import { computeSingleStatus, SingleStatus } from '@/lib/status/singleStatus';
 
+/** Get initials from name for avatar fallback (e.g. "Lee Smith" → "LS", "Lee" → "L") */
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
 interface PendingSponsorshipRequest {
   id: string;
   sponsor_id: string;
@@ -39,6 +47,7 @@ interface SingleDashboardClientProps {
   approvedMatchCount: number;
   pendingSponsorshipRequests?: PendingSponsorshipRequest[];
   sponsorNameMap?: Record<string, string>;
+  sponsorPhotoMap?: Record<string, string | null>;
 }
 
 const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({ 
@@ -54,6 +63,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   approvedMatchCount,
   pendingSponsorshipRequests = [],
   sponsorNameMap = {},
+  sponsorPhotoMap = {},
 }) => {
   // Compute status for availability section
   const computedStatus = computeSingleStatus({
@@ -465,29 +475,50 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             <section className="mt-10">
               <SectionHeader title="Pending invitations" />
               <div className="mt-4 flex flex-col gap-3">
-                {pendingRequests.map((req) => (
-                  <GlassCard key={req.id} className="p-4">
-                    <p className="type-body text-text-dark mb-4">
-                      {sponsorNameMap[req.sponsor_id] || 'Someone'} invited you to connect
-                    </p>
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => handleAcceptSponsorship(req.id)}
-                        disabled={requestActionLoading === req.id}
-                        className="rounded-cta px-4 py-2 min-h-[40px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {requestActionLoading === req.id ? 'Accepting...' : 'Accept'}
-                      </button>
-                      <button
-                        onClick={() => handleDeclineSponsorship(req.id)}
-                        disabled={requestActionLoading === req.id}
-                        className="px-4 py-2 min-h-[40px] rounded-lg bg-white/20 text-text-dark font-semibold hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Decline
-                      </button>
+                {pendingRequests.map((req) => {
+                  const sponsorName = sponsorNameMap[req.sponsor_id] || 'Someone';
+                  const photoUrl = sponsorPhotoMap[req.sponsor_id] ?? null;
+                  const acceptLabel = sponsorNameMap[req.sponsor_id] ? `Yes, choose ${sponsorName}` : 'Yes, choose this sponsor';
+                  return (
+                  <GlassCard key={req.id} className="p-4 shadow-lg ring-1 ring-primary-blue/10 hover:shadow-xl transition-all duration-200">
+                    <div className="flex items-start gap-3">
+                      <div className="shrink-0 w-12 h-12 rounded-full border border-white/20 overflow-hidden bg-white/5">
+                        {photoUrl ? (
+                          <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-sm font-semibold text-text-dark">
+                            {getInitials(sponsorName)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="type-body font-semibold text-text-dark mb-1">
+                          {sponsorName} wants to be your sponsor
+                        </h3>
+                        <p className="type-meta text-text-light mb-4">
+                          As your sponsor, {sponsorName} will represent you inside Orbit — managing your profile, exploring potential introductions, chatting with other sponsors, and personally introducing you to other single users.
+                        </p>
+                        <div className="flex flex-wrap gap-3">
+                          <button
+                            onClick={() => handleAcceptSponsorship(req.id)}
+                            disabled={requestActionLoading === req.id}
+                            className="rounded-cta px-4 py-2 min-h-[40px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {requestActionLoading === req.id ? 'Accepting...' : acceptLabel}
+                          </button>
+                          <button
+                            onClick={() => handleDeclineSponsorship(req.id)}
+                            disabled={requestActionLoading === req.id}
+                            className="px-4 py-2 min-h-[40px] rounded-lg bg-white/20 text-text-dark font-semibold hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </GlassCard>
-                ))}
+                  );
+                })}
               </div>
             </section>
           )}
@@ -560,29 +591,50 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           <section className="mt-10">
             <SectionHeader title="Pending invitations" />
             <div className="mt-4 flex flex-col gap-3">
-              {pendingRequests.map((req) => (
-                <GlassCard key={req.id} className="p-4">
-                  <p className="type-body text-text-dark mb-4">
-                    {sponsorNameMap[req.sponsor_id] || 'Someone'} invited you to connect
-                  </p>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => handleAcceptSponsorship(req.id)}
-                      disabled={requestActionLoading === req.id}
-                      className="rounded-cta px-4 py-2 min-h-[40px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {requestActionLoading === req.id ? 'Accepting...' : 'Accept'}
-                    </button>
-                    <button
-                      onClick={() => handleDeclineSponsorship(req.id)}
-                      disabled={requestActionLoading === req.id}
-                      className="px-4 py-2 min-h-[40px] rounded-lg bg-white/20 text-text-dark font-semibold hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Decline
-                    </button>
+              {pendingRequests.map((req) => {
+                const sponsorName = sponsorNameMap[req.sponsor_id] || 'Someone';
+                const photoUrl = sponsorPhotoMap[req.sponsor_id] ?? null;
+                const acceptLabel = sponsorNameMap[req.sponsor_id] ? `Yes, choose ${sponsorName}` : 'Yes, choose this sponsor';
+                return (
+                <GlassCard key={req.id} className="p-4 shadow-lg ring-1 ring-primary-blue/10 hover:shadow-xl transition-all duration-200">
+                  <div className="flex items-start gap-3">
+                    <div className="shrink-0 w-12 h-12 rounded-full border border-white/20 overflow-hidden bg-white/5">
+                      {photoUrl ? (
+                        <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-sm font-semibold text-text-dark">
+                          {getInitials(sponsorName)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="type-body font-semibold text-text-dark mb-1">
+                        {sponsorName} wants to be your sponsor
+                      </h3>
+                      <p className="type-meta text-text-light mb-4">
+                        As your sponsor, {sponsorName} will represent you inside Orbit — managing your profile, exploring potential introductions, chatting with other sponsors, and personally introducing you to other single users.
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        <button
+                          onClick={() => handleAcceptSponsorship(req.id)}
+                          disabled={requestActionLoading === req.id}
+                          className="rounded-cta px-4 py-2 min-h-[40px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {requestActionLoading === req.id ? 'Accepting...' : acceptLabel}
+                        </button>
+                        <button
+                          onClick={() => handleDeclineSponsorship(req.id)}
+                          disabled={requestActionLoading === req.id}
+                          className="px-4 py-2 min-h-[40px] rounded-lg bg-white/20 text-text-dark font-semibold hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </GlassCard>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
