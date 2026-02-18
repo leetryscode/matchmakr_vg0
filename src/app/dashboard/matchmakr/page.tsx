@@ -216,12 +216,14 @@ async function MatchMakrDashboardContent() {
             matchmakr_endorsement: single.matchmakr_endorsement,
             approved_match_count: approvedMatchCount
         });
-        
+        // Sponsor view: INVITED (onboarded_at null) → NEEDS_ATTENTION (action-oriented)
+        const displayStatus = status === 'INVITED' ? 'NEEDS_ATTENTION' : status;
+
         return {
             ...single,
             profile_pic_url: single.photos && single.photos.length > 0 ? single.photos[0] : null,
             approved_match_count: approvedMatchCount,
-            status,
+            status: displayStatus,
             sponsor_label: single.sponsor_label
         };
     }) || [];
@@ -229,6 +231,7 @@ async function MatchMakrDashboardContent() {
     const realSingleIds = new Set(processedSponsoredSingles.map((s: { id: string }) => s.id));
 
     // Build invite rows (exclude invites that are already real sponsored singles).
+    // Invariant: if invitee_user_id is in realSingleIds, the single is actively sponsored → exclude.
     // When single accepts, profiles.sponsored_by_id is set → they appear in sponsoredSingles →
     // invitee_user_id is filtered out → accepted invite row disappears. Sponsor sees update on next page load.
     // Filter out CANCELLED/EXPIRED invites (rescinded or expired).
