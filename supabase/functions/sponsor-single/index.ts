@@ -12,6 +12,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/** Generate a URL-safe token for invite links (12 chars alphanumeric) */
+function generateInviteToken(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const arr = new Uint8Array(12);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, (b) => chars[b % chars.length]).join('');
+}
+
 console.log(`Function "sponsor-single" up and running!`);
 
 // Creates invites + sponsorship_requests. Does NOT set profiles.sponsored_by_id.
@@ -175,23 +183,33 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: 'Failed to create sponsorship request.', code: 'REQUEST_ERROR' }, 500);
       }
 
-      const { data: invite, error: inviteError } = await supabaseAdmin
-        .from('invites')
-        .insert({
-          inviter_id: user.id,
-          invitee_email: normalizedEmail,
-          invitee_phone_e164: null,
-          invitee_user_id: singleId,
-          invitee_label: normalizedInviteeLabel,
-          target_user_type: 'SINGLE',
-          status: 'CLAIMED',
-        })
-        .select('id')
-        .single();
+      let invite: { id: string } | null = null;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const { data, error: inviteError } = await supabaseAdmin
+          .from('invites')
+          .insert({
+            inviter_id: user.id,
+            invitee_email: normalizedEmail,
+            invitee_phone_e164: null,
+            invitee_user_id: singleId,
+            invitee_label: normalizedInviteeLabel,
+            target_user_type: 'SINGLE',
+            status: 'CLAIMED',
+            token: generateInviteToken(),
+          })
+          .select('id')
+          .single();
 
-      if (inviteError) {
+        if (!inviteError) {
+          invite = data;
+          break;
+        }
+        if (inviteError.code === '23505') continue; // unique_violation, retry with new token
         console.error('Invite insert error:', inviteError);
         return jsonResponse({ error: 'Failed to create invite.', code: 'INVITE_ERROR' }, 500);
+      }
+      if (!invite) {
+        return jsonResponse({ error: 'Failed to create invite (token collision).', code: 'INVITE_ERROR' }, 500);
       }
 
       await supabaseAdmin
@@ -226,23 +244,33 @@ Deno.serve(async (req) => {
     }
 
     // User does not exist: create PENDING invite
-    const { data: invite, error: inviteError } = await supabaseAdmin
-      .from('invites')
-      .insert({
-        inviter_id: user.id,
-        invitee_email: normalizedEmail,
-        invitee_phone_e164: null,
-        invitee_user_id: null,
-        invitee_label: normalizedInviteeLabel,
-        target_user_type: 'SINGLE',
-        status: 'PENDING',
-      })
-      .select('id')
-      .single();
+    let invite: { id: string } | null = null;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const { data, error: inviteError } = await supabaseAdmin
+        .from('invites')
+        .insert({
+          inviter_id: user.id,
+          invitee_email: normalizedEmail,
+          invitee_phone_e164: null,
+          invitee_user_id: null,
+          invitee_label: normalizedInviteeLabel,
+          target_user_type: 'SINGLE',
+          status: 'PENDING',
+          token: generateInviteToken(),
+        })
+        .select('id')
+        .single();
 
-    if (inviteError) {
+      if (!inviteError) {
+        invite = data;
+        break;
+      }
+      if (inviteError.code === '23505') continue; // unique_violation, retry with new token
       console.error('Invite insert error:', inviteError);
       return jsonResponse({ error: 'Failed to create invite.', code: 'INVITE_ERROR' }, 500);
+    }
+    if (!invite) {
+      return jsonResponse({ error: 'Failed to create invite (token collision).', code: 'INVITE_ERROR' }, 500);
     }
 
     return jsonResponse({

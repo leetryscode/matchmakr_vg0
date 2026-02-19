@@ -9,18 +9,39 @@ import OpenToStep from '@/components/onboarding/OpenToStep';
 import CommunityStep from '@/components/onboarding/CommunityStep';
 import AccountCreationStep from '@/components/onboarding/AccountCreationStep';
 import { orbitConfig } from '@/config/orbitConfig';
+import { getInviteMode, type InviteMode } from '@/lib/invite-mode';
+
+const initialOnboardingData = {
+  userType: null as string | null,
+  name: null as string | null,
+  sex: null as 'Male' | 'Female' | null,
+  birthDate: null as string | null,
+  openTo: null as 'men' | 'women' | 'both' | null,
+  orbitCommunitySlug: null as string | null,
+  profilePicUrl: null as string | null,
+};
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
-  const [onboardingData, setOnboardingData] = useState({
-    userType: null as string | null,
-    name: null as string | null,
-    sex: null as 'Male' | 'Female' | null,
-    birthDate: null as string | null,
-    openTo: null as 'men' | 'women' | 'both' | null,
-    orbitCommunitySlug: null as string | null,
-    profilePicUrl: null as string | null,
+  const [inviteMode] = useState<InviteMode | null>(() =>
+    typeof window !== 'undefined' ? getInviteMode() : null
+  );
+  const [step, setStep] = useState(() => {
+    if (typeof window === 'undefined') return 1;
+    const mode = getInviteMode();
+    return mode ? 2 : 1;
+  });
+  const [onboardingData, setOnboardingData] = useState(() => {
+    if (typeof window === 'undefined') return initialOnboardingData;
+    const mode = getInviteMode();
+    if (!mode) return initialOnboardingData;
+    const uiRole = mode.lockedRole === 'SPONSOR' ? 'Sponsor' : 'Single';
+    return {
+      ...initialOnboardingData,
+      userType: uiRole,
+      name: mode.prefillName,
+      orbitCommunitySlug: mode.prefillCommunity,
+    };
   });
 
   const handleUserTypeSelect = (type: string) => {
@@ -86,35 +107,66 @@ export default function OnboardingPage() {
           </>
         );
       case 2:
-        return <NameStep onNext={(name) => { setOnboardingData({ ...onboardingData, name }); setStep(3); }} />;
+        return (
+          <NameStep
+            onNext={(name) => { setOnboardingData({ ...onboardingData, name }); setStep(3); }}
+            initialValue={onboardingData.name ?? undefined}
+          />
+        );
       case 3:
         return <BirthdayStep onNext={(birthDate) => { setOnboardingData({ ...onboardingData, birthDate }); setStep(4); }} onTooYoung={handleTooYoung} />;
       case 4:
         return <SexStep onNext={(sex) => { setOnboardingData({ ...onboardingData, sex }); setStep(5); }} />;
       case 5:
         if (onboardingData.userType === 'Sponsor') {
-          return <CommunityStep variant="sponsor" onNext={(orbitCommunitySlug) => { setOnboardingData({ ...onboardingData, orbitCommunitySlug }); setStep(6); }} />;
+          return (
+            <CommunityStep
+              variant="sponsor"
+              onNext={(orbitCommunitySlug) => { setOnboardingData({ ...onboardingData, orbitCommunitySlug }); setStep(6); }}
+              defaultSlug={inviteMode?.prefillCommunity ?? undefined}
+            />
+          );
         }
         return <OpenToStep onNext={(openTo) => { setOnboardingData({ ...onboardingData, openTo }); setStep(6); }} />;
       case 6:
         if (onboardingData.userType === 'Sponsor') {
-          return <AccountCreationStep onboardingData={onboardingData} />;
+          return (
+            <AccountCreationStep
+              onboardingData={onboardingData}
+              initialEmail={inviteMode?.prefillEmail}
+            />
+          );
         }
-        return <CommunityStep variant="single" onNext={(orbitCommunitySlug) => { setOnboardingData({ ...onboardingData, orbitCommunitySlug }); setStep(7); }} />;
+        return (
+          <CommunityStep
+            variant="single"
+            onNext={(orbitCommunitySlug) => { setOnboardingData({ ...onboardingData, orbitCommunitySlug }); setStep(7); }}
+            defaultSlug={inviteMode?.prefillCommunity ?? undefined}
+          />
+        );
       case 7:
-        return <AccountCreationStep onboardingData={onboardingData} />;
+        return (
+          <AccountCreationStep
+            onboardingData={onboardingData}
+            initialEmail={inviteMode?.prefillEmail}
+          />
+        );
       default:
         return <div>Unknown step</div>;
     }
   };
   
   const goBack = () => {
-    if (step > 1) {
+    if (step > 2) {
       setStep(step - 1);
-    } else {
+    } else if (inviteMode && step === 2) {
+      router.push(`/invite/${inviteMode.inviteToken}`);
+    } else if (step === 1) {
       router.push('/');
+    } else {
+      setStep(1);
     }
-  }
+  };
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-text-dark">

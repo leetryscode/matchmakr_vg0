@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { clearInviteMode } from '@/lib/invite-mode';
 
 interface AccountCreationStepProps {
   onboardingData: {
@@ -14,12 +15,14 @@ interface AccountCreationStepProps {
     orbitCommunitySlug: string | null;
     profilePicUrl: string | null;
   };
+  /** Prefill email from invite (editable) */
+  initialEmail?: string | null;
 }
 
-export default function AccountCreationStep({ onboardingData }: AccountCreationStepProps) {
+export default function AccountCreationStep({ onboardingData, initialEmail = '' }: AccountCreationStepProps) {
   const supabase = createClient();
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail ?? '');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -90,9 +93,11 @@ export default function AccountCreationStep({ onboardingData }: AccountCreationS
       }
 
       if (signUpData.session) {
+        clearInviteMode();
         const role = onboardingData.userType === 'Single' ? 'single' : 'matchmakr';
         router.push(`/dashboard/${role}`);
       } else {
+        clearInviteMode();
         alert('Sign up successful! Please check your email to confirm your account.');
         router.push('/login');
       }

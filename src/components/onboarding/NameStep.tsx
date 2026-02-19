@@ -4,10 +4,12 @@ import React, { useState } from 'react';
 
 interface NameStepProps {
   onNext: (name: string) => void;
+  /** Prefill from invite (editable) */
+  initialValue?: string;
 }
 
-const NameStep: React.FC<NameStepProps> = ({ onNext }) => {
-  const [name, setName] = useState('');
+const NameStep: React.FC<NameStepProps> = ({ onNext, initialValue = '' }) => {
+  const [name, setName] = useState(initialValue);
 
   const handleNext = () => {
     if (name.trim()) {

@@ -9,6 +9,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/** Generate a URL-safe token for invite links (12 chars alphanumeric) */
+function generateInviteToken(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const arr = new Uint8Array(12);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, (b) => chars[b % chars.length]).join('');
+}
+
 console.log(`Function "sponsor-user" up and running!`);
 
 Deno.serve(async (req) => {
@@ -110,22 +118,35 @@ Deno.serve(async (req) => {
     }
 
     // 3) Create invite: inviter_id=single, invitee_email=sponsor email, invitee_user_id=sponsor, status=CLAIMED
-    const { data: invite, error: inviteError } = await supabaseAdmin
-      .from('invites')
-      .insert({
-        inviter_id: singleId,
-        invitee_email: normalizedEmail,
-        invitee_phone_e164: null,
-        invitee_user_id: sponsorId,
-        target_user_type: 'MATCHMAKR',
-        status: 'CLAIMED',
-      })
-      .select('id')
-      .single();
+    let invite: { id: string } | null = null;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const { data, error: inviteError } = await supabaseAdmin
+        .from('invites')
+        .insert({
+          inviter_id: singleId,
+          invitee_email: normalizedEmail,
+          invitee_phone_e164: null,
+          invitee_user_id: sponsorId,
+          target_user_type: 'MATCHMAKR',
+          status: 'CLAIMED',
+          token: generateInviteToken(),
+        })
+        .select('id')
+        .single();
 
-    if (inviteError) {
+      if (!inviteError) {
+        invite = data;
+        break;
+      }
+      if (inviteError.code === '23505') continue; // unique_violation, retry with new token
       console.error('Invite insert error:', inviteError);
       return new Response(JSON.stringify({ error: 'Failed to create invite.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+    if (!invite) {
+      return new Response(JSON.stringify({ error: 'Failed to create invite (token collision).' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       });
