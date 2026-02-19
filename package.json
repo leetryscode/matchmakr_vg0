@@ -18,7 +18,8 @@
         "next": "14.2.3",
         "react": "^18",
         "react-dom": "^18",
-        "react-easy-crop": "^5.4.2"
+        "react-easy-crop": "^5.4.2",
+        "resend": "^6.9.2"
     },
     "devDependencies": {
         "@types/node": "^20",

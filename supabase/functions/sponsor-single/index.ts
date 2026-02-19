@@ -20,6 +20,41 @@ function generateInviteToken(): string {
   return Array.from(arr, (b) => chars[b % chars.length]).join('');
 }
 
+/** Send Resend transactional template email (non-blocking; logs on failure) */
+async function sendResendTemplateEmail(params: {
+  to: string;
+  templateId: string;
+  invitorName: string;
+  inviteeName: string;
+  inviteLink: string;
+}): Promise<boolean> {
+  const apiKey = Deno.env.get('RESEND_API_KEY');
+  const from = Deno.env.get('RESEND_FROM');
+  if (!apiKey || !from) return false;
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from,
+      to: params.to,
+      template: {
+        id: params.templateId,
+        variables: {
+          INVITOR_NAME: params.invitorName,
+          INVITEE_NAME: params.inviteeName,
+          INVITE_LINK: params.inviteLink,
+        },
+      },
+    }),
+  });
+
+  return res.ok;
+}
+
 console.log(`Function "sponsor-single" up and running!`);
 
 // Creates invites + sponsorship_requests. Does NOT set profiles.sponsored_by_id.
@@ -183,7 +218,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: 'Failed to create sponsorship request.', code: 'REQUEST_ERROR' }, 500);
       }
 
-      let invite: { id: string } | null = null;
+      let invite: { id: string; token: string } | null = null;
       for (let attempt = 0; attempt < 5; attempt++) {
         const { data, error: inviteError } = await supabaseAdmin
           .from('invites')
@@ -197,7 +232,7 @@ Deno.serve(async (req) => {
             status: 'CLAIMED',
             token: generateInviteToken(),
           })
-          .select('id')
+          .select('id, token')
           .single();
 
         if (!inviteError) {
@@ -210,6 +245,31 @@ Deno.serve(async (req) => {
       }
       if (!invite) {
         return jsonResponse({ error: 'Failed to create invite (token collision).', code: 'INVITE_ERROR' }, 500);
+      }
+
+      // Send Resend template email (non-blocking)
+      let emailSent = false;
+      const siteUrl = Deno.env.get('SITE_URL') ?? '';
+      const templateId = Deno.env.get('RESEND_TEMPLATE_SPONSOR_TO_SINGLE');
+      if (siteUrl && templateId) {
+        const inviteLink = `${siteUrl}/invite/${invite.token}`;
+        const inviteeName = normalizedInviteeLabel?.trim() ? normalizedInviteeLabel.trim() : 'there';
+        try {
+          emailSent = await sendResendTemplateEmail({
+            to: normalizedEmail,
+            templateId,
+            invitorName: matchmakrProfile.name || 'Someone',
+            inviteeName,
+            inviteLink,
+          });
+          if (emailSent) {
+            console.log('resend_send_ok', { invite_id: invite.id, to: normalizedEmail });
+          } else {
+            console.error('resend_send_failed', { invite_id: invite.id, to: normalizedEmail, error: 'send returned false' });
+          }
+        } catch (err) {
+          console.error('resend_send_failed', { invite_id: invite.id, to: normalizedEmail, error: String(err) });
+        }
       }
 
       await supabaseAdmin
@@ -240,11 +300,12 @@ Deno.serve(async (req) => {
         invite_id: invite.id,
         request_id: request.id,
         status: 'request_sent',
+        email_sent: emailSent,
       }, 200);
     }
 
     // User does not exist: create PENDING invite
-    let invite: { id: string } | null = null;
+    let invite: { id: string; token: string } | null = null;
     for (let attempt = 0; attempt < 5; attempt++) {
       const { data, error: inviteError } = await supabaseAdmin
         .from('invites')
@@ -258,7 +319,7 @@ Deno.serve(async (req) => {
           status: 'PENDING',
           token: generateInviteToken(),
         })
-        .select('id')
+        .select('id, token')
         .single();
 
       if (!inviteError) {
@@ -273,10 +334,36 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: 'Failed to create invite (token collision).', code: 'INVITE_ERROR' }, 500);
     }
 
+    // Send Resend template email (non-blocking)
+    let emailSent = false;
+    const siteUrl = Deno.env.get('SITE_URL') ?? '';
+    const templateId = Deno.env.get('RESEND_TEMPLATE_SPONSOR_TO_SINGLE');
+    if (siteUrl && templateId) {
+      const inviteLink = `${siteUrl}/invite/${invite.token}`;
+      const inviteeName = normalizedInviteeLabel?.trim() ? normalizedInviteeLabel.trim() : 'there';
+      try {
+        emailSent = await sendResendTemplateEmail({
+          to: normalizedEmail,
+          templateId,
+          invitorName: matchmakrProfile.name || 'Someone',
+          inviteeName,
+          inviteLink,
+        });
+        if (emailSent) {
+          console.log('resend_send_ok', { invite_id: invite.id, to: normalizedEmail });
+        } else {
+          console.error('resend_send_failed', { invite_id: invite.id, to: normalizedEmail, error: 'send returned false' });
+        }
+      } catch (err) {
+        console.error('resend_send_failed', { invite_id: invite.id, to: normalizedEmail, error: String(err) });
+      }
+    }
+
     return jsonResponse({
       message: 'Invite saved. They will need to create an Orbit account to accept.',
       invite_id: invite.id,
       status: 'pending',
+      email_sent: emailSent,
     }, 200);
   } catch (error) {
     return new Response(JSON.stringify({
