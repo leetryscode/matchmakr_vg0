@@ -9,6 +9,7 @@ const InviteMatchMakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
 
     const router = useRouter();
     const [email, setEmail] = useState('');
+    const [label, setLabel] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState('');
 
@@ -17,9 +18,10 @@ const InviteMatchMakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
         setMessage('');
 
         try {
-            const result = await inviteSponsorByEmail(email);
+            const result = await inviteSponsorByEmail(email, label.trim() || undefined);
             setMessage(result.message);
             setEmail('');
+            setLabel('');
             onClose();
             router.refresh();
         } catch (error: unknown) {
@@ -36,6 +38,14 @@ const InviteMatchMakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                 <p className="text-text-light mb-6">
                     This person will be responsible for managing your profile and finding your matches!
                 </p>
+                <input
+                    type="text"
+                    value={label}
+                    onChange={(e) => setLabel(e.target.value)}
+                    placeholder="Name (optional)"
+                    className="w-full border border-white/20 rounded-md px-3 py-2 mb-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                    disabled={isLoading}
+                />
                 <input
                     type="email"
                     value={email}

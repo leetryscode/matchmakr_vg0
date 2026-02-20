@@ -5,6 +5,8 @@ import { getSupabaseClient } from '@/lib/supabase/client';
 import { useRouter, usePathname } from 'next/navigation';
 import SectionHeader from '@/components/ui/SectionHeader';
 import GlassCard from '@/components/ui/GlassCard';
+import Toast from '@/components/ui/Toast';
+import { inviteSponsorToJoinByEmail } from '@/lib/invite';
 
 
 interface MatchMakrChatListClientProps {
@@ -361,6 +363,9 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const sponsoredSingleId = sponsoredSingles && sponsoredSingles.length > 0 ? sponsoredSingles[0].id : null;
 
   const [inviteSponsorEmail, setInviteSponsorEmail] = useState('');
+  const [inviteSponsorLabel, setInviteSponsorLabel] = useState('');
+  const [inviteSponsorLoading, setInviteSponsorLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [isInviteSponsorModalOpen, setIsInviteSponsorModalOpen] = useState(false);
   const [showSponsorChatFade, setShowSponsorChatFade] = useState(true);
   const sponsorChatScrollRef = useRef<HTMLDivElement>(null);
@@ -593,6 +598,13 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
               Invite a friend to join our community helping friends find love.
             </p>
             <input
+              type="text"
+              value={inviteSponsorLabel}
+              onChange={(e) => setInviteSponsorLabel(e.target.value)}
+              placeholder="Name (optional)"
+              className="w-full border border-white/20 rounded-xl px-4 py-3 mb-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+            />
+            <input
               type="email"
               value={inviteSponsorEmail}
               onChange={(e) => setInviteSponsorEmail(e.target.value)}
@@ -600,15 +612,36 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
               className="w-full border border-white/20 rounded-xl px-4 py-3 mb-4 text-text-dark placeholder:text-text-dark placeholder:opacity-80 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
             />
             <div className="flex justify-end gap-4">
-              <button onClick={() => { setIsInviteSponsorModalOpen(false); setInviteSponsorEmail(''); }} className="px-6 py-3 bg-white/20 text-text-dark rounded-lg font-semibold hover:bg-white/30 transition-all duration-300 shadow-button hover:shadow-button-hover">
+              <button onClick={() => { setIsInviteSponsorModalOpen(false); setInviteSponsorEmail(''); setInviteSponsorLabel(''); }} className="px-6 py-3 bg-white/20 text-text-dark rounded-lg font-semibold hover:bg-white/30 transition-all duration-300 shadow-button hover:shadow-button-hover" disabled={inviteSponsorLoading}>
                 Cancel
               </button>
-              <button onClick={() => { alert(`(Not implemented) Invite would be sent to ${inviteSponsorEmail}`); setIsInviteSponsorModalOpen(false); setInviteSponsorEmail(''); }} className="rounded-cta px-6 py-3 min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary">
-                Send invite
+              <button
+                onClick={async () => {
+                  if (!inviteSponsorEmail.trim()) return;
+                  setInviteSponsorLoading(true);
+                  try {
+                    await inviteSponsorToJoinByEmail(inviteSponsorEmail.trim(), inviteSponsorLabel.trim() || undefined);
+                    setToast({ message: `Invite sent to ${inviteSponsorEmail.trim()}`, type: 'success' });
+                    setIsInviteSponsorModalOpen(false);
+                    setInviteSponsorEmail('');
+                    setInviteSponsorLabel('');
+                  } catch (err) {
+                    setToast({ message: err instanceof Error ? err.message : 'Failed to send invite.', type: 'error' });
+                  } finally {
+                    setInviteSponsorLoading(false);
+                  }
+                }}
+                disabled={inviteSponsorLoading || !inviteSponsorEmail.trim()}
+                className="rounded-cta px-6 py-3 min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
+              >
+                {inviteSponsorLoading ? 'Sending...' : 'Send invite'}
               </button>
             </div>
           </div>
         </div>
+      )}
+      {toast && (
+        <Toast message={toast.message} type={toast.type} isVisible onClose={() => setToast(null)} />
       )}
       {/* Confirmation Modal */}
       {confirmDelete && (

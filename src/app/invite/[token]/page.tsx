@@ -31,18 +31,32 @@ export default function InvitePage() {
       return;
     }
 
-    // Dev mock: /invite/testtoken returns mock data
-    if (token === 'testtoken' && process.env.NODE_ENV === 'development') {
-      setInvite({
-        invited_role: 'SINGLE',
-        invitor_name: 'Alex',
-        invitee_name: 'Jordan',
-        invitee_email: 'jordan@example.com',
-        community_slug: 'north-county-san-diego',
-        status: 'PENDING',
-      });
-      setState('success');
-      return;
+    // Dev mock: /invite/testtoken (Single) or /invite/testsponsor (Sponsor)
+    if (process.env.NODE_ENV === 'development') {
+      if (token === 'testtoken') {
+        setInvite({
+          invited_role: 'SINGLE',
+          invitor_name: 'Alex',
+          invitee_name: 'Jordan',
+          invitee_email: 'jordan@example.com',
+          community_slug: 'north-county-san-diego',
+          status: 'PENDING',
+        });
+        setState('success');
+        return;
+      }
+      if (token === 'testsponsor') {
+        setInvite({
+          invited_role: 'SPONSOR',
+          invitor_name: 'Alex',
+          invitee_name: 'Jordan',
+          invitee_email: 'jordan@example.com',
+          community_slug: 'north-county-san-diego',
+          status: 'PENDING',
+        });
+        setState('success');
+        return;
+      }
     }
 
     fetch(`/api/invite/${encodeURIComponent(token)}`)

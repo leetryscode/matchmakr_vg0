@@ -25,8 +25,11 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { matchmakr_email } = await req.json();
+    const { matchmakr_email, invitee_label } = await req.json();
     const normalizedEmail = (matchmakr_email ?? '').trim().toLowerCase();
+    const normalizedInviteeLabel = typeof invitee_label === 'string' && invitee_label.trim()
+      ? invitee_label.trim()
+      : null;
     if (!normalizedEmail) {
       return new Response(JSON.stringify({ error: 'Email is required.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -127,6 +130,7 @@ Deno.serve(async (req) => {
           invitee_email: normalizedEmail,
           invitee_phone_e164: null,
           invitee_user_id: sponsorId,
+          invitee_label: normalizedInviteeLabel,
           target_user_type: 'MATCHMAKR',
           status: 'CLAIMED',
           token: generateInviteToken(),
