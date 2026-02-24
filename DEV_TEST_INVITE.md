@@ -122,6 +122,34 @@
 9. Click **Continue** → onboarding, role locked to Sponsor
 10. Complete signup as Sponsor (MATCHMAKR)
 
+---
+
+## Single → Single invite (referral)
+
+No DB writes; always sends email. CTA links to app root (`SITE_URL/`) where invitee can "Get started" or "Log in".
+
+### Deploy
+
+1. Deploy edge function: `supabase functions deploy single-single`
+2. Set secrets:
+   ```bash
+   supabase secrets set RESEND_TEMPLATE_SINGLE_TO_SINGLE=<template-id>
+   ```
+   (Also requires: RESEND_API_KEY, RESEND_FROM, SITE_URL)
+
+### End-to-end test
+
+1. Sign in as a **Single**
+2. Go to Single dashboard → "Introduced by my sponsor" section
+3. Click **"Help grow Orbit"** row (below Preview or chat list)
+4. Enter invitee email + optional name
+5. Click **Send Invite**
+6. Confirm toast: "Invite sent."
+7. Check invitee inbox for Resend email with link to app root
+8. Click link → lands on `/` (entry page: Get started / Log in)
+
+---
+
 ### Verify sponsorship_request + notification (JOIN signup)
 
 After the sponsor signs up via Single→Sponsor JOIN invite:

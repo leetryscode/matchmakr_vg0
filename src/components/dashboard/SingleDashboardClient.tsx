@@ -5,11 +5,13 @@ import { getSupabaseClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import InviteMatchMakrModal from '@/components/dashboard/InviteMatchMakrModal';
+import InviteSingleReferralModal from '@/components/dashboard/InviteSingleReferralModal';
 import EndSponsorshipModal from './EndSponsorshipModal';
 import NotificationsSection from '@/components/dashboard/NotificationsSection';
 import PreviewCardsSection from '@/components/dashboard/PreviewCardsSection';
 import SectionHeader from '@/components/ui/SectionHeader';
 import PreviewRow from '@/components/ui/PreviewRow';
+import InviteSingleReferralRow from '@/components/ui/InviteSingleReferralRow';
 import GlassCard from '@/components/ui/GlassCard';
 import PrimaryCTA from '@/components/ui/PrimaryCTA';
 import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer';
@@ -107,6 +109,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   // Modal states for both sponsored and unsponsored flows
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isInviteSponsorOpen, setIsInviteSponsorOpen] = useState(false);
+  const [isInviteSingleReferralOpen, setIsInviteSingleReferralOpen] = useState(false);
 
   // Refactor fetchMatches to be callable - wrapped in useCallback for stable reference
   const fetchMatches = useCallback(async () => {
@@ -548,8 +551,15 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             </p>
             <div className="mt-4">
               <PreviewRow title="Alex" subtitle="Introduced by Paula" label="Preview" />
+              <InviteSingleReferralRow onClick={() => setIsInviteSingleReferralOpen(true)} />
             </div>
           </section>
+          
+          <InviteSingleReferralModal
+            isOpen={isInviteSingleReferralOpen}
+            onClose={() => setIsInviteSingleReferralOpen(false)}
+            onSuccess={() => setToast({ message: 'Invite sent.', type: 'success' })}
+          />
           
           {/* Preview cards section - only renders when there are previews */}
           <PreviewCardsSection userId={userId} />
@@ -698,6 +708,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
               </p>
               <div className="mt-4">
                 <PreviewRow title="Alex" subtitle={`Introduced by ${sponsor?.name || 'your sponsor'}`} label="Preview" />
+                <InviteSingleReferralRow onClick={() => setIsInviteSingleReferralOpen(true)} />
               </div>
             </>
           ) : (
@@ -737,6 +748,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                   )}
                 />
               ))}
+              <InviteSingleReferralRow onClick={() => setIsInviteSingleReferralOpen(true)} />
             </div>
           )}
         </section>
@@ -762,6 +774,13 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         isOpen={isInviteSponsorOpen}
         onClose={() => setIsInviteSponsorOpen(false)}
         onSuccess={(mode) => setToast({ message: mode === 'connect' ? 'Request sent' : 'Invite sent', type: 'success' })}
+      />
+      
+      {/* Invite Single Referral Modal (Single → Single) */}
+      <InviteSingleReferralModal
+        isOpen={isInviteSingleReferralOpen}
+        onClose={() => setIsInviteSingleReferralOpen(false)}
+        onSuccess={() => setToast({ message: 'Invite sent.', type: 'success' })}
       />
       
       {/* Chat Modal and other logic remain unchanged */}
