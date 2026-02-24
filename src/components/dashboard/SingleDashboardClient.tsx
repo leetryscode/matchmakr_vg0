@@ -534,7 +534,11 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             </div>
           </section>
           
-          <InviteMatchMakrModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
+          <InviteMatchMakrModal
+            isOpen={isInviteOpen}
+            onClose={() => setIsInviteOpen(false)}
+            onSuccess={(mode) => setToast({ message: mode === 'connect' ? 'Request sent' : 'Invite sent', type: 'success' })}
+          />
           
           {/* My matches - empty state (Preview Row pattern for cold-start; reuse for other chat empty states later) */}
           <section className="mt-10">
@@ -754,7 +758,11 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
       </div>
       
       {/* Invite Sponsor Modal */}
-      <InviteMatchMakrModal isOpen={isInviteSponsorOpen} onClose={() => setIsInviteSponsorOpen(false)} />
+      <InviteMatchMakrModal
+        isOpen={isInviteSponsorOpen}
+        onClose={() => setIsInviteSponsorOpen(false)}
+        onSuccess={(mode) => setToast({ message: mode === 'connect' ? 'Request sent' : 'Invite sent', type: 'success' })}
+      />
       
       {/* Chat Modal and other logic remain unchanged */}
       {/* Single-to-Single Chat Modal */}

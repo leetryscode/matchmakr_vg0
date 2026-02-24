@@ -54,3 +54,48 @@
 9. InviteGate shows Sponsor copy: "You were invited to Orbit as a Sponsor"
 10. Click **Continue** → onboarding skips role selection, role locked to Sponsor
 11. Confirm name/email/community prefilled
+
+---
+
+## Single → Sponsor invite (CONNECT + JOIN)
+
+### Deploy
+
+1. Deploy edge function: `supabase functions deploy sponsor-user`
+2. Set secrets for CONNECT email:
+   ```bash
+   supabase secrets set RESEND_TEMPLATE_SINGLE_TO_SPONSOR_CONNECT=<template-id>
+   ```
+   (JOIN reuses RESEND_TEMPLATE_SPONSOR_TO_SPONSOR. Also requires: RESEND_API_KEY, RESEND_FROM, SITE_URL)
+
+### End-to-end test – CONNECT (sponsor exists)
+
+1. Sign in as a **Single**
+2. Click **Invite a sponsor** (or equivalent)
+3. Enter email of an **existing** MatchMakr
+4. Click **Send Invite**
+5. Confirm toast: "Request sent"
+6. Check sponsor inbox for CONNECT email (link to /dashboard)
+
+### End-to-end test – JOIN (sponsor does not exist)
+
+1. Sign in as a **Single**
+2. Click **Invite a sponsor**
+3. Enter email of someone who is **not** a MatchMakr
+4. Click **Send Invite**
+5. Confirm toast: "Invite sent"
+6. Check invitee inbox for JOIN email with invite link
+7. Click link → lands on `/invite/:token`
+8. InviteGate shows Sponsor copy
+9. Click **Continue** → onboarding, role locked to Sponsor
+10. Complete signup as Sponsor (MATCHMAKR)
+
+### Verify sponsorship_request + notification (JOIN signup)
+
+After the sponsor signs up via Single→Sponsor JOIN invite:
+
+1. Run migration: `supabase db push` (includes `20260218100000_handle_new_user_matchmakr_invite_claim`)
+2. In DB: verify `sponsorship_requests` has a row with `sponsor_id` = new sponsor, `single_id` = inviter, `status` = `PENDING_SPONSOR_APPROVAL`, `invite_id` set
+3. In DB: verify `invites` row has `status` = `CLAIMED`, `invitee_user_id` = new sponsor
+4. Sign in as the **new Sponsor** → dashboard should show "Sponsorship requests" with "{Single name} wants you to be their sponsor"
+5. Sponsor can Accept or Decline

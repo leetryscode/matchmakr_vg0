@@ -4,7 +4,15 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { inviteSponsorByEmail } from '@/lib/invite';
 
-const InviteMatchMakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+const InviteMatchMakrModal = ({
+  isOpen,
+  onClose,
+  onSuccess,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: (mode: 'connect' | 'join') => void;
+}) => {
     if (!isOpen) return null;
 
     const router = useRouter();
@@ -19,7 +27,8 @@ const InviteMatchMakrModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
 
         try {
             const result = await inviteSponsorByEmail(email, label.trim() || undefined);
-            setMessage(result.message);
+            const mode = result.mode ?? 'connect';
+            onSuccess?.(mode);
             setEmail('');
             setLabel('');
             onClose();
