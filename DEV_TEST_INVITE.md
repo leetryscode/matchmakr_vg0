@@ -30,6 +30,38 @@
 
 ---
 
+## Sponsor → Single invite (JOIN + CONNECT)
+
+### Deploy
+
+1. Deploy edge function: `supabase functions deploy sponsor-single`
+2. Set secrets:
+   ```bash
+   supabase secrets set RESEND_TEMPLATE_SPONSOR_TO_SINGLE=<template-id>        # JOIN (new user)
+   supabase secrets set RESEND_TEMPLATE_SPONSOR_TO_SINGLE_CONNECT=<template-id>  # CONNECT (existing user)
+   ```
+   (Also requires: RESEND_API_KEY, RESEND_FROM, SITE_URL)
+
+### End-to-end test – CONNECT (single exists)
+
+1. Sign in as a **Sponsor** (MatchMakr)
+2. Go to Managed Singles / invite flow
+3. Enter email of an **existing** Single
+4. Click **Send invite**
+5. Confirm toast: "Invite sent!"
+6. Check single inbox for CONNECT email (link to `/login?redirect=/dashboard/single`)
+7. Click link → login (if needed) → redirect to single dashboard with sponsorship request
+
+### End-to-end test – JOIN (single does not exist)
+
+1. Sign in as a **Sponsor**
+2. Enter email of someone who is **not** an Orbit user
+3. Click **Send invite**
+4. Check invitee inbox for JOIN email with `/invite/:token` link
+5. Click link → InviteGate → onboarding → signup as Single
+
+---
+
 ## Sponsor → Sponsor invite (JOIN)
 
 ### Deploy

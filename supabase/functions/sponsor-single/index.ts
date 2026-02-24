@@ -112,15 +112,24 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: 'You must be a MatchMakr to sponsor a Single.', code: 'INVALID_USER_TYPE' }, 400);
     }
 
-    // Look up existing user by email
-    const { data: { users: allUsers }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-    if (listError) {
-      console.error('Error listing users:', listError);
-      return jsonResponse({ error: 'Failed to search for user.', code: 'SEARCH_ERROR' }, 500);
+    // Look up existing user by email (listUsers is paginated; paginate until found or exhausted)
+    let singleId: string | null = null;
+    let page = 1;
+    const perPage = 100;
+    while (true) {
+      const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+      if (listError) {
+        console.error('Error listing users:', listError);
+        return jsonResponse({ error: 'Failed to search for user.', code: 'SEARCH_ERROR' }, 500);
+      }
+      const found = users?.find(u => (u.email || '').trim().toLowerCase() === normalizedEmail);
+      if (found) {
+        singleId = found.id;
+        break;
+      }
+      if (!users || users.length < perPage) break;
+      page++;
     }
-
-    const singleUser = allUsers.find(u => (u.email || '').trim().toLowerCase() === normalizedEmail);
-    const singleId = singleUser?.id ?? null;
 
     // 1) User exists but not SINGLE: return 400, do not create invite
     if (singleId) {
@@ -158,7 +167,7 @@ Deno.serve(async (req) => {
         }, 200);
       }
 
-      // CLAIMED: check sponsorship_request
+      // CLAIMED: check sponsorship_request; reuse invite, resend if already_requested
       const singleIdFromInvite = existingInvite.invitee_user_id;
       if (singleIdFromInvite) {
         const { data: existingRequest } = await supabaseAdmin
@@ -169,16 +178,119 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (existingRequest) {
-          const status = existingRequest.status === 'ACCEPTED' ? 'already_sponsoring' : 'already_requested';
+          if (existingRequest.status === 'ACCEPTED') {
+            return jsonResponse({
+              message: 'You are already sponsoring this person.',
+              invite_id: existingInvite.id,
+              request_id: existingRequest.id,
+              status: 'already_sponsoring',
+            }, 200);
+          }
+          // PENDING_SINGLE_APPROVAL: resend CONNECT email as reminder
+          let emailSent = false;
+          const siteUrl = Deno.env.get('SITE_URL') ?? '';
+          const templateId = Deno.env.get('RESEND_TEMPLATE_SPONSOR_TO_SINGLE_CONNECT');
+          if (siteUrl && templateId) {
+            const inviteLink = `${siteUrl}/login?redirect=/dashboard/single`;
+            const inviteeName = normalizedInviteeLabel?.trim() ? normalizedInviteeLabel.trim() : 'there';
+            try {
+              emailSent = await sendResendTemplateEmail({
+                to: normalizedEmail,
+                templateId,
+                invitorName: matchmakrProfile.name || 'Someone',
+                inviteeName,
+                inviteLink,
+              });
+              if (emailSent) {
+                console.log('resend_send_ok', { invite_id: existingInvite.id, to: normalizedEmail, mode: 'connect_resend' });
+              }
+            } catch (err) {
+              console.error('resend_send_failed', { invite_id: existingInvite.id, to: normalizedEmail, mode: 'connect_resend', error: String(err) });
+            }
+          }
           return jsonResponse({
-            message: existingRequest.status === 'ACCEPTED'
-              ? 'You are already sponsoring this person.'
-              : 'You already have a pending request for this person.',
+            message: 'You already have a pending request for this person. A reminder email was sent.',
             invite_id: existingInvite.id,
             request_id: existingRequest.id,
-            status,
+            status: 'already_requested',
+            email_sent: emailSent,
           }, 200);
         }
+        // CLAIMED invite exists but no sponsorship_request: create request, link to existing invite, send email
+        const { data: newRequest, error: requestError } = await supabaseAdmin
+          .from('sponsorship_requests')
+          .insert({
+            sponsor_id: user.id,
+            single_id: singleIdFromInvite,
+            invite_id: existingInvite.id,
+            status: 'PENDING_SINGLE_APPROVAL',
+          })
+          .select('id')
+          .single();
+
+        if (requestError) {
+          if (requestError.code === '23505') {
+            const { data: dupRequest } = await supabaseAdmin
+              .from('sponsorship_requests')
+              .select('id, status')
+              .eq('sponsor_id', user.id)
+              .eq('single_id', singleIdFromInvite)
+              .maybeSingle();
+            if (dupRequest?.status === 'ACCEPTED') {
+              return jsonResponse({ message: 'You are already sponsoring this person.', invite_id: existingInvite.id, request_id: dupRequest.id, status: 'already_sponsoring' }, 200);
+            }
+            return jsonResponse({ message: 'You already have a pending request for this person.', invite_id: existingInvite.id, request_id: dupRequest?.id, status: 'already_requested' }, 200);
+          }
+          console.error('Sponsorship request insert error:', requestError);
+          return jsonResponse({ error: 'Failed to create sponsorship request.', code: 'REQUEST_ERROR' }, 500);
+        }
+
+        const sponsorName = matchmakrProfile.name || 'Someone';
+        const { error: notifError } = await supabaseAdmin
+          .from('notifications')
+          .insert({
+            user_id: singleIdFromInvite,
+            type: 'sponsorship_request',
+            data: {
+              request_id: newRequest.id,
+              sponsor_id: user.id,
+              sponsor_name: sponsorName,
+              sponsor_label: sponsor_label?.trim() || null,
+            },
+            read: false,
+            dismissed_at: null,
+          });
+        if (notifError) console.error('Notification insert error (non-fatal):', notifError);
+
+        let emailSent = false;
+        const siteUrl = Deno.env.get('SITE_URL') ?? '';
+        const templateId = Deno.env.get('RESEND_TEMPLATE_SPONSOR_TO_SINGLE_CONNECT');
+        if (siteUrl && templateId) {
+          const inviteLink = `${siteUrl}/login?redirect=/dashboard/single`;
+          const inviteeName = normalizedInviteeLabel?.trim() ? normalizedInviteeLabel.trim() : 'there';
+          try {
+            emailSent = await sendResendTemplateEmail({
+              to: normalizedEmail,
+              templateId,
+              invitorName: matchmakrProfile.name || 'Someone',
+              inviteeName,
+              inviteLink,
+            });
+            if (emailSent) {
+              console.log('resend_send_ok', { invite_id: existingInvite.id, to: normalizedEmail, mode: 'connect_reuse' });
+            }
+          } catch (err) {
+            console.error('resend_send_failed', { invite_id: existingInvite.id, to: normalizedEmail, mode: 'connect_reuse', error: String(err) });
+          }
+        }
+
+        return jsonResponse({
+          message: 'Invite sent! They need to approve before you can manage their profile.',
+          invite_id: existingInvite.id,
+          request_id: newRequest.id,
+          status: 'request_sent',
+          email_sent: emailSent,
+        }, 200);
       }
     }
 
@@ -218,41 +330,33 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: 'Failed to create sponsorship request.', code: 'REQUEST_ERROR' }, 500);
       }
 
-      let invite: { id: string; token: string } | null = null;
-      for (let attempt = 0; attempt < 5; attempt++) {
-        const { data, error: inviteError } = await supabaseAdmin
-          .from('invites')
-          .insert({
-            inviter_id: user.id,
-            invitee_email: normalizedEmail,
-            invitee_phone_e164: null,
-            invitee_user_id: singleId,
-            invitee_label: normalizedInviteeLabel,
-            target_user_type: 'SINGLE',
-            status: 'CLAIMED',
-            token: generateInviteToken(),
-          })
-          .select('id, token')
-          .single();
+      // CONNECT: create CLAIMED invite (no token; CONNECT uses login redirect, not /invite/:token)
+      const { data: invite, error: inviteError } = await supabaseAdmin
+        .from('invites')
+        .insert({
+          inviter_id: user.id,
+          invitee_email: normalizedEmail,
+          invitee_phone_e164: null,
+          invitee_user_id: singleId,
+          invitee_label: normalizedInviteeLabel,
+          target_user_type: 'SINGLE',
+          status: 'CLAIMED',
+          token: null,
+        })
+        .select('id')
+        .single();
 
-        if (!inviteError) {
-          invite = data;
-          break;
-        }
-        if (inviteError.code === '23505') continue; // unique_violation, retry with new token
+      if (inviteError) {
         console.error('Invite insert error:', inviteError);
         return jsonResponse({ error: 'Failed to create invite.', code: 'INVITE_ERROR' }, 500);
       }
-      if (!invite) {
-        return jsonResponse({ error: 'Failed to create invite (token collision).', code: 'INVITE_ERROR' }, 500);
-      }
 
-      // Send Resend template email (non-blocking)
+      // Send CONNECT email: existing user → login redirect to dashboard (NOT /invite/:token; CLAIMED returns 410)
       let emailSent = false;
       const siteUrl = Deno.env.get('SITE_URL') ?? '';
-      const templateId = Deno.env.get('RESEND_TEMPLATE_SPONSOR_TO_SINGLE');
+      const templateId = Deno.env.get('RESEND_TEMPLATE_SPONSOR_TO_SINGLE_CONNECT');
       if (siteUrl && templateId) {
-        const inviteLink = `${siteUrl}/invite/${invite.token}`;
+        const inviteLink = `${siteUrl}/login?redirect=/dashboard/single`;
         const inviteeName = normalizedInviteeLabel?.trim() ? normalizedInviteeLabel.trim() : 'there';
         try {
           emailSent = await sendResendTemplateEmail({
@@ -263,12 +367,12 @@ Deno.serve(async (req) => {
             inviteLink,
           });
           if (emailSent) {
-            console.log('resend_send_ok', { invite_id: invite.id, to: normalizedEmail });
+            console.log('resend_send_ok', { invite_id: invite.id, to: normalizedEmail, mode: 'connect' });
           } else {
-            console.error('resend_send_failed', { invite_id: invite.id, to: normalizedEmail, error: 'send returned false' });
+            console.error('resend_send_failed', { invite_id: invite.id, to: normalizedEmail, mode: 'connect', error: 'send returned false' });
           }
         } catch (err) {
-          console.error('resend_send_failed', { invite_id: invite.id, to: normalizedEmail, error: String(err) });
+          console.error('resend_send_failed', { invite_id: invite.id, to: normalizedEmail, mode: 'connect', error: String(err) });
         }
       }
 

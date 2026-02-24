@@ -117,16 +117,24 @@ Deno.serve(async (req) => {
     const singleId = callerProfile.id;
     const singleName = callerProfile.name ?? 'Someone';
 
-    // 2) Find sponsor by email
-    const { data: { users: allUsers }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-    if (listError) {
-      console.error('Error listing users:', listError);
-      throw listError;
+    // 2) Find sponsor by email (listUsers is paginated; paginate until found or exhausted)
+    let matchmakrUser: { id: string } | null = null;
+    let page = 1;
+    const perPage = 100;
+    while (true) {
+      const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+      if (listError) {
+        console.error('Error listing users:', listError);
+        throw listError;
+      }
+      const found = users?.find((u) => (u.email ?? '').trim().toLowerCase() === normalizedEmail);
+      if (found) {
+        matchmakrUser = found;
+        break;
+      }
+      if (!users || users.length < perPage) break;
+      page++;
     }
-
-    const matchmakrUser = allUsers.find(
-      (u) => (u.email ?? '').trim().toLowerCase() === normalizedEmail
-    );
 
     if (matchmakrUser) {
       // --- CONNECT path: sponsor exists ---

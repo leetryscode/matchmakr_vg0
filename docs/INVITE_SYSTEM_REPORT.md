@@ -7,7 +7,7 @@
 
 ## 1. Flow Summaries
 
-### 1.1 Sponsor → Single (JOIN)
+### 1.1 Sponsor → Single (JOIN + CONNECT)
 
 | Field | Value |
 |-------|-------|
@@ -16,15 +16,15 @@
 | **Edge function** | `sponsor-single` |
 | **Invite status** | **PENDING** (invitee has no account) or **CLAIMED** (invitee exists as SINGLE) |
 | **Token** | Yes – 12-char alphanumeric, stored in `invites.token` |
-| **Resend email** | Yes – both paths. Template: `RESEND_TEMPLATE_SPONSOR_TO_SINGLE` |
-| **InviteGate** | Yes – for PENDING only. CLAIMED invites return 410 from `/api/invite/[token]` |
+| **Resend email** | Yes – both paths. JOIN: `RESEND_TEMPLATE_SPONSOR_TO_SINGLE`. CONNECT: `RESEND_TEMPLATE_SPONSOR_TO_SINGLE_CONNECT` |
+| **InviteGate** | Yes – for PENDING only. CONNECT uses login redirect, not invite token. |
 | **Onboarding prefill** | Yes – `lockedRole: 'SINGLE'`, prefill name/email/community |
 | **invitee_label** | Stored in `invites.invitee_label`; used in email as `INVITEE_NAME` |
 | **Dedupe** | Yes – blocks if PENDING/CLAIMED invite exists for `(inviter_id, invitee_email)` – **no `target_user_type` filter** |
 
 **Paths:**
-- **Invitee does not exist:** Create PENDING invite → send email → link goes to InviteGate → onboarding.
-- **Invitee exists as SINGLE:** Create CLAIMED invite + `sponsorship_request` (PENDING_SINGLE_APPROVAL) → send email → link goes to `/invite/:token` → **API returns 410** (invite is CLAIMED).
+- **Invitee does not exist (JOIN):** Create PENDING invite → send email with `/invite/:token` → InviteGate → onboarding.
+- **Invitee exists as SINGLE (CONNECT):** Create CLAIMED invite + `sponsorship_request` (PENDING_SINGLE_APPROVAL) → send CONNECT email with `INVITE_LINK` = `/login?redirect=/dashboard/single` → single logs in and sees request on dashboard.
 
 ---
 
@@ -101,7 +101,7 @@
 | **Dedupe scope** | No `target_user_type` filter – blocks on any PENDING/CLAIMED for (inviter, email) | Filters by `target_user_type: 'MATCHMAKR'` |
 | **Effect** | Sponsor→Sponsor invite blocks Sponsor→Single to same email | Sponsor→Single invite does NOT block Sponsor→Sponsor – can create two PENDING invites for same email |
 | **Status paths** | PENDING and CLAIMED (existing user) | PENDING only |
-| **CLAIMED + email link** | Sends email with `/invite/:token` for CLAIMED; API returns 410 when clicked | N/A |
+| **CLAIMED + email link** | CONNECT sends email with `/login?redirect=/dashboard/single` → single logs in and sees request | N/A |
 
 ---
 
@@ -136,9 +136,8 @@ Single→Sponsor is designed to differ:
 
 ### 6.1 Pre-deployment risks
 
-1. **Sponsor→Single CLAIMED path – broken invite link**  
-   For existing singles, sponsor-single sends an email with `/invite/:token`. The invite is CLAIMED, so `GET /api/invite/[token]` returns 410. The single sees “Invite no longer valid” when clicking. Consider a different template or flow for existing users (e.g. “Log in to accept” instead of invite link).
-
+1. **Sponsor→Single CONNECT – fixed**  
+   CONNECT path now uses `RESEND_TEMPLATE_SPONSOR_TO_SINGLE_CONNECT` with `INVITE_LINK` = `/login?redirect=/dashboard/single`. Single logs in and sees sponsorship request on dashboard. “Invite no longer valid”. “Log in to accept” 
 2. **handle_new_user does not filter by target_user_type**  
    When a SINGLE signs up, the trigger claims the most recent PENDING invite for that email, regardless of `target_user_type`. If both Sponsor→Single and Sponsor→Sponsor invites exist, it may claim the wrong one. Add `AND target_user_type = 'SINGLE'` to the invite lookup.
 
@@ -151,7 +150,7 @@ Single→Sponsor is designed to differ:
 ### 6.2 Configuration risks
 
 5. **Env vars**  
-   All flows depend on: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (invite API), `RESEND_API_KEY`, `RESEND_FROM`, `SITE_URL`. Sponsor→Single: `RESEND_TEMPLATE_SPONSOR_TO_SINGLE`. Sponsor→Sponsor: `RESEND_TEMPLATE_SPONSOR_TO_SPONSOR`. Missing vars can cause silent email failures.
+   All flows depend on: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (invite API), `RESEND_API_KEY`, `RESEND_FROM`, `SITE_URL`. Sponsor→Single: `RESEND_TEMPLATE_SPONSOR_TO_SINGLE` (JOIN), `RESEND_TEMPLATE_SPONSOR_TO_SINGLE_CONNECT` (CONNECT). Sponsor→Sponsor: `RESEND_TEMPLATE_SPONSOR_TO_SPONSOR`. Missing vars can cause silent email failures.
 
 6. **invite-sponsor-to-join uses session client**  
    Route uses `createClient()` (session). If session is invalid or missing, the request fails before reaching the edge function.
