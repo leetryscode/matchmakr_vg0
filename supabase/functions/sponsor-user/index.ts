@@ -311,7 +311,7 @@ Deno.serve(async (req) => {
     // Send JOIN email: INVITE_LINK = /invite/:token
     let emailSent = false;
     const siteUrl = Deno.env.get('SITE_URL') ?? '';
-    const templateId = Deno.env.get('RESEND_TEMPLATE_SPONSOR_TO_SPONSOR');
+    const templateId = Deno.env.get('RESEND_TEMPLATE_SINGLE_TO_SPONSOR');
     const inviteLink = siteUrl ? `${siteUrl}/invite/${invite.token}` : '';
     const inviteeName = normalizedInviteeLabel || 'there';
 
