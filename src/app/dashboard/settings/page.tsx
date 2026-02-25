@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardWrapper from '@/components/dashboard/DashboardWrapper';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import GlassCard from '@/components/ui/GlassCard';
 import SectionHeader from '@/components/ui/SectionHeader';
+import Toast from '@/components/ui/Toast';
 import { createClient } from '@/lib/supabase/client';
 
 interface DeleteAccountModalProps {
@@ -64,12 +66,14 @@ function DeleteAccountModal({ isOpen, onClose, onConfirm, isDeleting }: DeleteAc
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [userName, setUserName] = useState<string | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState('');
   const [isSavingName, setIsSavingName] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -165,28 +169,29 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = async () => {
+    if (!user?.id) return;
     setIsDeleting(true);
+    setToast(null);
     try {
-      // TODO: Implement account deletion flow
-      // This should:
-      // 1. Delete the user's profile from profiles table
-      // 2. Delete associated data (photos, conversations, etc.)
-      // 3. Delete the auth user
-      // 4. Clear all storage and redirect to home
-      
-      console.log('Account deletion not yet implemented');
-      alert('Account deletion is not yet implemented. Please contact support.');
-      setShowDeleteModal(false);
-      
-      // When implemented, the flow should be:
-      // const supabase = createClient();
-      // // Delete profile and related data
-      // // Delete auth user
-      // // Clear storage
-      // window.location.href = '/';
+      const supabase = createClient();
+      const { data, error } = await supabase.functions.invoke('delete-account');
+
+      if (error) {
+        setToast({ message: error.message ?? 'Failed to delete account.', type: 'error' });
+        return;
+      }
+      if (data?.error) {
+        setToast({ message: typeof data.error === 'string' ? data.error : 'Failed to delete account.', type: 'error' });
+        return;
+      }
+
+      await supabase.auth.signOut();
+      localStorage.clear();
+      sessionStorage.clear();
+      router.replace('/');
     } catch (err) {
       console.error('Error deleting account:', err);
-      alert('Failed to delete account. Please try again.');
+      setToast({ message: err instanceof Error ? err.message : 'Failed to delete account. Please try again.', type: 'error' });
     } finally {
       setIsDeleting(false);
     }
@@ -290,6 +295,15 @@ export default function SettingsPage() {
           onConfirm={handleDeleteAccount}
           isDeleting={isDeleting}
         />
+
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            isVisible
+            onClose={() => setToast(null)}
+          />
+        )}
       </DashboardLayout>
     </DashboardWrapper>
   );
