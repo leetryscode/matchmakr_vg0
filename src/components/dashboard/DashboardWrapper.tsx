@@ -96,10 +96,10 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
   // Uses the same shell styling as the dashboard
   if (loading || waitingForRole) {
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-background-main text-text-dark">
+      <div className="flex min-h-[100dvh] items-center justify-center bg-transparent text-orbit-text">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mx-auto mb-4"></div>
-          <div className="text-text-dark text-lg">Loading...</div>
+          <div className="text-orbit-text text-lg">Loading...</div>
         </div>
       </div>
     );
@@ -112,7 +112,7 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
 
   // Dashboard shell: single source of truth for background and base text styling
   return (
-    <div className="min-h-[100dvh] bg-background-main text-text-dark">
+    <div className="min-h-[100dvh] bg-transparent text-orbit-text">
       {children}
     </div>
   );

@@ -45,7 +45,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-sans min-h-dvh bg-gradient-to-b from-orbit-bg-start to-orbit-bg-end text-orbit-text antialiased leading-normal text-base">
+      <body className="font-sans min-h-dvh text-orbit-text antialiased leading-normal text-base">
         <AuthProvider>
           <GlobalLayout>
             {children}

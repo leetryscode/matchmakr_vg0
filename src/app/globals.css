@@ -89,8 +89,12 @@ body {
   overflow: hidden;
 }
 
-/* Orbit semantic utilities — surface, card, muted, divider, focus ring */
+/* Orbit semantic utilities — canvas, surface, card, muted, divider, focus ring */
 @layer utilities {
+  .orbit-canvas {
+    @apply bg-gradient-to-b from-orbit-bg-start to-orbit-bg-end;
+  }
+
   .orbit-surface {
     @apply bg-orbit-surface/80 border border-orbit-border/50 backdrop-blur-md;
   }

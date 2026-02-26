@@ -64,7 +64,7 @@ function GlobalLayoutContent({ children, showBottomNav = true }: GlobalLayoutPro
   }, [shouldShowBottomNav]);
 
   return (
-    <div className="min-h-[100dvh] bg-background-main">
+    <div className="min-h-[100dvh] orbit-canvas">
       {/* Persistent install bar - sticky at top, only shows when not standalone */}
       <InstallBar />
       {/* Main content with bottom padding to account for fixed navigation - chat routes use pb-0 (pages handle their own) */}
