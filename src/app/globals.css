@@ -14,12 +14,17 @@
   --primary-blue: 52, 75, 99;
   /* primary-teal removed; use palette / Tailwind action tokens */
 
-  /* Orbit Sponsor Theme (runtime tweakable) */
-  --orbit-bg-start: 12 31 53;     /* #0C1F35 */
-  --orbit-bg-end:   22 43 68;     /* #162B44 */
+  /* Orbit Sponsor Theme — WHOOP-like hierarchy (canvas → rows → cards → shell) */
+  --orbit-canvas:    12 31 53;     /* #0C1F35 — base background */
+  --orbit-bg-start:  12 31 53;     /* alias for gradient */
+  --orbit-bg-end:    22 43 68;     /* #162B44 */
 
-  --orbit-surface:  22 43 68;     /* used with opacity */
-  --orbit-border:   42 63 94;     /* #2A3F5E-ish */
+  --orbit-surface-1: 22 45 74;     /* rows — noticeably lighter than canvas */
+  --orbit-surface-2: 30 58 92;     /* cards — lighter than rows */
+  --orbit-surface-3: 34 66 104;   /* shell/nav — strongest surface */
+
+  --orbit-border:    55 86 120;    /* brighter border for separation */
+  --orbit-shadow:    0 0 0;       /* for rgba shadows if needed */
 
   --orbit-text:     242 244 247;  /* #F2F4F7 */
   --orbit-text-2:   199 210 224;  /* #C7D2E0 */
@@ -89,45 +94,44 @@ body {
   overflow: hidden;
 }
 
-/* Orbit semantic utilities — canvas, surface, card, muted, divider, focus ring */
+/* Orbit semantic utilities — WHOOP-like hierarchy (brightness + shadow, no divider lines) */
 @layer utilities {
   /*
-   * Surface tiers (orbit-surface, orbit-surface-soft, orbit-surface-strong, orbit-card) use
-   * plain CSS instead of @apply because Tailwind does not generate opacity variants like
-   * bg-orbit-surface/72 for custom colors outside its default scale (0,5,10,…,100).
-   * Safelist did not resolve the build error. Raw rgb(var(--orbit-*) / 0.xx) avoids the
-   * limitation while still reading from :root theme variables.
+   * Surface tiers use plain CSS for opacity values outside Tailwind's default scale.
+   * Separation comes from brightness (surface1 < surface2 < surface3) + shadow, not lines.
    */
   .orbit-canvas {
-    @apply bg-orbit-bg-start;
+    @apply bg-orbit-canvas;
   }
 
   .orbit-canvas-gradient {
     @apply bg-gradient-to-b from-orbit-bg-start to-orbit-bg-end;
   }
 
+  /* Rows — soft (chat rows, list items) */
+  .orbit-surface-soft {
+    @apply shadow-sm;
+    background-color: rgb(var(--orbit-surface-1) / 0.9);
+    border: 1px solid rgb(var(--orbit-border) / 0.35);
+  }
+
+  /* Cards — medium (feature cards, section blocks) */
   .orbit-surface {
-    @apply border backdrop-blur-md;
-    background-color: rgb(var(--orbit-surface) / 0.72);
+    @apply border shadow-card;
+    background-color: rgb(var(--orbit-surface-2) / 0.92);
     border-color: rgb(var(--orbit-border) / 0.4);
   }
 
-  .orbit-surface-soft {
-    @apply backdrop-blur-sm;
-    background-color: rgb(var(--orbit-surface) / 0.38);
-    border: 1px solid rgb(var(--orbit-border) / 0.22);
-  }
-
+  /* Shell/nav — strong (sticky headers, bottom nav) */
   .orbit-surface-strong {
-    @apply border backdrop-blur-md;
-    background-color: rgb(var(--orbit-surface) / 0.92);
-    border-color: rgb(var(--orbit-border) / 0.6);
+    @apply border shadow-lg;
+    background-color: rgb(var(--orbit-surface-3) / 0.95);
+    border-color: rgb(var(--orbit-border) / 0.45);
   }
 
+  /* Cards — orbit-surface + rounded + shadow-card */
   .orbit-card {
-    @apply rounded-card-lg shadow-card backdrop-blur-md;
-    background-color: rgb(var(--orbit-surface) / 0.72);
-    border: 1px solid rgb(var(--orbit-border) / 0.55);
+    @apply orbit-surface rounded-card-lg shadow-card;
   }
 
   .orbit-muted {
@@ -139,7 +143,7 @@ body {
   }
 
   .orbit-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orbit-gold/30 focus-visible:ring-offset-2 focus-visible:ring-offset-orbit-bg-start;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orbit-gold/30 focus-visible:ring-offset-2 focus-visible:ring-offset-orbit-canvas;
   }
 
   .orbit-btn-primary {
@@ -212,9 +216,9 @@ body {
     @apply text-xs text-text-light leading-normal;
   }
 
-  /* Interactive row cards: chat rows, list items — softer tier for hierarchy */
+  /* Interactive row cards: chat rows, list items — surface1, minimal shadow */
   .ui-rowcard {
-    @apply orbit-surface-soft rounded-card-lg shadow-card transition
+    @apply orbit-surface-soft rounded-card-lg shadow-sm transition
            px-5 py-3 flex items-center gap-3;
   }
 

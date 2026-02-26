@@ -11,7 +11,7 @@ type GlassCardProps = {
 };
 
 export default function GlassCard({ children, variant = '1', className, style }: GlassCardProps) {
-  const baseClasses = variant === 'soft' ? 'orbit-surface-soft rounded-card-lg shadow-card' : 'orbit-card';
+  const baseClasses = variant === 'soft' ? 'orbit-surface-soft rounded-card-lg shadow-sm' : 'orbit-card';
   const variantClasses = variant === '2' ? 'shadow-card-hover' : '';
 
   return (

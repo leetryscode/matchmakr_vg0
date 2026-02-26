@@ -41,11 +41,15 @@ const config: Config = {
     extend: {
       colors: {
         orbit: {
+          canvas: 'rgb(var(--orbit-canvas) / <alpha-value>)',
+          surface1: 'rgb(var(--orbit-surface-1) / <alpha-value>)',
+          surface2: 'rgb(var(--orbit-surface-2) / <alpha-value>)',
+          surface3: 'rgb(var(--orbit-surface-3) / <alpha-value>)',
           bg: {
             start: 'rgb(var(--orbit-bg-start) / <alpha-value>)',
             end: 'rgb(var(--orbit-bg-end) / <alpha-value>)',
           },
-          surface: 'rgb(var(--orbit-surface) / <alpha-value>)',
+          surface: 'rgb(var(--orbit-surface-2) / <alpha-value>)', /* alias for cards */
           border: 'rgb(var(--orbit-border) / <alpha-value>)',
 
           text: 'rgb(var(--orbit-text) / <alpha-value>)',
