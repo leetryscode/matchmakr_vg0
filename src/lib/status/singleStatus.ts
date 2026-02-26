@@ -17,14 +17,17 @@ export interface SingleStatusInput {
 
 /**
  * Computes the status for a single based on their profile state and match count.
- * 
+ *
  * Priority order (mutually exclusive):
  * 1. PAUSED - paused_at is NOT NULL
- * 2. INVITED - onboarded_at is NULL
- * 3. NEEDS_ATTENTION - photos array is empty OR matchmakr_endorsement is null/blank
+ * 2. NEEDS_ATTENTION - profile not ready (missing photo or endorsement)
+ * 3. INVITED - onboarded_at is NULL and profile not ready (subsumed by NEEDS_ATTENTION above)
  * 4. IN_MOTION - approved_match_count > 0
- * 5. NEEDS_INTRODUCTION - default if none of the above match
- * 
+ * 5. NEEDS_INTRODUCTION - profile ready, no active matches (even if onboarded_at is null)
+ *
+ * "Needs attention" strictly means profile is missing required sponsor inputs.
+ * If onboarded_at is null but profile is ready (photos + endorsement) → NEEDS_INTRODUCTION or IN_MOTION.
+ *
  * @param single - Single profile data with match count
  * @returns Computed status
  */
@@ -34,28 +37,24 @@ export function computeSingleStatus(single: SingleStatusInput): SingleStatus {
     return 'PAUSED';
   }
 
-  // 2. INVITED: Single has not completed onboarding
-  if (single.onboarded_at === null) {
-    return 'INVITED';
-  }
-
-  // 3. NEEDS_ATTENTION: Profile is incomplete
-  // Check if photos array is empty (array_length(photos, 1) = 0 in SQL)
+  // 2. NEEDS_ATTENTION: Profile is incomplete (missing photo or endorsement)
   const photosEmpty = !single.photos || single.photos.length === 0;
-  // Check if endorsement is null or blank (using trim())
-  const endorsementBlank = !single.matchmakr_endorsement || 
-                           single.matchmakr_endorsement.trim() === '';
-  
+  const endorsementBlank = !single.matchmakr_endorsement ||
+    single.matchmakr_endorsement.trim() === '';
+
   if (photosEmpty || endorsementBlank) {
     return 'NEEDS_ATTENTION';
   }
+
+  // 3. Profile is ready. INVITED only when onboarded_at null + profile not ready (handled above).
+  // If onboarded_at is null but profile ready → treat as NEEDS_INTRODUCTION or IN_MOTION.
 
   // 4. IN_MOTION: Has active approved matches
   if (single.approved_match_count > 0) {
     return 'IN_MOTION';
   }
 
-  // 5. NEEDS_INTRODUCTION: Default state - onboarded, complete profile, no active matches
+  // 5. NEEDS_INTRODUCTION: Profile ready, no active matches
   return 'NEEDS_INTRODUCTION';
 }
 
