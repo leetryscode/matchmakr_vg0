@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import GlassCard from '@/components/ui/GlassCard';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 
 interface NotificationsSectionProps {
   userId?: string;
@@ -252,89 +253,126 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
           </button>
         </div>
       )}
-      <div className="flex flex-col gap-3">
-        {loading ? (
+      {loading ? (
+        <div className="flex flex-col gap-3">
           <GlassCard variant="1" className="p-4">
             <div className="text-center py-2">
               <p className="type-meta">Loading notifications...</p>
             </div>
           </GlassCard>
-        ) : (() => {
-          // Dismissing overrides filter: keep cards in DOM so slide animation can run
-          const visibleNotifications = notifications.filter((n) => {
-            if (dismissing.has(n.id)) return true;
-            if (optimisticallyDismissed.has(n.id)) return false;
-            return true;
-          });
-          return visibleNotifications.length === 0 ? (
-            <GlassCard variant="1" className="p-4">
-              <div className="text-center py-2">
-                <p className="type-meta">No notifications yet.</p>
-                {isDevMode && (
-                  <p className="type-meta text-white/50 mt-2">Use "Add example" button above to create one.</p>
-                )}
-              </div>
-            </GlassCard>
-          ) : (
-            visibleNotifications.map((notification) => {
+        </div>
+      ) : (() => {
+        // Dismissing overrides filter: keep cards in DOM so slide animation can run
+        const visibleNotifications = notifications.filter((n) => {
+          if (dismissing.has(n.id)) return true;
+          if (optimisticallyDismissed.has(n.id)) return false;
+          return true;
+        });
+        if (visibleNotifications.length === 0) {
+          return (
+            <div className="flex flex-col gap-3">
+              <GlassCard variant="1" className="p-4">
+                <div className="text-center py-2">
+                  <p className="type-meta">No notifications yet.</p>
+                  {isDevMode && (
+                    <p className="type-meta text-white/50 mt-2">Use "Add example" button above to create one.</p>
+                  )}
+                </div>
+              </GlassCard>
+            </div>
+          );
+        }
+        const lastIndex = visibleNotifications.length - 1;
+        const stackDisabled = dismissing.size > 0 || acknowledging.size > 0;
+        return (
+          <div
+            className={cn(
+              'relative overflow-visible',
+              stackDisabled && 'pointer-events-none'
+            )}
+          >
+            {visibleNotifications.map((notification, idx) => {
+              const isTop = idx === lastIndex;
+              const distFromTop = lastIndex - idx;
+              const depthY = distFromTop === 0 ? 0 : distFromTop === 1 ? 6 : 12;
+              const depthOpacity = distFromTop === 0 ? 100 : distFromTop === 1 ? 85 : 70;
+              const depthScale = distFromTop === 0 ? 1 : 0.99;
               const isAcknowledging = acknowledging.has(notification.id);
               const isDismissing = dismissing.has(notification.id);
               return (
-                <GlassCard
+                <div
                   key={notification.id}
-                  variant="1"
-                  className={`p-4 relative transition-[transform,opacity] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
-                    isDismissing
-                      ? '-translate-x-[140%] opacity-0 scale-[0.99] pointer-events-none'
-                      : 'translate-x-0 opacity-100 scale-100'
-                  }`}
-                  style={{ transitionDuration: `${SLIDE_MS}ms` }}
+                  className={cn(
+                    isTop ? 'relative' : 'absolute top-0 inset-x-0',
+                    !isTop && 'pointer-events-none'
+                  )}
+                  style={{
+                    zIndex: 1000 + idx,
+                    transform: `translateY(${depthY}px) scale(${depthScale})`,
+                    opacity: depthOpacity / 100,
+                  }}
+                  aria-hidden={!isTop}
+                  inert={!isTop || undefined}
+                  tabIndex={!isTop ? -1 : undefined}
                 >
-                  {/* Dismiss button - boxed checkmark, status pill green on ACK */}
-                  <button
-                    onClick={() => handleDismiss(notification.id)}
-                    disabled={isAcknowledging || isDismissing}
-                    className={`absolute top-4 right-3 p-1.5 rounded-md border transition-all ease-out focus:outline-none focus:ring-2 focus:ring-white/30 ${
-                      isAcknowledging
-                        ? 'bg-status-in-motion/20 border-status-in-motion/50 scale-[1.06]'
-                        : 'bg-transparent border-white/20 hover:bg-white/10 hover:border-white/30'
-                    } ${isDismissing ? 'opacity-60' : 'opacity-100'}`}
-                    style={{ transitionDuration: `${ACK_MS}ms` }}
-                    aria-label="Dismiss notification"
+                  <GlassCard
+                    variant="1"
+                    className={`p-4 relative transition-[transform,opacity] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
+                      isDismissing
+                        ? '-translate-x-[140%] opacity-0 scale-[0.99] pointer-events-none'
+                        : 'translate-x-0 opacity-100 scale-100'
+                    }`}
+                    style={{
+                      transitionDuration: `${SLIDE_MS}ms`,
+                      ...(isDismissing ? { willChange: 'transform, opacity' as const } : {}),
+                    }}
                   >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={isAcknowledging ? 2.75 : 2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className={`transition-all ease-out ${
-                        isAcknowledging ? 'text-white scale-[1.06]' : 'text-white/70 hover:text-white'
-                      }`}
+                    {/* Dismiss button - boxed checkmark, status pill green on ACK */}
+                    <button
+                      onClick={() => handleDismiss(notification.id)}
+                      disabled={isAcknowledging || isDismissing}
+                      className={`absolute top-4 right-3 p-1.5 rounded-md border transition-all ease-out focus:outline-none focus:ring-2 focus:ring-white/30 ${
+                        isAcknowledging
+                          ? 'bg-status-in-motion/20 border-status-in-motion/50 scale-[1.06]'
+                          : 'bg-transparent border-white/20 hover:bg-white/10 hover:border-white/30'
+                      } ${isDismissing ? 'opacity-60' : 'opacity-100'}`}
                       style={{ transitionDuration: `${ACK_MS}ms` }}
+                      aria-label="Dismiss notification"
                     >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </button>
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={isAcknowledging ? 2.75 : 2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className={`transition-all ease-out ${
+                          isAcknowledging ? 'text-white scale-[1.06]' : 'text-white/70 hover:text-white'
+                        }`}
+                        style={{ transitionDuration: `${ACK_MS}ms` }}
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </button>
 
-                  {/* Notification content */}
-                  <div className="pr-8">
-                    <h3 className="type-body font-semibold text-white/90 mb-1.5">
-                      {getNotificationTitle(notification.type)}
-                    </h3>
-                    <p className="type-meta text-white/70">
-                      {getNotificationBody(notification)}
-                    </p>
-                  </div>
-                </GlassCard>
+                    {/* Notification content */}
+                    <div className="pr-8">
+                      <h3 className="type-body font-semibold text-white/90 mb-1.5">
+                        {getNotificationTitle(notification.type)}
+                      </h3>
+                      <p className="type-meta text-white/70">
+                        {getNotificationBody(notification)}
+                      </p>
+                    </div>
+                  </GlassCard>
+                </div>
               );
-            })
-          );
-        })()}
-      </div>
+            })}
+          </div>
+        );
+      })()}
     </div>
   );
 }
