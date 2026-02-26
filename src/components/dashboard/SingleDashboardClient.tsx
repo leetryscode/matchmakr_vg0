@@ -543,16 +543,59 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             onSuccess={(mode) => setToast({ message: mode === 'connect' ? 'Request sent' : 'Invite sent', type: 'success' })}
           />
           
-          {/* My matches - empty state (Preview Row pattern for cold-start; reuse for other chat empty states later) */}
+          {/* My matches — show real chat rows when singleChats exist (e.g. sponsor deleted but match remains) */}
           <section className="mt-10">
             <SectionHeader title="Introduced by my sponsor" />
-            <p className="mt-4 type-meta text-text-light">
-              Conversations begin here after your sponsor makes an introduction.
-            </p>
-            <div className="mt-4">
-              <PreviewRow title="Alex" subtitle="Introduced by Paula" label="Preview" />
-              <InviteSingleReferralRow onClick={() => setIsInviteSingleReferralOpen(true)} />
-            </div>
+            {singleChats.length === 0 ? (
+              <>
+                <p className="mt-4 type-meta text-text-light">
+                  Conversations begin here after your sponsor makes an introduction.
+                </p>
+                <div className="mt-4">
+                  <PreviewRow title="Alex" subtitle="Introduced by Paula" label="Preview" />
+                  <InviteSingleReferralRow onClick={() => setIsInviteSingleReferralOpen(true)} />
+                </div>
+              </>
+            ) : (
+              <div className="mt-4 flex flex-col gap-4">
+                {singleChats.map((row, idx) => (
+                  <ChatRow
+                    key={row.otherSingle.id}
+                    photo={row.otherSingle.photo}
+                    name={row.otherSingle.name}
+                    lastMessage={row.lastMessage ? row.lastMessage.content : 'Click to chat'}
+                    unreadCount={row.unreadCount}
+                    onClick={() => handleOpenSingleChat(row)}
+                    timestamp={row.lastMessage ? new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                    menuButton={
+                      <button
+                        className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-background-card/50 focus:outline-none transition-colors text-text-light"
+                        onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); }}
+                        tabIndex={-1}
+                        aria-label="Open menu"
+                      >
+                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                          <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
+                          <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                          <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
+                        </svg>
+                      </button>
+                    }
+                    menu={menuOpenIdx === idx && (
+                      <div ref={el => { menuRefs.current[idx] = el; }} className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
+                        <button
+                          className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
+                          onClick={e => { e.stopPropagation(); setShowUnmatchModal(true); setUnmatchTarget(row); setMenuOpenIdx(null); }}
+                        >
+                          Unmatch
+                        </button>
+                      </div>
+                    )}
+                  />
+                ))}
+                <InviteSingleReferralRow onClick={() => setIsInviteSingleReferralOpen(true)} />
+              </div>
+            )}
           </section>
           
           <InviteSingleReferralModal
@@ -576,6 +619,41 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           {/* Footer spacer with brand mark */}
           <DashboardFooterSpacer />
         </div>
+        {/* Single-to-Single Chat Modal (needed when unsponsored but has matches) */}
+        {openChat && selectedSingle && (
+          <ChatModal
+            open={openChat}
+            onClose={() => { setOpenChat(false); setSelectedSingle(null); fetchMatches(); }}
+            currentUserId={userId}
+            currentUserName={userName}
+            currentUserProfilePic={userProfilePic}
+            otherUserId={selectedSingle.otherSingle.id}
+            otherUserName={selectedSingle.otherSingle.name}
+            otherUserProfilePic={selectedSingle.otherSingle.photo}
+            aboutSingle={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
+            clickedSingle={{ id: selectedSingle.otherSingle.id, name: selectedSingle.otherSingle.name, photo: selectedSingle.otherSingle.photo }}
+            isSingleToSingle={true}
+          />
+        )}
+        {/* Unmatch Confirmation Modal */}
+        {showUnmatchModal && unmatchTarget && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+            <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-white/20">
+              <h2 className="type-section mb-4 text-text-dark">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
+              <p className="text-text-light mb-6">
+                This will permanently remove your match and chat history. You would need to be matched again to chat in the future.
+              </p>
+              <div className="flex justify-center gap-4">
+                <button onClick={() => { setShowUnmatchModal(false); setUnmatchTarget(null); }} className="px-6 py-2 bg-white/20 text-text-dark rounded-md hover:bg-white/30 font-semibold transition-colors">
+                  Cancel
+                </button>
+                <button onClick={handleUnmatch} className="rounded-cta px-6 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200">
+                  Unmatch
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {toast && (
           <Toast
             message={toast.message}
