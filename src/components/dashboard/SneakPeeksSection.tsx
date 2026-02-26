@@ -33,18 +33,18 @@ interface SneakPeeksSectionProps {
 // Example preview card for empty state - matches pair-capsule style (transparent, bordered)
 const ExamplePreviewCard = () => {
     return (
-        <div className="relative w-full bg-transparent border border-border-light/50 rounded-2xl p-3 flex items-center gap-3 opacity-80 pointer-events-none" style={{ maxWidth: '90%' }}>
+        <div className="relative w-full bg-transparent border border-orbit-border/50 rounded-2xl p-3 flex items-center gap-3 opacity-80 pointer-events-none" style={{ maxWidth: '90%' }}>
             {/* X button - absolutely positioned, subtle overlay */}
-            <div className="absolute top-2 right-2 text-text-light/30 p-1">
+            <div className="absolute top-2 right-2 orbit-muted opacity-50 p-1">
                 <XMarkIcon className="w-3 h-3" />
             </div>
 
             {/* Left: Smaller rounded-rectangle image - matches real preview structure */}
             <div className="flex-shrink-0">
-                <div className="relative rounded-[18px] overflow-hidden bg-background-card" style={{ width: '64px', height: '64px' }}>
+                <div className="relative rounded-[18px] overflow-hidden orbit-surface" style={{ width: '64px', height: '64px' }}>
                     {/* Generic placeholder - simple outline person */}
-                    <div className="w-full h-full flex items-center justify-center bg-background-main">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-text-light">
+                    <div className="w-full h-full flex items-center justify-center orbit-surface">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="orbit-muted">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                             <circle cx="12" cy="7" r="4" />
                         </svg>
@@ -64,10 +64,10 @@ const ExamplePreviewCard = () => {
             <div className="flex-1 min-w-0 flex flex-col justify-center">
                 {/* Actions - stacked vertically, narrower, quieter - matches real preview */}
                 <div className="flex flex-col gap-1.5">
-                    <div className="px-4 py-2 text-text-light bg-background-card rounded-lg text-xs max-w-[140px] shadow-sm">
+                    <div className="px-4 py-2 orbit-muted orbit-surface rounded-lg text-xs max-w-[140px] shadow-sm">
                         I'm not sure yet
                     </div>
-                    <div className="px-4 py-2 text-text-light bg-background-card rounded-lg text-xs max-w-[140px] shadow-sm">
+                    <div className="px-4 py-2 orbit-muted orbit-surface rounded-lg text-xs max-w-[140px] shadow-sm">
                         I'm open to it
                     </div>
                 </div>
@@ -114,10 +114,10 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
             {/* Capsule: left avatar + names + status pill + right avatar — tinted outline matches status */}
             <div
                 onClick={onClick}
-                className={`flex-1 flex items-center gap-4 px-4 py-3 bg-transparent rounded-full min-w-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 ${
+                className={`flex-1 flex items-center gap-4 px-4 py-3 bg-transparent rounded-full min-w-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-orbit-gold/50 ${
                     ['PENDING', 'OPEN_TO_IT', 'NOT_SURE_YET'].includes(sneakPeek.status)
                         ? getPreviewResponseCapsuleBorder(sneakPeek.status as PreviewResponseStatus)
-                        : 'border border-border-light/50'
+                        : 'border border-orbit-border/50'
                 } ${
                     isArchiving ? 'opacity-0 translate-x-2' : 'opacity-100 translate-x-0'
                 }`}
@@ -131,7 +131,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
                 }}
             >
                 {/* Left: Single avatar (48px) */}
-                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-background-card overflow-hidden flex-shrink-0">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center orbit-surface overflow-hidden flex-shrink-0">
                     {recipientAvatarUrl ? (
                         <Image
                             src={recipientAvatarUrl}
@@ -141,7 +141,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
                             className="w-full h-full object-cover"
                         />
                     ) : (
-                        <span className="text-text-dark text-base font-bold">
+                        <span className="text-orbit-text text-base font-bold">
                             {recipientName?.charAt(0).toUpperCase() || '?'}
                         </span>
                     )}
@@ -150,11 +150,11 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
                 {/* Center: Names + status pill (primary metadata) */}
                 <div className="flex-1 flex flex-col items-center justify-center min-w-0">
                     <div className="flex items-center gap-1.5 text-sm">
-                        <span className="text-text-dark font-semibold whitespace-nowrap">
+                        <span className="text-orbit-text font-semibold whitespace-nowrap">
                             {recipientName || 'Your single'}
                         </span>
-                        <span className="text-text-light">·</span>
-                        <span className="text-text-light truncate min-w-0">
+                        <span className="orbit-muted">·</span>
+                        <span className="orbit-muted truncate min-w-0">
                             {targetName || 'Someone'}
                         </span>
                     </div>
@@ -166,7 +166,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
                 </div>
 
                 {/* Right: Match avatar (48px) */}
-                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-background-card overflow-hidden flex-shrink-0 opacity-90">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center orbit-surface overflow-hidden flex-shrink-0 opacity-90">
                     {sneakPeek.photo_url ? (
                         <Image
                             src={sneakPeek.photo_url}
@@ -176,7 +176,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
                             className="w-full h-full object-cover"
                         />
                     ) : (
-                        <span className="text-text-dark text-base font-bold">
+                        <span className="text-orbit-text text-base font-bold">
                             {targetName?.charAt(0).toUpperCase() || '?'}
                         </span>
                     )}
@@ -186,7 +186,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
             {/* Per-item X — outside capsule, in gutter */}
             <button
                 onClick={handleArchiveClick}
-                className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] flex items-center justify-center rounded-lg text-text-light/70 hover:bg-white/10 hover:text-text-dark active:bg-white/15 transition-colors flex-shrink-0"
+                className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] flex items-center justify-center rounded-lg orbit-muted hover:bg-orbit-border/20 hover:text-orbit-text active:bg-orbit-border/30 transition-colors flex-shrink-0"
                 aria-label="Dismiss"
                 tabIndex={-1}
             >
@@ -277,17 +277,17 @@ export default function SneakPeeksSection({ sponsorId, sponsoredSingles }: Sneak
     return (
         <div>
             <div className="mb-3 mt-8 first:mt-0">
-                <h2 className="type-section text-text-dark">
+                <h2 className="type-section text-orbit-text">
                     Preview responses
                 </h2>
             </div>
             
             {loading ? (
-                <div className="text-text-light text-sm">Loading...</div>
+                <div className="orbit-muted text-sm">Loading...</div>
             ) : visibleSneakPeeks.length === 0 ? (
-                <div className="mt-4 rounded-card-lg bg-background-card shadow-card px-6 py-5">
+                <div className="mt-4 orbit-card px-6 py-5">
                     <div className="mb-3">
-                        <p className="text-xs text-text-light">No previews sent yet. This is what your single will see:</p>
+                        <p className="text-xs orbit-muted">No previews sent yet. This is what your single will see:</p>
                     </div>
                     <div className="flex flex-col gap-3">
                         <ExamplePreviewCard />

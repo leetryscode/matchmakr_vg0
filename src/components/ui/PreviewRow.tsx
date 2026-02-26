@@ -46,7 +46,7 @@ export default function PreviewRow({
         {/* Avatar: generic placeholder (no real user) */}
         <div
           className={cn(
-            'w-12 h-12 rounded-full overflow-hidden border-2 border-border-light bg-background-card flex-shrink-0',
+            'w-12 h-12 rounded-full overflow-hidden border-2 border-orbit-border/50 orbit-surface flex-shrink-0',
             'flex items-center justify-center text-text-light'
           )}
           aria-hidden

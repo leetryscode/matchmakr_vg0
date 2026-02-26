@@ -428,7 +428,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             }
           }}
         >
-          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border-light bg-background-card flex-shrink-0">
+          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-orbit-border/50 orbit-surface flex-shrink-0">
             {profile?.profile_pic_url ? (
               <img src={profile.profile_pic_url} alt={profile.name || 'Sponsor'} className="w-full h-full object-cover" />
             ) : (
@@ -448,7 +448,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           </div>
           <div className="relative menu-btn flex items-center justify-end flex-shrink-0">
             <button
-              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-background-card/50 focus:outline-none transition-colors text-text-light"
+              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-orbit-surface/50 focus:outline-none transition-colors text-orbit-text2"
               onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === msg.conversation.id ? null : msg.conversation.id); }}
               tabIndex={-1}
               aria-label="Open menu"
@@ -482,7 +482,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
   const InviteAction = () => (
     <button
       onClick={() => setIsInviteSponsorModalOpen(true)}
-      className="type-meta bg-background-card hover:bg-background-card/90 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
+      className="type-meta orbit-surface border border-orbit-border/50 text-orbit-text2 hover:bg-orbit-border/20 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
     >
       Invite another sponsor
     </button>
@@ -568,7 +568,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             }
           }}
         >
-          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border-light bg-background-card flex-shrink-0">
+          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-orbit-border/50 orbit-surface flex-shrink-0">
             {sponsoredSingles[0].profile_pic_url ? (
               <img src={sponsoredSingles[0].profile_pic_url} alt={sponsoredSingles[0].name || 'Single'} className="w-full h-full object-cover" />
             ) : (

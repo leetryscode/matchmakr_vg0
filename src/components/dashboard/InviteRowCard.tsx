@@ -97,9 +97,9 @@ const InviteRowCard: React.FC<InviteRowCardProps> = ({
   return (
     <div
       onClick={isClickable ? onClick : undefined}
-      className={`bg-background-card rounded-card-lg shadow-card p-4 group ${
+      className={`orbit-card p-4 group ${
         isClickable
-          ? 'hover:bg-background-card/95 hover:shadow-card-hover hover:-translate-y-[1px] active:translate-y-0 active:shadow-card cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50'
+          ? 'hover:shadow-card-hover hover:-translate-y-[1px] active:translate-y-0 active:shadow-card cursor-pointer focus:outline-none focus:ring-2 focus:ring-orbit-gold/50'
           : ''
       }`}
       role={isClickable ? 'button' : undefined}

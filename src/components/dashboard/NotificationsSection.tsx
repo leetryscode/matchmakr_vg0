@@ -331,10 +331,10 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
                     <button
                       onClick={() => handleDismiss(notification.id)}
                       disabled={isAcknowledging || isDismissing}
-                      className={`absolute top-4 right-3 p-1.5 rounded-md border transition-all ease-out focus:outline-none focus:ring-2 focus:ring-white/30 ${
+                      className={`absolute top-4 right-3 p-1.5 rounded-md border transition-all ease-out focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 ${
                         isAcknowledging
                           ? 'bg-status-in-motion/20 border-status-in-motion/50 scale-[1.06]'
-                          : 'bg-transparent border-white/20 hover:bg-white/10 hover:border-white/30'
+                          : 'bg-transparent border-orbit-border/50 hover:bg-orbit-border/20 hover:border-orbit-border/70'
                       } ${isDismissing ? 'opacity-60' : 'opacity-100'}`}
                       style={{ transitionDuration: `${ACK_MS}ms` }}
                       aria-label="Dismiss notification"
@@ -349,7 +349,7 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         className={`transition-all ease-out ${
-                          isAcknowledging ? 'text-white scale-[1.06]' : 'text-white/70 hover:text-white'
+                          isAcknowledging ? 'text-orbit-text scale-[1.06]' : 'text-orbit-muted hover:text-orbit-text'
                         }`}
                         style={{ transitionDuration: `${ACK_MS}ms` }}
                       >
@@ -359,10 +359,10 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
 
                     {/* Notification content */}
                     <div className="pr-8">
-                      <h3 className="type-body font-semibold text-white/90 mb-1.5">
+                      <h3 className="type-body font-semibold text-orbit-text mb-1.5">
                         {getNotificationTitle(notification.type)}
                       </h3>
-                      <p className="type-meta text-white/70">
+                      <p className="type-meta orbit-muted">
                         {getNotificationBody(notification)}
                       </p>
                     </div>

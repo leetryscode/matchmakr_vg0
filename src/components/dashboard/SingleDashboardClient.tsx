@@ -414,7 +414,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
       onClick={e => { if ((e.target as HTMLElement).closest('.menu-btn')) return; onClick && onClick(e); }}
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick && onClick(e); } }}
     >
-      <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border-light bg-background-card flex-shrink-0">
+      <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-orbit-border/50 orbit-surface flex-shrink-0">
         {photo ? (
           <Image src={photo} alt={name} width={48} height={48} className="w-full h-full object-cover" />
         ) : (
@@ -446,7 +446,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   const InviteAction = () => (
     <button
       onClick={() => setIsInviteOpen(true)}
-      className="type-meta bg-background-card hover:bg-background-card/90 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
+      className="type-meta orbit-surface border border-orbit-border/50 text-orbit-text2 hover:bg-orbit-border/20 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
     >
       Invite
     </button>
@@ -456,7 +456,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   const InviteSponsorAction = () => (
     <button
       onClick={() => setIsInviteSponsorOpen(true)}
-      className="type-meta bg-background-card hover:bg-background-card/90 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
+      className="type-meta orbit-surface border border-orbit-border/50 text-orbit-text2 hover:bg-orbit-border/20 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
     >
       Invite
     </button>
@@ -569,7 +569,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                     timestamp={row.lastMessage ? new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                     menuButton={
                       <button
-                        className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-background-card/50 focus:outline-none transition-colors text-text-light"
+                        className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-orbit-surface/50 focus:outline-none transition-colors text-orbit-text2"
                         onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); }}
                         tabIndex={-1}
                         aria-label="Open menu"
@@ -744,7 +744,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             timestamp={sponsorTimestamp}
             menuButton={
               <button
-                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-background-card/50 focus:outline-none transition-colors text-text-light"
+                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-orbit-surface/50 focus:outline-none transition-colors text-orbit-text2"
                 onClick={e => { e.stopPropagation(); setSponsorMenuOpen(!sponsorMenuOpen); setMenuOpenIdx(null); }}
                 tabIndex={-1}
                 aria-label="Open menu"
@@ -802,7 +802,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                   timestamp={row.lastMessage ? new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                   menuButton={
                     <button
-                      className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-background-card/50 focus:outline-none transition-colors text-text-light"
+                      className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-orbit-surface/50 focus:outline-none transition-colors text-orbit-text2"
                       onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); setSponsorMenuOpen(false); }}
                       tabIndex={-1}
                       aria-label="Open menu"

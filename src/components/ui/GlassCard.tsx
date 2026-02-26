@@ -11,10 +11,8 @@ type GlassCardProps = {
 };
 
 export default function GlassCard({ children, variant = '1', className, style }: GlassCardProps) {
-  const baseClasses = 'rounded-card-lg bg-background-card shadow-card';
-  const variantClasses = variant === '1' 
-    ? ''
-    : 'shadow-card-hover';
+  const baseClasses = 'orbit-card';
+  const variantClasses = variant === '2' ? 'shadow-card-hover' : '';
 
   return (
     <div className={cn(baseClasses, variantClasses, className)} style={style}>

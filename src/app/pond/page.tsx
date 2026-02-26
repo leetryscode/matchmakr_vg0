@@ -685,7 +685,7 @@ export default function PondPage() {
                                                 className="w-8 h-8 rounded-full object-cover border border-border-light"
                                             />
                                         ) : (
-                                            <div className="w-8 h-8 rounded-full bg-background-card border border-border-light flex items-center justify-center">
+                                            <div className="w-8 h-8 rounded-full orbit-surface border border-orbit-border/50 flex items-center justify-center">
                                                 <span className="text-text-dark font-bold text-xs">
                                                     {currentSponsoredSingle.name?.charAt(0).toUpperCase() || '?'}
                                                 </span>
@@ -696,7 +696,7 @@ export default function PondPage() {
                                 ) : (
                                     <button
                                         onClick={() => setShowInviteSingleModal(true)}
-                                        className="px-3 py-1 rounded-lg bg-background-card text-text-light hover:bg-background-card/90 hover:text-text-dark transition-colors text-sm shadow-sm hover:shadow-md"
+                                        className="orbit-ring px-3 py-1 rounded-lg bg-orbit-gold text-orbit-bg-start hover:bg-orbit-goldDark font-medium transition-colors text-sm shadow-sm hover:shadow-md"
                                     >
                                         Invite a single
                                     </button>
@@ -714,8 +714,8 @@ export default function PondPage() {
                                                     onClick={() => handleSingleSelect(single)}
                                                     className={`px-3 py-1 rounded-lg border transition-colors text-sm flex-shrink-0 ${
                                                         currentSponsoredSingle.id === single.id
-                                                            ? 'bg-background-card border-border-light text-text-dark ring-2 ring-primary-blue/50'
-                                                            : 'bg-background-card border-border-light text-text-dark hover:bg-background-card/90'
+                                                            ? 'orbit-surface border-orbit-border text-orbit-text ring-2 ring-orbit-gold/50'
+                                                            : 'orbit-surface border-orbit-border/50 text-orbit-text2 hover:bg-orbit-border/20'
                                                     }`}
                                                 >
                                                     {single.name}
@@ -726,14 +726,14 @@ export default function PondPage() {
                                     {/* Invite button */}
                                     <button
                                         onClick={() => setShowInviteSingleModal(true)}
-                                        className="px-3 py-1 rounded-lg bg-background-card text-text-light hover:bg-background-card/90 hover:text-text-dark transition-colors text-sm flex-shrink-0 shadow-sm hover:shadow-md"
+                                        className="orbit-ring px-3 py-1 rounded-lg orbit-surface border border-orbit-border/50 text-orbit-text2 hover:bg-orbit-surface/90 transition-colors text-sm flex-shrink-0 shadow-sm hover:shadow-md"
                                     >
                                         Invite a single
                                     </button>
                                     {/* Tailor Search button */}
                                     <button
                                         onClick={() => setShowTailorSearchModal(true)}
-                                        className="px-3 py-1 rounded-lg bg-background-card text-text-light hover:bg-background-card/90 hover:text-text-dark transition-colors text-sm flex-shrink-0 shadow-sm hover:shadow-md"
+                                        className="px-3 py-1 rounded-lg orbit-surface border border-orbit-border/50 text-orbit-text2 hover:bg-orbit-surface/90 transition-colors text-sm flex-shrink-0 shadow-sm hover:shadow-md"
                                     >
                                         Tailor Search
                                     </button>
@@ -758,7 +758,7 @@ export default function PondPage() {
                                 <p className="text-text-light mt-2">Orbit is still growing — help shape it by inviting someone.</p>
                                 <button
                                     onClick={() => setShowInviteSingleModal(true)}
-                                    className="mt-4 rounded-cta min-h-[44px] px-6 py-2 bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200"
+                                    className="orbit-ring mt-4 rounded-cta min-h-[44px] px-6 py-2 bg-orbit-gold text-orbit-bg-start hover:bg-orbit-goldDark font-semibold shadow-cta-entry transition-colors duration-200"
                                 >
                                     Invite a single
                                 </button>
@@ -790,7 +790,7 @@ export default function PondPage() {
                                                         className="w-full h-full object-cover" 
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-background-card border border-border-light">
+                                                    <div className="w-full h-full flex items-center justify-center orbit-surface border border-orbit-border/50">
                                                         <span className="text-6xl font-bold text-white">{profile.name?.charAt(0).toUpperCase() || '?'}</span>
                                                     </div>
                                                 )}

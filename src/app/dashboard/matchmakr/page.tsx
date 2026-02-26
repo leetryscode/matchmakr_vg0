@@ -29,7 +29,7 @@ const PREVIEW_ORBIT_SATELLITES = [
 const IntroductionsCard = () => (
     <Link 
         href="/pond"
-        className="block w-full bg-background-card hover:bg-background-card/90 rounded-card-lg shadow-card hover:shadow-card-hover hover:-translate-y-[1px] active:translate-y-0 active:shadow-card transition-all duration-200 p-6 group cursor-pointer"
+        className="block w-full orbit-card hover:shadow-card-hover hover:-translate-y-[1px] active:translate-y-0 active:shadow-card transition-all duration-200 p-6 group cursor-pointer"
     >
         <div className="flex items-start justify-between">
             <div className="flex flex-col flex-1">
@@ -55,12 +55,12 @@ const IntroductionsCard = () => (
 );
 
 const ManageSinglesList = () => (
-     <div className="bg-background-card p-6 rounded-lg shadow-card mt-8 border border-gray-200">
+     <div className="orbit-surface p-6 rounded-lg shadow-card mt-8 border border-orbit-border/50">
         <h2 className="type-section mb-4 text-primary-blue">Manage Singles</h2>
-        <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+        <div className="mt-4 p-4 border border-orbit-border/50 rounded-lg bg-orbit-surface/50">
              <p className="text-center type-meta">Chats with the singles you manage.</p>
         </div>
-        <button className="mt-4 w-full rounded-cta min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 py-3">
+        <button className="orbit-ring mt-4 w-full rounded-cta min-h-[48px] bg-orbit-gold text-orbit-bg-start hover:bg-orbit-goldDark font-semibold shadow-cta-entry transition-colors duration-200 py-3">
             Invite a Sponsor!
         </button>
     </div>

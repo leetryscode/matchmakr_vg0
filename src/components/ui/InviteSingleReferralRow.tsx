@@ -30,9 +30,9 @@ export default function InviteSingleReferralRow({ onClick, className }: InviteSi
         onKeyDown={handleKeyDown}
         className={cn(
           'ui-rowcard flex items-center gap-3',
-          'rounded-card-lg bg-background-card shadow-card px-5 py-3',
-          'border border-border-light/60',
-          'cursor-pointer hover:bg-background-card/80 transition-colors',
+          'rounded-card-lg shadow-card px-5 py-3',
+          'border border-orbit-border/50',
+          'cursor-pointer hover:bg-orbit-border/20 transition-colors',
           'focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2'
         )}
         aria-label="Help grow Orbit - Invite someone you trust to join Orbit"
@@ -40,7 +40,7 @@ export default function InviteSingleReferralRow({ onClick, className }: InviteSi
         {/* Avatar: "+" in circle */}
         <div
           className={cn(
-            'w-12 h-12 rounded-full overflow-hidden border-2 border-border-light bg-background-card flex-shrink-0',
+            'w-12 h-12 rounded-full overflow-hidden border-2 border-orbit-border/50 orbit-surface flex-shrink-0',
             'flex items-center justify-center text-text-light text-2xl font-light'
           )}
           aria-hidden

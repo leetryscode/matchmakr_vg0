@@ -56,7 +56,7 @@ export default function ManagedSinglesGrid({ singles, inviteRows = [], userId }:
         right={
           <button
             onClick={openInviteModal}
-            className="type-meta bg-background-card hover:bg-background-card/90 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
+            className="type-meta orbit-surface border border-orbit-border/50 text-orbit-text2 hover:bg-orbit-border/20 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
           >
             Invite
           </button>
