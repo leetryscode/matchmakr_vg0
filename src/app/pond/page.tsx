@@ -643,10 +643,10 @@ export default function PondPage() {
     // Show loading while auth is loading or if we're still loading data
     if (authLoading || (loading && profiles.length === 0 && !showingCachedData)) {
         return (
-            <div className="min-h-screen bg-background-main p-4 flex items-center justify-center">
+            <div className="min-h-screen bg-transparent text-orbit-text p-4 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mx-auto"></div>
-                    <p className="mt-4 text-text-dark">Loading...</p>
+                    <p className="mt-4 text-orbit-text">Loading...</p>
                 </div>
             </div>
         );
@@ -667,10 +667,10 @@ export default function PondPage() {
             body="Discover is available in app mode only. Install Orbit to keep browsing."
             showBackButton={true}
         >
-        <div className="min-h-screen bg-background-main px-0 md:px-4">
+        <div className="min-h-screen bg-transparent text-orbit-text px-0 md:px-4">
             <div className="max-w-none md:max-w-6xl md:mx-auto">
-                {/* Sticky Banner */}
-                <div className="sticky top-0 z-50 bg-background-card shadow-sm">
+                {/* Sticky Banner — orbit-surface for readability and consistency */}
+                <div className="sticky top-0 z-50 orbit-surface shadow-sm">
                     <div className="px-4 md:px-0">
                         <div className="max-w-none md:max-w-6xl md:mx-auto">
                             {/* Row 1: Always visible - "Here for:" + selected single */}
@@ -780,7 +780,7 @@ export default function PondPage() {
                                 const hasEndorsement = profile.matchmakr_endorsement && profile.matchmakr_endorsement.trim().length > 0;
                                 return (
                                     <Link href={`/profile/${profile.id}`} key={profile.id} className="block relative">
-                                        <div className="md:rounded-2xl overflow-hidden bg-background-main shadow-card">
+                                        <div className="md:rounded-2xl overflow-hidden orbit-surface shadow-card">
                                             {/* A) Hero — Pond-specific: large photo, Name/Age overlay, optional occupation */}
                                             <div className="relative w-full aspect-[4/5] md:aspect-[1/1]">
                                                 {profile.profile_pic_url ? (
@@ -835,8 +835,8 @@ export default function PondPage() {
                                                     </div>
                                                 </div>
                                             )}
-                                            {/* Action gradient zone: pairings → intro → interests → coordinate */}
-                                            <div className="bg-gradient-to-b from-transparent via-black/5 to-black/15">
+                                            {/* Action zone: pairings → intro → interests → coordinate (solid, no gradient) */}
+                                            <div className="bg-black/10">
                                                 <div className={`px-4 sm:px-6 md:px-8 space-y-4 ${hasEndorsement ? 'pt-4 pb-2' : 'pt-5 pb-2'}`}>
                                                     <div className="-mt-1">
                                                         <PairingsSection
@@ -873,7 +873,7 @@ export default function PondPage() {
                                                 </div>
                                             </div>
                                             {/* C) Action rail — attached to profile, single primary action */}
-                                            <div className="pt-4 pb-3 px-6 md:px-10 flex items-center justify-between gap-3 bg-background-main">
+                                            <div className="pt-4 pb-3 px-6 md:px-10 flex items-center justify-between gap-3 orbit-surface">
                                                 <div className="flex items-center gap-2 min-w-0">
                                                     {sponsorPhotoUrl ? (
                                                         <img 

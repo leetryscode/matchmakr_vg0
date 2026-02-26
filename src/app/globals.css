@@ -92,6 +92,10 @@ body {
 /* Orbit semantic utilities — canvas, surface, card, muted, divider, focus ring */
 @layer utilities {
   .orbit-canvas {
+    @apply bg-orbit-bg-start;
+  }
+
+  .orbit-canvas-gradient {
     @apply bg-gradient-to-b from-orbit-bg-start to-orbit-bg-end;
   }
 
