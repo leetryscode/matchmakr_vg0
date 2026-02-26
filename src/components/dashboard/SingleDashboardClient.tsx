@@ -446,7 +446,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   const InviteAction = () => (
     <button
       onClick={() => setIsInviteOpen(true)}
-      className="type-meta orbit-surface border border-orbit-border/50 text-orbit-text2 hover:bg-orbit-border/20 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
+      className="orbit-btn-secondary type-meta px-3 py-1 text-sm shadow-sm"
     >
       Invite
     </button>
@@ -456,7 +456,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   const InviteSponsorAction = () => (
     <button
       onClick={() => setIsInviteSponsorOpen(true)}
-      className="type-meta orbit-surface border border-orbit-border/50 text-orbit-text2 hover:bg-orbit-border/20 rounded-lg px-3 py-1 transition-colors shadow-sm hover:shadow-md"
+      className="orbit-btn-secondary type-meta px-3 py-1 text-sm shadow-sm"
     >
       Invite
     </button>

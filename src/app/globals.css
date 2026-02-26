@@ -91,6 +91,13 @@ body {
 
 /* Orbit semantic utilities — canvas, surface, card, muted, divider, focus ring */
 @layer utilities {
+  /*
+   * Surface tiers (orbit-surface, orbit-surface-soft, orbit-surface-strong, orbit-card) use
+   * plain CSS instead of @apply because Tailwind does not generate opacity variants like
+   * bg-orbit-surface/72 for custom colors outside its default scale (0,5,10,…,100).
+   * Safelist did not resolve the build error. Raw rgb(var(--orbit-*) / 0.xx) avoids the
+   * limitation while still reading from :root theme variables.
+   */
   .orbit-canvas {
     @apply bg-orbit-bg-start;
   }
@@ -100,12 +107,27 @@ body {
   }
 
   .orbit-surface {
-    @apply bg-orbit-surface/80 border border-orbit-border/50 backdrop-blur-md;
+    @apply border backdrop-blur-md;
+    background-color: rgb(var(--orbit-surface) / 0.72);
+    border-color: rgb(var(--orbit-border) / 0.4);
+  }
+
+  .orbit-surface-soft {
+    @apply backdrop-blur-sm;
+    background-color: rgb(var(--orbit-surface) / 0.38);
+    border: 1px solid rgb(var(--orbit-border) / 0.22);
+  }
+
+  .orbit-surface-strong {
+    @apply border backdrop-blur-md;
+    background-color: rgb(var(--orbit-surface) / 0.92);
+    border-color: rgb(var(--orbit-border) / 0.6);
   }
 
   .orbit-card {
-    @apply bg-orbit-surface/80 border border-orbit-border/50 backdrop-blur-md
-           rounded-card-lg shadow-card;
+    @apply rounded-card-lg shadow-card backdrop-blur-md;
+    background-color: rgb(var(--orbit-surface) / 0.72);
+    border: 1px solid rgb(var(--orbit-border) / 0.55);
   }
 
   .orbit-muted {
@@ -118,6 +140,20 @@ body {
 
   .orbit-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orbit-gold/30 focus-visible:ring-offset-2 focus-visible:ring-offset-orbit-bg-start;
+  }
+
+  .orbit-btn-primary {
+    @apply orbit-ring rounded-lg bg-orbit-gold text-orbit-bg-start font-semibold
+           hover:bg-orbit-goldDark active:bg-orbit-goldDark/90 transition-colors;
+  }
+
+  .orbit-btn-secondary {
+    @apply orbit-ring orbit-surface border border-orbit-border/50 text-orbit-text2
+           hover:bg-orbit-border/20 rounded-lg transition-colors;
+  }
+
+  .orbit-btn-ghost {
+    @apply orbit-ring text-orbit-text2 hover:bg-orbit-border/20 rounded-lg transition-colors;
   }
 }
 
@@ -176,9 +212,9 @@ body {
     @apply text-xs text-text-light leading-normal;
   }
 
-  /* Interactive row cards: chat rows, list items */
+  /* Interactive row cards: chat rows, list items — softer tier for hierarchy */
   .ui-rowcard {
-    @apply orbit-surface rounded-card-lg shadow-card transition
+    @apply orbit-surface-soft rounded-card-lg shadow-card transition
            px-5 py-3 flex items-center gap-3;
   }
 

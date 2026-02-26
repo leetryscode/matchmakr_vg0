@@ -669,8 +669,8 @@ export default function PondPage() {
         >
         <div className="min-h-screen bg-transparent text-orbit-text px-0 md:px-4">
             <div className="max-w-none md:max-w-6xl md:mx-auto">
-                {/* Sticky Banner — orbit-surface for readability and consistency */}
-                <div className="sticky top-0 z-50 orbit-surface shadow-sm">
+                {/* Sticky Banner — orbit-surface-strong for hierarchy */}
+                <div className="sticky top-0 z-50 orbit-surface-strong shadow-sm">
                     <div className="px-4 md:px-0">
                         <div className="max-w-none md:max-w-6xl md:mx-auto">
                             {/* Row 1: Always visible - "Here for:" + selected single */}
@@ -726,14 +726,14 @@ export default function PondPage() {
                                     {/* Invite button */}
                                     <button
                                         onClick={() => setShowInviteSingleModal(true)}
-                                        className="orbit-ring px-3 py-1 rounded-lg orbit-surface border border-orbit-border/50 text-orbit-text2 hover:bg-orbit-surface/90 transition-colors text-sm flex-shrink-0 shadow-sm hover:shadow-md"
+                                        className="orbit-btn-secondary px-3 py-1 text-sm flex-shrink-0 shadow-sm"
                                     >
                                         Invite a single
                                     </button>
                                     {/* Tailor Search button */}
                                     <button
                                         onClick={() => setShowTailorSearchModal(true)}
-                                        className="px-3 py-1 rounded-lg orbit-surface border border-orbit-border/50 text-orbit-text2 hover:bg-orbit-surface/90 transition-colors text-sm flex-shrink-0 shadow-sm hover:shadow-md"
+                                        className="orbit-btn-secondary px-3 py-1 text-sm flex-shrink-0 shadow-sm"
                                     >
                                         Tailor Search
                                     </button>

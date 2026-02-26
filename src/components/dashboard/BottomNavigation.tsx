@@ -20,7 +20,7 @@ function PondBubble({ href }: { href: string }) {
     return (
         <Link href={href} className="flex items-center justify-center" aria-label="Discover" title="Discover">
             <div 
-                className="rounded-full flex items-center justify-center bg-white/10 backdrop-blur-xl border border-white/15 shadow-card"
+                className="rounded-full flex items-center justify-center orbit-surface-strong shadow-card"
                 style={{ 
                     width: `${BOTTOM_NAV_HEIGHT_PX}px`,
                     height: `${BOTTOM_NAV_HEIGHT_PX}px`,
@@ -204,9 +204,9 @@ export default function BottomNavigation({ userId }: BottomNavigationProps) {
                 maxWidth: '400px'
             }}
         >
-            {/* Floating bottom navigation pill - glass style */}
+            {/* Floating bottom navigation pill — orbit-surface-strong for hierarchy */}
             <nav 
-                className="flex-1 rounded-card-lg px-4 py-3 overflow-hidden bg-white/10 backdrop-blur-xl border border-white/15 shadow-card"
+                className="flex-1 rounded-card-lg px-4 py-3 overflow-hidden orbit-surface-strong shadow-card"
                 style={{ 
                     height: `${BOTTOM_NAV_HEIGHT_PX}px`,
                     minWidth: 0,

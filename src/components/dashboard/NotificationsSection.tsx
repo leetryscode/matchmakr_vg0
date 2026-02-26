@@ -255,7 +255,7 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
       )}
       {loading ? (
         <div className="flex flex-col gap-3">
-          <GlassCard variant="1" className="p-4">
+          <GlassCard variant="soft" className="p-4">
             <div className="text-center py-2">
               <p className="type-meta">Loading notifications...</p>
             </div>
@@ -271,7 +271,7 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
         if (visibleNotifications.length === 0) {
           return (
             <div className="flex flex-col gap-3">
-              <GlassCard variant="1" className="p-4">
+              <GlassCard variant="soft" className="p-4">
                 <div className="text-center py-2">
                   <p className="type-meta">No notifications yet.</p>
                   {isDevMode && (
@@ -316,7 +316,7 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
                   tabIndex={!isTop ? -1 : undefined}
                 >
                   <GlassCard
-                    variant="1"
+                    variant="soft"
                     className={`p-4 relative transition-[transform,opacity] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
                       isDismissing
                         ? '-translate-x-[140%] opacity-0 scale-[0.99] pointer-events-none'

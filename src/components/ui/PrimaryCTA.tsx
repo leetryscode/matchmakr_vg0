@@ -12,7 +12,7 @@ type PrimaryCTAProps = {
 };
 
 export default function PrimaryCTA({ children, onClick, href, className }: PrimaryCTAProps) {
-  const baseClasses = 'orbit-ring rounded-cta bg-orbit-gold text-orbit-bg-start font-semibold shadow-cta-entry hover:bg-orbit-goldDark active:bg-orbit-goldDark/90 transition-colors duration-200';
+  const baseClasses = 'orbit-btn-primary rounded-cta shadow-cta-entry';
   
   const buttonClasses = cn(
     baseClasses,
