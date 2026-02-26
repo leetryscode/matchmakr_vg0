@@ -136,6 +136,20 @@ Deno.serve(async (req) => {
       throw new Error('Could not end the sponsorship.');
     }
 
+    // Dismiss sponsor-related notifications for the single (no longer relevant)
+    // notifications.user_id = profiles.id = auth user id; targetSingleId is the single's id
+    const sponsorNotifTypes = ['sponsor_logged_in', 'matchmakr_chat', 'sponsor_updated_profile'];
+    const { error: notifError } = await supabaseAdmin
+      .from('notifications')
+      .update({ dismissed_at: new Date().toISOString() })
+      .eq('user_id', targetSingleId)
+      .in('type', sponsorNotifTypes)
+      .is('dismissed_at', null);
+    if (notifError) {
+      console.error('Error dismissing sponsor notifications:', notifError);
+      // Don't throw - sponsorship ending is primary
+    }
+
     // Delete direct messages between the sponsor and single (use sponsorId, not user.id)
     // When SINGLE calls, user.id = single; when MATCHMAKR calls, user.id = sponsor. Use sponsorId + targetSingleId for both.
     const { error: deleteMessagesError } = await supabaseAdmin

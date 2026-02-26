@@ -16,6 +16,7 @@ interface AuthContextType {
   loading: boolean;
   userType: string | null; // Database user type (can include VENDOR)
   orbitRole: OrbitUserRole | null; // Normalized Orbit role (SINGLE | MATCHMAKR only)
+  sponsoredById: string | null; // For SINGLE: their sponsor's id; null if unsponsored
   signOut: () => Promise<void>;
 }
 
@@ -26,6 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [userType, setUserType] = useState<string | null>(null); // Database user type
   const [orbitRole, setOrbitRole] = useState<OrbitUserRole | null>(null); // Normalized Orbit role
+  const [sponsoredById, setSponsoredById] = useState<string | null>(null);
   const userTypeRef = useRef<string | null>(null);
   const orbitRoleRef = useRef<OrbitUserRole | null>(null);
   const supabase = createClient();
@@ -55,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (vendorProfile && !vendorError) {
           console.log('AuthContext: Vendor profile found, setting user type to VENDOR');
           setUserType('VENDOR');
+          setSponsoredById(null);
           userTypeRef.current = 'VENDOR';
           // Normalize vendor to MATCHMAKR for Orbit routing
           const normalized = normalizeToOrbitRole('VENDOR');
@@ -74,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (profile?.user_type) {
         console.log('AuthContext: Cached user type:', profile.user_type);
         setUserType(profile.user_type);
+        setSponsoredById(profile.sponsored_by_id ?? null);
         userTypeRef.current = profile.user_type;
         // Normalize to Orbit role
         const normalized = normalizeToOrbitRole(profile.user_type);
@@ -126,6 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
           setUserType(null);
           setOrbitRole(null);
+          setSponsoredById(null);
         } else {
           setUser(user);
           // Fetch user type when user is set
@@ -163,6 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Clear any cached data and redirect to welcome page
           setUserType(null);
           setOrbitRole(null);
+          setSponsoredById(null);
           nudgeCheckRanThisSession.clear();
           router.push('/');
         } else if (event === 'SIGNED_IN' && session?.user) {
@@ -231,7 +237,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, userType, orbitRole, signOut }}>
+    <AuthContext.Provider value={{ user, loading, userType, orbitRole, sponsoredById, signOut }}>
       <NotificationsProvider>
         {children}
       </NotificationsProvider>

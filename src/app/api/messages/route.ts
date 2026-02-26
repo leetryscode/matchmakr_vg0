@@ -169,8 +169,22 @@ export async function POST(req: NextRequest) {
       .eq('user_type', 'SINGLE');
     const mySingleId = singlesA && singlesA.length > 0 ? singlesA[0].id : null;
     const otherSingleId = singlesB && singlesB.length > 0 ? singlesB[0].id : null;
-    // For each single, insert notification if not already present
-    if (mySingleId) {
+    // Relevance guard: only notify singles who still have this matchmakr as sponsor (prevents stale inserts)
+    const singleIds = [mySingleId, otherSingleId].filter(Boolean) as string[];
+    const { data: profiles } = singleIds.length > 0
+      ? await supabase.from('profiles').select('id, sponsored_by_id').in('id', singleIds)
+      : { data: [] };
+    const sponsorBySingle = new Map((profiles || []).map((p: { id: string; sponsored_by_id: string | null }) => [p.id, p.sponsored_by_id]));
+    const mySingleStillSponsored = mySingleId && sponsorBySingle.get(mySingleId) === sender_id;
+    const otherSingleStillSponsored = otherSingleId && sponsorBySingle.get(otherSingleId) === recipient_id;
+    if (!mySingleStillSponsored && mySingleId && process.env.NODE_ENV !== 'production') {
+      console.warn('[messages] Skipped matchmakr_chat notification: single no longer has sender as sponsor');
+    }
+    if (!otherSingleStillSponsored && otherSingleId && process.env.NODE_ENV !== 'production') {
+      console.warn('[messages] Skipped matchmakr_chat notification: single no longer has recipient as sponsor');
+    }
+    // For each single, insert notification if not already present and relevance guard passes
+    if (mySingleId && mySingleStillSponsored) {
       const { data: existingA } = await supabase
         .from('notifications')
         .select('id')
@@ -188,7 +202,7 @@ export async function POST(req: NextRequest) {
         }]);
       }
     }
-    if (otherSingleId) {
+    if (otherSingleId && otherSingleStillSponsored) {
       const { data: existingB } = await supabase
         .from('notifications')
         .select('id')

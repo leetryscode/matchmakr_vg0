@@ -34,7 +34,7 @@ export async function createSponsorLoginNotifications(
       },
     });
 
-    // Fetch all sponsored singles
+    // Relevance guard: only fetch singles who have this sponsor (sponsored_by_id = sponsorId)
     const { data: sponsoredSingles, error: singlesError } = await supabaseAdmin
       .from('profiles')
       .select('id')

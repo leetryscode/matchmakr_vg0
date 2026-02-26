@@ -32,7 +32,7 @@ const NotificationsContext = createContext<NotificationsContextType | undefined>
  * Mounted inside AuthProvider, so it only exists for authenticated users.
  */
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, userType, sponsoredById } = useAuth();
     const userId = user?.id || null;
     
     const supabase = getSupabaseClient();
@@ -63,6 +63,9 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
             .then(({ count }) => setActiveCount(count || 0));
     }, [userId, supabase]);
 
+    // Sponsor-related notification types (defense-in-depth: hide if single has no sponsor)
+    const SPONSOR_NOTIF_TYPES = new Set(['sponsor_logged_in', 'matchmakr_chat', 'sponsor_updated_profile']);
+
     // Fetch notifications (called by UI when needed)
     const refresh = useCallback(async () => {
         if (!userId) {
@@ -73,7 +76,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
         setLoading(true);
         try {
-            const { data, error } = await supabase
+            const { data: rawNotifications, error } = await supabase
                 .from('notifications')
                 .select('*')
                 .eq('user_id', userId)
@@ -87,9 +90,22 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
                 setNotifications([]);
                 setActiveCount(0);
             } else {
-                setNotifications(data || []);
-                // Derive activeCount from refreshed data
-                setActiveCount(data?.length || 0);
+                let notifications = rawNotifications || [];
+
+                // Defense-in-depth: hide sponsor-related notifications for Singles without a sponsor
+                // Uses profile from AuthContext (fetched at boot) - no extra round-trip
+                const isSingleWithoutSponsor = userType === 'SINGLE' && !sponsoredById;
+                if (isSingleWithoutSponsor) {
+                    const before = notifications.length;
+                    notifications = notifications.filter((n) => !SPONSOR_NOTIF_TYPES.has(n.type));
+                    const filtered = before - notifications.length;
+                    if (filtered > 0 && process.env.NODE_ENV !== 'production') {
+                        console.warn(`[Notifications] filteredSponsorNotifWithoutSponsor: ${filtered} notification(s) hidden (single has no sponsor)`);
+                    }
+                }
+
+                setNotifications(notifications);
+                setActiveCount(notifications.length);
             }
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -98,7 +114,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
         } finally {
             setLoading(false);
         }
-    }, [userId, supabase]);
+    }, [userId, userType, sponsoredById, supabase]);
 
     // Mark all active notifications as read
     const markAllRead = useCallback(async () => {

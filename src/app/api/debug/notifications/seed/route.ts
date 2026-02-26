@@ -38,12 +38,28 @@ export async function POST(req: NextRequest) {
     }
   );
 
+  // Sponsor-related types: only valid for Singles with a sponsor
+  const SPONSOR_NOTIF_TYPES = new Set(['matchmakr_chat', 'sponsor_updated_profile', 'sponsor_logged_in']);
+
   // Get notification type from query params, otherwise random
   const { searchParams } = new URL(req.url);
-  const notificationType = searchParams.get('type');
+  let requestedType = searchParams.get('type');
 
-  // Randomly choose between two types unless specified via query param
-  const type = notificationType || (Math.random() > 0.5 ? 'system_reassurance' : 'matchmakr_chat');
+  // Fetch profile to validate sponsor-related types
+  const { data: profile } = await supabaseAdmin
+    .from('profiles')
+    .select('user_type, sponsored_by_id')
+    .eq('id', user.id)
+    .single();
+
+  const isSingleWithoutSponsor = profile?.user_type === 'SINGLE' && !profile?.sponsored_by_id;
+  let type = requestedType || (Math.random() > 0.5 ? 'system_reassurance' : 'matchmakr_chat');
+
+  // Centralized check: don't create sponsor-related notifications for Singles without a sponsor
+  if (SPONSOR_NOTIF_TYPES.has(type) && isSingleWithoutSponsor) {
+    console.warn('[debug/notifications/seed] Seed requested sponsor-related type but profile has no sponsor; falling back to system_reassurance');
+    type = 'system_reassurance';
+  }
 
   let data: Record<string, unknown>;
   if (type === 'system_reassurance') {
