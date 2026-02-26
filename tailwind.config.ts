@@ -29,6 +29,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        orbit: {
+          bg: {
+            start: 'rgb(var(--orbit-bg-start) / <alpha-value>)',
+            end: 'rgb(var(--orbit-bg-end) / <alpha-value>)',
+          },
+          surface: 'rgb(var(--orbit-surface) / <alpha-value>)',
+          border: 'rgb(var(--orbit-border) / <alpha-value>)',
+
+          text: 'rgb(var(--orbit-text) / <alpha-value>)',
+          text2: 'rgb(var(--orbit-text-2) / <alpha-value>)',
+          muted: 'rgb(var(--orbit-muted) / <alpha-value>)',
+
+          gold: 'rgb(var(--orbit-gold) / <alpha-value>)',
+          goldDark: 'rgb(var(--orbit-gold-dk) / <alpha-value>)',
+
+          success: 'rgb(var(--orbit-success) / <alpha-value>)',
+          warning: 'rgb(var(--orbit-warning) / <alpha-value>)',
+        },
         primary: palette.primary,
         accent: palette.accent,
         background: palette.background,
@@ -44,6 +62,7 @@ const config: Config = {
         },
       },
       fontFamily: {
+        sans: ['Source Sans Pro', 'sans-serif'],
         'inter': ['Inter', 'sans-serif'],
         'source-sans': ['Source Sans Pro', 'sans-serif'],
         'raleway': ['Raleway', 'sans-serif'],

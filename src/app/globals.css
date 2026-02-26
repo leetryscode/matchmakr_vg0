@@ -13,6 +13,23 @@
   /* Legacy CSS vars - not currently referenced. Color tokens are managed via tailwind.config.ts */
   --primary-blue: 52, 75, 99;
   /* primary-teal removed; use palette / Tailwind action tokens */
+
+  /* Orbit Sponsor Theme (runtime tweakable) */
+  --orbit-bg-start: 12 31 53;     /* #0C1F35 */
+  --orbit-bg-end:   22 43 68;     /* #162B44 */
+
+  --orbit-surface:  22 43 68;     /* used with opacity */
+  --orbit-border:   42 63 94;     /* #2A3F5E-ish */
+
+  --orbit-text:     242 244 247;  /* #F2F4F7 */
+  --orbit-text-2:   199 210 224;  /* #C7D2E0 */
+  --orbit-muted:    143 163 186;  /* #8FA3BA */
+
+  --orbit-gold:     214 179 106;  /* #D6B36A */
+  --orbit-gold-dk:  194 161 90;   /* #C2A15A */
+
+  --orbit-success:  111 143 123;  /* #6F8F7B */
+  --orbit-warning:  184 145 92;   /* #B8915C */
 }
 
 html, body {
@@ -21,7 +38,7 @@ html, body {
 
 /* Body background and text color are now set via Tailwind classes in layout.tsx */
 body {
-  /* Font family is set via Tailwind class in layout.tsx (font-source-sans) */
+  /* Font family is set via Tailwind class in layout.tsx (font-sans → Source Sans Pro) */
   line-height: 1.5;
 }
 
@@ -70,6 +87,30 @@ body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Orbit semantic utilities — surface, card, muted, divider, focus ring */
+@layer utilities {
+  .orbit-surface {
+    @apply bg-orbit-surface/80 border border-orbit-border/50 backdrop-blur-md;
+  }
+
+  .orbit-card {
+    @apply bg-orbit-surface/80 border border-orbit-border/50 backdrop-blur-md
+           rounded-card-lg shadow-card;
+  }
+
+  .orbit-muted {
+    @apply text-orbit-muted;
+  }
+
+  .orbit-divider {
+    @apply border-t border-orbit-border/50;
+  }
+
+  .orbit-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orbit-gold/30 focus-visible:ring-offset-2 focus-visible:ring-offset-orbit-bg-start;
+  }
 }
 
 /* Orbit glass morphism utilities */

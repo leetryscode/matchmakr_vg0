@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
     // 1) Verify current user is a SINGLE
     const { data: callerProfile, error: callerError } = await supabaseAdmin
       .from('profiles')
-      .select('id, user_type, name')
+      .select('id, user_type, name, sponsored_by_id')
       .eq('id', user.id)
       .single();
 
@@ -112,6 +112,12 @@ Deno.serve(async (req) => {
 
     if (callerProfile.user_type !== 'SINGLE') {
       return jsonResponse({ error: 'Only singles can invite a sponsor.' }, 400);
+    }
+
+    if (callerProfile.sponsored_by_id != null) {
+      return jsonResponse({
+        error: 'You already have a sponsor. End that sponsorship first before inviting another.',
+      }, 400);
     }
 
     const singleId = callerProfile.id;
