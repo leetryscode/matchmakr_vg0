@@ -138,26 +138,26 @@ export function getStatusDescription(status: SingleStatus, approvedMatchCount: n
   }
 }
 
-/** Base classes for all status pills (outline-only, no fill; border-2; text matches border). */
+/** Base classes for all status pills (sizing; colors come from orbit tokens per status). */
 const STATUS_PILL_BASE =
-  'inline-flex items-center rounded-full border-2 px-3 py-1 text-[11px] font-semibold tracking-wide uppercase bg-transparent';
+  'inline-flex items-center rounded-full border-2 px-3 py-1 text-[11px] font-semibold tracking-wide uppercase';
 
-/** Sponsor/MatchMakr: color classes only (border + text) per status. */
+/** Sponsor/MatchMakr: orbit tokens per status. */
 const STATUS_COLOR: Record<SingleStatus, string> = {
-  PAUSED: 'border-status-paused text-status-paused',
-  INVITED: 'border-status-invited text-status-invited',
-  NEEDS_ATTENTION: 'border-status-needs-attention text-status-needs-attention',
-  IN_MOTION: 'border-status-in-motion text-status-in-motion',
-  NEEDS_INTRODUCTION: 'border-status-needs-introduction text-status-needs-introduction',
+  NEEDS_ATTENTION: 'bg-orbit-warning/15 text-orbit-warning border-orbit-warning/30',
+  IN_MOTION: 'bg-orbit-success/15 text-orbit-success border-orbit-success/30',
+  PAUSED: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
+  INVITED: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
+  NEEDS_INTRODUCTION: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
 };
 
-/** Single-facing: same tokens; INVITED uses needs_introduction color (shown as "Available"). */
+/** Single-facing: same orbit tokens; INVITED uses neutral (shown as "Available"). */
 const SINGLE_FACING_STATUS_COLOR: Record<SingleStatus, string> = {
-  PAUSED: 'border-status-paused text-status-paused',
-  INVITED: 'border-status-needs-introduction text-status-needs-introduction',
-  NEEDS_ATTENTION: 'border-status-needs-attention text-status-needs-attention',
-  IN_MOTION: 'border-status-in-motion text-status-in-motion',
-  NEEDS_INTRODUCTION: 'border-status-needs-introduction text-status-needs-introduction',
+  NEEDS_ATTENTION: 'bg-orbit-warning/15 text-orbit-warning border-orbit-warning/30',
+  IN_MOTION: 'bg-orbit-success/15 text-orbit-success border-orbit-success/30',
+  PAUSED: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
+  INVITED: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
+  NEEDS_INTRODUCTION: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
 };
 
 /**
@@ -186,9 +186,9 @@ export type PreviewResponseStatus = 'PENDING' | 'OPEN_TO_IT' | 'NOT_SURE_YET';
  * NOT_SURE_YET → paused (violet, neutral/reflective)
  */
 const PREVIEW_RESPONSE_STATUS_COLOR: Record<PreviewResponseStatus, string> = {
-  PENDING: 'border-status-needs-attention text-status-needs-attention',
-  OPEN_TO_IT: 'border-status-in-motion text-status-in-motion',
-  NOT_SURE_YET: 'border-status-paused text-status-paused',
+  PENDING: 'bg-orbit-warning/15 text-orbit-warning border-orbit-warning/30',
+  OPEN_TO_IT: 'bg-orbit-success/15 text-orbit-success border-orbit-success/30',
+  NOT_SURE_YET: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
 };
 
 /**
@@ -205,9 +205,9 @@ export function getPreviewResponseStatusStyles(status: PreviewResponseStatus): s
  * Creates visual link between capsule and status pill.
  */
 const PREVIEW_RESPONSE_CAPSULE_BORDER: Record<PreviewResponseStatus, string> = {
-  PENDING: 'border-status-needs-attention/50',
-  OPEN_TO_IT: 'border-status-in-motion/50',
-  NOT_SURE_YET: 'border-status-paused/50',
+  PENDING: 'border-orbit-warning/50',
+  OPEN_TO_IT: 'border-orbit-success/50',
+  NOT_SURE_YET: 'border-orbit-border/50',
 };
 
 export function getPreviewResponseCapsuleBorder(status: PreviewResponseStatus): string {
@@ -224,8 +224,8 @@ const PREVIEW_OPTION_PILL_BASE =
  */
 export function getPreviewResponseOptionStyles(status: 'OPEN_TO_IT' | 'NOT_SURE_YET'): string {
   const colors: Record<'OPEN_TO_IT' | 'NOT_SURE_YET', string> = {
-    OPEN_TO_IT: 'border-status-in-motion text-status-in-motion',
-    NOT_SURE_YET: 'border-status-paused text-status-paused',
+    OPEN_TO_IT: 'bg-orbit-success/15 text-orbit-success border-orbit-success/30',
+    NOT_SURE_YET: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
   };
   return `${PREVIEW_OPTION_PILL_BASE} ${colors[status]}`;
 }

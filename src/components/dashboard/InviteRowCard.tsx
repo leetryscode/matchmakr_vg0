@@ -18,13 +18,13 @@ interface InviteRowCardProps {
   onClick?: () => void;
 }
 
-const STATUS_PILL_BASE = 'inline-flex items-center rounded-full border-2 px-3 py-1 text-[11px] font-semibold tracking-wide uppercase bg-transparent';
+const STATUS_PILL_BASE = 'inline-flex items-center rounded-full border-2 px-3 py-1 text-[11px] font-semibold tracking-wide uppercase';
 
 const STATUS_STYLES: Record<InviteRowStatus, string> = {
-  INVITED: 'border-status-invited text-status-invited',
-  AWAITING_APPROVAL: 'border-status-needs-attention text-status-needs-attention',
-  ACCEPTED: 'border-status-in-motion text-status-in-motion',
-  DECLINED: 'border-status-paused text-status-paused',
+  INVITED: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
+  AWAITING_APPROVAL: 'bg-orbit-warning/15 text-orbit-warning border-orbit-warning/30',
+  ACCEPTED: 'bg-orbit-success/15 text-orbit-success border-orbit-success/30',
+  DECLINED: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
 };
 
 const STATUS_LABELS: Record<InviteRowStatus, string> = {
@@ -144,7 +144,7 @@ const InviteRowCard: React.FC<InviteRowCardProps> = ({
             type="button"
             onClick={handleRescind}
             disabled={rescindLoading}
-            className="type-meta text-status-paused hover:text-status-paused/80 underline underline-offset-2 transition-colors disabled:opacity-50"
+            className="type-meta orbit-muted hover:opacity-80 underline underline-offset-2 transition-colors disabled:opacity-50"
           >
             {rescindLoading ? 'Rescinding…' : 'Rescind'}
           </button>

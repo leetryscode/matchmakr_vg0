@@ -8,7 +8,20 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   safelist: [
-    // Status pill colors (used dynamically via getStatusStyles / getSingleFacingStatusStyles)
+    // Orbit status pill colors (used dynamically via getStatusStyles / getSingleFacingStatusStyles)
+    'bg-orbit-warning/15',
+    'text-orbit-warning',
+    'border-orbit-warning/30',
+    'border-orbit-warning/50',
+    'bg-orbit-success/15',
+    'text-orbit-success',
+    'border-orbit-success/30',
+    'border-orbit-success/50',
+    'bg-orbit-border/20',
+    'text-orbit-text2',
+    'border-orbit-border/30',
+    'border-orbit-border/50',
+    // Legacy status (kept for any remaining usages)
     'border-status-paused',
     'text-status-paused',
     'border-status-invited',
@@ -19,11 +32,9 @@ const config: Config = {
     'text-status-in-motion',
     'border-status-needs-introduction',
     'text-status-needs-introduction',
-    // Preview response capsule borders (status color at 50% opacity)
     'border-status-needs-attention/50',
     'border-status-in-motion/50',
     'border-status-paused/50',
-    // Notification dismiss ACK (status pill green)
     'bg-status-in-motion/20',
   ],
   theme: {

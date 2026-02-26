@@ -443,7 +443,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             <div className={`type-meta truncate ${unreadCount > 0 ? 'font-semibold tracking-[0.01em]' : ''}`}>{msg.content}</div>
           </div>
           <div className="w-[56px] flex items-center justify-end flex-shrink-0 ml-3">
-            <span className="type-meta text-text-light text-right whitespace-nowrap">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            <span className="type-meta orbit-muted text-right whitespace-nowrap">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             <span className="w-2 h-2 rounded-full bg-status-needs-attention ml-1.5 flex-shrink-0" style={{ opacity: unreadCount > 0 ? 1 : 0 }} aria-hidden />
           </div>
           <div className="relative menu-btn flex items-center justify-end flex-shrink-0">
@@ -583,7 +583,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
           </div>
           {/* Fixed metadata block: timestamp + inline unread dot. Unread is a state, not a badge. */}
           <div className="w-[56px] flex items-center justify-end flex-shrink-0 ml-3">
-            <span className="type-meta text-text-light text-right whitespace-nowrap">—</span>
+            <span className="type-meta orbit-muted text-right whitespace-nowrap">—</span>
             <span className="w-2 h-2 rounded-full bg-status-needs-attention ml-1.5 flex-shrink-0" style={{ opacity: sponsoredSingleUnreadCount > 0 ? 1 : 0 }} aria-hidden />
           </div>
 

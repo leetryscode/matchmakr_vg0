@@ -170,7 +170,7 @@ body {
 
   /* Interactive row cards: chat rows, list items */
   .ui-rowcard {
-    @apply rounded-card-lg bg-background-card shadow-card transition
+    @apply orbit-surface rounded-card-lg shadow-card transition
            px-5 py-3 flex items-center gap-3;
   }
 

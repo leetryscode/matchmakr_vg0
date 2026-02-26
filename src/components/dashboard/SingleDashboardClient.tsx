@@ -431,7 +431,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
       </div>
       {/* Fixed metadata block: timestamp + inline unread dot. Unread is a state, not a badge. */}
       <div className="w-[56px] flex items-center justify-end flex-shrink-0 ml-3">
-        <span className="type-meta text-text-light text-right whitespace-nowrap">{timestamp || '—'}</span>
+        <span className="type-meta orbit-muted text-right whitespace-nowrap">{timestamp || '—'}</span>
         <span className="w-2 h-2 rounded-full bg-status-needs-attention ml-1.5 flex-shrink-0" style={{ opacity: unreadCount > 0 ? 1 : 0 }} aria-hidden />
       </div>
       {/* Three-dot menu button */}

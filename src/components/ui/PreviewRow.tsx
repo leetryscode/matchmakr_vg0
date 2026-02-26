@@ -36,7 +36,7 @@ export default function PreviewRow({
         className={cn(
           'ui-rowcard flex items-center gap-3 select-none',
           'opacity-[0.88] cursor-default pointer-events-none',
-          'rounded-card-lg bg-background-card shadow-card px-5 py-3',
+          'rounded-card-lg shadow-card px-5 py-3',
           'border border-border-light/60'
         )}
         role="presentation"
@@ -71,7 +71,7 @@ export default function PreviewRow({
 
         <div className="flex-1 min-w-0">
           <div className="type-body truncate text-text-dark/90">{title}</div>
-          <div className="type-meta truncate text-text-light">{subtitle}</div>
+          <div className="type-meta orbit-muted truncate">{subtitle}</div>
         </div>
 
         {/* No timestamp, no unread badge, no menu */}
@@ -79,7 +79,7 @@ export default function PreviewRow({
 
       {label && (
         <div
-          className="mt-1.5 pl-5 type-meta text-text-light/80 text-[10px] uppercase tracking-wider"
+          className="mt-1.5 pl-5 type-meta orbit-muted text-[10px] uppercase tracking-wider"
           aria-hidden
         >
           {label}
