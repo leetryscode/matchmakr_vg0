@@ -12,7 +12,7 @@ import BrandMark from '@/components/branding/BrandMark';
 export default function DashboardFooterSpacer() {
   return (
     <div className="flex flex-col items-center justify-center py-8">
-      <BrandMark />
+      <BrandMark size="footer" />
     </div>
   );
 }
