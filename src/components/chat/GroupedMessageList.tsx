@@ -89,12 +89,12 @@ export default function GroupedMessageList({
             {!isMine && (
               <div className="w-10 h-8 flex-shrink-0 mr-2.5 flex items-center justify-end self-end">
                 {isLastInGroup ? (
-                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-accent-teal-light flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-orbit-border flex-shrink-0">
                     {avatarUrl ? (
                       <img src={avatarUrl} alt={displayName || 'User'} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-background-main flex items-center justify-center">
-                        <span className="text-xs font-bold text-text-light">{initials}</span>
+                      <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
+                        <span className="text-xs font-bold text-orbit-text2">{initials}</span>
                       </div>
                     )}
                   </div>
@@ -108,8 +108,8 @@ export default function GroupedMessageList({
               <div
                 className={`px-4 py-2.5 ${getBubbleRadiusClass(isMine, isFirstInGroup, isLastInGroup)} ${msg.optimistic ? 'opacity-60' : ''} ${
                   isMine
-                    ? 'bg-background-card text-text-dark font-medium border border-border-light'
-                    : 'bg-background-card text-text-dark font-medium border border-border-light'
+                    ? 'orbit-surface text-orbit-text font-medium border border-orbit-border/50'
+                    : 'orbit-surface text-orbit-text font-medium border border-orbit-border/50'
                 }`}
               >
                 {msg.content}
@@ -117,7 +117,7 @@ export default function GroupedMessageList({
 
               {/* Timestamp — always rendered to reserve height; invisible when not last in group */}
               <div
-                className={`text-[10px] text-gray-400 mt-0.5 px-4 min-h-[14px] ${isMine ? 'text-right' : 'text-left'} ${!isLastInGroup ? 'opacity-0 select-none' : ''}`}
+                className={`text-[10px] text-orbit-muted mt-0.5 px-4 min-h-[14px] ${isMine ? 'text-right' : 'text-left'} ${!isLastInGroup ? 'opacity-0 select-none' : ''}`}
               >
                 {formattedTime}
               </div>
@@ -127,12 +127,12 @@ export default function GroupedMessageList({
             {isMine && (
               <div className="w-10 h-8 flex-shrink-0 ml-2.5 flex items-center justify-start self-end">
                 {isLastInGroup ? (
-                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-accent-teal-light flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-orbit-border flex-shrink-0">
                     {avatarUrl ? (
                       <img src={avatarUrl} alt={displayName || 'User'} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-background-main flex items-center justify-center">
-                        <span className="text-xs font-bold text-text-light">{initials}</span>
+                      <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
+                        <span className="text-xs font-bold text-orbit-text2">{initials}</span>
                       </div>
                     )}
                   </div>

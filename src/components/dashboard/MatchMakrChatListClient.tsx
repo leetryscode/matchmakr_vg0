@@ -413,7 +413,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       return (
         <div
           key={msg.id}
-          className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
+          className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-orbit-gold/30"
           role="button"
           tabIndex={0}
           onClick={e => {
@@ -462,10 +462,10 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             {menuOpen === msg.conversation.id && (
               <div
                 ref={el => { menuRefs.current[msg.conversation.id] = el; }}
-                className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
+                className="absolute right-0 mt-2 w-40 orbit-surface-strong border border-orbit-border/50 rounded-lg shadow-lg z-10"
               >
                 <button
-                  className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-t-lg"
+                  className="block w-full text-left px-4 py-2 text-red-600 hover:bg-orbit-surface/50 rounded-t-lg"
                   onClick={e => { e.stopPropagation(); setConfirmDelete({otherId, profileName: profile?.name || 'this sponsor'}); setMenuOpen(null); }}
                 >
                   Delete chat
@@ -523,7 +523,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
               </div>
               {/* Subtle "more below" fade — hides when scrolled to bottom */}
               <div
-                className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none bg-gradient-to-b from-transparent to-background-main transition-opacity duration-200"
+                className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none bg-gradient-to-b from-transparent to-orbit-canvas transition-opacity duration-200"
                 style={{ opacity: showSponsorChatFade ? 1 : 0 }}
                 aria-hidden
               />
@@ -537,7 +537,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       {/* Sponsored Single Chat Row (if any) */}
       {sponsoredSingles && sponsoredSingles.length > 0 && (
         <div
-          className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 mb-2"
+          className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 mb-2"
           role="button"
           tabIndex={0}
           onClick={e => {
@@ -632,7 +632,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                   }
                 }}
                 disabled={inviteSponsorLoading || !inviteSponsorEmail.trim()}
-                className="rounded-cta px-6 py-3 min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
+                className="orbit-btn-primary rounded-cta px-6 py-3 min-h-[48px] shadow-cta-entry hover:opacity-90 active:opacity-95 transition-opacity duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {inviteSponsorLoading ? 'Sending...' : 'Send invite'}
               </button>
@@ -646,12 +646,12 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       {/* Confirmation Modal */}
       {confirmDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
-          <div className="bg-white rounded-2xl p-8 shadow-xl max-w-sm w-full text-center">
-            <h3 className="type-section mb-4 text-primary-blue">Delete chat?</h3>
-            <p className="mb-6 text-gray-600">Delete chat for both parties? This clears the conversation for everyone. You can reconnect with this sponsor if you need to coordinate again.</p>
+          <div className="bg-orbit-surface3 rounded-2xl p-8 shadow-xl max-w-sm w-full text-center">
+            <h3 className="type-section mb-4 text-orbit-text">Delete chat?</h3>
+            <p className="mb-6 text-orbit-text2">Delete chat for both parties? This clears the conversation for everyone. You can reconnect with this sponsor if you need to coordinate again.</p>
             <div className="flex gap-4 justify-center">
               <button
-                className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300"
+                className="orbit-btn-secondary px-6 py-2 rounded-md font-semibold"
                 onClick={() => setConfirmDelete(null)}
               >
                 Cancel

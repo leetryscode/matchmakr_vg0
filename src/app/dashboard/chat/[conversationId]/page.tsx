@@ -414,13 +414,13 @@ export default function ChatPage() {
       showBackButton={true}
     >
     <div
-      className="h-[100dvh] flex flex-col overflow-hidden p-0 sm:p-2 bg-white"
+      className="h-[100dvh] flex flex-col overflow-hidden p-0 sm:p-2 bg-orbit-surface3"
       style={{ paddingBottom: 'calc(var(--bottom-nav-h,0px) + env(safe-area-inset-bottom))' }}
     >
       {/* Fixed header section */}
-      <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-sm w-full bg-white/80 rounded-none shadow-2xl">
+      <div className="sticky top-0 z-20 bg-orbit-surface3/90 backdrop-blur-sm w-full rounded-none shadow-2xl">
           {/* New sticky top bar */}
-          <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
+          <div className="sticky top-0 z-10 bg-orbit-surface3 border-b border-orbit-border/50">
             <div className="flex items-center gap-3 px-4 py-3">
               <button 
                 onClick={() => {
@@ -432,7 +432,7 @@ export default function ChatPage() {
                     router.push('/dashboard/matchmakr?refresh=true');
                   }
                 }} 
-                className="text-primary-blue font-semibold text-base"
+                className="text-orbit-text font-semibold text-base"
               >
                 &larr; Back
               </button>
@@ -442,20 +442,20 @@ export default function ChatPage() {
                 if (!otherProfile) return null;
                 return (
                   <>
-                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-accent-teal-light flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-orbit-border flex-shrink-0">
                       {otherProfile.photo ? (
                         <img src={otherProfile.photo} alt={otherProfile.name} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full bg-background-main flex items-center justify-center">
-                          <span className="text-sm font-bold text-text-light">{otherProfile.name?.charAt(0).toUpperCase() || '?'}</span>
+                        <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
+                          <span className="text-sm font-bold text-orbit-text2">{otherProfile.name?.charAt(0).toUpperCase() || '?'}</span>
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-gray-900 truncate">
+                      <div className="font-semibold text-orbit-text truncate">
                         {otherProfile.name || 'Sponsor Chat'}
                       </div>
-                      <div className="text-xs text-gray-500 truncate">Sponsor</div>
+                      <div className="text-xs text-orbit-muted truncate">Sponsor</div>
                     </div>
                   </>
                 );
@@ -465,24 +465,24 @@ export default function ChatPage() {
           
           {/* Compact singles context row - sticky below top bar */}
           {chatContext && (
-            <div className="px-4 py-1.5 border-b bg-white flex items-center gap-3">
+            <div className="px-4 py-1.5 border-b border-orbit-border/50 bg-orbit-surface3 flex items-center gap-3">
               {/* Left: Overlapping avatars */}
               <div className="flex items-center">
-                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-accent-teal-light ring-2 ring-white flex-shrink-0">
+                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-orbit-border ring-2 ring-orbit-surface3 flex-shrink-0">
                   {chatContext.otherUserSingle?.photo ? (
                     <img src={chatContext.otherUserSingle.photo} alt={chatContext.otherUserSingle.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-background-main flex items-center justify-center">
-                      <span className="text-sm font-bold text-text-light">{chatContext.otherUserSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
+                    <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
+                      <span className="text-sm font-bold text-orbit-text2">{chatContext.otherUserSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
                     </div>
                   )}
                 </div>
-                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-accent-teal-light ring-2 ring-white -ml-2 flex-shrink-0">
+                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-orbit-border ring-2 ring-orbit-surface3 -ml-2 flex-shrink-0">
                   {chatContext.currentUserSingle?.photo ? (
                     <img src={chatContext.currentUserSingle.photo} alt={chatContext.currentUserSingle.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-background-main flex items-center justify-center">
-                      <span className="text-sm font-bold text-text-light">{chatContext.currentUserSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
+                    <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
+                      <span className="text-sm font-bold text-orbit-text2">{chatContext.currentUserSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
                     </div>
                   )}
                 </div>
@@ -490,8 +490,8 @@ export default function ChatPage() {
               
               {/* Middle: Singles names */}
               <div className="flex-1 min-w-0">
-                <div className="text-[11px] text-gray-400">Discussing</div>
-                <div className="text-sm font-medium text-gray-900 truncate">
+                <div className="text-[11px] text-orbit-muted">Discussing</div>
+                <div className="text-sm font-medium text-orbit-text truncate">
                   {chatContext.otherUserSingle?.name || 'Unknown'} • {chatContext.currentUserSingle?.name || 'Unknown'}
                 </div>
               </div>
@@ -499,14 +499,14 @@ export default function ChatPage() {
               {/* Right: Approve Match button/status */}
               <div className="flex-shrink-0">
                 {matchLoading ? (
-                  <div className="text-xs text-gray-500 whitespace-nowrap">Checking...</div>
+                  <div className="text-xs text-orbit-muted whitespace-nowrap">Checking...</div>
                 ) : matchStatus === 'matched' ? (
-                  <div className="text-xs text-primary-blue font-semibold whitespace-nowrap">Both sponsors agreed to the introduction</div>
+                  <div className="text-xs text-orbit-gold font-semibold whitespace-nowrap">Both sponsors agreed to the introduction</div>
                 ) : matchStatus === 'pending' ? (
-                  <div className="text-xs text-yellow-600 font-semibold whitespace-nowrap">Waiting for the other sponsor</div>
+                  <div className="text-xs text-orbit-warning font-semibold whitespace-nowrap">Waiting for the other sponsor</div>
                 ) : matchStatus === 'can-approve' ? (
                   <button
-                    className="h-10 min-h-[44px] px-4 text-sm rounded-cta bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary whitespace-nowrap"
+                    className="orbit-btn-primary h-10 min-h-[44px] px-4 text-sm rounded-cta shadow-cta-entry hover:opacity-90 active:opacity-95 transition-opacity duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     onClick={() => setShowApprovalModal(true)}
                     disabled={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id || matchLoading}
                     title={!chatContext.currentUserSingle?.id || !chatContext.otherUserSingle?.id ? 'Both singles must be present to make the introduction.' : ''}
@@ -521,7 +521,7 @@ export default function ChatPage() {
       </div>
       
       {/* Scrollable chat area */}
-      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 py-4 text-left bg-white relative">
+      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 py-4 text-left bg-orbit-canvas relative">
           <div className="flex flex-col">
             {chatMessages.length > 0 && (
               <GroupedMessageList
@@ -549,16 +549,16 @@ export default function ChatPage() {
             {isTyping && (
               <div className="flex justify-end items-center my-4">
                 <div className="max-w-[70%] flex flex-col items-end">
-                  <div className="font-semibold text-primary-blue text-xs mb-1 text-right">
+                  <div className="font-semibold text-orbit-text text-xs mb-1 text-right">
                     You
                   </div>
-                  <div className="px-5 py-3 rounded-2xl bg-gray-100 text-gray-500 italic">
+                  <div className="px-5 py-3 rounded-2xl orbit-surface-soft text-orbit-muted italic">
                     typing...
                   </div>
                 </div>
-                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light ml-4 flex-shrink-0 flex items-center justify-center">
-                  <div className="w-full h-full bg-background-main flex items-center justify-center">
-                    <span className="text-lg font-bold text-text-light">M</span>
+                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-orbit-border ml-4 flex-shrink-0 flex items-center justify-center">
+                  <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
+                    <span className="text-lg font-bold text-orbit-text2">M</span>
                   </div>
                 </div>
               </div>
@@ -574,7 +574,7 @@ export default function ChatPage() {
                 shouldAutoScrollRef.current = true;
                 setShowScrollToBottom(false);
               }}
-              className="absolute bottom-4 right-4 bg-primary-blue text-white rounded-full p-3 shadow-lg hover:bg-primary-blue-dark transition-all duration-200 z-10"
+              className="absolute bottom-4 right-4 bg-orbit-gold text-orbit-text rounded-full p-3 shadow-lg hover:opacity-90 transition-opacity duration-200 z-10"
               title="Scroll to bottom"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -585,10 +585,10 @@ export default function ChatPage() {
       </div>
       
       {/* Input Section — non-fixed so keyboard shrinks viewport naturally */}
-      <div className="z-30 bg-white border-t border-border-light px-4 py-4 flex items-center gap-3 flex-shrink-0">
+      <div className="z-30 bg-orbit-surface3 border-t border-orbit-border/50 px-4 py-4 flex items-center gap-3 flex-shrink-0">
           <input
             type="text"
-            className="flex-1 border border-gray-300 rounded-2xl px-4 py-4 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 placeholder:text-gray-400 placeholder:italic text-base bg-white/90"
+            className="flex-1 border border-orbit-border/50 rounded-2xl px-4 py-4 text-orbit-text bg-orbit-surface/80 focus:border-orbit-gold focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 placeholder:text-orbit-muted placeholder:italic text-base"
             placeholder={`Send a message`}
             value={messageText}
             onChange={e => setMessageText(e.target.value)}
@@ -597,7 +597,7 @@ export default function ChatPage() {
           />
           {messageText.trim() && (
             <button
-              className="flex items-center justify-center w-14 h-14 rounded-full bg-action-primary shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active transition-colors border-0 text-primary-blue"
+              className="flex items-center justify-center w-14 h-14 rounded-full bg-orbit-gold text-orbit-text shadow-cta-entry hover:opacity-90 active:opacity-95 transition-opacity border-0"
               onClick={handleSendMessage}
               disabled={sending}
             >
@@ -611,19 +611,19 @@ export default function ChatPage() {
       {/* Approval Confirmation Modal */}
       {showApprovalModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
-          <div className="bg-white rounded-2xl p-8 shadow-xl max-w-md w-full mx-4 text-center">
-            <h3 className="type-section mb-4 text-primary-blue">Make the introduction?</h3>
-            <p className="mb-6 text-gray-600">When both sponsors agree, the singles will be connected.</p>
+          <div className="bg-orbit-surface3 rounded-2xl p-8 shadow-xl max-w-md w-full mx-4 text-center">
+            <h3 className="type-section mb-4 text-orbit-text">Make the introduction?</h3>
+            <p className="mb-6 text-orbit-text2">When both sponsors agree, the singles will be connected.</p>
             <div className="flex gap-4 justify-center">
               <button
-                className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300"
+                className="orbit-btn-secondary px-6 py-2 rounded-md font-semibold"
                 onClick={() => setShowApprovalModal(false)}
                 disabled={approvalLoading}
               >
                 Cancel
               </button>
               <button
-                className="rounded-cta px-6 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
+                className="orbit-btn-primary rounded-cta px-6 py-2 min-h-[44px] shadow-cta-entry hover:opacity-90 active:opacity-95 transition-opacity duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleApproveMatch}
                 disabled={approvalLoading}
               >

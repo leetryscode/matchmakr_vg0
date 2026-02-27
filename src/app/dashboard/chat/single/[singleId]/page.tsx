@@ -284,11 +284,11 @@ export default function SingleChatPage() {
 
   return (
     <div
-      className="h-[100dvh] flex flex-col overflow-hidden p-0 sm:p-2 bg-white"
+      className="h-[100dvh] flex flex-col overflow-hidden p-0 sm:p-2 bg-orbit-surface3"
       style={{ paddingBottom: 'calc(var(--bottom-nav-h,0px) + env(safe-area-inset-bottom))' }}
     >
       {/* Sticky top bar */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 w-full bg-white/80 rounded-none shadow-2xl">
+      <div className="sticky top-0 z-10 bg-orbit-surface3 border-b border-orbit-border/50 w-full rounded-none shadow-2xl">
           <div className="flex items-center gap-3 px-4 py-3">
             <button 
               onClick={() => {
@@ -300,27 +300,27 @@ export default function SingleChatPage() {
                   router.push('/dashboard/matchmakr');
                 }
               }} 
-              className="text-primary-blue font-semibold text-base"
+              className="text-orbit-text font-semibold text-base"
             >
               &larr; Back
             </button>
             {/* Avatar + Name + Subtitle */}
             {otherUserInfo && (
               <>
-                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-accent-teal-light flex-shrink-0">
+                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-orbit-border flex-shrink-0">
                   {otherUserInfo.photo ? (
                     <img src={otherUserInfo.photo} alt={otherUserInfo.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-background-main flex items-center justify-center">
-                      <span className="text-sm font-bold text-text-light">{otherUserInfo.name?.charAt(0).toUpperCase() || '?'}</span>
+                    <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
+                      <span className="text-sm font-bold text-orbit-text2">{otherUserInfo.name?.charAt(0).toUpperCase() || '?'}</span>
                     </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-gray-900 truncate">
+                  <div className="font-semibold text-orbit-text truncate">
                     {otherUserInfo.name || 'Chat'}
                   </div>
-                  <div className="text-xs text-gray-500 truncate">
+                  <div className="text-xs text-orbit-muted truncate">
                     {currentUserType === 'SINGLE' ? 'Your sponsor' : 'Your sponsored single'}
                   </div>
                 </div>
@@ -330,7 +330,7 @@ export default function SingleChatPage() {
       </div>
       
       {/* Chat history */}
-      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 py-4 text-left">
+      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 py-4 text-left bg-orbit-canvas">
           <div className="flex flex-col">
             {chatMessages.length > 0 && (
               <GroupedMessageList
@@ -357,16 +357,16 @@ export default function SingleChatPage() {
             {isTyping && (
               <div className="flex justify-end items-center my-4">
                 <div className="max-w-[70%] flex flex-col items-end">
-                  <div className="font-semibold text-primary-blue text-xs mb-1 text-right">
+                  <div className="font-semibold text-orbit-text text-xs mb-1 text-right">
                     You
                   </div>
-                  <div className="px-5 py-3 rounded-2xl bg-gray-100 text-gray-500 italic">
+                  <div className="px-5 py-3 rounded-2xl orbit-surface-soft text-orbit-muted italic">
                     typing...
                   </div>
                 </div>
-                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-teal-light ml-4 flex-shrink-0 flex items-center justify-center">
-                  <div className="w-full h-full bg-background-main flex items-center justify-center">
-                    <span className="text-lg font-bold text-text-light">M</span>
+                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-orbit-border ml-4 flex-shrink-0 flex items-center justify-center">
+                  <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
+                    <span className="text-lg font-bold text-orbit-text2">M</span>
                   </div>
                 </div>
               </div>
@@ -376,10 +376,10 @@ export default function SingleChatPage() {
       </div>
       
       {/* Input Section — non-fixed so keyboard shrinks viewport naturally */}
-      <div className="z-30 bg-white border-t border-border-light px-4 py-4 flex items-center gap-3 flex-shrink-0">
+      <div className="z-30 bg-orbit-surface3 border-t border-orbit-border/50 px-4 py-4 flex items-center gap-3 flex-shrink-0">
           <input
             type="text"
-            className="flex-1 border border-gray-300 rounded-2xl px-4 py-4 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 placeholder:text-gray-400 placeholder:italic text-base bg-white/90"
+            className="flex-1 border border-orbit-border/50 rounded-2xl px-4 py-4 text-orbit-text bg-orbit-surface/80 focus:border-orbit-gold focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 placeholder:text-orbit-muted placeholder:italic text-base"
             placeholder={`Send a message to ${singleInfo?.name || 'your single'}`}
             value={messageText}
             onChange={e => setMessageText(e.target.value)}
@@ -388,7 +388,7 @@ export default function SingleChatPage() {
           />
           {messageText.trim() && (
             <button
-              className="flex items-center justify-center w-14 h-14 rounded-full bg-action-primary shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active transition-colors border-0 text-primary-blue"
+              className="flex items-center justify-center w-14 h-14 rounded-full bg-orbit-gold text-orbit-text shadow-cta-entry hover:opacity-90 active:opacity-95 transition-opacity border-0"
               onClick={handleSendMessage}
               disabled={sending}
             >

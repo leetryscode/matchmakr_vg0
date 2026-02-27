@@ -417,10 +417,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   if (open && (isSingleToSingle ? (!aboutSingle || !clickedSingle) : (!chatContext || contextLoading))) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
-        <div className="bg-white rounded-2xl p-8 shadow-xl w-[400px] text-center">
-                          <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase font-brand">Loading...</div>
+        <div className="bg-orbit-surface3 rounded-2xl p-8 shadow-xl w-[400px] text-center">
+                          <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase font-brand text-orbit-text">Loading...</div>
           <div className="flex justify-center items-center mt-4">
-            <svg className="animate-spin h-8 w-8 text-primary-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg className="animate-spin h-8 w-8 text-orbit-gold" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
             </svg>
@@ -519,22 +519,22 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     >
     <div className="fixed inset-0 bg-black bg-opacity-40 flex sm:items-center sm:justify-center items-stretch justify-end z-[9999]">
       <div 
-        className="bg-white w-full sm:w-[600px] sm:rounded-2xl p-0 shadow-xl h-[100dvh] flex flex-col text-center relative overflow-hidden"
+        className="bg-orbit-surface3 w-full sm:w-[600px] sm:rounded-2xl p-0 shadow-xl h-[100dvh] flex flex-col text-center relative overflow-hidden"
         style={{
           paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
         {/* Header/About Section */}
-        <div className={isSingleToSingle ? "border-b border-border-light" : "p-8 border-b border-border-light"}>
+        <div className={isSingleToSingle ? "border-b border-orbit-border/50" : "p-8 border-b border-orbit-border/50"}>
           {isSingleToSingle ? (
             <>
               {/* Compact sticky header for single-to-single */}
-              <div className="sticky top-0 z-10 bg-white border-b border-gray-100 min-h-[56px]">
+              <div className="sticky top-0 z-10 bg-orbit-surface3 border-b border-orbit-border/50 min-h-[56px]">
                 <div className="flex items-center gap-3 px-4 py-2">
                   <button
                     onClick={handleClose}
-                    className="h-9 w-9 flex items-center justify-center text-primary-blue font-semibold text-base flex-shrink-0"
+                    className="h-9 w-9 flex items-center justify-center text-orbit-text font-semibold text-base flex-shrink-0"
                     aria-label="Close"
                   >
                     &larr; Back
@@ -542,17 +542,17 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                   {/* Avatar + Name */}
                   {clickedSingle && (
                     <>
-                      <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-accent-teal-light flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-orbit-border flex-shrink-0">
                         {clickedSingle.photo ? (
                           <img src={clickedSingle.photo} alt={clickedSingle.name} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full bg-background-main flex items-center justify-center">
-                            <span className="text-sm font-bold text-text-light">{clickedSingle.name?.charAt(0).toUpperCase() || '?'}</span>
+                          <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
+                            <span className="text-sm font-bold text-orbit-text2">{clickedSingle.name?.charAt(0).toUpperCase() || '?'}</span>
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col leading-tight">
-                        <div className="font-semibold text-gray-900 truncate text-[16px]">
+                        <div className="font-semibold text-orbit-text truncate text-[16px]">
                           {clickedSingle.name || 'Chat'}
                         </div>
                       </div>
@@ -563,47 +563,47 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
             </>
           ) : (
             <>
-              <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase font-brand">Your conversation with <span className="italic text-primary-blue-light">{otherUserName}</span></div>
+              <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase font-brand text-orbit-text">Your conversation with <span className="italic text-orbit-gold">{otherUserName}</span></div>
               <div className="flex items-center justify-center gap-8">
                 <div className="flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-orbit-border">
                     {theirSingle?.photo ? (
                       <img src={theirSingle.photo} alt={theirSingle.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-background-main flex items-center justify-center">
-                        <span className="text-2xl font-bold text-text-light">{theirSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
+                      <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
+                        <span className="text-2xl font-bold text-orbit-text2">{theirSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
                       </div>
                     )}
                   </div>
                   {/* Removed 'Their Single' text */}
-                  <div className="text-xs text-gray-500">{theirSingle?.name || 'Unknown'}</div>
+                  <div className="text-xs text-orbit-muted">{theirSingle?.name || 'Unknown'}</div>
                 </div>
-                <div className="text-lg font-medium text-text-light">and</div>
+                <div className="text-lg font-medium text-orbit-text2">and</div>
                 <div className="flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent-teal-light">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-orbit-border">
                     {ourSingle?.photo ? (
                       <img src={ourSingle.photo} alt={ourSingle.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-background-main flex items-center justify-center">
-                        <span className="text-2xl font-bold text-text-light">{ourSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
+                      <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
+                        <span className="text-2xl font-bold text-orbit-text2">{ourSingle?.name?.charAt(0).toUpperCase() || '?'}</span>
                       </div>
                     )}
                   </div>
                   {/* Removed 'Our Single' text */}
-                  <div className="text-xs text-gray-500">{ourSingle?.name || 'Unknown'}</div>
+                  <div className="text-xs text-orbit-muted">{ourSingle?.name || 'Unknown'}</div>
                 </div>
               </div>
               {/* Approve Match UI for matchmakrs in chats about two singles */}
               <div className="mt-6">
                 {matchLoading ? (
-                  <div className="text-gray-500">Checking match status...</div>
+                  <div className="text-orbit-muted">Checking match status...</div>
                 ) : matchStatus === 'matched' ? (
-                  <div className="text-primary-blue font-bold">Both sponsors agreed to the introduction</div>
+                  <div className="text-orbit-gold font-bold">Both sponsors agreed to the introduction</div>
                 ) : matchStatus === 'pending' ? (
-                  <div className="text-yellow-600 font-semibold">Waiting for the other sponsor</div>
+                  <div className="text-orbit-warning font-semibold">Waiting for the other sponsor</div>
                 ) : matchStatus === 'can-approve' ? (
                   <button
-                    className="rounded-cta px-6 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
+                    className="orbit-btn-primary rounded-cta px-6 py-2 min-h-[44px] shadow-cta-entry hover:opacity-90 active:opacity-95 transition-opacity duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleApproveMatch}
                     disabled={!ourSingle?.id || !theirSingle?.id || matchLoading}
                     title={!ourSingle?.id || !theirSingle?.id ? 'Both singles must be present to make the introduction.' : ''}
@@ -612,7 +612,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                   </button>
                 ) : null}
                 {(!ourSingle?.id || !theirSingle?.id) && !isSingleToSingle && (
-                  <div className="text-gray-400 text-xs mt-2">Both singles must be present to make the introduction.</div>
+                  <div className="text-orbit-muted text-xs mt-2">Both singles must be present to make the introduction.</div>
                 )}
                 {matchError && <div className="text-red-500 mt-2">{matchError}</div>}
               </div>
@@ -620,31 +620,31 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
           )}
         </div>
         {/* Chat History Section */}
-        <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain bg-background-main px-6 py-4 pb-20 text-left">
+        <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain bg-orbit-canvas px-6 py-4 pb-20 text-left">
           <div className="flex flex-col">
             {/* Scroll-away intro panel for single-to-single chats */}
             {isSingleToSingle && canChat && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
-                <div className="font-semibold text-gray-900 mb-1">You're now connected</div>
-                <div className="text-sm text-gray-600 mb-2">Your sponsors agreed to introduce you</div>
+              <div className="mb-6 p-4 orbit-surface-soft rounded-lg text-center">
+                <div className="font-semibold text-orbit-text mb-1">You're now connected</div>
+                <div className="text-sm text-orbit-text2 mb-2">Your sponsors agreed to introduce you</div>
                 {/* Optional: small avatars */}
                 <div className="flex items-center justify-center gap-4 mt-3">
-                  <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300">
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-orbit-border/50">
                     {aboutSingle.photo ? (
                       <img src={aboutSingle.photo} alt={aboutSingle.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-background-main flex items-center justify-center">
-                        <span className="text-xs font-bold text-text-light">{aboutSingle.name?.charAt(0).toUpperCase() || '?'}</span>
+                      <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
+                        <span className="text-xs font-bold text-orbit-text2">{aboutSingle.name?.charAt(0).toUpperCase() || '?'}</span>
                       </div>
                     )}
                   </div>
-                  <div className="text-xs text-gray-400">and</div>
-                  <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300">
+                  <div className="text-xs text-orbit-muted">and</div>
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-orbit-border/50">
                     {clickedSingle.photo ? (
                       <img src={clickedSingle.photo} alt={clickedSingle.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-background-main flex items-center justify-center">
-                        <span className="text-xs font-bold text-text-light">{clickedSingle.name?.charAt(0).toUpperCase() || '?'}</span>
+                      <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
+                        <span className="text-xs font-bold text-orbit-text2">{clickedSingle.name?.charAt(0).toUpperCase() || '?'}</span>
                       </div>
                     )}
                   </div>
@@ -678,10 +678,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
           </div>
         </div>
         {/* Input Section */}
-        <div className="sticky bottom-0 z-10 bg-white border-t border-border-light p-6 flex items-center gap-3">
+        <div className="sticky bottom-0 z-10 bg-orbit-surface3 border-t border-orbit-border/50 p-6 flex items-center gap-3">
           <input
             type="text"
-            className="flex-1 border border-gray-300 rounded-2xl px-4 py-3 text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 placeholder:text-gray-400 placeholder:italic text-base"
+            className="flex-1 border border-orbit-border/50 rounded-2xl px-4 py-3 text-orbit-text bg-orbit-surface/80 focus:border-orbit-gold focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 placeholder:text-orbit-muted placeholder:italic text-base"
             placeholder={`Send a message to ${otherUserName}`}
             value={messageText}
             onChange={e => setMessageText(e.target.value)}
@@ -692,7 +692,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
           />
           {messageText.trim() && (
             <button
-              className="flex items-center justify-center w-12 h-12 rounded-full bg-action-primary shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active transition-colors border-0 text-primary-blue"
+              className="flex items-center justify-center w-12 h-12 rounded-full bg-orbit-gold text-orbit-text shadow-cta-entry hover:opacity-90 active:opacity-95 transition-opacity border-0"
               onClick={handleSendMessage}
               disabled={sending || (isSingleToSingle && !canChat)}
             >
@@ -708,25 +708,25 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
           <>
             {/* Top left back arrow for mobile */}
             <button
-              className="absolute top-4 left-4 block sm:hidden bg-white/80 rounded-full p-2 shadow focus:outline-none"
+              className="absolute top-4 left-4 block sm:hidden bg-orbit-surface3/90 rounded-full p-2 shadow focus:outline-none text-orbit-text"
               onClick={handleClose}
               aria-label="Back"
               disabled={sending}
             >
               {/* Heroicons chevron-left */}
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-gray-700">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
               </svg>
             </button>
             {/* Top right X for desktop */}
             <button
-              className="absolute top-4 right-4 hidden sm:block bg-white/80 rounded-full p-2 shadow focus:outline-none"
+              className="absolute top-4 right-4 hidden sm:block bg-orbit-surface3/90 rounded-full p-2 shadow focus:outline-none text-orbit-text"
               onClick={handleClose}
               aria-label="Close"
               disabled={sending}
             >
               {/* Heroicons X-mark */}
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-gray-700">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
