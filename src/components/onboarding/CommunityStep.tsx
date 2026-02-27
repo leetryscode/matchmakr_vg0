@@ -37,11 +37,11 @@ export default function CommunityStep({ onNext, variant, defaultSlug }: Communit
       : undefined;
   return (
     <div className="flex flex-col items-center justify-center gap-8">
-      <h1 className="text-4xl font-light text-text-dark leading-[1.1] tracking-tight sm:text-[4rem]">
+      <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
         Orbit Community
       </h1>
       {subtext && (
-        <p className="text-text-light font-light text-center max-w-md">
+        <p className="text-orbit-muted font-light text-center max-w-md">
           {subtext}
         </p>
       )}
@@ -52,15 +52,15 @@ export default function CommunityStep({ onNext, variant, defaultSlug }: Communit
             <button
               key={card.slug}
               onClick={() => onNext(card.slug)}
-              className={`flex flex-col gap-3 rounded-xl border p-6 text-text-dark card-hover-subtle shadow-card hover:shadow-card-hover transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 focus:ring-offset-background-main font-light text-center text-lg ${
+              className={`orbit-ring flex flex-col gap-3 rounded-card-lg p-6 text-orbit-text card-hover-subtle transition-all duration-200 hover:-translate-y-0.5 font-light text-center text-lg ${
                 isRecommended
-                  ? 'border-primary-blue bg-background-card/90'
-                  : 'border-border-light bg-background-card'
+                  ? 'orbit-surface-strong border-orbit-gold/60'
+                  : 'orbit-surface-soft'
               }`}
             >
               {card.label}
               {isRecommended && (
-                <span className="text-sm text-primary-blue font-light">(recommended)</span>
+                <span className="text-sm text-orbit-gold font-light">(recommended)</span>
               )}
             </button>
           );

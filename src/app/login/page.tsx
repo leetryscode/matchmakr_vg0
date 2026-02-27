@@ -48,41 +48,43 @@ export default function LoginPage() {
   // Always show the login form - no redirects, no cached user checks
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-text-dark">
-      <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 text-center">
-        <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] text-text-dark leading-[1.1]">
+    <main className="flex min-h-[100dvh] flex-col items-center justify-center bg-transparent text-orbit-text p-4">
+      <div className="flex flex-col items-center justify-center gap-6 w-full max-w-md">
+        <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] text-orbit-text leading-[1.1]">
           Login
         </h1>
-        <form
-          onSubmit={handleSignIn}
-          className="flex flex-col gap-4 w-full max-w-md"
-        >
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full rounded-xl border border-white/20 bg-background-card px-4 py-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
-          />
-          {error && <p className="text-red-500 font-light">{error}</p>}
-          <button
-            type="submit"
-            disabled={loadingSignIn}
-            className="rounded-cta min-h-[48px] bg-action-entry text-primary-blue font-semibold shadow-cta-entry hover:bg-action-entry-hover active:bg-action-entry-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 px-10 py-3 text-base tracking-[0.02em] no-underline disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-entry"
+        <div className="orbit-surface-strong rounded-card-lg shadow-card px-6 py-6 w-full">
+          <form
+            onSubmit={handleSignIn}
+            className="flex flex-col gap-4"
           >
-            {loadingSignIn ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
-        <a href="/" className="text-text-dark no-underline mt-4 hover:text-white transition-colors font-light">
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="orbit-ring w-full rounded-xl border border-orbit-border/50 bg-orbit-surface/80 px-4 py-3 text-orbit-text placeholder:text-orbit-muted font-light"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="orbit-ring w-full rounded-xl border border-orbit-border/50 bg-orbit-surface/80 px-4 py-3 text-orbit-text placeholder:text-orbit-muted font-light"
+            />
+            {error && <p className="text-red-500 font-light">{error}</p>}
+            <button
+              type="submit"
+              disabled={loadingSignIn}
+              className="orbit-btn-primary min-h-[48px] px-10 py-3 text-base tracking-[0.02em] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loadingSignIn ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+        </div>
+        <a href="/" className="orbit-btn-ghost text-orbit-text2 hover:text-orbit-text no-underline mt-2 font-light">
           Back
         </a>
       </div>
