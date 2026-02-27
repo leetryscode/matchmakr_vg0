@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { SingleStatus, getSingleFacingStatusLabel, getSingleFacingStatusExplanation, getSingleFacingStatusStyles } from '@/lib/status/singleStatus';
+import { SingleStatus, getSingleFacingStatusLabel, getSingleFacingStatusExplanation, getStatusPillClasses } from '@/lib/status/singleStatus';
 import { createClient } from '@/lib/supabase/client';
 
 interface AvailabilitySectionProps {
@@ -86,7 +86,7 @@ const AvailabilitySection: React.FC<AvailabilitySectionProps> = ({ status, userI
       {/* Always visible: Status pill and explanation */}
       {/* Row 1: Pill (left) + Chevron (right) */}
       <div className="flex items-center justify-between mb-2">
-        <span className={`${getSingleFacingStatusStyles(currentStatus)} transition-colors duration-150`}>
+        <span className={`${getStatusPillClasses(currentStatus)} transition-colors duration-150`}>
           {getSingleFacingStatusLabel(currentStatus)}
         </span>
         

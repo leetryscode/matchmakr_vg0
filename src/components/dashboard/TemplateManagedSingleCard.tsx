@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { getStatusStyles } from '@/lib/status/singleStatus';
+import { getStatusPillClasses } from '@/lib/status/singleStatus';
 
 interface TemplateManagedSingleCardProps {
     onInviteClick: () => void;
@@ -43,7 +43,7 @@ const TemplateManagedSingleCard: React.FC<TemplateManagedSingleCardProps> = ({ o
 
             {/* Status pill row */}
             <div className="mb-2">
-                <span className={`${getStatusStyles('IN_MOTION')} animate-pulse`}>
+                <span className={`${getStatusPillClasses('IN_MOTION')} animate-pulse`}>
                     Start here
                 </span>
             </div>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Image from 'next/image';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { getPreviewResponseStatusStyles, getPreviewResponseCapsuleBorder, getPreviewResponseCapsuleBorderFallback, type PreviewResponseStatus } from '@/lib/status/singleStatus';
+import { getStatusPillClasses, getPreviewCapsuleBorderClasses } from '@/lib/status/singleStatus';
 import { createClient } from '@/lib/supabase/client';
 
 interface SneakPeek {
@@ -114,11 +114,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
             {/* Capsule: left avatar + names + status pill + right avatar — tinted outline matches status */}
             <div
                 onClick={onClick}
-                className={`flex-1 flex items-center gap-4 px-4 py-3 bg-transparent rounded-full min-w-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-orbit-gold/50 ${
-                    ['PENDING', 'OPEN_TO_IT', 'NOT_SURE_YET'].includes(sneakPeek.status)
-                        ? getPreviewResponseCapsuleBorder(sneakPeek.status as PreviewResponseStatus)
-                        : getPreviewResponseCapsuleBorderFallback()
-                } ${
+                className={`flex-1 flex items-center gap-4 px-4 py-3 bg-transparent rounded-full min-w-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-orbit-gold/50 ${getPreviewCapsuleBorderClasses(sneakPeek.status)} ${
                     isArchiving ? 'opacity-0 translate-x-2' : 'opacity-100 translate-x-0'
                 }`}
                 role="button"
@@ -159,7 +155,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
                         </span>
                     </div>
                     {['PENDING', 'OPEN_TO_IT', 'NOT_SURE_YET'].includes(sneakPeek.status) && (
-                        <span className={`${getPreviewResponseStatusStyles(sneakPeek.status as PreviewResponseStatus)} mt-1.5 -translate-y-[2px] whitespace-nowrap`}>
+                        <span className={`${getStatusPillClasses(sneakPeek.status)} mt-1.5 -translate-y-[2px] whitespace-nowrap`}>
                             {getStatusLabel(sneakPeek.status)}
                         </span>
                     )}

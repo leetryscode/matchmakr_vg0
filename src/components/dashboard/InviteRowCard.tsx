@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/client';
-import { getInviteStatusStyles, type InviteRowStatus } from '@/lib/status/singleStatus';
+import { getStatusPillClasses, type InviteRowStatus } from '@/lib/status/singleStatus';
 
 export type { InviteRowStatus };
 
@@ -128,7 +128,7 @@ const InviteRowCard: React.FC<InviteRowCardProps> = ({
         )}
       </div>
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        <span className={getInviteStatusStyles(status)}>
+        <span className={getStatusPillClasses(status)}>
           {STATUS_LABELS[status]}
         </span>
         {canRescind && (

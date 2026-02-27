@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { SingleStatus, getStatusLabel, getStatusDescription, getStatusStyles } from '@/lib/status/singleStatus';
+import { SingleStatus, getStatusLabel, getStatusDescription, getStatusPillClasses } from '@/lib/status/singleStatus';
 
 interface ManagedSingleCardProps {
     single: {
@@ -67,7 +67,7 @@ const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, 
 
             {/* Status chip row */}
             <div className="mb-2">
-                <span className={getStatusStyles(status)}>
+                <span className={getStatusPillClasses(status)}>
                     {getStatusLabel(status)}
                 </span>
             </div>
