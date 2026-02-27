@@ -74,6 +74,11 @@ export default function SettingsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [theme, setTheme] = useState<string>('navy-classic');
+
+  useEffect(() => {
+    setTheme(document.documentElement.dataset.theme || 'navy-classic');
+  }, []);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -134,6 +139,16 @@ export default function SettingsPage() {
   const handleCancelEdit = () => {
     setIsEditingName(false);
     setEditedName('');
+  };
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    document.documentElement.dataset.theme = newTheme;
+    try {
+      localStorage.setItem('orbit_theme', newTheme);
+    } catch {
+      // localStorage can throw in some contexts
+    }
   };
 
   const handleLogout = async () => {
@@ -205,6 +220,33 @@ export default function SettingsPage() {
           <div className="w-full text-center">
             <h1 className="type-section">Settings</h1>
           </div>
+
+          {/* Theme Selector */}
+          <GlassCard variant="1" className="p-6">
+            <SectionHeader title="Appearance" className="mb-4" />
+            <div className="flex gap-3 flex-wrap">
+              <button
+                onClick={() => handleThemeChange('navy-classic')}
+                className={`orbit-ring px-6 py-3 rounded-pill font-medium transition-colors ${
+                  theme === 'navy-classic'
+                    ? 'orbit-surface-strong text-orbit-text'
+                    : 'orbit-btn-secondary'
+                }`}
+              >
+                Navy Classic
+              </button>
+              <button
+                onClick={() => handleThemeChange('plum-society')}
+                className={`orbit-ring px-6 py-3 rounded-pill font-medium transition-colors ${
+                  theme === 'plum-society'
+                    ? 'orbit-surface-strong text-orbit-text'
+                    : 'orbit-btn-secondary'
+                }`}
+              >
+                Plum Society
+              </button>
+            </div>
+          </GlassCard>
           
           {/* Account Card */}
           <GlassCard variant="1" className="p-6">

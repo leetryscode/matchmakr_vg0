@@ -63,6 +63,18 @@ function GlobalLayoutContent({ children, showBottomNav = true }: GlobalLayoutPro
     };
   }, [shouldShowBottomNav]);
 
+  // Theme fallback: repair if dataset.theme not set (e.g. localStorage cleared mid-session)
+  useEffect(() => {
+    if (document.documentElement.dataset.theme) return;
+    try {
+      const saved = localStorage.getItem('orbit_theme') ?? 'navy-classic';
+      const valid = saved === 'navy-classic' || saved === 'plum-society' ? saved : 'navy-classic';
+      document.documentElement.dataset.theme = valid;
+    } catch {
+      document.documentElement.dataset.theme = 'navy-classic';
+    }
+  }, []);
+
   return (
     <div className="min-h-[100dvh] orbit-canvas">
       {/* Persistent install bar - sticky at top, only shows when not standalone */}

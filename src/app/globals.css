@@ -37,6 +37,41 @@
   --orbit-warning:  184 145 92;   /* #B8915C */
 }
 
+/* Theme overrides — :root above = navy-classic default (safe fallback if script fails) */
+:root[data-theme="navy-classic"] {
+  --orbit-canvas:    12 31 53;
+  --orbit-bg-start:  12 31 53;
+  --orbit-bg-end:    22 43 68;
+  --orbit-surface-1: 28 55 92;
+  --orbit-surface-2: 30 58 92;
+  --orbit-surface-3: 34 66 104;
+  --orbit-border:    55 86 120;
+  --orbit-text:     242 244 247;
+  --orbit-text-2:   199 210 224;
+  --orbit-muted:    143 163 186;
+  --orbit-gold:     212 184 132;
+  --orbit-gold-dk:  188 160 110;
+  --orbit-success:  111 143 123;
+  --orbit-warning:  184 145 92;
+}
+
+:root[data-theme="plum-society"] {
+  --orbit-canvas:    28 18 38;
+  --orbit-bg-start:  28 18 38;
+  --orbit-bg-end:    42 28 52;
+  --orbit-surface-1: 48 35 62;
+  --orbit-surface-2: 52 40 68;
+  --orbit-surface-3: 58 48 78;
+  --orbit-border:    85 70 105;
+  --orbit-text:     242 244 247;
+  --orbit-text-2:   199 210 224;
+  --orbit-muted:    143 163 186;
+  --orbit-gold:     212 184 132;
+  --orbit-gold-dk:  188 160 110;
+  --orbit-success:  111 143 123;
+  --orbit-warning:  184 145 92;
+}
+
 html, body {
   height: 100%;
 }
