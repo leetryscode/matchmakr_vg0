@@ -30,8 +30,8 @@
   --orbit-text-2:   199 210 224;  /* #C7D2E0 */
   --orbit-muted:    143 163 186;  /* #8FA3BA */
 
-  --orbit-gold:     214 179 106;  /* #D6B36A */
-  --orbit-gold-dk:  194 161 90;   /* #C2A15A */
+  --orbit-gold:     212 184 132;
+  --orbit-gold-dk:  188 160 110;
 
   --orbit-success:  111 143 123;  /* #6F8F7B */
   --orbit-warning:  184 145 92;   /* #B8915C */
@@ -155,8 +155,16 @@ body {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orbit-gold/30 focus-visible:ring-offset-2 focus-visible:ring-offset-orbit-canvas;
   }
 
+  .orbit-btn-shine {
+    background-image: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.18),
+      rgba(255, 255, 255, 0.04)
+    );
+  }
+
   .orbit-btn-primary {
-    @apply orbit-ring rounded-lg bg-orbit-gold text-orbit-bg-start font-semibold
+    @apply orbit-ring orbit-btn-shine rounded-pill px-8 py-3.5 bg-orbit-gold text-orbit-bg-start font-semibold
            hover:bg-orbit-goldDark active:bg-orbit-goldDark/90 transition-colors;
   }
 
