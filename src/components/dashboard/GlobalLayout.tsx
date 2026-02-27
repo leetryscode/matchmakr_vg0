@@ -68,7 +68,7 @@ function GlobalLayoutContent({ children, showBottomNav = true }: GlobalLayoutPro
     if (document.documentElement.dataset.theme) return;
     try {
       const saved = localStorage.getItem('orbit_theme') ?? 'navy-classic';
-      const valid = ['navy-classic', 'plum-society', 'invitation-cream'].includes(saved) ? saved : 'navy-classic';
+      const valid = ['navy-classic', 'plum-society', 'invitation-cream', 'dev-charcoal'].includes(saved) ? saved : 'navy-classic';
       document.documentElement.dataset.theme = valid;
     } catch {
       document.documentElement.dataset.theme = 'navy-classic';

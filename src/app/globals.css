@@ -94,6 +94,25 @@
   --orbit-font-heading: 'Crimson Pro', Georgia, serif;
 }
 
+/* Dev Charcoal — internal/QA/debug theme (not brand-facing). Neutral grayscale, strong contrast. */
+:root[data-theme="dev-charcoal"] {
+  --orbit-canvas:    22 22 24;
+  --orbit-bg-start:  22 22 24;
+  --orbit-bg-end:    28 28 32;
+  --orbit-surface-1: 28 28 32;
+  --orbit-surface-2: 34 34 38;
+  --orbit-surface-3: 42 42 46;
+  --orbit-border:    85 85 92;
+  --orbit-text:      242 242 247;
+  --orbit-text-2:    210 210 218;
+  --orbit-muted:     155 155 165;
+  --orbit-gold:      212 184 132;
+  --orbit-gold-dk:   188 160 110;
+  --orbit-success:   111 143 123;
+  --orbit-warning:   184 145 92;
+  --orbit-font-heading: 'Bahnschrift Light', Bahnschrift, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
 /* Text on dark overlay (e.g. profile card gradient) — always light for contrast */
 .text-on-dark-overlay {
   color: rgb(242 244 247);

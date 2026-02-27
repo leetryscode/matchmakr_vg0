@@ -48,7 +48,7 @@ export default function RootLayout({
       <body className="font-sans min-h-dvh text-orbit-text antialiased leading-normal text-base">
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("orbit_theme")||"navy-classic";if(t!=="navy-classic"&&t!=="plum-society"&&t!=="invitation-cream")t="navy-classic";document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme="navy-classic";}}());`,
+            __html: `(function(){try{var t=localStorage.getItem("orbit_theme")||"navy-classic";if(t!=="navy-classic"&&t!=="plum-society"&&t!=="invitation-cream"&&t!=="dev-charcoal")t="navy-classic";document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme="navy-classic";}}());`,
           }}
         />
         <AuthProvider>

@@ -255,6 +255,16 @@ export default function SettingsPage() {
               >
                 Invitation Cream
               </button>
+              <button
+                onClick={() => handleThemeChange('dev-charcoal')}
+                className={`orbit-ring px-6 py-3 rounded-pill font-medium transition-colors ${
+                  theme === 'dev-charcoal'
+                    ? 'orbit-surface-strong text-orbit-text'
+                    : 'orbit-btn-secondary'
+                }`}
+              >
+                Dev Charcoal
+              </button>
             </div>
           </GlassCard>
           
