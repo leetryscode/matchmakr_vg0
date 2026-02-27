@@ -23,12 +23,12 @@ export default function PreviewCard({
     isProcessing = false
 }: PreviewCardProps) {
     return (
-        <div className="relative w-full bg-white/10 rounded-card-lg border border-white/20 shadow-card p-4 flex items-center gap-4">
+        <div className="relative w-full orbit-card p-4 flex items-center gap-4">
             {/* X button - absolutely positioned, subtle overlay */}
             <button
                 onClick={onDismiss}
                 disabled={isProcessing}
-                className="absolute top-2 right-2 text-white/30 hover:text-white/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed p-1 z-10"
+                className="absolute top-2 right-2 orbit-muted hover:text-orbit-text transition-colors disabled:opacity-50 disabled:cursor-not-allowed p-1 z-10"
                 aria-label="Dismiss"
             >
                 <XMarkIcon className="w-3.5 h-3.5" />
@@ -36,7 +36,7 @@ export default function PreviewCard({
 
             {/* Left: Larger rounded-rectangle image - dominant visual element */}
             <div className="flex-shrink-0">
-                <div className="relative w-22 h-22 rounded-[18px] overflow-hidden border border-white/20 bg-gray-100" style={{ width: '88px', height: '88px' }}>
+                <div className="relative w-22 h-22 rounded-[18px] overflow-hidden orbit-surface-soft border border-orbit-border/30" style={{ width: '88px', height: '88px' }}>
                     {photoUrl ? (
                         <>
                             <Image
@@ -56,7 +56,7 @@ export default function PreviewCard({
                             />
                         </>
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-gray-400">
+                        <div className="w-full h-full flex items-center justify-center text-2xl font-bold orbit-muted">
                             ?
                         </div>
                     )}

@@ -19,7 +19,7 @@
   --orbit-bg-start:  12 31 53;     /* alias for gradient */
   --orbit-bg-end:    22 43 68;     /* #162B44 */
 
-  --orbit-surface-1: 22 45 74;     /* rows — noticeably lighter than canvas */
+  --orbit-surface-1: 28 55 92;     /* rows — clearly lighter than canvas, crisp contrast */
   --orbit-surface-2: 30 58 92;     /* cards — lighter than rows */
   --orbit-surface-3: 34 66 104;   /* shell/nav — strongest surface */
 
@@ -108,11 +108,20 @@ body {
     @apply bg-gradient-to-b from-orbit-bg-start to-orbit-bg-end;
   }
 
-  /* Rows — soft (chat rows, list items) */
+  /* Rows — soft (chat rows, list items); crisp edges, tactile hover/active */
   .orbit-surface-soft {
     @apply shadow-sm;
-    background-color: rgb(var(--orbit-surface-1) / 0.9);
-    border: 1px solid rgb(var(--orbit-border) / 0.35);
+    background-color: rgb(var(--orbit-surface-1) / 0.95);
+    border: 1px solid rgb(var(--orbit-border) / 0.48);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .orbit-surface-soft:hover {
+    background-color: rgb(var(--orbit-surface-1) / 0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  .orbit-surface-soft:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   }
 
   /* Cards — medium (feature cards, section blocks) */
@@ -158,6 +167,13 @@ body {
 
   .orbit-btn-ghost {
     @apply orbit-ring text-orbit-text2 hover:bg-orbit-border/20 rounded-lg transition-colors;
+  }
+
+  /* Notification badge — outline gold (private network feel) */
+  .orbit-badge-outline {
+    background-color: rgb(var(--orbit-surface-3) / 0.95);
+    border: 1px solid rgb(var(--orbit-gold) / 0.6);
+    color: rgb(var(--orbit-gold));
   }
 }
 
