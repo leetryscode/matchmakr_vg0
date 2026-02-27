@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Image from 'next/image';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { getPreviewResponseStatusStyles, getPreviewResponseCapsuleBorder, type PreviewResponseStatus } from '@/lib/status/singleStatus';
+import { getPreviewResponseStatusStyles, getPreviewResponseCapsuleBorder, getPreviewResponseCapsuleBorderFallback, type PreviewResponseStatus } from '@/lib/status/singleStatus';
 import { createClient } from '@/lib/supabase/client';
 
 interface SneakPeek {
@@ -30,10 +30,10 @@ interface SneakPeeksSectionProps {
     sponsoredSingles: SponsoredSingle[];
 }
 
-// Example preview card for empty state - matches pair-capsule style (transparent, bordered)
+// Example preview card for empty state — orbit-surface base tier, no white/*
 const ExamplePreviewCard = () => {
     return (
-        <div className="relative w-full bg-transparent border border-orbit-border/50 rounded-2xl p-3 flex items-center gap-3 opacity-80 pointer-events-none" style={{ maxWidth: '90%' }}>
+        <div className="relative w-full orbit-surface rounded-2xl p-3 flex items-center gap-3 opacity-80 pointer-events-none" style={{ maxWidth: '90%' }}>
             {/* X button - absolutely positioned, subtle overlay */}
             <div className="absolute top-2 right-2 orbit-muted opacity-50 p-1">
                 <XMarkIcon className="w-3 h-3" />
@@ -108,7 +108,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
 
     return (
         <div
-            className={`flex items-center gap-0.5 w-full transition-all`}
+            className="flex items-center gap-[3px] w-full transition-all"
             style={{ transitionDuration: isArchiving ? '200ms' : '150ms' }}
         >
             {/* Capsule: left avatar + names + status pill + right avatar — tinted outline matches status */}
@@ -117,7 +117,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
                 className={`flex-1 flex items-center gap-4 px-4 py-3 bg-transparent rounded-full min-w-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-orbit-gold/50 ${
                     ['PENDING', 'OPEN_TO_IT', 'NOT_SURE_YET'].includes(sneakPeek.status)
                         ? getPreviewResponseCapsuleBorder(sneakPeek.status as PreviewResponseStatus)
-                        : 'border border-orbit-border/50'
+                        : getPreviewResponseCapsuleBorderFallback()
                 } ${
                     isArchiving ? 'opacity-0 translate-x-2' : 'opacity-100 translate-x-0'
                 }`}
@@ -183,10 +183,10 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
                 </div>
             </div>
 
-            {/* Per-item X — outside capsule, in gutter */}
+            {/* Per-item X — outside capsule, comfortable tap target and spacing */}
             <button
                 onClick={handleArchiveClick}
-                className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] flex items-center justify-center rounded-lg orbit-muted hover:bg-orbit-border/20 hover:text-orbit-text active:bg-orbit-border/30 transition-colors flex-shrink-0"
+                className="py-2 pl-2 pr-0 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full orbit-muted hover:bg-orbit-border/20 hover:text-orbit-text active:bg-orbit-border/30 transition-colors flex-shrink-0"
                 aria-label="Dismiss"
                 tabIndex={-1}
             >
@@ -275,8 +275,8 @@ export default function SneakPeeksSection({ sponsorId, sponsoredSingles }: Sneak
     const visibleSneakPeeks = sneakPeeks.filter(sp => !archivedIds.has(sp.id));
 
     return (
-        <div>
-            <div className="mb-3 mt-8 first:mt-0">
+        <div className="orbit-surface-strong rounded-card-lg px-4 py-5 mt-8 first:mt-0">
+            <div className="mb-3">
                 <h2 className="type-section text-orbit-text">
                     Preview responses
                 </h2>
@@ -285,7 +285,7 @@ export default function SneakPeeksSection({ sponsorId, sponsoredSingles }: Sneak
             {loading ? (
                 <div className="orbit-muted text-sm">Loading...</div>
             ) : visibleSneakPeeks.length === 0 ? (
-                <div className="mt-4 orbit-card px-6 py-5">
+                <div className="mt-4 orbit-surface rounded-card-lg px-5 py-4">
                     <div className="mb-3">
                         <p className="text-xs orbit-muted">No previews sent yet. This is what your single will see:</p>
                     </div>
@@ -294,7 +294,7 @@ export default function SneakPeeksSection({ sponsorId, sponsoredSingles }: Sneak
                     </div>
                 </div>
             ) : (
-                <div className="mt-4 px-2 py-4">
+                <div className="mt-4 px-[3px] py-4">
                     <div className="flex flex-col space-y-3">
                         {visibleSneakPeeks.map((sneakPeek) => (
                             <SneakPeekCard

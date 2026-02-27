@@ -138,26 +138,40 @@ export function getStatusDescription(status: SingleStatus, approvedMatchCount: n
   }
 }
 
-/** Base classes for all status pills (sizing; colors come from orbit tokens per status). */
+/** Unified opacity constants for all status pills and capsule borders. */
+export const PILL_BG_ALPHA = 18;
+export const PILL_SEMANTIC_BG_ALPHA = 24; /** Warning/success: stronger fill so hue reads clearly. */
+export const PILL_BORDER_ALPHA = 28;
+export const CAPSULE_BORDER_ALPHA = 45;
+
+/** Base classes for all status pills (sizing; 1px border; colors come from orbit tokens per status). */
 const STATUS_PILL_BASE =
-  'inline-flex items-center rounded-full border-2 px-3 py-1 text-[11px] font-semibold tracking-wide uppercase';
+  'inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide uppercase';
+
+/** Shared pill color classes. Uses arbitrary values to bypass Tailwind opacity-variant generation. */
+const PILL_WARNING =
+  'bg-[rgb(var(--orbit-warning)/0.24)] text-orbit-warning border-[rgb(var(--orbit-warning)/0.28)]';
+const PILL_SUCCESS =
+  'bg-[rgb(var(--orbit-success)/0.24)] text-orbit-success border-[rgb(var(--orbit-success)/0.28)]';
+const PILL_NEUTRAL =
+  'bg-[rgb(var(--orbit-border)/0.18)] text-orbit-text2 border-[rgb(var(--orbit-border)/0.28)]';
 
 /** Sponsor/MatchMakr: orbit tokens per status. */
 const STATUS_COLOR: Record<SingleStatus, string> = {
-  NEEDS_ATTENTION: 'bg-orbit-warning/15 text-orbit-warning border-orbit-warning/30',
-  IN_MOTION: 'bg-orbit-success/15 text-orbit-success border-orbit-success/30',
-  PAUSED: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
-  INVITED: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
-  NEEDS_INTRODUCTION: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
+  NEEDS_ATTENTION: PILL_WARNING,
+  IN_MOTION: PILL_SUCCESS,
+  PAUSED: PILL_NEUTRAL,
+  INVITED: PILL_NEUTRAL,
+  NEEDS_INTRODUCTION: PILL_NEUTRAL,
 };
 
 /** Single-facing: same orbit tokens; INVITED uses neutral (shown as "Available"). */
 const SINGLE_FACING_STATUS_COLOR: Record<SingleStatus, string> = {
-  NEEDS_ATTENTION: 'bg-orbit-warning/15 text-orbit-warning border-orbit-warning/30',
-  IN_MOTION: 'bg-orbit-success/15 text-orbit-success border-orbit-success/30',
-  PAUSED: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
-  INVITED: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
-  NEEDS_INTRODUCTION: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
+  NEEDS_ATTENTION: PILL_WARNING,
+  IN_MOTION: PILL_SUCCESS,
+  PAUSED: PILL_NEUTRAL,
+  INVITED: PILL_NEUTRAL,
+  NEEDS_INTRODUCTION: PILL_NEUTRAL,
 };
 
 /**
@@ -181,19 +195,17 @@ export type PreviewResponseStatus = 'PENDING' | 'OPEN_TO_IT' | 'NOT_SURE_YET';
 
 /**
  * Color mapping for preview response pills (SneakPeeksSection).
- * PENDING → needs_attention (amber, sponsor action needed)
- * OPEN_TO_IT → in_motion (green, positive momentum)
- * NOT_SURE_YET → paused (violet, neutral/reflective)
+ * Same unified opacity as managed single pills.
  */
 const PREVIEW_RESPONSE_STATUS_COLOR: Record<PreviewResponseStatus, string> = {
-  PENDING: 'bg-orbit-warning/15 text-orbit-warning border-orbit-warning/30',
-  OPEN_TO_IT: 'bg-orbit-success/15 text-orbit-success border-orbit-success/30',
-  NOT_SURE_YET: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
+  PENDING: PILL_WARNING,
+  OPEN_TO_IT: PILL_SUCCESS,
+  NOT_SURE_YET: PILL_NEUTRAL,
 };
 
 /**
  * Gets the status pill styling for preview response statuses (sponsor view).
- * Reuses same outline-only base as managed single pills.
+ * Reuses same outline-only base and opacity as managed single pills.
  */
 export function getPreviewResponseStatusStyles(status: PreviewResponseStatus): string {
   return `${STATUS_PILL_BASE} ${PREVIEW_RESPONSE_STATUS_COLOR[status]}`;
@@ -201,33 +213,54 @@ export function getPreviewResponseStatusStyles(status: PreviewResponseStatus): s
 
 /**
  * Gets the capsule outline class for preview response items.
- * Uses status color at ~50% opacity; thinner than pill (border, not border-2).
- * Creates visual link between capsule and status pill.
+ * Capsule uses border-2 and CAPSULE_BORDER_ALPHA (45) — thicker and stronger than pill (1px, /28).
  */
 const PREVIEW_RESPONSE_CAPSULE_BORDER: Record<PreviewResponseStatus, string> = {
-  PENDING: 'border-orbit-warning/50',
-  OPEN_TO_IT: 'border-orbit-success/50',
-  NOT_SURE_YET: 'border-orbit-border/50',
+  PENDING: 'border-2 border-[rgb(var(--orbit-warning)/0.45)]',
+  OPEN_TO_IT: 'border-2 border-[rgb(var(--orbit-success)/0.45)]',
+  NOT_SURE_YET: 'border-2 border-[rgb(var(--orbit-border)/0.45)]',
 };
 
 export function getPreviewResponseCapsuleBorder(status: PreviewResponseStatus): string {
-  return `border ${PREVIEW_RESPONSE_CAPSULE_BORDER[status]}`;
+  return PREVIEW_RESPONSE_CAPSULE_BORDER[status];
+}
+
+/** Fallback capsule border for DISMISSED/EXPIRED (neutral, same thickness as other capsules). */
+export function getPreviewResponseCapsuleBorderFallback(): string {
+  return 'border-2 border-[rgb(var(--orbit-border)/0.45)]';
 }
 
 /** Base for single-facing preview response option pills (no uppercase, sentence case). */
 const PREVIEW_OPTION_PILL_BASE =
-  'inline-flex items-center rounded-full border-2 px-3 py-1 text-sm font-semibold bg-transparent';
+  'inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold bg-transparent';
 
 /**
  * Gets pill styling for single's preview response options ("I'm open to it", "I'm not sure yet").
- * Same colors as sponsor view; no uppercase so copy stays sentence case.
+ * Same unified opacity as sponsor view pills.
  */
 export function getPreviewResponseOptionStyles(status: 'OPEN_TO_IT' | 'NOT_SURE_YET'): string {
   const colors: Record<'OPEN_TO_IT' | 'NOT_SURE_YET', string> = {
-    OPEN_TO_IT: 'bg-orbit-success/15 text-orbit-success border-orbit-success/30',
-    NOT_SURE_YET: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
+    OPEN_TO_IT: PILL_SUCCESS,
+    NOT_SURE_YET: PILL_NEUTRAL,
   };
   return `${PREVIEW_OPTION_PILL_BASE} ${colors[status]}`;
+}
+
+/** Invite row statuses (Managed Singles grid). */
+export type InviteRowStatus = 'INVITED' | 'AWAITING_APPROVAL' | 'ACCEPTED' | 'DECLINED';
+
+/**
+ * Gets the status pill styling for invite row cards.
+ * Same unified opacity as managed single pills.
+ */
+export function getInviteStatusStyles(status: InviteRowStatus): string {
+  const colors: Record<InviteRowStatus, string> = {
+    INVITED: PILL_NEUTRAL,
+    AWAITING_APPROVAL: PILL_WARNING,
+    ACCEPTED: PILL_SUCCESS,
+    DECLINED: PILL_NEUTRAL,
+  };
+  return `${STATUS_PILL_BASE} ${colors[status]}`;
 }
 
 // Example test cases (for documentation/sanity checking):

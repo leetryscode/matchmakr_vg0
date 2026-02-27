@@ -6,21 +6,26 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/lib/**/*.{js,ts,jsx,tsx}",
   ],
   safelist: [
-    // Orbit status pill colors (used dynamically via getStatusStyles / getSingleFacingStatusStyles)
-    'bg-orbit-warning/15',
+    // Orbit status pill — explicit entries (ensure always in compiled CSS)
+    'border-orbit-warning/28',
+    'border-orbit-success/28',
+    'border-orbit-border/28',
+    'bg-orbit-warning/24',
+    'bg-orbit-success/24',
+    'bg-orbit-border/18',
     'text-orbit-warning',
-    'border-orbit-warning/30',
-    'border-orbit-warning/50',
-    'bg-orbit-success/15',
     'text-orbit-success',
-    'border-orbit-success/30',
-    'border-orbit-success/50',
-    'bg-orbit-border/20',
     'text-orbit-text2',
-    'border-orbit-border/30',
-    'border-orbit-border/50',
+    // Capsule borders
+    'border-orbit-warning/45',
+    'border-orbit-success/45',
+    'border-orbit-border/45',
+    // Patterns — future-proof orbit pill/capsule classes
+    { pattern: /^(bg|border)-orbit-(warning|success|border)\/(18|24|28|45)$/ },
+    { pattern: /^text-orbit-(warning|success|text2)$/ },
     // Legacy status (kept for any remaining usages)
     'border-status-paused',
     'text-status-paused',

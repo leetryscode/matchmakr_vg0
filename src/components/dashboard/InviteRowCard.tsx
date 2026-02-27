@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/client';
+import { getInviteStatusStyles, type InviteRowStatus } from '@/lib/status/singleStatus';
 
-export type InviteRowStatus = 'INVITED' | 'AWAITING_APPROVAL' | 'ACCEPTED' | 'DECLINED';
+export type { InviteRowStatus };
 
 interface InviteRowCardProps {
   inviteId: string;
@@ -17,15 +18,6 @@ interface InviteRowCardProps {
   declineSubtext?: 'expired' | 'cancelled' | null;
   onClick?: () => void;
 }
-
-const STATUS_PILL_BASE = 'inline-flex items-center rounded-full border-2 px-3 py-1 text-[11px] font-semibold tracking-wide uppercase';
-
-const STATUS_STYLES: Record<InviteRowStatus, string> = {
-  INVITED: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
-  AWAITING_APPROVAL: 'bg-orbit-warning/15 text-orbit-warning border-orbit-warning/30',
-  ACCEPTED: 'bg-orbit-success/15 text-orbit-success border-orbit-success/30',
-  DECLINED: 'bg-orbit-border/20 text-orbit-text2 border-orbit-border/30',
-};
 
 const STATUS_LABELS: Record<InviteRowStatus, string> = {
   INVITED: 'Invited',
@@ -136,7 +128,7 @@ const InviteRowCard: React.FC<InviteRowCardProps> = ({
         )}
       </div>
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        <span className={`${STATUS_PILL_BASE} ${STATUS_STYLES[status]}`}>
+        <span className={getInviteStatusStyles(status)}>
           {STATUS_LABELS[status]}
         </span>
         {canRescind && (
