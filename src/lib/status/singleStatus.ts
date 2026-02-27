@@ -192,7 +192,7 @@ const PILL_BASE =
  * Uses arbitrary rgb(var(--orbit-*)/alpha) values; no Tailwind safelist required.
  */
 export function getStatusPillClasses(status: string): string {
-  const token = STATUS_TOKEN[status] ?? 'border';
+  const token = (STATUS_TOKEN[status] ?? 'border') as keyof typeof PILL_STYLES;
   return `${PILL_BASE} ${PILL_STYLES[token]}`;
 }
 
@@ -201,7 +201,7 @@ export function getStatusPillClasses(status: string): string {
  * Capsule uses border-2; thicker than pill (1px).
  */
 export function getPreviewCapsuleBorderClasses(status: string): string {
-  const token = STATUS_TOKEN[status] ?? 'border';
+  const token = (STATUS_TOKEN[status] ?? 'border') as keyof typeof CAPSULE_STYLES;
   return CAPSULE_STYLES[token];
 }
 
@@ -222,7 +222,7 @@ const OPTION_PILL_STYLES = {
  * Outline-only: border + text, no bg fill. Distinct from status pills (filled).
  */
 export function getPreviewOptionPillClasses(status: 'OPEN_TO_IT' | 'NOT_SURE_YET'): string {
-  const token = STATUS_TOKEN[status] ?? 'border';
+  const token = (STATUS_TOKEN[status] ?? 'border') as keyof typeof OPTION_PILL_STYLES;
   return `${PREVIEW_OPTION_PILL_BASE} ${OPTION_PILL_STYLES[token]}`;
 }
 
