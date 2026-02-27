@@ -34,14 +34,14 @@ export default function InviteGate({
   return (
     <div className="flex flex-col items-center justify-center gap-8 text-center">
       <div className="w-full max-w-md space-y-6">
-        <h1 className="text-4xl font-light text-text-dark leading-[1.1] tracking-tight sm:text-[4rem]">
+        <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
           {copy.headline}
         </h1>
-        <p className="text-xl text-text-light font-light">
+        <p className="text-xl text-orbit-muted font-light">
           {copy.body(invitorName)}
         </p>
         <div className="flex flex-col items-center gap-3 pt-1">
-          <p className="text-sm text-text-dark font-normal opacity-75">
+          <p className="text-sm text-orbit-text font-normal opacity-75">
             This invitation was sent specifically to you.
           </p>
           <button
@@ -55,7 +55,7 @@ export default function InviteGate({
       <div className="w-full max-w-md">
         <button
           onClick={onChooseDifferentRole}
-          className="text-text-light font-light text-sm underline hover:text-white transition-colors"
+          className="text-orbit-muted font-light text-sm underline hover:text-orbit-text transition-colors"
         >
           Not what you expected? Choose a different role.
         </button>

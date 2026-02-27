@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,200..900;1,200..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -35,6 +36,7 @@
 
   --orbit-success:  111 143 123;  /* #6F8F7B */
   --orbit-warning:  184 145 92;   /* #B8915C */
+  --orbit-font-heading: 'Bahnschrift Light', Bahnschrift, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 
 /* Theme overrides — :root above = navy-classic default (safe fallback if script fails) */
@@ -53,23 +55,48 @@
   --orbit-gold-dk:  188 160 110;
   --orbit-success:  111 143 123;
   --orbit-warning:  184 145 92;
+  --orbit-font-heading: 'Bahnschrift Light', Bahnschrift, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 
 :root[data-theme="plum-society"] {
-  --orbit-canvas:    28 18 38;
-  --orbit-bg-start:  28 18 38;
-  --orbit-bg-end:    42 28 52;
-  --orbit-surface-1: 48 35 62;
-  --orbit-surface-2: 52 40 68;
-  --orbit-surface-3: 58 48 78;
-  --orbit-border:    85 70 105;
+  --orbit-canvas:    22 14 32;
+  --orbit-bg-start:  22 14 32;
+  --orbit-bg-end:    34 22 46;
+  --orbit-surface-1: 52 38 70;
+  --orbit-surface-2: 58 44 76;
+  --orbit-surface-3: 66 52 86;
+  --orbit-border:    78 76 102;
   --orbit-text:     242 244 247;
   --orbit-text-2:   199 210 224;
-  --orbit-muted:    143 163 186;
+  --orbit-muted:    160 176 198;
   --orbit-gold:     212 184 132;
   --orbit-gold-dk:  188 160 110;
   --orbit-success:  111 143 123;
   --orbit-warning:  184 145 92;
+  --orbit-font-heading: 'Bahnschrift Light', Bahnschrift, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+:root[data-theme="invitation-cream"] {
+  --orbit-canvas:    244 238 226;
+  --orbit-bg-start:  244 238 226;
+  --orbit-bg-end:    236 228 212;
+  --orbit-surface-1: 238 230 214;
+  --orbit-surface-2: 232 222 202;
+  --orbit-surface-3: 224 212 190;
+  --orbit-border:    186 170 140;
+  --orbit-text:      30 28 24;
+  --orbit-text-2:    72 64 54;
+  --orbit-muted:     120 110 92;
+  --orbit-gold:      176 148 98;
+  --orbit-gold-dk:   150 124 78;
+  --orbit-success:   92 124 108;
+  --orbit-warning:   156 118 76;
+  --orbit-font-heading: 'Crimson Pro', Georgia, serif;
+}
+
+/* Text on dark overlay (e.g. profile card gradient) — always light for contrast */
+.text-on-dark-overlay {
+  color: rgb(242 244 247);
 }
 
 html, body {
@@ -259,20 +286,26 @@ body {
 /* Typography system - 3-tier hierarchy */
 @layer components {
   .type-display {
-    @apply font-brand text-2xl sm:text-3xl tracking-wide text-text-dark leading-relaxed;
+    font-family: var(--orbit-font-heading);
+    @apply text-2xl sm:text-3xl tracking-wide text-orbit-text leading-relaxed;
   }
 
   .type-section {
-    @apply font-brand text-lg text-text-dark leading-normal;
+    font-family: var(--orbit-font-heading);
+    @apply text-lg text-orbit-text leading-normal;
     letter-spacing: 0.06em;
   }
 
+  .font-orbit-heading {
+    font-family: var(--orbit-font-heading);
+  }
+
   .type-body {
-    @apply text-sm sm:text-base text-text-dark leading-relaxed;
+    @apply text-sm sm:text-base text-orbit-text leading-relaxed;
   }
 
   .type-meta {
-    @apply text-xs text-text-light leading-normal;
+    @apply text-xs text-orbit-muted leading-normal;
   }
 
   /* Interactive row cards: chat rows, list items — surface1, minimal shadow */

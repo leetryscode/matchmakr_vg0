@@ -42,9 +42,9 @@ const InviteMatchMakrModal = ({
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center border border-white/20">
-                <h2 className="type-section mb-4 text-text-dark">Invite a sponsor</h2>
-                <p className="text-text-light mb-6">
+            <div className="orbit-surface-strong rounded-lg p-8 w-full max-w-md text-center border border-orbit-border/50">
+                <h2 className="type-section mb-4">Invite a sponsor</h2>
+                <p className="text-orbit-muted mb-6">
                     This person will be responsible for managing your profile and finding your matches!
                 </p>
                 <input
@@ -52,7 +52,7 @@ const InviteMatchMakrModal = ({
                     value={label}
                     onChange={(e) => setLabel(e.target.value)}
                     placeholder="Name (optional)"
-                    className="w-full border border-white/20 rounded-md px-3 py-2 mb-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                    className="orbit-ring w-full border border-orbit-border/50 rounded-md px-3 py-2 mb-3 text-orbit-text placeholder:text-orbit-muted bg-orbit-surface/80"
                     disabled={isLoading}
                 />
                 <input
@@ -60,12 +60,12 @@ const InviteMatchMakrModal = ({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Sponsor's email address"
-                    className="w-full border border-white/20 rounded-md px-3 py-2 mb-4 text-text-dark placeholder:text-text-dark placeholder:opacity-80 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                    className="orbit-ring w-full border border-orbit-border/50 rounded-md px-3 py-2 mb-4 text-orbit-text placeholder:text-orbit-muted bg-orbit-surface/80"
                     disabled={isLoading}
                 />
-                {message && <p className="text-text-dark my-2">{message}</p>}
+                {message && <p className="text-orbit-text my-2">{message}</p>}
                 <div className="flex justify-end gap-4">
-                    <button onClick={onClose} className="px-4 py-2 bg-white/20 text-text-dark rounded-md hover:bg-white/30 transition-colors" disabled={isLoading}>
+                    <button onClick={onClose} className="orbit-btn-secondary px-4 py-2 rounded-md" disabled={isLoading}>
                         Cancel
                     </button>
                     <button onClick={handleSendInvite} className="rounded-cta px-4 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200" disabled={isLoading}>

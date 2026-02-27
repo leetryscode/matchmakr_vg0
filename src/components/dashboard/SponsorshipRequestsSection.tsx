@@ -65,13 +65,13 @@ export default function SponsorshipRequestsSection({
   return (
     <section className="mt-10">
       <SectionHeader title="Sponsorship requests" />
-      <p className="type-meta text-text-light mb-4">
+      <p className="type-meta text-orbit-muted mb-4">
         Singles who invited you to be their sponsor. Accept to add them to your orbit.
       </p>
       <div className="flex flex-col gap-3">
         {localRequests.map((req) => (
           <GlassCard key={req.id} className="p-4">
-            <p className="type-body text-text-dark mb-4">
+            <p className="type-body text-orbit-text mb-4">
               {singleNameMap[req.single_id] || 'Someone'} wants you to be their sponsor
             </p>
             <div className="flex gap-3">
@@ -85,7 +85,7 @@ export default function SponsorshipRequestsSection({
               <button
                 onClick={() => handleDecline(req.id)}
                 disabled={actionLoading === req.id}
-                className="px-4 py-2 min-h-[40px] rounded-lg bg-white/20 text-text-dark font-semibold hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="orbit-btn-secondary px-4 py-2 min-h-[40px] rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Decline
               </button>

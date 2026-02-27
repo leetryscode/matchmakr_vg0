@@ -440,7 +440,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                             <div className="keen-slider__slide relative w-full min-w-full h-full flex items-center justify-center" key={idx}>
                                 {item === ADD_PHOTO_SLOT && photos.length === 0 ? (
                                     <div className="relative w-full h-full bg-background-card border border-border-light flex items-center justify-center">
-                                        <span className="text-6xl font-bold text-white">
+                                        <span className="text-6xl font-bold text-on-dark-overlay">
                                             {profileName?.charAt(0).toUpperCase() || '?'}
                                         </span>
                                         {canEdit && (
@@ -483,7 +483,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                 ) : item === ADD_PHOTO_SLOT ? (
                                     canEdit && (
                                         <button
-                                            className="flex flex-col items-center justify-center w-full h-full bg-black/40 rounded-2xl text-white hover:text-primary-blue transition-colors"
+                                            className="flex flex-col items-center justify-center w-full h-full bg-black/40 rounded-2xl text-on-dark-overlay hover:text-orbit-gold transition-colors"
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
@@ -533,7 +533,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                         {canEdit && (
                                             <div className="absolute top-2 right-2 z-10">
                                                 <button
-                                                    className="p-2 rounded-full bg-black/40 hover:bg-black/70 text-white"
+                                                    className="p-2 rounded-full bg-black/40 hover:bg-black/70 text-on-dark-overlay"
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         e.stopPropagation();
@@ -570,7 +570,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                     <>
                         {photos.length === 0 ? (
                             <div className="relative w-full h-full bg-background-card border border-border-light flex items-center justify-center">
-                                <span className="text-6xl font-bold text-white">
+                                <span className="text-6xl font-bold text-on-dark-overlay">
                                     {profileName?.charAt(0).toUpperCase() || '?'}
                                 </span>
                                 {canEdit && (
@@ -620,7 +620,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                         ) : displayItems[0] === ADD_PHOTO_SLOT ? (
                             canEdit && (
                                 <button
-                                    className="flex flex-col items-center justify-center w-full h-full bg-black/40 rounded-2xl text-white hover:text-primary-blue transition-colors"
+                                    className="flex flex-col items-center justify-center w-full h-full bg-black/40 rounded-2xl text-on-dark-overlay hover:text-orbit-gold transition-colors"
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
@@ -670,7 +670,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                 {canEdit && (
                                     <div className="absolute top-2 right-2 z-10">
                                         <button
-                                            className="p-2 rounded-full bg-black/40 hover:bg-black/70 text-white"
+                                            className="p-2 rounded-full bg-black/40 hover:bg-black/70 text-on-dark-overlay"
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
@@ -706,7 +706,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                 <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/70 to-transparent z-10" />
                 {/* Name + Age overlay */}
                 {name && (
-                    <div className="absolute bottom-4 left-4 z-20 text-white">
+                    <div className="absolute bottom-4 left-4 z-20 text-on-dark-overlay">
                         <div className="text-2xl font-semibold">{name}</div>
                         {age && <div className="text-sm opacity-90">{age}</div>}
                     </div>

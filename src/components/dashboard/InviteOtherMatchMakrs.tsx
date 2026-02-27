@@ -35,8 +35,8 @@ const InviteOtherMatchMakrModal = ({
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-white/20">
-                <h2 className="type-section mb-4 text-text-dark">Invite a fellow sponsor</h2>
-                <p className="text-text-light mb-6 leading-relaxed">
+                <h2 className="type-section mb-4">Invite a fellow sponsor</h2>
+                <p className="text-orbit-muted mb-6 leading-relaxed">
                     Invite a friend to join our community helping friends find love.
                 </p>
                 <input
@@ -44,17 +44,17 @@ const InviteOtherMatchMakrModal = ({
                     value={label}
                     onChange={(e) => setLabel(e.target.value)}
                     placeholder="Name (optional)"
-                    className="w-full border border-white/20 rounded-xl px-4 py-3 mb-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                    className="orbit-ring w-full border border-orbit-border/50 rounded-xl px-4 py-3 mb-3 text-orbit-text placeholder:text-orbit-muted bg-orbit-surface/80"
                 />
                 <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Their email address"
-                    className="w-full border border-white/20 rounded-xl px-4 py-3 mb-4 text-text-dark placeholder:text-text-dark placeholder:opacity-80 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+                    className="orbit-ring w-full border border-orbit-border/50 rounded-xl px-4 py-3 mb-4 text-orbit-text placeholder:text-orbit-muted bg-orbit-surface/80"
                 />
                 <div className="flex justify-end gap-4">
-                    <button onClick={onClose} className="px-6 py-3 bg-white/20 text-text-dark rounded-lg font-semibold hover:bg-white/30 transition-all duration-300 shadow-button hover:shadow-button-hover" disabled={isLoading}>
+                    <button onClick={onClose} className="orbit-btn-secondary px-6 py-3 rounded-lg font-semibold" disabled={isLoading}>
                         Cancel
                     </button>
                     <button
@@ -86,9 +86,9 @@ export default function InviteOtherMatchMakrs() {
         <>
             <div className="bg-white/10 p-8 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-white/20 mb-8">
                 <h2 className="type-display mb-3">Sponsor chat</h2>
-                <p className="text-white/80 text-lg leading-relaxed mb-6">Chat windows with other sponsors like you, on behalf of their sponsored singles</p>
+                <p className="text-orbit-text2 text-lg leading-relaxed mb-6">Chat windows with other sponsors like you, on behalf of their sponsored singles</p>
                 <div className="text-center p-12 bg-white/10 rounded-2xl border-2 border-dashed border-white/20 mb-6">
-                    <p className="text-white/70 text-lg">No sponsor chats</p>
+                    <p className="text-orbit-muted text-lg">No sponsor chats</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}

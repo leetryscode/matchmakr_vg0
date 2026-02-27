@@ -485,20 +485,20 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                   return (
                   <GlassCard key={req.id} className="p-4 shadow-lg ring-1 ring-primary-blue/10 hover:shadow-xl transition-all duration-200">
                     <div className="flex items-start gap-3">
-                      <div className="shrink-0 w-12 h-12 rounded-full border border-white/20 overflow-hidden bg-white/5">
+                      <div className="shrink-0 w-12 h-12 rounded-full border border-orbit-border/50 overflow-hidden bg-orbit-surface/50">
                         {photoUrl ? (
                           <img src={photoUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-sm font-semibold text-text-dark">
+                          <div className="w-full h-full flex items-center justify-center text-sm font-semibold text-orbit-text">
                             {getInitials(sponsorName)}
                           </div>
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="type-body font-semibold text-text-dark mb-1">
+                        <h3 className="type-body font-semibold text-orbit-text mb-1">
                           {sponsorName} wants to be your sponsor
                         </h3>
-                        <p className="type-meta text-text-light mb-4">
+                        <p className="type-meta text-orbit-muted mb-4">
                           As your sponsor, {sponsorName} will represent you inside Orbit — managing your profile, exploring potential introductions, chatting with other sponsors, and personally introducing you to other single users.
                         </p>
                         <div className="flex flex-wrap gap-3">
@@ -512,7 +512,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                           <button
                             onClick={() => handleDeclineSponsorship(req.id)}
                             disabled={requestActionLoading === req.id}
-                            className="px-4 py-2 min-h-[40px] rounded-lg bg-white/20 text-text-dark font-semibold hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="orbit-btn-secondary px-4 py-2 min-h-[40px] rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             Decline
                           </button>
@@ -529,7 +529,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           {/* Sponsor chat section — same Preview Row pattern when no sponsor */}
           <section className="mt-10">
             <SectionHeader title="Sponsor chat" right={<InviteAction />} />
-            <p className="mt-4 type-meta text-text-light">
+            <p className="mt-4 type-meta text-orbit-muted">
               Invite someone to be your sponsor to get started.
             </p>
             <div className="mt-4">
@@ -548,7 +548,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             <SectionHeader title="Introduced by my sponsor" />
             {singleChats.length === 0 ? (
               <>
-                <p className="mt-4 type-meta text-text-light">
+                <p className="mt-4 type-meta text-orbit-muted">
                   Conversations begin here after your sponsor makes an introduction.
                 </p>
                 <div className="mt-4">
@@ -638,13 +638,13 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         {/* Unmatch Confirmation Modal */}
         {showUnmatchModal && unmatchTarget && (
           <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-            <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-white/20">
-              <h2 className="type-section mb-4 text-text-dark">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
-              <p className="text-text-light mb-6">
+            <div className="orbit-surface-strong rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-orbit-border/50">
+              <h2 className="type-section mb-4">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
+              <p className="text-orbit-muted mb-6">
                 This will permanently remove your match and chat history. You would need to be matched again to chat in the future.
               </p>
               <div className="flex justify-center gap-4">
-                <button onClick={() => { setShowUnmatchModal(false); setUnmatchTarget(null); }} className="px-6 py-2 bg-white/20 text-text-dark rounded-md hover:bg-white/30 font-semibold transition-colors">
+                <button onClick={() => { setShowUnmatchModal(false); setUnmatchTarget(null); }} className="orbit-btn-secondary px-6 py-2 rounded-md font-semibold">
                   Cancel
                 </button>
                 <button onClick={handleUnmatch} className="rounded-cta px-6 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200">
@@ -694,16 +694,16 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                       {photoUrl ? (
                         <img src={photoUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-sm font-semibold text-text-dark">
+                        <div className="w-full h-full flex items-center justify-center text-sm font-semibold text-orbit-text">
                           {getInitials(sponsorName)}
                         </div>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="type-body font-semibold text-text-dark mb-1">
+                      <h3 className="type-body font-semibold text-orbit-text mb-1">
                         {sponsorName} wants to be your sponsor
                       </h3>
-                      <p className="type-meta text-text-light mb-4">
+                      <p className="type-meta text-orbit-muted mb-4">
                         As your sponsor, {sponsorName} will represent you inside Orbit — managing your profile, exploring potential introductions, chatting with other sponsors, and personally introducing you to other single users.
                       </p>
                       <div className="flex flex-wrap gap-3">
@@ -717,7 +717,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                         <button
                           onClick={() => handleDeclineSponsorship(req.id)}
                           disabled={requestActionLoading === req.id}
-                          className="px-4 py-2 min-h-[40px] rounded-lg bg-white/20 text-text-dark font-semibold hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="orbit-btn-secondary px-4 py-2 min-h-[40px] rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Decline
                         </button>
@@ -781,7 +781,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           <SectionHeader title="Introduced by my sponsor" />
           {singleChats.length === 0 ? (
             <>
-              <p className="mt-4 type-meta text-text-light">
+              <p className="mt-4 type-meta text-orbit-muted">
                 Conversations begin here after your sponsor makes an introduction.
               </p>
               <div className="mt-4">
@@ -906,12 +906,12 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
       {showUnmatchModal && unmatchTarget && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
           <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-white/20">
-            <h2 className="type-section mb-4 text-text-dark">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
-            <p className="text-text-light mb-6">
+            <h2 className="type-section mb-4">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
+            <p className="text-orbit-muted mb-6">
               This will permanently remove your match and chat history. You would need to be matched again to chat in the future.
             </p>
             <div className="flex justify-center gap-4">
-              <button onClick={() => { setShowUnmatchModal(false); setUnmatchTarget(null); }} className="px-6 py-2 bg-white/20 text-text-dark rounded-md hover:bg-white/30 font-semibold transition-colors">
+              <button onClick={() => { setShowUnmatchModal(false); setUnmatchTarget(null); }} className="orbit-btn-secondary px-6 py-2 rounded-md font-semibold">
                 Cancel
               </button>
               <button onClick={handleUnmatch} className="rounded-cta px-6 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200">

@@ -13,7 +13,7 @@ interface BrandMarkProps {
  */
 export default function BrandMark({ className }: BrandMarkProps) {
   return (
-    <div className={cn('tracking-[0.15em] uppercase font-brand text-white/60 text-sm', className)}>
+    <div className={cn('tracking-[0.15em] uppercase font-orbit-heading text-orbit-muted text-sm', className)}>
       ORBIT
     </div>
   );

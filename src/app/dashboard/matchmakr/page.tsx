@@ -33,8 +33,8 @@ const IntroductionsCard = () => (
     >
         <div className="flex items-start justify-between">
             <div className="flex flex-col flex-1">
-                <h3 className="type-section mb-1 text-text-dark">Introductions</h3>
-                <p className="type-meta text-text-light">View singles and message their sponsor</p>
+                <h3 className="type-section mb-1">Introductions</h3>
+                <p className="type-meta text-orbit-muted">View singles and message their sponsor</p>
             </div>
             {/* Right-facing chevron in top right */}
             <svg 
@@ -46,7 +46,7 @@ const IntroductionsCard = () => (
                 strokeLinecap="round" 
                 strokeLinejoin="round" 
                 viewBox="0 0 24 24"
-                className="text-text-dark group-hover:text-white/90 transition-colors flex-shrink-0 ml-4"
+                className="text-orbit-text group-hover:text-orbit-text2 transition-colors flex-shrink-0 ml-4"
             >
                 <polyline points="9,18 15,12 9,6" />
             </svg>

@@ -675,7 +675,7 @@ export default function PondPage() {
                         <div className="max-w-none md:max-w-6xl md:mx-auto">
                             {/* Row 1: Always visible - "Here for:" + selected single */}
                             <div className="flex items-center gap-3 py-3">
-                                <span className="text-text-dark font-semibold text-base tracking-wide uppercase">Here for:</span>
+                                <span className="text-orbit-text font-semibold text-base tracking-wide uppercase">Here for:</span>
                                 {currentSponsoredSingle ? (
                                     <div className="flex items-center gap-2">
                                         {currentSponsoredSingle.photo ? (
@@ -686,12 +686,12 @@ export default function PondPage() {
                                             />
                                         ) : (
                                             <div className="w-8 h-8 rounded-full orbit-surface border border-orbit-border/50 flex items-center justify-center">
-                                                <span className="text-text-dark font-bold text-xs">
+                                                <span className="text-orbit-text font-bold text-xs">
                                                     {currentSponsoredSingle.name?.charAt(0).toUpperCase() || '?'}
                                                 </span>
                                             </div>
                                         )}
-                                        <span className="text-text-dark font-medium text-sm">{currentSponsoredSingle.name}</span>
+                                        <span className="text-orbit-text font-medium text-sm">{currentSponsoredSingle.name}</span>
                                     </div>
                                 ) : (
                                     <button
@@ -746,16 +746,16 @@ export default function PondPage() {
                 {loading ? (
                     <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mx-auto"></div>
-                        <p className="mt-4 text-text-dark">Loading profiles...</p>
+                        <p className="mt-4 text-orbit-text">Loading profiles...</p>
                     </div>
                 ) : profiles.length === 0 ? (
                     <div className="text-center py-8">
                         {currentSponsoredSingle ? (
                             <>
-                                <p className="text-text-dark text-lg">
+                                <p className="text-orbit-text text-lg">
                                     No sponsored singles match {currentSponsoredSingle.name}&apos;s criteria in this community yet.
                                 </p>
-                                <p className="text-text-light mt-2">Orbit is still growing — help shape it by inviting someone.</p>
+                                <p className="text-orbit-muted mt-2">Orbit is still growing — help shape it by inviting someone.</p>
                                 <button
                                     onClick={() => setShowInviteSingleModal(true)}
                                     className="orbit-ring mt-4 rounded-cta min-h-[44px] px-6 py-2 bg-orbit-gold text-orbit-bg-start hover:bg-orbit-goldDark font-semibold shadow-cta-entry transition-colors duration-200"
@@ -765,8 +765,8 @@ export default function PondPage() {
                             </>
                         ) : (
                             <>
-                                <p className="text-text-dark text-lg">No singles found matching your criteria.</p>
-                                <p className="text-text-light mt-2">Try adjusting your search filters.</p>
+                                <p className="text-orbit-text text-lg">No singles found matching your criteria.</p>
+                                <p className="text-orbit-muted mt-2">Try adjusting your search filters.</p>
                             </>
                         )}
                     </div>
@@ -791,20 +791,20 @@ export default function PondPage() {
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center orbit-surface border border-orbit-border/50">
-                                                        <span className="text-6xl font-bold text-white">{profile.name?.charAt(0).toUpperCase() || '?'}</span>
+                                                        <span className="text-6xl font-bold text-orbit-text">{profile.name?.charAt(0).toUpperCase() || '?'}</span>
                                                     </div>
                                                 )}
                                                 <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 to-transparent" />
-                                                <div className="absolute bottom-5 left-4 right-4 z-10 text-white pb-1">
-                                                    <div className="text-white font-bold text-2xl mb-1">
+                                                <div className="absolute bottom-5 left-4 right-4 z-10 text-on-dark-overlay pb-1">
+                                                    <div className="text-on-dark-overlay font-bold text-2xl mb-1">
                                                         {profile.name}{age ? `, ${age}` : ''}
                                                     </div>
                                                     {profile.occupation && (
-                                                        <div className="text-white/90 text-sm">{profile.occupation}</div>
+                                                        <div className="text-on-dark-overlay text-sm opacity-90">{profile.occupation}</div>
                                                     )}
                                                 </div>
                                                 <button
-                                                    className="absolute bottom-5 right-4 z-10 px-3 py-1.5 rounded-full text-white text-xs font-medium bg-white/20 backdrop-blur-sm border border-white/25 hover:bg-white/30 active:scale-95 transition-colors"
+                                                    className="absolute bottom-5 right-4 z-10 px-3 py-1.5 rounded-full text-on-dark-overlay text-xs font-medium bg-white/20 backdrop-blur-sm border border-white/25 hover:bg-white/30 active:scale-95 transition-colors"
                                                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenSendPreview(profile); }}
                                                 >
                                                     Send preview
@@ -815,22 +815,22 @@ export default function PondPage() {
                                                 <div className="px-4 sm:px-6 md:px-8 pt-5 pb-2">
                                                     <div>
                                                         <div className="flex justify-between items-center mb-3">
-                                                            <h2 className="text-white/90 text-base font-semibold">Why I&apos;d introduce them</h2>
+                                                            <h2 className="text-orbit-text text-base font-semibold">Why I&apos;d introduce them</h2>
                                                             <div className="flex items-center gap-2">
                                                                 {sponsorPhotoUrl ? (
-                                                                    <img src={sponsorPhotoUrl} alt={sponsorName} className="w-6 h-6 rounded-full object-cover border border-white/20 shrink-0" />
+                                                                    <img src={sponsorPhotoUrl} alt={sponsorName} className="w-6 h-6 rounded-full object-cover border border-orbit-border/50 shrink-0" />
                                                                 ) : (
-                                                                    <div className="w-6 h-6 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
-                                                                        <span className="text-white font-bold text-[9px]">{sponsorName.charAt(0).toUpperCase()}</span>
+                                                                    <div className="w-6 h-6 rounded-full bg-orbit-surface/80 border border-orbit-border/50 flex items-center justify-center shrink-0">
+                                                                        <span className="text-orbit-text font-bold text-[9px]">{sponsorName.charAt(0).toUpperCase()}</span>
                                                                     </div>
                                                                 )}
-                                                                <span className="text-white/80 text-sm whitespace-nowrap">{sponsorName}</span>
+                                                                <span className="text-orbit-text2 text-sm whitespace-nowrap">{sponsorName}</span>
                                                             </div>
                                                         </div>
                                                         <div className="relative pt-1.5 pb-1.5 pl-3 pr-4">
-                                                            <span aria-hidden className="pointer-events-none select-none absolute left-0 top-0 text-white/40 text-3xl leading-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>"</span>
-                                                            <p className="text-white/70 text-base font-normal leading-snug">{profile.matchmakr_endorsement}</p>
-                                                            <span aria-hidden className="pointer-events-none select-none absolute right-0 bottom-0 text-white/40 text-3xl leading-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>"</span>
+                                                            <span aria-hidden className="pointer-events-none select-none absolute left-0 top-0 text-orbit-muted text-3xl leading-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>"</span>
+                                                            <p className="text-orbit-text2 text-base font-normal leading-snug">{profile.matchmakr_endorsement}</p>
+                                                            <span aria-hidden className="pointer-events-none select-none absolute right-0 bottom-0 text-orbit-muted text-3xl leading-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>"</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -860,10 +860,10 @@ export default function PondPage() {
                                                     </div>
                                                     {profile.interests && profile.interests.length > 0 && (
                                                         <div className="-mt-1">
-                                                            <div className="text-white/50 text-sm font-medium mb-1.5">Interests</div>
+                                                            <div className="text-orbit-muted text-sm font-medium mb-1.5">Interests</div>
                                                             <div className="flex flex-wrap items-center gap-2">
                                                                 {profile.interests.slice(0, 6).map((interest) => (
-                                                                    <span key={interest.id} className="bg-white/5 text-white/75 px-2.5 py-0.5 rounded-full text-xs font-medium border border-white/5">
+                                                                    <span key={interest.id} className="orbit-surface-soft px-2.5 py-0.5 rounded-full text-xs font-medium text-orbit-text2">
                                                                         {interest.name}
                                                                     </span>
                                                                 ))}
@@ -882,17 +882,17 @@ export default function PondPage() {
                                                             className="w-9 h-9 rounded-full object-cover shrink-0" 
                                                         />
                                                     ) : (
-                                                        <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                                                            <span className="text-white/70 font-bold text-xs">
+                                                        <div className="w-9 h-9 rounded-full bg-orbit-surface/80 flex items-center justify-center shrink-0">
+                                                            <span className="text-orbit-text2 font-bold text-xs">
                                                                 {sponsorName.charAt(0).toUpperCase()}
                                                             </span>
                                                         </div>
                                                     )}
-                                                    <span className="text-white/55 text-sm">Coordinate with {sponsorName}</span>
+                                                    <span className="text-orbit-muted text-sm">Coordinate with {sponsorName}</span>
                                                 </div>
                                                 {profile.sponsored_by_id && (
                                                     <button
-                                                        className="shrink-0 min-h-[44px] px-5 py-2.5 text-sm rounded-full bg-white text-primary-blue font-semibold hover:bg-white/90 active:scale-95 transition-colors"
+                                                        className="orbit-btn-primary shrink-0 min-h-[44px] px-5 py-2.5 text-sm rounded-full font-semibold active:scale-95"
                                                         onClick={(e) => { e.preventDefault(); handleOpenChat(profile); }}
                                                     >
                                                         Message Sponsor
@@ -902,7 +902,7 @@ export default function PondPage() {
                                         </div>
                                         {/* Separator dot between profiles (placeholder for logo) */}
                                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-7 flex justify-center pointer-events-none">
-                                            <div className="w-2.5 h-2.5 rounded-full bg-white/70" />
+                                            <div className="w-2.5 h-2.5 rounded-full bg-orbit-border/70" />
                                         </div>
                                     </Link>
                                 );
@@ -917,11 +917,11 @@ export default function PondPage() {
                         <button
                             onClick={loadMore}
                             disabled={loadingMore}
-                            className="rounded-cta min-h-[48px] px-8 py-3 bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
+                            className="orbit-btn-primary min-h-[48px] px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loadingMore ? (
                                 <div className="flex items-center gap-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orbit-text"></div>
                                     Loading more...
                                 </div>
                             ) : (

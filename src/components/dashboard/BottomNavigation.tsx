@@ -27,7 +27,7 @@ function PondBubble({ href }: { href: string }) {
                 }}
             >
                 {/* Orbit brand mark: stylized "O" - glass style */}
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white/70">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-orbit-text2">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
                     <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5" fill="none" />
                 </svg>
@@ -54,10 +54,10 @@ function NavItemButton({ onClick, icon, label }: NavItemButtonProps) {
             aria-label={label}
             title={label}
         >
-            <div className="flex items-center justify-center text-white/70 hover:text-white transition-colors" style={{ width: '22px', height: '22px' }}>
+            <div className="flex items-center justify-center text-orbit-text2 hover:text-orbit-text transition-colors" style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
-            <span className="type-meta mt-1 truncate max-w-full text-white/70">{label}</span>
+            <span className="type-meta mt-1 truncate max-w-full text-orbit-text2">{label}</span>
         </button>
     );
 }
@@ -77,10 +77,10 @@ function NavItemLink({ href, icon, label, isActive = false }: NavItemLinkProps) 
             aria-label={label}
             title={label}
         >
-            <div className={`flex items-center justify-center transition-colors ${isActive ? 'text-white' : 'text-white/70 hover:text-white'}`} style={{ width: '22px', height: '22px' }}>
+            <div className={`flex items-center justify-center transition-colors ${isActive ? 'text-orbit-text' : 'text-orbit-text2 hover:text-orbit-text'}`} style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
-            <span className={`type-meta mt-1 truncate max-w-full ${isActive ? 'text-white' : 'text-white/70'}`}>{label}</span>
+            <span className={`type-meta mt-1 truncate max-w-full ${isActive ? 'text-orbit-text' : 'text-orbit-text2'}`}>{label}</span>
         </Link>
     );
 }

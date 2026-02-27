@@ -31,16 +31,16 @@ function DeleteAccountModal({ isOpen, onClose, onConfirm, isDeleting }: DeleteAc
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white/10 backdrop-blur-md rounded-lg border border-white/20 shadow-xl max-w-md w-full p-6">
-        <h3 className="text-lg font-semibold text-white mb-3">Delete account?</h3>
-        <p className="text-white/80 mb-6">
+      <div className="orbit-surface-strong backdrop-blur-md rounded-lg border border-orbit-border/50 shadow-xl max-w-md w-full p-6">
+        <h3 className="text-lg font-semibold text-orbit-text mb-3">Delete account?</h3>
+        <p className="text-orbit-text2 mb-6">
           This permanently removes your account and data.
         </p>
         <div className="flex gap-3">
           <button
             onClick={onClose}
             disabled={isDeleting}
-            className="flex-1 px-4 py-2 text-white/80 hover:text-white border border-white/20 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-2 text-orbit-text2 hover:text-orbit-text border border-orbit-border/50 rounded-lg hover:bg-orbit-border/20 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -51,7 +51,7 @@ function DeleteAccountModal({ isOpen, onClose, onConfirm, isDeleting }: DeleteAc
           >
             {isDeleting ? (
               <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-orbit-border/50 border-t-orbit-text rounded-full animate-spin"></div>
                 Deleting...
               </>
             ) : (
@@ -245,6 +245,16 @@ export default function SettingsPage() {
               >
                 Plum Society
               </button>
+              <button
+                onClick={() => handleThemeChange('invitation-cream')}
+                className={`orbit-ring px-6 py-3 rounded-pill font-medium transition-colors ${
+                  theme === 'invitation-cream'
+                    ? 'orbit-surface-strong text-orbit-text'
+                    : 'orbit-btn-secondary'
+                }`}
+              >
+                Invitation Cream
+              </button>
             </div>
           </GlassCard>
           
@@ -253,8 +263,8 @@ export default function SettingsPage() {
             <SectionHeader title="Account" className="mb-4" />
             <div className="space-y-4">
               {/* Name Row */}
-              <div className="flex items-center justify-between py-3 border-b border-white/10">
-                <span className="text-white/80 font-medium">Name:</span>
+              <div className="flex items-center justify-between py-3 border-b border-orbit-border/50">
+                <span className="text-orbit-text2 font-medium">Name:</span>
                 {isEditingName ? (
                   <div className="flex items-center gap-2">
                     <input
@@ -269,7 +279,7 @@ export default function SettingsPage() {
                         }
                       }}
                       autoFocus
-                      className="bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/30"
+                      className="bg-orbit-surface/80 border border-orbit-border/50 rounded px-2 py-1 text-orbit-text text-sm focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 orbit-ring"
                       disabled={isSavingName}
                     />
                     <button
@@ -282,19 +292,19 @@ export default function SettingsPage() {
                     <button
                       onClick={handleCancelEdit}
                       disabled={isSavingName}
-                      className="text-white/60 hover:text-white text-sm font-medium disabled:opacity-50"
+                      className="text-orbit-muted hover:text-orbit-text text-sm font-medium disabled:opacity-50"
                     >
                       Cancel
                     </button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <span className={userName ? "text-white" : "text-white/50 italic"}>
+                    <span className={userName ? "text-orbit-text" : "text-orbit-muted italic"}>
                       {userName || 'Add name'}
                     </span>
                     <button
                       onClick={handleEditNameClick}
-                      className="text-white/60 hover:text-white text-sm font-medium ml-2"
+                      className="text-orbit-muted hover:text-orbit-text text-sm font-medium ml-2"
                     >
                       {userName ? 'Edit' : 'Add'}
                     </button>
@@ -304,8 +314,8 @@ export default function SettingsPage() {
               
               {/* Email Row */}
               <div className="flex items-center justify-between py-3">
-                <span className="text-white/80 font-medium">Email:</span>
-                <span className="text-white">{user?.email || 'Not set'}</span>
+                <span className="text-orbit-text2 font-medium">Email:</span>
+                <span className="text-orbit-text">{user?.email || 'Not set'}</span>
               </div>
             </div>
           </GlassCard>
@@ -315,7 +325,7 @@ export default function SettingsPage() {
             {/* Sign Out Button */}
             <button
               onClick={handleLogout}
-              className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-xl border border-white/20 transition-all duration-200 shadow-button hover:shadow-button-hover"
+              className="w-full orbit-surface-soft hover:bg-orbit-border/20 text-orbit-text font-semibold py-3 px-6 rounded-xl border border-orbit-border/50 transition-all duration-200"
             >
               Sign out
             </button>

@@ -47,7 +47,7 @@ export default function PreviewRow({
         <div
           className={cn(
             'w-12 h-12 rounded-full overflow-hidden border-2 border-orbit-border/50 orbit-surface flex-shrink-0',
-            'flex items-center justify-center text-text-light'
+            'flex items-center justify-center text-orbit-muted'
           )}
           aria-hidden
         >
@@ -61,7 +61,7 @@ export default function PreviewRow({
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-text-light"
+              className="text-orbit-muted"
             >
               <circle cx="12" cy="8" r="3" />
               <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" />
@@ -70,7 +70,7 @@ export default function PreviewRow({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="type-body truncate text-text-dark/90">{title}</div>
+          <div className="type-body truncate text-orbit-text">{title}</div>
           <div className="type-meta orbit-muted truncate">{subtitle}</div>
         </div>
 

@@ -247,7 +247,7 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
           <button
             onClick={handleSeedNotification}
             disabled={isSeeding}
-            className="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white/80 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="orbit-btn-secondary text-xs px-2 py-1 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSeeding ? 'Adding…' : 'Add example'}
           </button>
@@ -275,7 +275,7 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
                 <div className="text-center py-2">
                   <p className="type-meta">No notifications yet.</p>
                   {isDevMode && (
-                    <p className="type-meta text-white/50 mt-2">Use "Add example" button above to create one.</p>
+                    <p className="type-meta text-orbit-muted mt-2">Use "Add example" button above to create one.</p>
                   )}
                 </div>
               </GlassCard>

@@ -133,13 +133,13 @@ export default function IntroductionSignalSection({
           {canEdit && (
             <button
               onClick={handleAdd}
-              className="absolute top-0 right-0 px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/80 text-sm font-medium transition-colors"
+              className="orbit-btn-secondary absolute top-0 right-0 px-3 py-1 rounded-full text-sm font-medium"
               aria-label="Add introduction signal"
             >
               Add
             </button>
           )}
-          <p className={`text-white/90 font-medium leading-relaxed text-center ${compact ? 'text-base' : 'text-lg'}`}>
+          <p className={`text-orbit-text font-medium leading-relaxed text-center ${compact ? 'text-base' : 'text-lg'}`}>
             {renderedPrompt}
           </p>
           {saveError && (
@@ -170,15 +170,15 @@ export default function IntroductionSignalSection({
         {canEdit && (
           <button
             onClick={handleEdit}
-            className="absolute top-0 right-0 px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/80 text-sm font-medium transition-colors"
+            className="orbit-btn-secondary absolute top-0 right-0 px-3 py-1 rounded-full text-sm font-medium"
             aria-label="Edit introduction signal"
           >
             Edit
           </button>
         )}
-        <p className={`text-white/90 font-medium leading-relaxed text-center ${compact ? 'text-base' : 'text-lg'}`}>
+        <p className={`text-orbit-text font-medium leading-relaxed text-center ${compact ? 'text-base' : 'text-lg'}`}>
           {beforeResponse}
-          <span className="text-white font-semibold">{signal.response}</span>
+          <span className="text-orbit-text font-semibold">{signal.response}</span>
           {afterResponse}
         </p>
         {saveError && (

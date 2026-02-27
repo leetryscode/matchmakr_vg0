@@ -821,7 +821,7 @@ export default function OrbitCarouselHeader({
                     })}
               >
                 {isPreview ? (
-                  <span className="text-white font-bold text-sm inline-block scale-95 drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]" aria-hidden>?</span>
+                  <span className="text-on-dark-overlay font-bold text-sm inline-block scale-95 drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]" aria-hidden>?</span>
                 ) : satellite.avatarUrl ? (
                   <img
                     src={satellite.avatarUrl}
@@ -829,7 +829,7 @@ export default function OrbitCarouselHeader({
                     className="object-cover w-full h-full"
                   />
                 ) : (
-                  <span className="text-white font-bold text-sm">
+                  <span className="text-on-dark-overlay font-bold text-sm">
                     {satellite.name?.charAt(0).toUpperCase() || '?'}
                   </span>
                 )}
@@ -872,7 +872,7 @@ export default function OrbitCarouselHeader({
                   className="object-cover w-full h-full"
                 />
               ) : (
-                <span className="text-white font-bold text-2xl">
+                <span className="text-on-dark-overlay font-bold text-2xl">
                   {centerUser.name?.charAt(0).toUpperCase() || '?'}
                 </span>
               )}
@@ -881,7 +881,7 @@ export default function OrbitCarouselHeader({
 
           {/* Debug: minimal spacing info (development only, behind feature flag) */}
           {process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_SHOW_ORBIT_DEBUG === 'true' && (
-            <div className="type-meta text-white/50 mt-2 text-xs">
+            <div className="type-meta text-on-dark-overlay opacity-80 mt-2 text-xs">
               <div>count: {count} | phase: {startDeg}° | step: {stepDeg.toFixed(1)}°</div>
             </div>
           )}

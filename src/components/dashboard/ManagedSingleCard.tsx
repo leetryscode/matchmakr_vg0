@@ -46,7 +46,7 @@ const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, 
         >
             {/* Name row with chevron */}
             <div className="flex items-start justify-between mb-2">
-                <h3 className="text-base font-semibold text-text-dark flex-1 pr-2">
+                <h3 className="text-base font-semibold text-orbit-text flex-1 pr-2">
                     {getDisplayName(single.name, single.sponsor_label)}
                 </h3>
                 {/* Right-facing chevron */}
@@ -59,7 +59,7 @@ const ManagedSingleCard: React.FC<ManagedSingleCardProps> = ({ single, onClick, 
                     strokeLinecap="round" 
                     strokeLinejoin="round" 
                     viewBox="0 0 24 24"
-                    className="text-text-light group-hover:text-primary-blue transition-colors flex-shrink-0"
+                    className="text-orbit-muted group-hover:text-orbit-gold transition-colors flex-shrink-0"
                 >
                     <polyline points="9,18 15,12 9,6" />
                 </svg>

@@ -230,12 +230,12 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
             <div className="relative">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-text-dark">{profile.name}</h1>
+                  <h1 className="text-3xl font-bold text-orbit-text">{profile.name}</h1>
                   {age && (
-                    <p className="text-lg text-text-dark mt-1">{age}</p>
+                    <p className="text-lg text-orbit-text mt-1">{age}</p>
                   )}
                   {profile.user_type === 'SINGLE' && (profile.city || profile.state || profile.zip_code) && (
-                    <p className="text-text-dark mt-1 flex items-center">
+                    <p className="text-orbit-text mt-1 flex items-center">
                       <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
                         <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
                           <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="currentColor" stroke="none"/>
@@ -247,7 +247,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                     </p>
                   )}
                   {profile.occupation && (
-                    <p className="text-lg text-text-dark mt-1 flex items-center">
+                    <p className="text-lg text-orbit-text mt-1 flex items-center">
                       <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
                         <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
                           <path d="M6.5 1h3a1 1 0 0 1 1 1v1h2.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.5V2a1 1 0 0 1 1-1z" fill="currentColor"/>
@@ -269,7 +269,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
           {/* Helper Note - only for single viewing own profile */}
           {isOwnProfile && profile.user_type === 'SINGLE' && orbitRole === 'SINGLE' && (
-            <div className="text-sm text-white/60 italic">
+            <div className="text-sm text-orbit-muted italic">
               Your Sponsor manages your Orbit profile. If something looks off, chat with them.
             </div>
           )}
@@ -285,13 +285,13 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                 return (
                   <div key={sponsor.id}>
                     <div className="flex justify-between items-center mb-3">
-                      <h2 className="text-white/90 text-base font-semibold">
+                      <h2 className="text-orbit-text text-base font-semibold">
                         From {profile.name || 'this person'}'s sponsor
                       </h2>
                       {isSponsorOfThisSingle && (
                         <button
                           onClick={() => setIsEndorsementEditOpen(true)}
-                          className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-sm font-medium transition-colors"
+                          className="orbit-btn-secondary px-3 py-1 rounded-full text-sm font-medium"
                           aria-label="Edit endorsement"
                         >
                           Edit
@@ -301,23 +301,23 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                     <div className="relative pt-2 pb-2 pl-4 pr-4 mb-4">
                       <span
                         aria-hidden
-                        className="pointer-events-none select-none absolute left-0 top-0 text-white/40 text-3xl leading-none"
+                        className="pointer-events-none select-none absolute left-0 top-0 text-orbit-muted text-3xl leading-none"
                         style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
                       >
                         "
                       </span>
-                      <p className={sponsor.endorsement ? "text-white/70 text-base font-normal leading-relaxed" : "text-white/50 text-base font-normal leading-relaxed"}>
+                      <p className={sponsor.endorsement ? "text-orbit-text2 text-base font-normal leading-relaxed" : "text-orbit-muted text-base font-normal leading-relaxed"}>
                         {sponsor.endorsement || 'This is where your sponsor writes about you...'}
                       </p>
                       <span
                         aria-hidden
-                        className="pointer-events-none select-none absolute right-0 bottom-0 text-white/40 text-3xl leading-none"
+                        className="pointer-events-none select-none absolute right-0 bottom-0 text-orbit-muted text-3xl leading-none"
                         style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
                       >
                         "
                       </span>
                     </div>
-                    <div className="border-t border-white/10"></div>
+                    <div className="border-t border-orbit-border/50"></div>
                   </div>
                 );
               })}
@@ -364,15 +364,15 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
             <>
               {interests.length === 0 && !isSponsorOfThisSingle && !isViewingOwnSingleProfile ? null : (
                 <div>
-                  <div className="text-white/70 text-base font-semibold mb-2">Interests</div>
+                  <div className="text-orbit-text2 text-base font-semibold mb-2">Interests</div>
                   <div className="flex flex-wrap items-center gap-2">
                     {!showInterestsInput && interests.slice(0, 6).map(interest => (
-                      <span key={interest.id} className="bg-white/10 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 border border-white/10">
+                      <span key={interest.id} className="orbit-surface-soft px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 text-orbit-text">
                         {interest.name}
                         {canEditProfile && (
                           <button
                             type="button"
-                            className="ml-1 text-white/70 hover:text-red-400 transition-colors"
+                            className="ml-1 text-orbit-text2 hover:text-red-400 transition-colors"
                             onClick={async () => {
                               const newInterests = interests.filter(i => i.id !== interest.id);
                               setSavingInterests(true);
@@ -397,7 +397,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                     ))}
                     {canEditProfile && (
                       <button
-                        className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-xs font-semibold transition-colors"
+                        className="orbit-btn-secondary px-3 py-1 rounded-full text-xs font-semibold"
                         onClick={() => setShowInterestsInput(v => !v)}
                         disabled={loadingInterests || savingInterests}
                       >
@@ -413,7 +413,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                         disabled={savingInterests}
                       />
                       <button
-                        className="mt-2 px-4 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 transition-colors"
+                        className="orbit-btn-secondary mt-2 px-4 py-1 rounded-full font-semibold"
                         onClick={() => handleSaveInterests(interests)}
                         disabled={savingInterests}
                       >
@@ -429,7 +429,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           {/* Sponsored Singles Section - only for MATCHMAKR profiles */}
           {profile.user_type === 'MATCHMAKR' && (
             <div className="border-t border-white/10 pt-4">
-              <h2 className="text-lg font-semibold text-text-dark">Sponsored Singles</h2>
+              <h2 className="text-lg font-semibold text-orbit-text">Sponsored Singles</h2>
               {sponsoredSingles && sponsoredSingles.length > 0 ? (
                 <div className="mt-4 grid grid-cols-3 gap-4">
                   {sponsoredSingles.map(single => (
@@ -439,18 +439,18 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                           <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full bg-background-main flex items-center justify-center">
-                            <span className="text-2xl font-bold text-text-dark">
+                            <span className="text-2xl font-bold text-orbit-text">
                               {single.name?.charAt(0).toUpperCase() || '?'}
                             </span>
                           </div>
                         )}
                       </div>
-                      <p className="mt-2 text-sm font-semibold text-text-dark truncate">{single.name}</p>
+                      <p className="mt-2 text-sm font-semibold text-orbit-text truncate">{single.name}</p>
                     </Link>
                   ))}
                 </div>
               ) : (
-                <p className="mt-2 text-sm text-text-light">Not currently sponsoring any singles.</p>
+                <p className="mt-2 text-sm text-orbit-muted">Not currently sponsoring any singles.</p>
               )}
             </div>
           )}
@@ -462,8 +462,8 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
               {!isSponsorViewing && (
                 <div className="border-t border-white/10 mt-6">
                   <div className="px-4 py-4">
-                    <div className="text-white/90 font-semibold mb-1">Profile managed by</div>
-                    <div className="text-white/60 text-xs mb-3">Trusted contact for this profile</div>
+                    <div className="text-orbit-text font-semibold mb-1">Profile managed by</div>
+                    <div className="text-orbit-muted text-xs mb-3">Trusted contact for this profile</div>
                     <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                       <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
@@ -472,22 +472,22 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                             <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'Sponsor'} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full bg-white/10 flex items-center justify-center">
-                              <span className="text-xl font-bold text-white/90">
+                              <span className="text-xl font-bold text-orbit-text">
                                 {matchmakrProfile.name?.charAt(0).toUpperCase() || '?'}
                               </span>
                             </div>
                           )}
                         </div>
                         <div className="min-w-0">
-                          <div className="text-white/90 font-semibold text-base leading-tight truncate">{matchmakrProfile.name}</div>
-                          <Link href={`/profile/${matchmakrProfile.id}`} className="text-white/70 hover:text-white/90 text-xs whitespace-nowrap transition-colors">
+                          <div className="text-orbit-text font-semibold text-base leading-tight truncate">{matchmakrProfile.name}</div>
+                          <Link href={`/profile/${matchmakrProfile.id}`} className="text-orbit-text2 hover:text-orbit-text text-xs whitespace-nowrap transition-colors">
                             View profile
                           </Link>
                         </div>
                       </div>
                       {currentUserProfile?.user_type === 'MATCHMAKR' && (
                         <button
-                          className="shrink-0 px-5 py-2 text-sm rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 active:scale-95 transition-colors"
+                          className="orbit-btn-secondary shrink-0 px-5 py-2 text-sm rounded-full font-semibold active:scale-95"
                           onClick={e => { e.preventDefault(); handleOpenChat(); }}
                         >
                           Message
@@ -503,16 +503,16 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
               {isSponsorViewing && (
                 <div className="border-t border-white/10 mt-6">
                   <div className="px-4 py-4">
-                    <div className="text-white/90 text-base font-semibold mb-1">Sponsor-only actions</div>
-                    <div className="text-white/70 text-xs font-medium opacity-70 mb-3">Only you can do these.</div>
+                    <div className="text-orbit-text text-base font-semibold mb-1">Sponsor-only actions</div>
+                    <div className="text-orbit-text2 text-xs font-medium opacity-70 mb-3">Only you can do these.</div>
                     <div className="mt-3 rounded-xl border border-white/10 bg-white/5">
                       {/* Message your single row */}
                       <button
                         onClick={handleMessageAsSponsor}
                         className="w-full flex items-center justify-between py-3 px-4 border-b border-white/10 hover:bg-white/5 transition-colors text-left"
                       >
-                        <span className="text-white/90 font-medium">Message your single{profile.name ? `, ${profile.name}` : ''}</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/60">
+                        <span className="text-orbit-text font-medium">Message your single{profile.name ? `, ${profile.name}` : ''}</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-orbit-muted">
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
                       </button>

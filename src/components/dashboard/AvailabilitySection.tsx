@@ -73,7 +73,7 @@ const AvailabilitySection: React.FC<AvailabilitySectionProps> = ({ status, userI
   return (
     <div 
       onClick={() => setIsExpanded(!isExpanded)}
-      className="bg-white/5 hover:bg-white/7 rounded-card-lg border border-white/10 hover:border-white/15 p-4 cursor-pointer transition-all duration-150 active:bg-white/8 active:scale-[0.99]"
+      className="orbit-surface-soft hover:bg-orbit-border/20 rounded-card-lg border border-orbit-border/50 p-4 cursor-pointer transition-all duration-150 active:scale-[0.99]"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -91,7 +91,7 @@ const AvailabilitySection: React.FC<AvailabilitySectionProps> = ({ status, userI
         </span>
         
         {/* Expand/collapse chevron */}
-        <div className="flex-shrink-0 p-1 text-white/60">
+        <div className="flex-shrink-0 p-1 text-orbit-muted">
           <svg
             width="20"
             height="20"
@@ -109,25 +109,25 @@ const AvailabilitySection: React.FC<AvailabilitySectionProps> = ({ status, userI
       </div>
       
       {/* Row 2: Explanation text */}
-      <p className="text-sm text-white/70 leading-relaxed">
+      <p className="text-sm text-orbit-text2 leading-relaxed">
         {getSingleFacingStatusExplanation(currentStatus)}
       </p>
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className="mt-3 pt-3 border-t border-white/10">
+        <div className="mt-3 pt-3 border-t border-orbit-border/50">
           {/* Helper text block - tight stack */}
           <div className="mb-3 space-y-1">
-            <p className="text-xs text-white/50">
+            <p className="text-xs text-orbit-muted">
               Only you and your sponsor can see this status.
             </p>
-            <p className="text-xs text-white/50">
+            <p className="text-xs text-orbit-muted">
               This helps communicate your availability — it doesn't affect existing conversations.
             </p>
           </div>
           
           {/* Divider */}
-          <div className="border-t border-white/5 mb-3"></div>
+          <div className="border-t border-orbit-border/30 mb-3"></div>
           
           {/* Actions row */}
           <div>
@@ -137,7 +137,7 @@ const AvailabilitySection: React.FC<AvailabilitySectionProps> = ({ status, userI
                 handleTogglePause();
               }}
               disabled={isUpdating}
-              className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white/90 rounded-lg text-sm font-medium transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="orbit-btn-secondary px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isUpdating ? 'Updating...' : currentStatus === 'PAUSED' ? 'Resume introductions' : 'Pause introductions'}
             </button>

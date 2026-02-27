@@ -13,7 +13,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children, firstName, userId, userType }: DashboardLayoutProps) {
     return (
-        <div className="flex flex-col min-h-[100dvh] w-full text-text-dark relative">
+        <div className="flex flex-col min-h-[100dvh] w-full text-orbit-text relative">
             {/* Brand Header - consistent spacing across all dashboard pages */}
             <header className="flex flex-col items-center pt-8 pb-6">
                 <BrandMark className="text-primary-blue" />

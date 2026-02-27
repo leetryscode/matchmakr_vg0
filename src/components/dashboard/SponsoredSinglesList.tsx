@@ -114,18 +114,18 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                                     {single.profile_pic_url ? (
                                         <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full rounded-full object-cover" />
                                     ) : (
-                                        <span className="text-text-dark font-bold text-xl">{single.name?.charAt(0).toUpperCase() || '?'}</span>
+                                        <span className="text-orbit-text font-bold text-xl">{single.name?.charAt(0).toUpperCase() || '?'}</span>
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <span className="type-body block text-text-dark">{single.name}</span>
+                                    <span className="type-body block text-orbit-text">{single.name}</span>
                                     {lastMsg ? (
-                                        <span className={`type-meta block truncate max-w-xs text-text-light ${unreadCounts[single.id] > 0 ? 'font-semibold tracking-[0.01em]' : ''}`}>{lastMsg.content}</span>
+                                        <span className={`type-meta block truncate max-w-xs ${unreadCounts[single.id] > 0 ? 'font-semibold tracking-[0.01em] text-orbit-text' : 'text-orbit-muted'}`}>{lastMsg.content}</span>
                                     ) : null}
                                 </div>
                                 {/* Fixed metadata block: timestamp + inline unread dot. Unread is a state, not a badge. */}
                                 <div className="w-[56px] flex items-center justify-end flex-shrink-0 ml-3">
-                                    <span className="type-meta text-text-light text-right whitespace-nowrap">{lastMsg ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                                    <span className="type-meta text-orbit-muted text-right whitespace-nowrap">{lastMsg ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</span>
                                     <span className="w-1.5 h-1.5 rounded-full bg-orbit-gold ring-1 ring-orbit-surface1/50 ml-1.5 flex-shrink-0" style={{ opacity: unreadCounts[single.id] > 0 ? 1 : 0 }} aria-hidden />
                                 </div>
                             </div>
@@ -133,7 +133,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                     })
                 ) : (
                     <>
-                        <p className="type-meta text-text-light">
+                        <p className="type-meta text-orbit-muted">
                             Conversations with singles you sponsor will appear here.
                         </p>
                         <div className="mt-2">

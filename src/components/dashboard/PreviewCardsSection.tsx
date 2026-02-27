@@ -97,10 +97,10 @@ export default function PreviewCardsSection({ userId }: PreviewCardsSectionProps
     return (
         <>
             <section className="mt-6 first:mt-0">
-                <h2 className="type-section text-text-dark">
+                <h2 className="type-section">
                     Your sponsor shared someone
                 </h2>
-                <p className="mt-4 type-meta text-text-light">
+                <p className="mt-4 type-meta text-orbit-muted">
                     The other person won't see this. Your response only helps your sponsor understand how you feel — nothing happens automatically.
                 </p>
                 <div className="mt-4 flex flex-col gap-3">

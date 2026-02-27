@@ -432,7 +432,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             {profile?.profile_pic_url ? (
               <img src={profile.profile_pic_url} alt={profile.name || 'Sponsor'} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-text-dark">
+              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-orbit-text">
                 {profile?.name?.charAt(0).toUpperCase() || '?'}
               </div>
             )}
@@ -572,7 +572,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
             {sponsoredSingles[0].profile_pic_url ? (
               <img src={sponsoredSingles[0].profile_pic_url} alt={sponsoredSingles[0].name || 'Single'} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-text-dark">
+              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-orbit-text">
                 {sponsoredSingles[0].name?.charAt(0).toUpperCase() || '?'}
               </div>
             )}
@@ -592,9 +592,9 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       {/* Invite Sponsor Modal */}
       {isInviteSponsorModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-white/20">
-            <h2 className="type-section mb-4 text-text-dark">Invite a fellow sponsor</h2>
-            <p className="text-text-light mb-6 leading-relaxed">
+          <div className="orbit-surface-strong rounded-xl p-8 w-full max-w-md text-center shadow-card border border-orbit-border/50">
+            <h2 className="type-section mb-4">Invite a fellow sponsor</h2>
+            <p className="text-orbit-muted mb-6 leading-relaxed">
               Invite a friend to join our community helping friends find love.
             </p>
             <input
@@ -602,17 +602,17 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
               value={inviteSponsorLabel}
               onChange={(e) => setInviteSponsorLabel(e.target.value)}
               placeholder="Name (optional)"
-              className="w-full border border-white/20 rounded-xl px-4 py-3 mb-3 text-text-dark placeholder:text-text-dark placeholder:opacity-80 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+              className="orbit-ring w-full border border-orbit-border/50 rounded-xl px-4 py-3 mb-3 text-orbit-text placeholder:text-orbit-muted bg-orbit-surface/80"
             />
             <input
               type="email"
               value={inviteSponsorEmail}
               onChange={(e) => setInviteSponsorEmail(e.target.value)}
               placeholder="Their email address"
-              className="w-full border border-white/20 rounded-xl px-4 py-3 mb-4 text-text-dark placeholder:text-text-dark placeholder:opacity-80 bg-background-card focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50"
+              className="orbit-ring w-full border border-orbit-border/50 rounded-xl px-4 py-3 mb-4 text-orbit-text placeholder:text-orbit-muted bg-orbit-surface/80"
             />
             <div className="flex justify-end gap-4">
-              <button onClick={() => { setIsInviteSponsorModalOpen(false); setInviteSponsorEmail(''); setInviteSponsorLabel(''); }} className="px-6 py-3 bg-white/20 text-text-dark rounded-lg font-semibold hover:bg-white/30 transition-all duration-300 shadow-button hover:shadow-button-hover" disabled={inviteSponsorLoading}>
+              <button onClick={() => { setIsInviteSponsorModalOpen(false); setInviteSponsorEmail(''); setInviteSponsorLabel(''); }} className="orbit-btn-secondary px-6 py-3 rounded-lg font-semibold" disabled={inviteSponsorLoading}>
                 Cancel
               </button>
               <button

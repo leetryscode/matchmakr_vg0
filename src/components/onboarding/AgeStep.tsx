@@ -24,7 +24,7 @@ export default function AgeStep({ onNext, onTooYoung }: AgeStepProps) {
 
   return (
     <div className="flex flex-col items-center justify-center gap-8">
-      <h1 className="text-4xl font-light text-text-dark leading-[1.1] tracking-tight sm:text-[4rem]">
+      <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
         What's your birth year?
       </h1>
       <input
@@ -33,7 +33,7 @@ export default function AgeStep({ onNext, onTooYoung }: AgeStepProps) {
         onChange={(e) => setBirthYear(e.target.value)}
         placeholder="YYYY"
         maxLength={4}
-        className="w-full max-w-md rounded-xl border border-white/20 bg-background-card px-4 py-3 text-center text-text-dark placeholder:text-text-dark placeholder:opacity-80 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 font-light"
+        className="orbit-ring w-full max-w-md rounded-xl border border-orbit-border/50 bg-orbit-surface/80 px-4 py-3 text-center text-orbit-text placeholder:text-orbit-muted font-light"
       />
       <button
         onClick={handleNext}

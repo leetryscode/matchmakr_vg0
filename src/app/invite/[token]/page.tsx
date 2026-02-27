@@ -102,9 +102,9 @@ export default function InvitePage() {
 
   if (state === 'loading') {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-text-dark">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-transparent text-orbit-text">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 text-center">
-          <p className="text-text-light font-light">Loading invite...</p>
+          <p className="text-orbit-muted font-light">Loading invite...</p>
         </div>
       </main>
     );
@@ -112,12 +112,12 @@ export default function InvitePage() {
 
   if (state === 'not_found') {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-text-dark">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-transparent text-orbit-text">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 text-center">
-          <h1 className="text-4xl font-light text-text-dark leading-[1.1] tracking-tight">
+          <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight">
             Invite not found
           </h1>
-          <p className="text-text-light font-light max-w-md">
+          <p className="text-orbit-muted font-light max-w-md">
             This invite link may be invalid or has been removed.
           </p>
           <Link
@@ -133,12 +133,12 @@ export default function InvitePage() {
 
   if (state === 'expired' || state === 'error') {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-text-dark">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-transparent text-orbit-text">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 text-center">
-          <h1 className="text-4xl font-light text-text-dark leading-[1.1] tracking-tight">
+          <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight">
             {state === 'expired' ? 'Invite no longer valid' : 'Something went wrong'}
           </h1>
-          <p className="text-text-light font-light max-w-md">
+          <p className="text-orbit-muted font-light max-w-md">
             {errorMessage || 'This invite may have expired or already been used.'}
           </p>
           <Link
@@ -153,9 +153,9 @@ export default function InvitePage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background-main text-text-dark">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-transparent text-orbit-text">
       <div className="absolute top-4 left-4">
-        <Link href="/" className="text-text-dark underline hover:text-white transition-colors font-light">
+        <Link href="/" className="text-orbit-text underline hover:text-orbit-text2 transition-colors font-light">
           Home
         </Link>
       </div>

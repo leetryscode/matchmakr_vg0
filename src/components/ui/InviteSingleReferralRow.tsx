@@ -41,7 +41,7 @@ export default function InviteSingleReferralRow({ onClick, className }: InviteSi
         <div
           className={cn(
             'w-12 h-12 rounded-full overflow-hidden border-2 border-orbit-border/50 orbit-surface flex-shrink-0',
-            'flex items-center justify-center text-text-light text-2xl font-light'
+            'flex items-center justify-center text-orbit-muted text-2xl font-light'
           )}
           aria-hidden
         >
@@ -49,8 +49,8 @@ export default function InviteSingleReferralRow({ onClick, className }: InviteSi
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="type-body truncate text-text-dark/90">Help grow Orbit</div>
-          <div className="type-meta truncate text-text-light">
+          <div className="type-body truncate text-orbit-text">Help grow Orbit</div>
+          <div className="type-meta truncate text-orbit-muted">
             Invite someone you trust to join Orbit
           </div>
         </div>

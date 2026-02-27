@@ -117,11 +117,11 @@ export default function PairingsSection({
     return (
       <>
         <div className={`flex justify-between items-center ${compact ? 'mb-1.5' : 'mb-2'}`}>
-          <h2 className="text-white/70 text-base font-semibold">Pairs naturally with…</h2>
+          <h2 className="text-orbit-text2 text-base font-semibold">Pairs naturally with…</h2>
           {canEdit && (
             <button
               onClick={handleAdd}
-              className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-sm font-medium transition-colors"
+              className="orbit-btn-secondary px-3 py-1 rounded-full text-sm font-medium"
               aria-label="Add pairings"
             >
               Add
@@ -153,11 +153,11 @@ export default function PairingsSection({
   return (
     <>
       <div className={`flex justify-between items-center ${compact ? 'mb-2' : 'mb-3'}`}>
-        <h2 className="text-white/90 text-base font-semibold">Pairs naturally with</h2>
+        <h2 className="text-orbit-text text-base font-semibold">Pairs naturally with</h2>
         {canEdit && (
           <button
             onClick={handleEdit}
-            className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white/90 text-sm font-medium transition-colors"
+            className="orbit-btn-secondary px-3 py-1 rounded-full text-sm font-medium"
             aria-label="Edit pairings"
           >
             Edit
@@ -168,13 +168,13 @@ export default function PairingsSection({
         {qualities.map((quality) => (
           <span
             key={quality.id}
-            className="bg-white/10 text-white px-4 py-1.5 rounded-full text-base font-medium border border-white/10"
+            className="orbit-surface-soft px-4 py-1.5 rounded-full text-base font-medium text-orbit-text"
           >
             {quality.label}
           </span>
         ))}
         {signal.custom_quality && (
-          <span className="bg-white/8 text-white px-4 py-1.5 rounded-full text-base font-medium border border-white/20">
+          <span className="orbit-surface-soft px-4 py-1.5 rounded-full text-base font-medium text-orbit-text border border-orbit-border/50">
             {signal.custom_quality}
           </span>
         )}
