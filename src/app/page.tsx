@@ -1,15 +1,14 @@
 import React, { Suspense } from 'react';
 import Link from 'next/link';
 import BootTimeoutMessage from '@/components/BootTimeoutMessage';
-import BrandMark from '@/components/branding/BrandMark';
 
 export default function HomePage() {
   return (
     <main className="flex min-h-[100dvh] flex-col items-center justify-center bg-transparent text-orbit-text p-4">
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-        <h1 className="flex flex-col items-center text-4xl font-light tracking-tight sm:text-5xl md:text-[5rem] leading-[1.1] text-center text-orbit-text">
+        <h1 className="text-4xl font-light tracking-tight sm:text-5xl md:text-[5rem] leading-[1.1] text-center text-orbit-text">
           <span className="text-2xl sm:text-3xl md:text-4xl font-extralight text-orbit-text block mb-2">Welcome to</span>
-          <BrandMark size="hero" />
+          <span className="font-light tracking-[0.15em] uppercase text-orbit-text font-orbit-heading">Orbit</span>
         </h1>
         
         <Suspense fallback={null}>

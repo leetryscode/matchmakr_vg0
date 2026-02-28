@@ -16,7 +16,7 @@ export default function DashboardLayout({ children, firstName, userId, userType 
         <div className="flex flex-col min-h-[100dvh] w-full text-orbit-text relative">
             {/* Brand Header - consistent spacing across all dashboard pages */}
             <header className="flex flex-col items-center pt-8 pb-6">
-                <BrandMark size="header" />
+                <BrandMark className="text-primary-blue" />
             </header>
             {/* Main Content - standardized responsive padding rhythm */}
             {/* GlobalLayout handles bottom padding for bottom nav; no extra padding needed here */}
