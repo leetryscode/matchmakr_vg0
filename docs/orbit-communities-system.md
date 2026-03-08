@@ -303,6 +303,8 @@ Unresolved design questions to revisit during implementation:
 - Onboarding support (sponsor preselection, single confirmation)
 - Deprecate/remove old geolocation-only community assignment
 
+**Phase 1 DB foundation completed (2026-03-08):** `communities` and `community_members` created; sponsor-validation trigger added; founder-membership trigger added; RLS enabled without policies. Old geolocation system still present temporarily until app migration.
+
 ### Phase 2: Discovery & Membership
 
 - Community discovery ("Find a community" flow)
@@ -330,3 +332,4 @@ Unresolved design questions to revisit during implementation:
 | Date | Change |
 |------|--------|
 | 2026-03-08 | Initial spec created. Documentation only; no implementation. |
+| 2026-03-08 | Phase 1 DB foundation completed. communities and community_members created; sponsor-validation trigger added; founder-membership trigger added; RLS enabled without policies. Old geolocation system still present temporarily until app migration. |
