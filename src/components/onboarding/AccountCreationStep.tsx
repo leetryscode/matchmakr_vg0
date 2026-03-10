@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { clearInviteMode } from '@/lib/invite-mode';
+import { clearInviteMode, getInviteMode } from '@/lib/invite-mode';
 
 type CommunityIntent = { communityId: string } | null;
 
@@ -95,9 +95,14 @@ export default function AccountCreationStep({ onboardingData, communityIntent = 
 
       if (communityIntent && signUpData.session) {
         try {
+          const inviteMode = getInviteMode();
+          const body: { inviteToken?: string } = {};
+          if (inviteMode?.inviteToken) body.inviteToken = inviteMode.inviteToken;
+
           const joinRes = await fetch(`/api/communities/${communityIntent.communityId}/join`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
           });
           if (!joinRes.ok) {
             const errData = await joinRes.json().catch(() => ({}));

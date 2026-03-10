@@ -7,7 +7,7 @@ const MEMBERSHIP_CAP = 3;
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -37,11 +37,54 @@ export async function POST(
     if (!community) {
       return NextResponse.json({ error: 'Community not found.' }, { status: 404 });
     }
-    if (community.join_mode !== 'open') {
-      return NextResponse.json(
-        { error: 'This community is invite-only. You must be invited by a sponsor to join.' },
-        { status: 403 }
-      );
+
+    if (community.join_mode === 'sponsor_invite_only') {
+      let body: { inviteToken?: string } = {};
+      try {
+        body = await request.json();
+      } catch {
+        /* empty body ok */
+      }
+      const inviteToken = body?.inviteToken;
+      if (!inviteToken || typeof inviteToken !== 'string' || !inviteToken.trim()) {
+        return NextResponse.json(
+          { error: 'This community is invite-only. You must be invited by a sponsor to join.' },
+          { status: 403 }
+        );
+      }
+
+      const { data: invite, error: inviteError } = await admin
+        .from('invites')
+        .select('id, inviter_id, status')
+        .eq('token', inviteToken.trim())
+        .maybeSingle();
+
+      if (inviteError || !invite) {
+        return NextResponse.json(
+          { error: 'This community is invite-only. You must be invited by a sponsor to join.' },
+          { status: 403 }
+        );
+      }
+      if (invite.status !== 'PENDING') {
+        return NextResponse.json(
+          { error: 'This invite is no longer valid.' },
+          { status: 403 }
+        );
+      }
+
+      const { data: inviterMembership } = await admin
+        .from('community_members')
+        .select('id')
+        .eq('community_id', communityId)
+        .eq('profile_id', invite.inviter_id)
+        .maybeSingle();
+
+      if (!inviterMembership) {
+        return NextResponse.json(
+          { error: 'This community is invite-only. You must be invited by a sponsor who is a member.' },
+          { status: 403 }
+        );
+      }
     }
 
     const { data: existingMembership } = await admin

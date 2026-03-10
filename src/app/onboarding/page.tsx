@@ -120,6 +120,8 @@ export default function OnboardingPage() {
           return (
             <CommunityStep
               variant="sponsor"
+              prefillCommunityId={inviteMode?.prefillCommunityId ?? undefined}
+              prefillCommunityName={inviteMode?.prefillCommunityName ?? undefined}
               onNext={(communityIntent) => {
                 setOnboardingData({ ...onboardingData, communityIntent });
                 setStep(6);
@@ -148,6 +150,8 @@ export default function OnboardingPage() {
         return (
           <CommunityStep
             variant="single"
+            prefillCommunityId={inviteMode?.prefillCommunityId ?? undefined}
+            prefillCommunityName={inviteMode?.prefillCommunityName ?? undefined}
             onNext={(communityIntent) => {
               setOnboardingData({ ...onboardingData, communityIntent });
               setStep(7);

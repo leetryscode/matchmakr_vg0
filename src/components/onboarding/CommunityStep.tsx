@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 export type CommunityIntent = { communityId: string } | null;
 
@@ -15,6 +15,9 @@ interface CommunityBrowseItem {
 interface CommunityStepProps {
   onNext: (intent: CommunityIntent) => void;
   variant?: 'single' | 'sponsor';
+  /** Inviter's suggested community (from invite flow). Shown first and marked recommended. */
+  prefillCommunityId?: string | null;
+  prefillCommunityName?: string | null;
 }
 
 const SUBTEXT: Record<'single' | 'sponsor', string> = {
@@ -31,13 +34,13 @@ function getJoinModeLabel(mode: string): string {
   return JOIN_MODE_LABEL[mode] ?? mode.replaceAll('_', ' ');
 }
 
-export default function CommunityStep({ onNext, variant }: CommunityStepProps) {
+export default function CommunityStep({ onNext, variant, prefillCommunityId, prefillCommunityName }: CommunityStepProps) {
   const [communities, setCommunities] = useState<CommunityBrowseItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const loadCommunities = () => {
+  const loadCommunities = useCallback(() => {
     setLoading(true);
     setError(null);
     fetch('/api/communities')
@@ -46,19 +49,31 @@ export default function CommunityStep({ onNext, variant }: CommunityStepProps) {
         return res.json();
       })
       .then((data: { communities: CommunityBrowseItem[] }) => {
-        setCommunities(data.communities ?? []);
+        const list = data.communities ?? [];
+        setCommunities(list);
+        if (prefillCommunityId && list.some((c) => c.id === prefillCommunityId)) {
+          setSelectedId(prefillCommunityId);
+        }
       })
       .catch((err) => {
         setError(err instanceof Error ? err.message : 'Failed to load communities');
       })
       .finally(() => setLoading(false));
-  };
+  }, [prefillCommunityId]);
 
   useEffect(() => {
     loadCommunities();
-  }, []);
+  }, [loadCommunities]);
 
   const subtext = variant ? SUBTEXT[variant] : '';
+  const orderedCommunities =
+    prefillCommunityId && communities.some((c) => c.id === prefillCommunityId)
+      ? [
+          ...communities.filter((c) => c.id === prefillCommunityId),
+          ...communities.filter((c) => c.id !== prefillCommunityId),
+        ]
+      : communities;
+
   const handleSelect = () => {
     if (selectedId) {
       onNext({ communityId: selectedId });
@@ -109,9 +124,10 @@ export default function CommunityStep({ onNext, variant }: CommunityStepProps) {
         </p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
-        {communities.map((c) => {
+        {orderedCommunities.map((c) => {
           const isInviteOnly = c.join_mode === 'sponsor_invite_only';
-          const isSelectable = !isInviteOnly;
+          const isRecommended = prefillCommunityId === c.id;
+          const isSelectable = !isInviteOnly || isRecommended;
           return (
             <button
               key={c.id}
@@ -127,6 +143,9 @@ export default function CommunityStep({ onNext, variant }: CommunityStepProps) {
               }`}
             >
               <span className="font-medium">{c.name}</span>
+              {isRecommended && (
+                <span className="text-sm text-orbit-gold font-light">Suggested by your inviter</span>
+              )}
               {c.description && (
                 <span className="text-sm text-orbit-muted font-light line-clamp-2">{c.description}</span>
               )}
@@ -135,7 +154,7 @@ export default function CommunityStep({ onNext, variant }: CommunityStepProps) {
           );
         })}
       </div>
-      {communities.length === 0 && (
+      {orderedCommunities.length === 0 && (
         <p className="text-orbit-muted font-light">No communities yet. You can create or join one later from the dashboard.</p>
       )}
       <div className="flex flex-col sm:flex-row gap-4">

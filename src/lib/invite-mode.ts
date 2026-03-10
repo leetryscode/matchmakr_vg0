@@ -10,7 +10,11 @@ export type InviteMode = {
   lockedRole: 'SPONSOR' | 'SINGLE';
   prefillName: string | null;
   prefillEmail: string | null;
+  /** @deprecated Use prefillCommunityId. Kept for backward compat. */
   prefillCommunity: string | null;
+  /** Inviter's suggested community (from community_members). */
+  prefillCommunityId?: string | null;
+  prefillCommunityName?: string | null;
 };
 
 export function getInviteMode(): InviteMode | null {

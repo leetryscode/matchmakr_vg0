@@ -11,7 +11,8 @@ type InviteData = {
   invitor_name: string;
   invitee_name: string | null;
   invitee_email: string | null;
-  community_slug: string | null;
+  community_id: string | null;
+  community_name: string | null;
   status: string;
 };
 
@@ -39,7 +40,8 @@ export default function InvitePage() {
           invitor_name: 'Alex',
           invitee_name: 'Jordan',
           invitee_email: 'jordan@example.com',
-          community_slug: 'north-county-san-diego',
+          community_id: null,
+          community_name: null,
           status: 'PENDING',
         });
         setState('success');
@@ -51,7 +53,8 @@ export default function InvitePage() {
           invitor_name: 'Alex',
           invitee_name: 'Jordan',
           invitee_email: 'jordan@example.com',
-          community_slug: 'north-county-san-diego',
+          community_id: null,
+          community_name: null,
           status: 'PENDING',
         });
         setState('success');
@@ -90,7 +93,9 @@ export default function InvitePage() {
       lockedRole: invite.invited_role,
       prefillName: invite.invitee_name,
       prefillEmail: invite.invitee_email,
-      prefillCommunity: invite.community_slug,
+      prefillCommunity: null,
+      prefillCommunityId: invite.community_id ?? null,
+      prefillCommunityName: invite.community_name ?? null,
     });
     router.push('/onboarding');
   };

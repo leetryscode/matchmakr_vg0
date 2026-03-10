@@ -4,6 +4,8 @@
 
 This document is the source of truth for the Orbit Communities feature. Future implementation prompts should reference this spec to ensure consistency and avoid re-explaining the concept each time.
 
+**Document structure:** Sections 1–5 define product specification (stable design intent). Section 6 defines implementation specification (how the system works in code). Section 13 provides the current implementation snapshot (what is built vs not yet implemented).
+
 ---
 
 ## 1. Feature Context
@@ -141,11 +143,40 @@ This preserves both:
 
 ---
 
-## 6. Database Model Direction
+## 6. Implementation Specification
 
-*No code or migrations yet. Conceptual only.*
+*Technical details for how the system works in code. Product rules and philosophy are defined above.*
 
-### Communities Table
+### Current API Surface
+
+The Communities system currently exposes the following endpoints:
+
+**GET /api/communities**  
+Public browse endpoint returning safe metadata only.
+
+Response fields:
+- id
+- name
+- description
+- join_mode
+- created_at
+
+**POST /api/communities/[id]/join**  
+Authenticated endpoint to join a community.
+
+Behavior:
+- Enforces membership cap (3 communities)
+- Allows joining open communities without invite token
+- Requires valid invite token for sponsor_invite_only communities
+- Validates inviter membership for invite-only joins
+
+---
+
+### Database Model
+
+*Implemented. See migration `20260308000000_create_communities_tables.sql`.*
+
+#### Communities Table
 
 | Field | Notes |
 |-------|-------|
@@ -158,7 +189,7 @@ This preserves both:
 
 **Note:** `created_by` represents the **founding sponsor**. The founding sponsor must also have a corresponding row in `community_members` with `role = founder`.
 
-### Community Members Table
+#### Community Members Table
 
 | Field | Notes |
 |-------|-------|
@@ -175,12 +206,11 @@ This preserves both:
 - `community_members` will likely grow large. This is expected.
 - It is a standard join table.
 
-### Future DB Considerations (Do NOT Implement Yet)
+#### Indexes (Implemented)
 
-- Index on `profile_id`
-- Index on `community_id`
-
-The uniqueness constraint on `(community_id, profile_id)` already exists.
+- `idx_community_members_profile_id`
+- `idx_community_members_community_id`
+- Uniqueness constraint on `(community_id, profile_id)` already exists.
 
 **Likely access patterns:**
 
@@ -192,16 +222,64 @@ Indexes should support these patterns.
 
 ---
 
+### Join Logic
+
+Joining requires authentication. Membership cap (3 per user) is enforced at join time.
+
+#### Invite-Only Community Join Logic
+
+Invite-only (`sponsor_invite_only`) communities can be joined only when:
+
+- A valid invite token is present in the join request
+- The invite status is `PENDING`
+- The inviter is a member of the target community
+
+Otherwise the join API returns 403. Open communities do not require an invite token.
+
+---
+
+### Public Community Browsing Requirement
+
+Community browsing must be possible **before signup** for onboarding use cases. Therefore lightweight community discovery must be available **pre-authentication**.
+
+Public browse is primarily used during onboarding and early discovery flows. Authenticated users will later discover communities through dashboard features.
+
+- **Joining** still requires authentication.
+- **Creating** still requires authentication.
+
+Public community browse must expose **only safe metadata**, such as:
+
+- id
+- name
+- description
+- join_mode
+- created_at
+
+Public browse must **not expose**:
+
+- member lists
+- founder identity
+- detailed network structure
+- any sensitive information
+
+---
+
+### Onboarding Join Mechanics
+
+Community join occurs **after signup** via API call. During onboarding, the user selects a community to join; the actual join is performed after successful account creation when a session exists. The onboarding flow stores a `communityIntent`; if the user selected a community and a session exists post-signup, the client calls `POST /api/communities/[id]/join`.
+
+---
+
 ## 7. User Experience Direction
 
 ### Community Onboarding Visibility by User Type / Entry Mode
 
 | Entry mode | Community step during onboarding? | Behavior |
 |------------|-----------------------------------|----------|
-| **Organic sponsor** | Yes | May browse and join an existing community, or skip for now |
-| **Invited sponsor** | Yes | Inviter's community should be suggested first (future implementation) |
-| **Invited single** | Yes | Inviter's community should be suggested first (future implementation) |
-| **Organic single** | No | Do not show a community step during onboarding |
+| **Organic sponsor** | Yes | Sees community browse step; may join or skip; cannot create community during onboarding |
+| **Invited sponsor** | Yes | Same as organic sponsor; inviter's community suggested first |
+| **Invited single** | Yes | Sees community step; inviter's community suggested first |
+| **Organic single** | No | Does NOT see community step |
 
 **Reasoning:** Communities are powerful when they represent real trust networks. For invited users, "join someone's community" is meaningful context. For organic singles, forcing community browsing during onboarding can feel empty, exclusionary, or irrelevant. Organic singles should instead discover communities later through dashboard features such as **Find a Community**.
 
@@ -235,33 +313,7 @@ Singles cannot found communities.
 If a sponsor invites a user through a community, that community will be preselected during onboarding but the user must confirm membership.
 
 - Singles may join **open communities** themselves.
-- Invite-only communities require sponsor invitation.
-
----
-
-### Public Community Browsing Requirement
-
-Community browsing must be possible **before signup** for onboarding use cases. Therefore lightweight community discovery must be available **pre-authentication**.
-
-Public browse is primarily used during onboarding and early discovery flows. Authenticated users will later discover communities through dashboard features.
-
-- **Joining** still requires authentication.
-- **Creating** still requires authentication.
-
-Public community browse must expose **only safe metadata**, such as:
-
-- id
-- name
-- description
-- join_mode
-- created_at
-
-Public browse must **not expose**:
-
-- member lists
-- founder identity
-- detailed network structure
-- any sensitive information
+- Invite-only communities require sponsor invitation. Invite-only communities remain non-selectable during onboarding unless they are the inviter's suggested community and a valid invite token is present.
 
 ---
 
@@ -343,21 +395,33 @@ Unresolved design questions to revisit during implementation:
 
 ### Phase 1: Foundation
 
-- Database model (communities, community_members)
-- Basic community creation (sponsors only, from dashboard)
-- Public community browse (pre-auth, safe metadata only)
-- Onboarding: sponsor join/skip; invited single accept/skip; organic single no community step
-- Deprecate/remove old geolocation-only community assignment
+**Phase 1 implementation now includes:**
 
-**Phase 1 DB foundation completed (2026-03-08):** `communities` and `community_members` created; sponsor-validation trigger added; founder-membership trigger added; RLS enabled without policies. Old geolocation system still present temporarily until app migration.
+- `communities` table
+- `community_members` table
+- Sponsor validation trigger
+- Founder membership trigger
+- Public community browse endpoint (`GET /api/communities`, no auth required)
+- Join endpoint (`POST /api/communities/[id]/join`) with membership cap (3)
+- Onboarding integration with community selection
+- Invite-based community suggestion (inviter's community surfaced first)
+- Invite-only join validation using invite tokens
+
+**Not yet implemented in Phase 1:**
+
+- Community creation remains dashboard-only (not onboarding); **dashboard community creation UI is not yet implemented**
+- Dashboard community UI is not yet implemented
+- Pond filtering by communities is not yet implemented
+
+**Phase 1 DB foundation completed (2026-03-08):** `communities` and `community_members` created; sponsor-validation trigger added; founder-membership trigger added; RLS enabled without policies. Old geolocation system (`orbit_community_slug`) still present in profiles; onboarding no longer writes to it.
 
 ### Phase 2: Discovery & Membership
 
 - Community discovery ("Find a community" flow)
-- Joining communities (open and invite-only)
-- Membership limits (3 per user)
-- Sponsor invite flow with community preselection
-- Inviter's community suggested first for invited sponsors and singles
+- Joining communities (open and invite-only) — **join API implemented**
+- Membership limits (3 per user) — **implemented**
+- Sponsor invite flow with community preselection — **invite preselection implemented**
+- Inviter's community suggested first for invited sponsors and singles — **implemented**
 
 ### Phase 3: Pond Integration
 
@@ -374,6 +438,28 @@ Unresolved design questions to revisit during implementation:
 
 ---
 
+## 13. Current Implementation Snapshot
+
+*What is already built vs not yet implemented.*
+
+**Implemented:**
+
+- Community data model (communities, community_members)
+- Public browse (`GET /api/communities`, safe metadata only)
+- Join API with membership cap (3)
+- Onboarding integration with community selection
+- Invite community suggestion (inviter's community surfaced first)
+- Invite-only join validation (requires valid invite token; inviter must be member)
+
+**Not Yet Implemented:**
+
+- Community creation UI (dashboard)
+- Community discovery/search
+- Pond community filtering
+- Community dashboard signals
+
+---
+
 ## Document History
 
 | Date | Change |
@@ -381,3 +467,5 @@ Unresolved design questions to revisit during implementation:
 | 2026-03-08 | Initial spec created. Documentation only; no implementation. |
 | 2026-03-08 | Phase 1 DB foundation completed. communities and community_members created; sponsor-validation trigger added; founder-membership trigger added; RLS enabled without policies. Old geolocation system still present temporarily until app migration. |
 | 2026-03-08 | Onboarding refinement: community visibility by entry mode (organic vs invited); sponsors cannot create during onboarding; public browse requirement; organic singles skip community step; rules 13–14 added. |
+| 2026-03-10 | Implementation slices completed: Community browse API (public, safe metadata); join API with membership cap; invite preselection support; invite-only join allowed when valid invite token present; onboarding refactor removing orbit_community_slug writes; communityIntent state; public community browsing during onboarding; sponsors cannot create during onboarding; organic singles skip community step; suggested inviter community shown first; invite-only communities selectable only when suggested by inviter. |
+| 2026-03-10 | Document restructure: Added Implementation Specification section (Database Model, Join Logic, Public Browse, Onboarding Join Mechanics); moved implementation details from User Experience; renamed Implementation Status to Current Implementation Snapshot; added document structure note. No product rules or meaning changed. |

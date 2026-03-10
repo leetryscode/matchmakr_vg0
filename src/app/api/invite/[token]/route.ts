@@ -55,15 +55,36 @@ export async function GET(
     }, { status: 410 });
   }
 
-  // Fetch inviter name and community
+  // Fetch inviter name
   const { data: inviterProfile } = await supabaseAdmin
     .from('profiles')
-    .select('name, orbit_community_slug')
+    .select('name')
     .eq('id', invite.inviter_id)
     .single();
 
   const invitorName = inviterProfile?.name ?? 'Someone';
-  const communitySlug = inviterProfile?.orbit_community_slug ?? null;
+
+  // Derive inviter's suggested community from oldest membership (deterministic: first joined)
+  const { data: inviterMemberships } = await supabaseAdmin
+    .from('community_members')
+    .select('community_id')
+    .eq('profile_id', invite.inviter_id)
+    .order('joined_at', { ascending: true })
+    .limit(1);
+
+  const firstMembership = inviterMemberships?.[0];
+  let communityId: string | null = null;
+  let communityName: string | null = null;
+
+  if (firstMembership?.community_id) {
+    const { data: community } = await supabaseAdmin
+      .from('communities')
+      .select('id, name')
+      .eq('id', firstMembership.community_id)
+      .single();
+    communityId = community?.id ?? null;
+    communityName = community?.name ?? null;
+  }
 
   // Map DB target_user_type to UI role
   const invitedRole = invite.target_user_type === 'MATCHMAKR' ? 'SPONSOR' : 'SINGLE';
@@ -73,9 +94,8 @@ export async function GET(
     invitor_name: invitorName,
     invitee_name: invite.invitee_label ?? null,
     invitee_email: invite.invitee_email ?? null,
-    community_id: null,
-    community_name: communitySlug,
-    community_slug: communitySlug,
+    community_id: communityId,
+    community_name: communityName,
     status: invite.status,
   });
 }
