@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { clearInviteMode } from '@/lib/invite-mode';
 
+type CommunityIntent = { communityId: string } | null;
+
 interface AccountCreationStepProps {
   onboardingData: {
     userType: string | null;
@@ -12,14 +14,15 @@ interface AccountCreationStepProps {
     sex: 'Male' | 'Female' | null;
     birthDate: string | null;
     openTo: 'men' | 'women' | 'both' | null;
-    orbitCommunitySlug: string | null;
     profilePicUrl: string | null;
   };
+  /** Intent to join a community after signup; join is attempted only if session exists */
+  communityIntent?: CommunityIntent;
   /** Prefill email from invite (editable) */
   initialEmail?: string | null;
 }
 
-export default function AccountCreationStep({ onboardingData, initialEmail = '' }: AccountCreationStepProps) {
+export default function AccountCreationStep({ onboardingData, communityIntent = null, initialEmail = '' }: AccountCreationStepProps) {
   const supabase = createClient();
   const router = useRouter();
   const [email, setEmail] = useState(initialEmail ?? '');
@@ -49,7 +52,6 @@ export default function AccountCreationStep({ onboardingData, initialEmail = '' 
           sex: onboardingData.sex,
           birth_date: onboardingData.birthDate ?? undefined,
           open_to: onboardingData.openTo ?? undefined,
-          orbit_community_slug: onboardingData.orbitCommunitySlug ?? undefined,
           bio: null,
           occupation: null,
           city: null,
@@ -81,7 +83,6 @@ export default function AccountCreationStep({ onboardingData, initialEmail = '' 
       };
       if (onboardingData.birthDate) updatePayload.birth_date = onboardingData.birthDate;
       if (onboardingData.openTo) updatePayload.open_to = onboardingData.openTo;
-      if (onboardingData.orbitCommunitySlug) updatePayload.orbit_community_slug = onboardingData.orbitCommunitySlug;
 
       const { error: profileError } = await supabase
         .from('profiles')
@@ -90,6 +91,21 @@ export default function AccountCreationStep({ onboardingData, initialEmail = '' 
 
       if (profileError) {
         console.error('Profile update error:', profileError);
+      }
+
+      if (communityIntent && signUpData.session) {
+        try {
+          const joinRes = await fetch(`/api/communities/${communityIntent.communityId}/join`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          });
+          if (!joinRes.ok) {
+            const errData = await joinRes.json().catch(() => ({}));
+            console.warn('[AccountCreationStep] Community join failed:', joinRes.status, errData);
+          }
+        } catch (joinErr) {
+          console.warn('[AccountCreationStep] Community join error:', joinErr);
+        }
       }
 
       if (signUpData.session) {

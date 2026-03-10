@@ -11,13 +11,15 @@ import AccountCreationStep from '@/components/onboarding/AccountCreationStep';
 import { orbitConfig } from '@/config/orbitConfig';
 import { getInviteMode, type InviteMode } from '@/lib/invite-mode';
 
+type CommunityIntent = { communityId: string } | null;
+
 const initialOnboardingData = {
   userType: null as string | null,
   name: null as string | null,
   sex: null as 'Male' | 'Female' | null,
   birthDate: null as string | null,
   openTo: null as 'men' | 'women' | 'both' | null,
-  orbitCommunitySlug: null as string | null,
+  communityIntent: null as CommunityIntent,
   profilePicUrl: null as string | null,
 };
 
@@ -40,22 +42,18 @@ export default function OnboardingPage() {
       ...initialOnboardingData,
       userType: uiRole,
       name: mode.prefillName,
-      orbitCommunitySlug: mode.prefillCommunity,
     };
   });
+
+  const showCommunityStep =
+    onboardingData.userType === 'Sponsor' ||
+    (onboardingData.userType === 'Single' && inviteMode !== null);
 
   const handleUserTypeSelect = (type: string) => {
     setOnboardingData({ ...onboardingData, userType: type });
     if (type === 'Vendor') {
-      // Handle Vendor flow separately if needed
-      // For now, let's assume it follows a different path
-      router.push('/onboarding/vendor'); // Example redirect
-    } else if (type === 'Single') {
-      // Singles skip detailed profile building - their Sponsor will create their profile
-      // Just collect minimal info (name, sex, age) for account creation
-      setStep(2);
+      router.push('/onboarding/vendor');
     } else {
-      // Sponsors go through full profile building
       setStep(2);
     }
   };
@@ -122,17 +120,27 @@ export default function OnboardingPage() {
           return (
             <CommunityStep
               variant="sponsor"
-              onNext={(orbitCommunitySlug) => { setOnboardingData({ ...onboardingData, orbitCommunitySlug }); setStep(6); }}
-              defaultSlug={inviteMode?.prefillCommunity ?? undefined}
+              onNext={(communityIntent) => {
+                setOnboardingData({ ...onboardingData, communityIntent });
+                setStep(6);
+              }}
             />
           );
         }
-        return <OpenToStep onNext={(openTo) => { setOnboardingData({ ...onboardingData, openTo }); setStep(6); }} />;
+        return (
+          <OpenToStep
+            onNext={(openTo) => {
+              setOnboardingData({ ...onboardingData, openTo });
+              setStep(showCommunityStep ? 6 : 7);
+            }}
+          />
+        );
       case 6:
         if (onboardingData.userType === 'Sponsor') {
           return (
             <AccountCreationStep
               onboardingData={onboardingData}
+              communityIntent={onboardingData.communityIntent}
               initialEmail={inviteMode?.prefillEmail}
             />
           );
@@ -140,14 +148,17 @@ export default function OnboardingPage() {
         return (
           <CommunityStep
             variant="single"
-            onNext={(orbitCommunitySlug) => { setOnboardingData({ ...onboardingData, orbitCommunitySlug }); setStep(7); }}
-            defaultSlug={inviteMode?.prefillCommunity ?? undefined}
+            onNext={(communityIntent) => {
+              setOnboardingData({ ...onboardingData, communityIntent });
+              setStep(7);
+            }}
           />
         );
       case 7:
         return (
           <AccountCreationStep
             onboardingData={onboardingData}
+            communityIntent={onboardingData.communityIntent}
             initialEmail={inviteMode?.prefillEmail}
           />
         );
@@ -158,7 +169,11 @@ export default function OnboardingPage() {
   
   const goBack = () => {
     if (step > 2) {
-      setStep(step - 1);
+      if (step === 7 && !showCommunityStep) {
+        setStep(5);
+      } else {
+        setStep(step - 1);
+      }
     } else if (inviteMode && step === 2) {
       router.push(`/invite/${inviteMode.inviteToken}`);
     } else if (step === 1) {

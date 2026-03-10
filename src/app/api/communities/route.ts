@@ -11,12 +11,6 @@ const BROWSE_LIMIT_DEFAULT = 20;
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'You must be signed in to browse communities.' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const limitParam = searchParams.get('limit');
     const offsetParam = searchParams.get('offset');
