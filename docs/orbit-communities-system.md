@@ -107,6 +107,8 @@ They are **context objects**, not destinations.
 | 10 | A user cannot join more than 3 communities simultaneously. |
 | 11 | Users may leave communities in order to join different ones later. |
 | 12 | Leaving a community removes the corresponding row from community_members. |
+| 13 | Sponsors cannot create communities during onboarding; creation happens from the dashboard. |
+| 14 | Organic singles do not see a community step during onboarding. |
 
 ---
 
@@ -175,9 +177,10 @@ This preserves both:
 
 ### Future DB Considerations (Do NOT Implement Yet)
 
-- Unique constraint on `(community_id, profile_id)`
 - Index on `profile_id`
 - Index on `community_id`
+
+The uniqueness constraint on `(community_id, profile_id)` already exists.
 
 **Likely access patterns:**
 
@@ -191,12 +194,31 @@ Indexes should support these patterns.
 
 ## 7. User Experience Direction
 
+### Community Onboarding Visibility by User Type / Entry Mode
+
+| Entry mode | Community step during onboarding? | Behavior |
+|------------|-----------------------------------|----------|
+| **Organic sponsor** | Yes | May browse and join an existing community, or skip for now |
+| **Invited sponsor** | Yes | Inviter's community should be suggested first (future implementation) |
+| **Invited single** | Yes | Inviter's community should be suggested first (future implementation) |
+| **Organic single** | No | Do not show a community step during onboarding |
+
+**Reasoning:** Communities are powerful when they represent real trust networks. For invited users, "join someone's community" is meaningful context. For organic singles, forcing community browsing during onboarding can feel empty, exclusionary, or irrelevant. Organic singles should instead discover communities later through dashboard features such as **Find a Community**.
+
+---
+
 ### Sponsor Onboarding / Usage
 
-Sponsors may:
+**Sponsors cannot create communities during onboarding.** Community creation happens **later from the dashboard** once the user has completed onboarding.
 
-- Found a new community
-- Join existing communities
+**Reasoning:** Allowing community creation during onboarding would encourage fragmentation and duplicate communities (e.g., multiple "San Diego" communities). By delaying creation until after onboarding, users see existing communities first, the network graph remains more coherent, and communities remain meaningful trust structures.
+
+During onboarding, sponsors may:
+
+- Join an existing community
+- Skip for now
+
+The **Skip** option should be presented clearly and non-judgmentally. The UI should communicate that the sponsor can "Create or join a community later from the dashboard." This keeps onboarding friction low while still emphasizing the importance of communities.
 
 Sponsors can invite users into Orbit with a **community preselected**.
 
@@ -206,17 +228,40 @@ Sponsors can invite users into Orbit with a **community preselected**.
 
 Singles cannot found communities.
 
+- **Invited singles** may join the inviter's suggested community during onboarding.
+- **Organic singles** skip community onboarding entirely.
+- Communities can be discovered later via dashboard features such as **Find a Community**.
+
 If a sponsor invites a user through a community, that community will be preselected during onboarding but the user must confirm membership.
-
-During onboarding they may:
-
-- Accept the sponsor's suggested community
-- Skip for now
-
-Later, from dashboard, they can use **"Find a community"** to search and join communities.
 
 - Singles may join **open communities** themselves.
 - Invite-only communities require sponsor invitation.
+
+---
+
+### Public Community Browsing Requirement
+
+Community browsing must be possible **before signup** for onboarding use cases. Therefore lightweight community discovery must be available **pre-authentication**.
+
+Public browse is primarily used during onboarding and early discovery flows. Authenticated users will later discover communities through dashboard features.
+
+- **Joining** still requires authentication.
+- **Creating** still requires authentication.
+
+Public community browse must expose **only safe metadata**, such as:
+
+- id
+- name
+- description
+- join_mode
+- created_at
+
+Public browse must **not expose**:
+
+- member lists
+- founder identity
+- detailed network structure
+- any sensitive information
 
 ---
 
@@ -299,8 +344,9 @@ Unresolved design questions to revisit during implementation:
 ### Phase 1: Foundation
 
 - Database model (communities, community_members)
-- Basic community creation (sponsors only)
-- Onboarding support (sponsor preselection, single confirmation)
+- Basic community creation (sponsors only, from dashboard)
+- Public community browse (pre-auth, safe metadata only)
+- Onboarding: sponsor join/skip; invited single accept/skip; organic single no community step
 - Deprecate/remove old geolocation-only community assignment
 
 **Phase 1 DB foundation completed (2026-03-08):** `communities` and `community_members` created; sponsor-validation trigger added; founder-membership trigger added; RLS enabled without policies. Old geolocation system still present temporarily until app migration.
@@ -311,6 +357,7 @@ Unresolved design questions to revisit during implementation:
 - Joining communities (open and invite-only)
 - Membership limits (3 per user)
 - Sponsor invite flow with community preselection
+- Inviter's community suggested first for invited sponsors and singles
 
 ### Phase 3: Pond Integration
 
@@ -333,3 +380,4 @@ Unresolved design questions to revisit during implementation:
 |------|--------|
 | 2026-03-08 | Initial spec created. Documentation only; no implementation. |
 | 2026-03-08 | Phase 1 DB foundation completed. communities and community_members created; sponsor-validation trigger added; founder-membership trigger added; RLS enabled without policies. Old geolocation system still present temporarily until app migration. |
+| 2026-03-08 | Onboarding refinement: community visibility by entry mode (organic vs invited); sponsors cannot create during onboarding; public browse requirement; organic singles skip community step; rules 13–14 added. |
