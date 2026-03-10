@@ -1,5 +1,17 @@
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+
+/** Service-role client for bypassing RLS. Use for communities, etc. */
+export function createServiceClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url) throw new Error('NEXT_PUBLIC_SUPABASE_URL not set')
+  if (!key) throw new Error('SUPABASE_SERVICE_ROLE_KEY not set')
+  return createSupabaseClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+}
 
 export function createClient() {
   const cookieStore = cookies()
