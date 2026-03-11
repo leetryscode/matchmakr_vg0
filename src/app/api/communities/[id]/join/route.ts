@@ -55,7 +55,7 @@ export async function POST(
 
       const { data: invite, error: inviteError } = await admin
         .from('invites')
-        .select('id, inviter_id, status')
+        .select('id, status, community_id')
         .eq('token', inviteToken.trim())
         .maybeSingle();
 
@@ -72,16 +72,9 @@ export async function POST(
         );
       }
 
-      const { data: inviterMembership } = await admin
-        .from('community_members')
-        .select('id')
-        .eq('community_id', communityId)
-        .eq('profile_id', invite.inviter_id)
-        .maybeSingle();
-
-      if (!inviterMembership) {
+      if (!invite.community_id || invite.community_id !== communityId) {
         return NextResponse.json(
-          { error: 'This community is invite-only. You must be invited by a sponsor who is a member.' },
+          { error: 'This community is invite-only. You must be invited by a sponsor to join.' },
           { status: 403 }
         );
       }
