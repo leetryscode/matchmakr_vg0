@@ -12,7 +12,7 @@ export type InviteMode = {
   prefillEmail: string | null;
   /** @deprecated Use prefillCommunityId. Kept for backward compat. */
   prefillCommunity: string | null;
-  /** Inviter's suggested community (from community_members). */
+  /** Invite community context from invites.community_id. */
   prefillCommunityId?: string | null;
   prefillCommunityName?: string | null;
 };
