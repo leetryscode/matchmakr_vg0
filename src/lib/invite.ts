@@ -15,7 +15,8 @@ function normalizeEmail(email: string): string {
  */
 export async function inviteSingleByEmail(
   email: string,
-  inviteeLabel?: string | null
+  inviteeLabel?: string | null,
+  communityId?: string | null
 ): Promise<{ success: true; message: string }> {
   const normalized = normalizeEmail(email);
   if (!normalized) {
@@ -34,6 +35,9 @@ export async function inviteSingleByEmail(
       single_email: normalized,
       invitee_label: typeof inviteeLabel === 'string' && inviteeLabel.trim()
         ? inviteeLabel.trim()
+        : null,
+      community_id: typeof communityId === 'string' && communityId.trim()
+        ? communityId.trim()
         : null,
     }),
   });
@@ -162,7 +166,8 @@ export async function inviteSponsorByEmail(
  */
 export async function inviteSponsorToJoinByEmail(
   email: string,
-  inviteeLabel?: string | null
+  inviteeLabel?: string | null,
+  communityId?: string | null
 ): Promise<{ success: true; message: string; invite_id?: string; email_sent?: boolean }> {
   const normalized = normalizeEmail(email);
   if (!normalized) {
@@ -181,6 +186,9 @@ export async function inviteSponsorToJoinByEmail(
       invitee_email: normalized,
       invitee_label: typeof inviteeLabel === 'string' && inviteeLabel.trim()
         ? inviteeLabel.trim()
+        : null,
+      community_id: typeof communityId === 'string' && communityId.trim()
+        ? communityId.trim()
         : null,
     }),
   });

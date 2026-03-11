@@ -12,6 +12,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const isUuid = (v: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
+
 /** Generate a URL-safe token for invite links (12 chars alphanumeric) */
 function generateInviteToken(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -72,12 +75,19 @@ Deno.serve(async (req) => {
     });
 
   try {
-    const { single_email, sponsor_label, invitee_label } = await req.json();
+    const { single_email, sponsor_label, invitee_label, community_id } = await req.json();
 
     const normalizedEmail = (single_email || '').trim().toLowerCase();
     const normalizedInviteeLabel = typeof invitee_label === 'string' && invitee_label.trim()
       ? invitee_label.trim()
       : null;
+    let normalizedCommunityId: string | null = null;
+    if (typeof community_id === 'string') {
+      const trimmed = community_id.trim();
+      if (trimmed && isUuid(trimmed)) {
+        normalizedCommunityId = trimmed;
+      }
+    }
     if (!normalizedEmail) {
       return jsonResponse({ error: 'Email is required.', code: 'INVALID_INPUT' }, 400);
     }
@@ -110,6 +120,18 @@ Deno.serve(async (req) => {
 
     if (matchmakrProfile.user_type !== 'MATCHMAKR') {
       return jsonResponse({ error: 'You must be a MatchMakr to sponsor a Single.', code: 'INVALID_USER_TYPE' }, 400);
+    }
+
+    if (normalizedCommunityId) {
+      const { data: membership } = await supabaseAdmin
+        .from('community_members')
+        .select('id')
+        .eq('community_id', normalizedCommunityId)
+        .eq('profile_id', user.id)
+        .maybeSingle();
+      if (!membership) {
+        return jsonResponse({ error: 'You must be a member of this community to attach it to an invite.', code: 'NOT_COMMUNITY_MEMBER' }, 400);
+      }
     }
 
     // Look up existing user by email (listUsers is paginated; paginate until found or exhausted)
@@ -377,6 +399,7 @@ Deno.serve(async (req) => {
           target_user_type: 'SINGLE',
           status: 'CLAIMED',
           token: null,
+          community_id: null,
         })
         .select('id')
         .single();
@@ -484,6 +507,7 @@ Deno.serve(async (req) => {
           target_user_type: 'SINGLE',
           status: 'PENDING',
           token: generateInviteToken(),
+          community_id: normalizedCommunityId,
         })
         .select('id, token')
         .single();

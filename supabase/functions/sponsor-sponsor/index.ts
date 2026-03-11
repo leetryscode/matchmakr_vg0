@@ -9,6 +9,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const isUuid = (v: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
+
 /** Generate a URL-safe token for invite links (12 chars alphanumeric) */
 function generateInviteToken(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -66,12 +69,19 @@ Deno.serve(async (req) => {
     });
 
   try {
-    const { invitee_email, invitee_label } = await req.json();
+    const { invitee_email, invitee_label, community_id } = await req.json();
 
     const normalizedEmail = (invitee_email || '').trim().toLowerCase();
     const normalizedInviteeLabel = typeof invitee_label === 'string' && invitee_label.trim()
       ? invitee_label.trim()
       : null;
+    let normalizedCommunityId: string | null = null;
+    if (typeof community_id === 'string') {
+      const trimmed = community_id.trim();
+      if (trimmed && isUuid(trimmed)) {
+        normalizedCommunityId = trimmed;
+      }
+    }
 
     if (!normalizedEmail) {
       return jsonResponse({ error: 'Email is required.', code: 'INVALID_INPUT' }, 400);
@@ -103,7 +113,7 @@ Deno.serve(async (req) => {
 
     const { data: inviterProfile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('user_type, name, orbit_community_slug')
+      .select('user_type, name')
       .eq('id', user.id)
       .single();
 
@@ -113,6 +123,18 @@ Deno.serve(async (req) => {
 
     if (inviterProfile.user_type !== 'MATCHMAKR') {
       return jsonResponse({ error: 'You must be a Sponsor to invite another Sponsor.', code: 'INVALID_USER_TYPE' }, 400);
+    }
+
+    if (normalizedCommunityId) {
+      const { data: membership } = await supabaseAdmin
+        .from('community_members')
+        .select('id')
+        .eq('community_id', normalizedCommunityId)
+        .eq('profile_id', user.id)
+        .maybeSingle();
+      if (!membership) {
+        return jsonResponse({ error: 'You must be a member of this community to attach it to an invite.', code: 'NOT_COMMUNITY_MEMBER' }, 400);
+      }
     }
 
     // Dedupe: if PENDING invite already exists for (inviter_id, invitee_email) with target MATCHMAKR
@@ -148,6 +170,7 @@ Deno.serve(async (req) => {
           target_user_type: 'MATCHMAKR',
           status: 'PENDING',
           token: generateInviteToken(),
+          community_id: normalizedCommunityId,
         })
         .select('id, token')
         .single();

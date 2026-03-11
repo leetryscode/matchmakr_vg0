@@ -3,12 +3,23 @@ import { createClient } from '@/lib/supabase/server';
 
 export const runtime = 'nodejs';
 
+const isUuid = (v: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
+
 export async function POST(request: Request) {
   try {
-    const { single_email, sponsor_label, invitee_label } = await request.json();
+    const { single_email, sponsor_label, invitee_label, community_id } = await request.json();
 
     if (!single_email || typeof single_email !== 'string') {
       return NextResponse.json({ error: 'Email is required.' }, { status: 400 });
+    }
+
+    let normalizedCommunityId: string | null = null;
+    if (typeof community_id === 'string') {
+      const trimmed = community_id.trim();
+      if (trimmed && isUuid(trimmed)) {
+        normalizedCommunityId = trimmed;
+      }
     }
 
     const supabase = createClient();
@@ -41,6 +52,7 @@ export async function POST(request: Request) {
         invitee_label: typeof invitee_label === 'string' && invitee_label.trim()
           ? invitee_label.trim()
           : null,
+        community_id: normalizedCommunityId,
       }),
     });
 

@@ -1,8 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { inviteSingleByEmail } from '@/lib/invite';
+
+interface MyCommunity {
+    id: string;
+    name: string;
+}
 
 interface InviteSingleModalProps {
     open: boolean;
@@ -16,6 +21,22 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [success, setSuccess] = useState(false);
+    const [communities, setCommunities] = useState<MyCommunity[]>([]);
+    const [communitiesLoading, setCommunitiesLoading] = useState(false);
+    const [selectedCommunityId, setSelectedCommunityId] = useState('');
+
+    const loadCommunities = useCallback(() => {
+        setCommunitiesLoading(true);
+        fetch('/api/communities/me')
+            .then((res) => (res.ok ? res.json() : { communities: [] }))
+            .then((data) => setCommunities(data.communities ?? []))
+            .catch(() => setCommunities([]))
+            .finally(() => setCommunitiesLoading(false));
+    }, []);
+
+    useEffect(() => {
+        if (open) loadCommunities();
+    }, [open, loadCommunities]);
 
     if (!open) return null;
 
@@ -25,13 +46,22 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
         setSuccess(false);
 
         try {
-            const result = await inviteSingleByEmail(email, label.trim() || undefined);
+            const result = await inviteSingleByEmail(
+                email,
+                label.trim() || undefined,
+                selectedCommunityId || null,
+            );
             setSuccess(true);
             setMessage(result.message);
             setEmail('');
             setLabel('');
-            onClose();
+            setSelectedCommunityId('');
             router.refresh();
+            setTimeout(() => {
+                setMessage('');
+                setSuccess(false);
+                onClose();
+            }, 1500);
         } catch (error: unknown) {
             setMessage(error instanceof Error ? error.message : 'An error occurred.');
         } finally {
@@ -42,6 +72,7 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
     const handleClose = () => {
         setEmail('');
         setLabel('');
+        setSelectedCommunityId('');
         setMessage('');
         setSuccess(false);
         onClose();
@@ -91,6 +122,27 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
                             }}
                         />
                     </div>
+                    {communitiesLoading && (
+                        <p className="text-xs text-gray-400">Loading your communities...</p>
+                    )}
+                    {!communitiesLoading && communities.length > 0 && (
+                        <div>
+                            <select
+                                value={selectedCommunityId}
+                                onChange={(e) => setSelectedCommunityId(e.target.value)}
+                                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-900 bg-white focus:border-accent-teal-light focus:outline-none focus:ring-2 focus:ring-accent-teal-light focus:ring-opacity-50"
+                                disabled={isLoading || success}
+                            >
+                                <option value="">No community (general invite)</option>
+                                {communities.map((c) => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                ))}
+                            </select>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Optionally attach a community to this invite.
+                            </p>
+                        </div>
+                    )}
                     {message && (
                         <p className={`text-sm ${success ? 'text-green-600' : 'text-red-600'}`}>
                             {message}

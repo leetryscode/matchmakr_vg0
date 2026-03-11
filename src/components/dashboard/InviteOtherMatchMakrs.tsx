@@ -1,8 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { inviteSponsorToJoinByEmail } from '@/lib/invite';
 import Toast from '@/components/ui/Toast';
+
+interface MyCommunity {
+    id: string;
+    name: string;
+}
 
 const InviteOtherMatchMakrModal = ({
   isOpen,
@@ -10,20 +15,44 @@ const InviteOtherMatchMakrModal = ({
   onSuccess,
   onError,
 }: { isOpen: boolean; onClose: () => void; onSuccess?: (email: string) => void; onError?: (message: string) => void }) => {
-    if (!isOpen) return null;
-
     const [email, setEmail] = useState('');
     const [label, setLabel] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [communities, setCommunities] = useState<MyCommunity[]>([]);
+    const [communitiesLoading, setCommunitiesLoading] = useState(false);
+    const [selectedCommunityId, setSelectedCommunityId] = useState('');
+
+    const loadCommunities = useCallback(() => {
+        setCommunitiesLoading(true);
+        fetch('/api/communities/me')
+            .then((res) => (res.ok ? res.json() : { communities: [] }))
+            .then((data) => setCommunities(data.communities ?? []))
+            .catch(() => setCommunities([]))
+            .finally(() => setCommunitiesLoading(false));
+    }, []);
+
+    useEffect(() => {
+        if (isOpen) loadCommunities();
+    }, [isOpen, loadCommunities]);
+
+    if (!isOpen) return null;
+
+    const handleClose = () => {
+        setEmail('');
+        setLabel('');
+        setSelectedCommunityId('');
+        onClose();
+    };
 
     const handleSend = async () => {
         if (!email.trim()) return;
         setIsLoading(true);
         try {
-            await inviteSponsorToJoinByEmail(email.trim(), label.trim() || undefined);
+            await inviteSponsorToJoinByEmail(email.trim(), label.trim() || undefined, selectedCommunityId || null);
             onSuccess?.(email.trim());
             setEmail('');
             setLabel('');
+            setSelectedCommunityId('');
             onClose();
         } catch (err) {
             onError?.(err instanceof Error ? err.message : 'Failed to send invite.');
@@ -51,10 +80,31 @@ const InviteOtherMatchMakrModal = ({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Their email address"
-                    className="orbit-ring w-full border border-orbit-border/50 rounded-xl px-4 py-3 mb-4 text-orbit-text placeholder:text-orbit-muted bg-orbit-surface/80"
+                    className="orbit-ring w-full border border-orbit-border/50 rounded-xl px-4 py-3 mb-3 text-orbit-text placeholder:text-orbit-muted bg-orbit-surface/80"
                 />
+                {communitiesLoading && (
+                    <p className="text-xs text-orbit-muted mb-3">Loading your communities...</p>
+                )}
+                {!communitiesLoading && communities.length > 0 && (
+                    <div className="mb-4">
+                        <select
+                            value={selectedCommunityId}
+                            onChange={(e) => setSelectedCommunityId(e.target.value)}
+                            className="orbit-ring w-full border border-orbit-border/50 rounded-xl px-4 py-3 text-orbit-text bg-orbit-surface/80"
+                            disabled={isLoading}
+                        >
+                            <option value="">No community (general invite)</option>
+                            {communities.map((c) => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                        </select>
+                        <p className="text-xs text-orbit-muted mt-1">
+                            Optionally attach a community to this invite.
+                        </p>
+                    </div>
+                )}
                 <div className="flex justify-end gap-4">
-                    <button onClick={onClose} className="orbit-btn-secondary px-6 py-3 rounded-lg font-semibold" disabled={isLoading}>
+                    <button onClick={handleClose} className="orbit-btn-secondary px-6 py-3 rounded-lg font-semibold" disabled={isLoading}>
                         Cancel
                     </button>
                     <button
