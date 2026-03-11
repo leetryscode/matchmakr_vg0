@@ -147,6 +147,27 @@ This preserves both:
 
 *Technical details for how the system works in code. Product rules and philosophy are defined above.*
 
+### Invite Community Context (Architecture Decision)
+
+Invites should support an **optional explicit community context**.
+
+Invites are intended to carry:
+
+- `community_id` (nullable)
+
+**Interpretation:**
+
+- `community_id = NULL` → general Orbit invite, not tied to a specific community
+- `community_id = some community` → invite into Orbit with a specific community context
+
+This replaces the earlier derived approach where the system inferred a suggested community from the inviter's memberships.
+
+**Why this change:** Deriving a suggested community from the inviter's memberships is ambiguous and can be wrong. A sponsor may belong to multiple communities, and the "first" or "oldest" one may not be the intended context for the invite. Explicit invite community context is more trustworthy, more flexible, and more secure. This avoids invite tokens implicitly authorizing access to arbitrary invite-only communities the inviter belongs to.
+
+*Example:* A sponsor in the San Diego community may invite someone in Nashville for a profession-based reason (for example, both are accountants). Deriving "San Diego" as the invite context may be arbitrary or wrong. The invite should either carry a specific intended community or no community at all.
+
+---
+
 ### Current API Surface
 
 The Communities system currently exposes the following endpoints:
@@ -168,7 +189,7 @@ Behavior:
 - Enforces membership cap (3 communities)
 - Allows joining open communities without invite token
 - Requires valid invite token for sponsor_invite_only communities
-- Validates inviter membership for invite-only joins
+- For invite-only: validates that the invite's explicit `community_id` matches the target community (intended model; current implementation may temporarily use inviter membership)
 
 ---
 
@@ -228,13 +249,15 @@ Joining requires authentication. Membership cap (3 per user) is enforced at join
 
 #### Invite-Only Community Join Logic
 
-Invite-only (`sponsor_invite_only`) communities can be joined only when:
+**Intended model (invite-bound community authorization):** Invite-only (`sponsor_invite_only`) communities can be joined only when:
 
 - A valid invite token is present in the join request
-- The invite status is `PENDING`
-- The inviter is a member of the target community
+- The invite is still valid / pending
+- The invite's explicit `community_id` matches the target community
 
 Otherwise the join API returns 403. Open communities do not require an invite token.
+
+*Implementation note:* The current implementation may still derive community context from inviter membership temporarily. The intended model is invite-bound community authorization; migrating invites to carry explicit `community_id` will simplify this logic.
 
 ---
 
@@ -277,9 +300,11 @@ Community join occurs **after signup** via API call. During onboarding, the user
 | Entry mode | Community step during onboarding? | Behavior |
 |------------|-----------------------------------|----------|
 | **Organic sponsor** | Yes | Sees community browse step; may join or skip; cannot create community during onboarding |
-| **Invited sponsor** | Yes | Same as organic sponsor; inviter's community suggested first |
-| **Invited single** | Yes | Sees community step; inviter's community suggested first |
+| **Invited sponsor** | Yes | Same as organic sponsor; suggested community shown only when invite carries explicit `community_id` |
+| **Invited single** | Yes | Sees community step; suggested community shown only when invite carries explicit `community_id` |
 | **Organic single** | No | Does NOT see community step |
+
+**Invite community suggestion:** Invited users may see a suggested community during onboarding **only when the invite itself carries an explicit `community_id`**. If the invite has no `community_id`, onboarding should behave as a normal invite flow without community preselection. Invite-based suggestion should eventually use the invite's explicit community context, not inferred membership.
 
 **Reasoning:** Communities are powerful when they represent real trust networks. For invited users, "join someone's community" is meaningful context. For organic singles, forcing community browsing during onboarding can feel empty, exclusionary, or irrelevant. Organic singles should instead discover communities later through dashboard features such as **Find a Community**.
 
@@ -298,7 +323,7 @@ During onboarding, sponsors may:
 
 The **Skip** option should be presented clearly and non-judgmentally. The UI should communicate that the sponsor can "Create or join a community later from the dashboard." This keeps onboarding friction low while still emphasizing the importance of communities.
 
-Sponsors can invite users into Orbit with a **community preselected**.
+Sponsors can optionally invite users into Orbit with a **specific community context**.
 
 ---
 
@@ -306,14 +331,14 @@ Sponsors can invite users into Orbit with a **community preselected**.
 
 Singles cannot found communities.
 
-- **Invited singles** may join the inviter's suggested community during onboarding.
+- **Invited singles** may join a suggested community during onboarding when the invite carries an explicit `community_id`.
 - **Organic singles** skip community onboarding entirely.
 - Communities can be discovered later via dashboard features such as **Find a Community**.
 
-If a sponsor invites a user through a community, that community will be preselected during onboarding but the user must confirm membership.
+If a sponsor invites a user with an explicit community context, that community will be suggested during onboarding but the user must confirm membership.
 
 - Singles may join **open communities** themselves.
-- Invite-only communities require sponsor invitation. Invite-only communities remain non-selectable during onboarding unless they are the inviter's suggested community and a valid invite token is present.
+- Invite-only communities require sponsor invitation. Invite-only communities remain non-selectable during onboarding unless the invite carries an explicit `community_id` matching that community and a valid invite token is present.
 
 ---
 
@@ -380,6 +405,8 @@ Unresolved design questions to revisit during implementation:
 - Possible future roles beyond founder
 - Whether communities ever appear on public profiles
 
+**Planned architectural improvement:** Migrating invites to carry explicit `community_id` is an intended improvement. This will simplify onboarding suggestion logic and invite-only join authorization logic.
+
 ---
 
 ## 11. Implementation Principles
@@ -404,8 +431,10 @@ Unresolved design questions to revisit during implementation:
 - Public community browse endpoint (`GET /api/communities`, no auth required)
 - Join endpoint (`POST /api/communities/[id]/join`) with membership cap (3)
 - Onboarding integration with community selection
-- Invite-based community suggestion (inviter's community surfaced first)
+- Invite-based community suggestion (inviter's community surfaced first; *current implementation derives from inviter membership; intended model uses invite's explicit `community_id`*)
 - Invite-only join validation using invite tokens
+
+**Planned improvement:** Migrating invites to carry explicit `community_id` will simplify onboarding suggestion and invite-only join logic.
 
 **Not yet implemented in Phase 1:**
 
@@ -420,8 +449,8 @@ Unresolved design questions to revisit during implementation:
 - Community discovery ("Find a community" flow)
 - Joining communities (open and invite-only) — **join API implemented**
 - Membership limits (3 per user) — **implemented**
-- Sponsor invite flow with community preselection — **invite preselection implemented**
-- Inviter's community suggested first for invited sponsors and singles — **implemented**
+- Sponsor invite flow with community preselection — **invite preselection implemented** (currently derived; intended: invite-bound `community_id`)
+- Inviter's community suggested first for invited sponsors and singles — **implemented** (intended: invite's explicit `community_id`)
 
 ### Phase 3: Pond Integration
 
@@ -448,8 +477,8 @@ Unresolved design questions to revisit during implementation:
 - Public browse (`GET /api/communities`, safe metadata only)
 - Join API with membership cap (3)
 - Onboarding integration with community selection
-- Invite community suggestion (inviter's community surfaced first)
-- Invite-only join validation (requires valid invite token; inviter must be member)
+- Invite community suggestion (inviter's community surfaced first; *derived from inviter membership—intended model: invite's explicit `community_id`*)
+- Invite-only join validation (requires valid invite token; *currently validates inviter membership—intended model: invite's `community_id` matches target*)
 
 **Not Yet Implemented:**
 
@@ -457,6 +486,7 @@ Unresolved design questions to revisit during implementation:
 - Community discovery/search
 - Pond community filtering
 - Community dashboard signals
+- Invites table `community_id` column and invite creation flow updates (intended architectural improvement)
 
 ---
 
@@ -469,3 +499,4 @@ Unresolved design questions to revisit during implementation:
 | 2026-03-08 | Onboarding refinement: community visibility by entry mode (organic vs invited); sponsors cannot create during onboarding; public browse requirement; organic singles skip community step; rules 13–14 added. |
 | 2026-03-10 | Implementation slices completed: Community browse API (public, safe metadata); join API with membership cap; invite preselection support; invite-only join allowed when valid invite token present; onboarding refactor removing orbit_community_slug writes; communityIntent state; public community browsing during onboarding; sponsors cannot create during onboarding; organic singles skip community step; suggested inviter community shown first; invite-only communities selectable only when suggested by inviter. |
 | 2026-03-10 | Document restructure: Added Implementation Specification section (Database Model, Join Logic, Public Browse, Onboarding Join Mechanics); moved implementation details from User Experience; renamed Implementation Status to Current Implementation Snapshot; added document structure note. No product rules or meaning changed. |
+| 2026-03-10 | Architecture decision: Invites should carry optional explicit `community_id`; replaces derived-from-inviter-membership approach. Updated invite-only join logic, onboarding suggestion assumptions, phased plan, and implementation snapshot to reflect intended invite-bound community authorization. |
