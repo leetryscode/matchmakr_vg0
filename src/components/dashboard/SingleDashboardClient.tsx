@@ -19,6 +19,7 @@ import TrustLockup from '@/components/dashboard/TrustLockup';
 import AvailabilitySection from '@/components/dashboard/AvailabilitySection';
 import Toast from '@/components/ui/Toast';
 import { computeSingleStatus, SingleStatus } from '@/lib/status/singleStatus';
+import MyCommunitiesSection from '@/components/dashboard/MyCommunitiesSection';
 
 /** Get initials from name for avatar fallback (e.g. "Lee Smith" → "LS", "Lee" → "L") */
 function getInitials(name: string): string {
@@ -603,6 +604,14 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             onClose={() => setIsInviteSingleReferralOpen(false)}
             onSuccess={() => setToast({ message: 'Invite sent.', type: 'success' })}
           />
+
+          {/* Communities */}
+          <section className="mt-10">
+            <MyCommunitiesSection
+              descriptionText="Communities help sponsors discover compatible singles."
+                helperText="Find the communities that you are a part of, most members join a few"
+            />
+          </section>
           
           {/* Preview cards section - only renders when there are previews */}
           <PreviewCardsSection userId={userId} />
@@ -829,6 +838,14 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
               <InviteSingleReferralRow onClick={() => setIsInviteSingleReferralOpen(true)} />
             </div>
           )}
+        </section>
+
+        {/* Communities */}
+        <section className="mt-10">
+          <MyCommunitiesSection
+            descriptionText="Communities help sponsors discover compatible singles."
+            helperText="Find the communities that you are a part of, most members join a few"
+          />
         </section>
         
         {/* Preview cards section - only renders when there are previews */}

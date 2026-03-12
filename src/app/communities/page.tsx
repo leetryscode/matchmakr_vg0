@@ -31,7 +31,6 @@ export default function CommunitiesPage() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [createName, setCreateName] = useState('');
     const [createDescription, setCreateDescription] = useState('');
-    const [createJoinMode, setCreateJoinMode] = useState<'open' | 'sponsor_invite_only'>('open');
     const [createError, setCreateError] = useState<string | null>(null);
 
     const loadCommunities = useCallback(async () => {
@@ -156,7 +155,6 @@ export default function CommunitiesPage() {
     const resetCreateForm = () => {
         setCreateName('');
         setCreateDescription('');
-        setCreateJoinMode('open');
         setCreateError(null);
     };
 
@@ -177,7 +175,6 @@ export default function CommunitiesPage() {
                 body: JSON.stringify({
                     name: createName.trim(),
                     description: createDescription.trim() || null,
-                    join_mode: createJoinMode,
                 }),
             });
 
@@ -248,11 +245,9 @@ export default function CommunitiesPage() {
                     <div className="space-y-3">
                         {sortedCommunities.map((community) => {
                             const isMember = myCommunityIds.has(community.id);
-                            const isInviteOnly = community.join_mode === 'sponsor_invite_only';
                             const isJoining = joiningCommunityId === community.id;
                             const isLeaving = leavingCommunityId === community.id;
                             const myRole = myCommunityRoleById.get(community.id);
-                            const joinModeLabel = isInviteOnly ? 'Invite only' : 'Open';
 
                             return (
                                 <div
@@ -267,9 +262,8 @@ export default function CommunitiesPage() {
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="rounded-full border border-orbit-border/60 px-2 py-1 text-xs text-orbit-muted">
-                                                {joinModeLabel}
-                                            </span>
+                                            {/* TEMP MVP: hide invite-only/open presentation in product UI.
+                                                All communities are currently shown as joinable while invite-only UX is deferred. */}
                                             <span className="rounded-full border border-orbit-border/60 px-2 py-1 text-xs text-orbit-muted">
                                                 {community.member_count} members
                                             </span>
@@ -302,14 +296,6 @@ export default function CommunitiesPage() {
                                                     {isLeaving ? 'Leaving...' : 'Leave community'}
                                                 </button>
                                             )
-                                        ) : isInviteOnly ? (
-                                            <button
-                                                type="button"
-                                                disabled
-                                                className="min-h-[40px] rounded-lg border border-orbit-border/60 bg-orbit-surface px-4 py-2 text-sm text-orbit-muted"
-                                            >
-                                                Requires invite
-                                            </button>
                                         ) : (
                                             <button
                                                 type="button"
@@ -329,7 +315,7 @@ export default function CommunitiesPage() {
 
                 <div className="mt-6">
                     <Link
-                        href="/dashboard/matchmakr"
+                        href="/dashboard"
                         className="orbit-btn-secondary inline-flex min-h-[40px] items-center rounded-lg px-4 py-2 text-sm"
                     >
                         Back to dashboard
@@ -373,23 +359,8 @@ export default function CommunitiesPage() {
                                 />
                             </div>
 
-                            <div>
-                                <label htmlFor="community-join-mode" className="mb-1 block text-xs text-orbit-muted">
-                                    Join mode
-                                </label>
-                                <select
-                                    id="community-join-mode"
-                                    value={createJoinMode}
-                                    onChange={(e) =>
-                                        setCreateJoinMode(e.target.value as 'open' | 'sponsor_invite_only')
-                                    }
-                                    className="orbit-ring w-full rounded-xl border border-orbit-border/60 bg-orbit-surface px-3 py-2 text-sm text-orbit-text"
-                                    disabled={creating}
-                                >
-                                    <option value="open">Open</option>
-                                    <option value="sponsor_invite_only">Invite-only</option>
-                                </select>
-                            </div>
+                            {/* TEMP MVP: creation UI intentionally hides join mode.
+                                New communities default to open server-side until invite-only UX is restored. */}
 
                             {createError ? (
                                 <p className="text-xs text-red-300">{createError}</p>

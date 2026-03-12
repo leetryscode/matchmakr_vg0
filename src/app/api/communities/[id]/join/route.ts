@@ -1,13 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 
 export const runtime = 'nodejs';
 
-const MEMBERSHIP_CAP = 3;
+// Temporary MVP relaxation: keep a high safety cap so joining multiple communities
+// feels unrestricted while still protecting against runaway abuse.
+const MEMBERSHIP_CAP = 25;
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function POST(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -38,47 +40,8 @@ export async function POST(
       return NextResponse.json({ error: 'Community not found.' }, { status: 404 });
     }
 
-    if (community.join_mode === 'sponsor_invite_only') {
-      let body: { inviteToken?: string } = {};
-      try {
-        body = await request.json();
-      } catch {
-        /* empty body ok */
-      }
-      const inviteToken = body?.inviteToken;
-      if (!inviteToken || typeof inviteToken !== 'string' || !inviteToken.trim()) {
-        return NextResponse.json(
-          { error: 'This community is invite-only. You must be invited by a sponsor to join.' },
-          { status: 403 }
-        );
-      }
-
-      const { data: invite, error: inviteError } = await admin
-        .from('invites')
-        .select('id, status, community_id')
-        .eq('token', inviteToken.trim())
-        .maybeSingle();
-
-      if (inviteError || !invite) {
-        return NextResponse.json(
-          { error: 'This community is invite-only. You must be invited by a sponsor to join.' },
-          { status: 403 }
-        );
-      }
-      if (invite.status !== 'PENDING') {
-        return NextResponse.json(
-          { error: 'This invite is no longer valid.' },
-          { status: 403 }
-        );
-      }
-
-      if (!invite.community_id || invite.community_id !== communityId) {
-        return NextResponse.json(
-          { error: 'This community is invite-only. You must be invited by a sponsor to join.' },
-          { status: 403 }
-        );
-      }
-    }
+    // TEMP MVP: invite-only enforcement is intentionally bypassed to accelerate shipping.
+    // We still persist join_mode and can restore sponsor_invite_only join checks later.
 
     const { data: existingMembership } = await admin
       .from('community_members')

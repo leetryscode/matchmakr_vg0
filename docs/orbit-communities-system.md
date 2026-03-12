@@ -180,17 +180,28 @@ Response fields:
 - name
 - description
 - join_mode
-- created_at
+- founder_name
+- member_count
+
+**POST /api/communities**  
+Authenticated endpoint to create a community (sponsor-only).
+
+Current MVP behavior:
+- `join_mode` is not exposed in the create UI
+- New communities are currently created as `open` for first-user production
 
 **POST /api/communities/[id]/join**  
 Authenticated endpoint to join a community.
 
-Behavior:
+Current MVP behavior:
 - Enforces membership cap (3 communities)
 - Allows joining open communities without invite token
-- Requires valid invite token for sponsor_invite_only communities
-- For invite-only: requires invite status `PENDING`
-- For invite-only: validates that the invite's explicit `community_id` matches the target community
+- Temporarily allows joining communities in normal flow without invite-only blocking
+
+Long-term architecture behavior (preserved in system design):
+- Invite-only communities require valid invite token
+- Invite status must be `PENDING`
+- Invite `community_id` must match target community
 
 ---
 
@@ -248,7 +259,7 @@ Indexes should support these patterns.
 
 Joining requires authentication. Membership cap (3 per user) is enforced at join time.
 
-#### Invite-Only Community Join Logic
+#### Invite-Only Community Join Logic (Long-Term Architecture)
 
 **Invite-bound community authorization model:** Invite-only (`sponsor_invite_only`) communities can be joined only when:
 
@@ -258,7 +269,18 @@ Joining requires authentication. Membership cap (3 per user) is enforced at join
 
 Otherwise the join API returns 403. Open communities do not require an invite token.
 
-The implemented model uses invite-bound community authorization with explicit `invite.community_id`.
+The architecture uses invite-bound community authorization with explicit `invite.community_id`.
+
+#### Temporary MVP Product Mode (Current)
+
+To expedite first-user production testing, communities are currently running in a temporary MVP simplification:
+
+- User-facing product flow currently treats communities as joinable in normal flow
+- Invite-only behavior is temporarily hidden/deferred in product UI
+- Join endpoint currently bypasses invite-only blocking in normal flow
+- Create community UI does not expose `join_mode`, and new communities currently default to `open`
+
+This is temporary. Invite-only behavior is intended to be restored later without schema changes.
 
 ---
 
@@ -519,10 +541,11 @@ Invite-based onboarding suggestion and invite-only join logic are now driven by 
 ### Phase 2: Discovery & Membership
 
 - Community discovery ("Find a community" flow)
-- Joining communities (open and invite-only) — **join API implemented**
+- Joining communities — **join API implemented** (MVP currently treats communities as open in normal product flow; invite-only enforcement deferred)
 - Membership limits (3 per user) — **implemented**
 - Sponsor invite flow with optional community preselection — **implemented** (writes nullable `invite.community_id`)
 - Invite community suggestion for invited sponsors and singles — **implemented** (uses invite's explicit `community_id`)
+- Long-term invite-only architecture remains supported via `join_mode` and invite-bound `community_id`
 
 ### Phase 3: Pond Integration
 
@@ -548,18 +571,31 @@ Invite-based onboarding suggestion and invite-only join logic are now driven by 
 **Implemented:**
 
 - Community data model (communities, community_members)
-- Public browse (`GET /api/communities`, safe metadata only)
+- Public browse (`GET /api/communities`)
 - Join API with membership cap (3)
+- Leave API (founders cannot leave their own community)
 - Onboarding integration with community selection
 - Invite community suggestion based on invite `community_id`
-- Invite-only join validation requiring valid invite token, `PENDING` status, and matching invite `community_id`
-
-**Not Yet Implemented:**
-
-- Community creation UI (dashboard)
-- Community discovery/search
-- Pond community filtering
 - Sponsor dashboard **My Communities** primary UI surface
+- Communities page exploration/management surface (browse, join, leave, create)
+
+**Current MVP Behavior (Temporary):**
+
+- All communities behave as joinable in normal product flow
+- Invite-only/community approval behavior is temporarily hidden/deferred in product UI
+- Create community UI does not expose `join_mode`
+- New communities are currently created as `open`
+- Normal join flow does not currently enforce invite-only restrictions
+
+**Architecture Preserved (Not Removed):**
+
+- `join_mode` remains in schema and API model
+- Invite-bound community context remains supported via optional invite `community_id`
+- Invite-only authorization model remains the intended long-term behavior
+
+**Not Yet Implemented / Deferred:**
+
+- Pond community filtering
 - Lightweight community detail surface
 - Community dashboard signals
 
@@ -577,3 +613,4 @@ Invite-based onboarding suggestion and invite-only join logic are now driven by 
 | 2026-03-10 | Architecture decision: Invites should carry optional explicit `community_id`; replaces inferred invite community context. Updated invite-only join logic, onboarding suggestion assumptions, phased plan, and implementation snapshot to reflect invite-bound community authorization. |
 | 2026-03-11 | Invite Explicit Community Context slices completed: invite creation writes nullable `invites.community_id`, invite read API sources community context from invite row, and invite-only join authorization requires matching `invite.community_id`. |
 | 2026-03-12 | UX direction clarified: sponsor dashboard **My Communities** is the primary communities entry point (not Settings), with horizontal tile/carousel framing, lightweight tile identity, and constrained early detail surface scope. Added entry-point hierarchy and implementation direction for next dashboard UI slice. |
+| 2026-03-12 | Temporary MVP simplification documented: user-facing product currently treats communities as open in normal flow; invite-only behavior is deferred in UI/join flow for first-user production testing. Long-term architecture (`join_mode`, invite-bound `community_id`) remains preserved. |

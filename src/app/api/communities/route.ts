@@ -143,15 +143,20 @@ export async function POST(request: NextRequest) {
     if (trimmedName.length > NAME_MAX_LENGTH) {
       return NextResponse.json({ error: `name must be ${NAME_MAX_LENGTH} characters or fewer.` }, { status: 400 });
     }
-    if (!join_mode || typeof join_mode !== 'string' || !JOIN_MODES.includes(join_mode as (typeof JOIN_MODES)[number])) {
-      return NextResponse.json({ error: 'join_mode must be "open" or "sponsor_invite_only".' }, { status: 400 });
+    if (
+      join_mode !== undefined &&
+      (typeof join_mode !== 'string' || !JOIN_MODES.includes(join_mode as (typeof JOIN_MODES)[number]))
+    ) {
+      return NextResponse.json({ error: 'join_mode must be "open" or "sponsor_invite_only" when provided.' }, { status: 400 });
     }
 
+    // TEMP MVP: Communities product UI currently ships in "open by default" mode.
+    // We keep join_mode in schema/API but force new communities to open until invite-only UX is restored.
     const insertData = {
       name: trimmedName,
       description: typeof description === 'string' && description.trim() ? description.trim() : null,
       created_by: user.id,
-      join_mode: join_mode as (typeof JOIN_MODES)[number],
+      join_mode: 'open' as const,
     };
 
     const admin = createServiceClient();

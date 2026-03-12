@@ -12,6 +12,11 @@ type MyCommunity = {
     joined_at: string;
 };
 
+type MyCommunitiesSectionProps = {
+    descriptionText?: string;
+    helperText?: string;
+};
+
 function ExploreTile() {
     return (
         <Link
@@ -58,7 +63,10 @@ function LoadingTile() {
     );
 }
 
-export default function MyCommunitiesSection() {
+export default function MyCommunitiesSection({
+    descriptionText = 'The networks you belong to.',
+    helperText,
+}: MyCommunitiesSectionProps) {
     const [communities, setCommunities] = useState<MyCommunity[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -92,8 +100,13 @@ export default function MyCommunitiesSection() {
             <div className="mb-3">
                 <h2 className="type-section text-orbit-text">My Communities</h2>
                 <p className="mt-1 text-xs text-orbit-muted">
-                    The networks you belong to.
+                    {descriptionText}
                 </p>
+                {helperText ? (
+                    <p className="mt-2 text-xs text-orbit-muted">
+                        {helperText}
+                    </p>
+                ) : null}
             </div>
 
             {error ? (
