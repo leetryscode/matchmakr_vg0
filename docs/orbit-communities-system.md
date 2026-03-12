@@ -294,7 +294,78 @@ Community join occurs **after signup** via API call. During onboarding, the user
 
 ---
 
+### Next Implementation Direction (UI Surface)
+
+The next intended implementation surface is the sponsor dashboard community UI, specifically the **My Communities** section.
+
+Likely data source:
+
+- `GET /api/communities/me` for the authenticated sponsor's current memberships / affiliations
+
+Planned integration direction (later phases):
+
+- Connect to **Explore / Find Communities** flow
+- Connect to **Create Community** flow
+
+---
+
 ## 7. User Experience Direction
+
+### Sponsor Dashboard Primary Entry Point
+
+The sponsor dashboard should include a dedicated **My Communities** section.
+
+This is the **primary entry point** for sponsor community visibility and lightweight management.
+
+Communities should not primarily live in Settings.
+
+**Entry hierarchy:**
+
+- **Primary:** Sponsor dashboard **My Communities** section
+- **Secondary (later):** invite modals, managed singles surfaces, single profile labels
+
+---
+
+### Sponsor Dashboard UI Framing
+
+The **My Communities** section should reinforce sponsor status and affiliation.
+
+Communities should feel like **networks / affiliations**, not preferences or filters.
+
+The section should visually differ from the dashboard's normal vertical card stack by using a **horizontal row / carousel** of sleek community tiles.
+
+---
+
+### Community Tile Direction
+
+Community tiles should remain simple, sleek, and theme-consistent.
+
+- Accent color may be used to differentiate communities
+- Community visual identity should remain lightweight and elegant
+- Do **not** commit to emoji-style icons
+
+---
+
+### Lightweight Community Detail Surface (Early Scope)
+
+Clicking a community may open a lightweight detail surface.
+
+Early detail surface should remain minimal, for example:
+
+- name
+- founder
+- member count
+- description
+- invite CTA
+
+Do **not** add heavy social-network behavior in this early surface:
+
+- full member directory
+- feed
+- posts
+- community chat
+
+---
 
 ### Community Onboarding Visibility by User Type / Entry Mode
 
@@ -366,6 +437,7 @@ Communities narrow the matchmaking pool but **do not restrict matching**.
 
 Later phases may include:
 
+- Sponsor dashboard **My Communities** tile enhancements
 - Community labels on profiles
 - Display of founding sponsor
 - Community-based reputation signals
@@ -400,7 +472,6 @@ Unresolved design questions to revisit during implementation:
 
 - Exact UI for "Find a community"
 - Community discovery (search vs recommendations)
-- Dashboard placement of community labels
 - Community ranking or popularity signals
 - Moderation/admin tools
 - Possible future roles beyond founder
@@ -461,9 +532,11 @@ Invite-based onboarding suggestion and invite-only join logic are now driven by 
 
 ### Phase 4: Dashboard & Polish
 
-- Dashboard signals (community labels, founding sponsor display)
+- Sponsor dashboard **My Communities** section as primary community surface (horizontal row / carousel tile UI)
+- Lightweight community detail surface (name, founder, member count, description, invite CTA only)
 - Community-based reputation signals (if applicable)
 - Community activity indicators (if applicable)
+- Secondary entry points later (invite modals, managed singles surfaces, profile labels)
 - UX polish and edge-case handling
 
 ---
@@ -486,6 +559,8 @@ Invite-based onboarding suggestion and invite-only join logic are now driven by 
 - Community creation UI (dashboard)
 - Community discovery/search
 - Pond community filtering
+- Sponsor dashboard **My Communities** primary UI surface
+- Lightweight community detail surface
 - Community dashboard signals
 
 ---
@@ -501,3 +576,4 @@ Invite-based onboarding suggestion and invite-only join logic are now driven by 
 | 2026-03-10 | Document restructure: Added Implementation Specification section (Database Model, Join Logic, Public Browse, Onboarding Join Mechanics); moved implementation details from User Experience; renamed Implementation Status to Current Implementation Snapshot; added document structure note. No product rules or meaning changed. |
 | 2026-03-10 | Architecture decision: Invites should carry optional explicit `community_id`; replaces inferred invite community context. Updated invite-only join logic, onboarding suggestion assumptions, phased plan, and implementation snapshot to reflect invite-bound community authorization. |
 | 2026-03-11 | Invite Explicit Community Context slices completed: invite creation writes nullable `invites.community_id`, invite read API sources community context from invite row, and invite-only join authorization requires matching `invite.community_id`. |
+| 2026-03-12 | UX direction clarified: sponsor dashboard **My Communities** is the primary communities entry point (not Settings), with horizontal tile/carousel framing, lightweight tile identity, and constrained early detail surface scope. Added entry-point hierarchy and implementation direction for next dashboard UI slice. |

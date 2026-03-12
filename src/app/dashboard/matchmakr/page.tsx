@@ -12,6 +12,7 @@ import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer'
 import ManagedSinglesGrid from '@/components/dashboard/ManagedSinglesGrid';
 import SneakPeeksSection from '@/components/dashboard/SneakPeeksSection';
 import SponsorshipRequestsSection from '@/components/dashboard/SponsorshipRequestsSection';
+import MyCommunitiesSection from '@/components/dashboard/MyCommunitiesSection';
 import Link from 'next/link';
 import { createSponsorLoginNotifications } from '@/lib/notifications/sponsor-login';
 import { checkAndCreateSingleNotSeenIntroNotifications } from '@/lib/notifications/single-not-seen-intro';
@@ -363,6 +364,11 @@ async function MatchMakrDashboardContent() {
                         sponsorId={user.id}
                         sponsoredSingles={processedSponsoredSingles}
                     />
+                </section>
+
+                {/* My Communities */}
+                <section className="mt-10">
+                    <MyCommunitiesSection />
                 </section>
 
                 {/* Introductions destination card */}

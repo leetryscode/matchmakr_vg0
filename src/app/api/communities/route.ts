@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     const admin = createServiceClient();
     const { data: rows, error } = await admin
       .from('communities')
-      .select('id, name, description, join_mode, created_at')
+      .select('id, name, description, join_mode, created_at, created_by')
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -48,12 +48,52 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch communities.' }, { status: 500 });
     }
 
-    const communities = (rows ?? []).map((c) => ({
+    const communitiesRows = rows ?? [];
+    if (communitiesRows.length === 0) {
+      return NextResponse.json({ communities: [] });
+    }
+
+    const founderIds = [...new Set(communitiesRows.map((c) => c.created_by).filter(Boolean))];
+    const communityIds = communitiesRows.map((c) => c.id);
+
+    const [{ data: founderRows, error: founderError }, { data: memberRows, error: memberError }] = await Promise.all([
+      founderIds.length > 0
+        ? admin
+            .from('profiles')
+            .select('id, name')
+            .in('id', founderIds)
+        : Promise.resolve({ data: [], error: null }),
+      communityIds.length > 0
+        ? admin
+            .from('community_members')
+            .select('community_id')
+            .in('community_id', communityIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    if (founderError) {
+      console.error('[api/communities] founder query error:', founderError);
+      return NextResponse.json({ error: 'Failed to fetch communities.' }, { status: 500 });
+    }
+    if (memberError) {
+      console.error('[api/communities] member count query error:', memberError);
+      return NextResponse.json({ error: 'Failed to fetch communities.' }, { status: 500 });
+    }
+
+    const founderNameById = new Map((founderRows ?? []).map((p) => [p.id, p.name ?? null]));
+    const memberCountByCommunityId = new Map<string, number>();
+    (memberRows ?? []).forEach((row) => {
+      const current = memberCountByCommunityId.get(row.community_id) ?? 0;
+      memberCountByCommunityId.set(row.community_id, current + 1);
+    });
+
+    const communities = communitiesRows.map((c) => ({
       id: c.id,
       name: c.name,
       description: c.description ?? null,
       join_mode: c.join_mode,
-      created_at: c.created_at,
+      founder_name: founderNameById.get(c.created_by) ?? 'Unknown',
+      member_count: memberCountByCommunityId.get(c.id) ?? 0,
     }));
 
     return NextResponse.json({ communities });
