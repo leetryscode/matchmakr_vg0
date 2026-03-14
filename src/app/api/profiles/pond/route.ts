@@ -1,27 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 50;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function parsePositiveInt(value: string | null, fallback: number): number {
+  const parsed = Number.parseInt(value || '', 10);
+  if (Number.isNaN(parsed) || parsed < 1) return fallback;
+  return parsed;
+}
+
+function parseSelectedInterestIds(raw: string | null): number[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as Array<{ id?: unknown }> | null;
+    if (!Array.isArray(parsed)) return [];
+    const ids = parsed
+      .map((item) => Number(item?.id))
+      .filter((id) => Number.isInteger(id) && id > 0);
+    return Array.from(new Set(ids));
+  } catch {
+    return [];
+  }
+}
+
+function parseCommunityIds(raw: string | null): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    const normalized = parsed
+      .filter((item): item is string => typeof item === 'string')
+      .map((item) => item.trim())
+      .filter((item) => UUID_PATTERN.test(item));
+    return Array.from(new Set(normalized));
+  } catch {
+    return [];
+  }
+}
+
 export async function GET(req: NextRequest) {
   const supabase = createClient();
   const { searchParams } = new URL(req.url);
 
-  const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '20');
+  const page = parsePositiveInt(searchParams.get('page'), DEFAULT_PAGE);
+  const limit = Math.min(parsePositiveInt(searchParams.get('limit'), DEFAULT_LIMIT), MAX_LIMIT);
   const searchCity = searchParams.get('city') || '';
   const searchState = searchParams.get('state') || '';
   const searchZip = searchParams.get('zip') || '';
-  const selectedSingleId = searchParams.get('selected_single_id') || '';
-  const selectedInterests = searchParams.get('interests') ? JSON.parse(searchParams.get('interests')!) : [];
+  const selectedSingleId = (searchParams.get('selected_single_id') || '').trim();
+  const selectedInterestIds = parseSelectedInterestIds(searchParams.get('interests'));
+  // Phase B plumbing only: accepts optional UUID array, no UI wired yet.
+  const communityIds = parseCommunityIds(searchParams.get('community_ids'));
 
   try {
     // Require selected_single_id for filtered Pond; return empty list if missing
-    if (!selectedSingleId || selectedSingleId.trim() === '') {
+    if (!selectedSingleId) {
       return NextResponse.json({
         success: true,
         profiles: [],
         hasMore: false,
         total: 0,
       });
+    }
+    if (!UUID_PATTERN.test(selectedSingleId)) {
+      return NextResponse.json({ success: false, error: 'Invalid selected_single_id.' }, { status: 400 });
     }
 
     const { data: profiles, error } = await supabase.rpc('get_pond_candidates', {
@@ -31,6 +76,8 @@ export async function GET(req: NextRequest) {
       city: searchCity.trim() || null,
       state: searchState.trim() || null,
       zip: searchZip.trim() || null,
+      selected_interest_ids: selectedInterestIds,
+      community_ids: communityIds,
     });
 
     if (error) {
@@ -69,7 +116,7 @@ export async function GET(req: NextRequest) {
         .in('id', sponsorIds);
 
       sponsorMap = new Map(
-        sponsors?.map(s => [
+        sponsors?.map((s) => [
           s.id,
           {
             name: s.name || 'Sponsor',
@@ -89,27 +136,12 @@ export async function GET(req: NextRequest) {
       sponsor_photo_url: sponsorMap.get(profile.sponsored_by_id)?.photo_url || null
     }));
 
-    // Rank profiles: those matching selected interests first, then the rest
-    type TransformedProfile = { interests?: { id: number; name: string }[] };
-    let rankedProfiles = transformedProfiles;
-    if (selectedInterests.length > 0) {
-      const selectedIds = selectedInterests.map((i: { id: number }) => i.id);
-      rankedProfiles = [
-        ...transformedProfiles.filter((p: TransformedProfile) =>
-          p.interests && p.interests.some((interest: { id: number }) => selectedIds.includes(interest.id))
-        ),
-        ...transformedProfiles.filter((p: TransformedProfile) =>
-          !p.interests || !p.interests.some((interest: { id: number }) => selectedIds.includes(interest.id))
-        )
-      ];
-    }
-
     // Check if we have more data
     const hasMore = transformedProfiles.length === limit;
 
     return NextResponse.json({ 
       success: true, 
-      profiles: rankedProfiles,
+      profiles: transformedProfiles,
       hasMore,
       total: transformedProfiles.length
     });

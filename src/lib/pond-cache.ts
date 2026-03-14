@@ -2,10 +2,10 @@
  * Pond cache key and utilities.
  * Used by pond page and by components that invalidate cache on profile edits.
  *
- * Cache key format: pond_cache_v2:<selected_single_id>:<city>:<state>:<zip>:<interestsHash>
+ * Cache key format: pond_cache_v3:<selected_single_id>:<city>:<state>:<zip>:<interestsHash>:<communitiesHash>
  * Isolates caches per selected single + search params for Step 2 filtering.
  */
-export const POND_CACHE_KEY_PREFIX = 'pond_cache_v2';
+export const POND_CACHE_KEY_PREFIX = 'pond_cache_v3';
 
 export type PondCacheKeyParams = {
   selectedSingleId: string | null;
@@ -13,6 +13,7 @@ export type PondCacheKeyParams = {
   state: string;
   zip: string;
   selectedInterests: { id: number; name: string }[];
+  selectedCommunityIds: string[];
 };
 
 /**
@@ -24,7 +25,12 @@ export function getPondCacheKey(params: PondCacheKeyParams): string {
     .map((i) => i.id)
     .sort((a, b) => a - b)
     .join(',');
-  return `${POND_CACHE_KEY_PREFIX}:${singleId}:${params.city}:${params.state}:${params.zip}:${interestsHash}`;
+  const communitiesHash = params.selectedCommunityIds
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0)
+    .sort((a, b) => a.localeCompare(b))
+    .join(',');
+  return `${POND_CACHE_KEY_PREFIX}:${singleId}:${params.city}:${params.state}:${params.zip}:${interestsHash}:${communitiesHash}`;
 }
 
 /**

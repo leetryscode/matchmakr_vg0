@@ -25,6 +25,13 @@ interface PondProfile extends Profile {
     interests?: { id: number; name: string }[];
     sponsor_name?: string | null;
     sponsor_photo_url?: string | null;
+    shared_community_count?: number;
+    interest_match_score?: number;
+}
+
+interface CommunityFilterOption {
+    id: string;
+    name: string;
 }
 
 interface PondCache {
@@ -35,6 +42,7 @@ interface PondCache {
     searchState: string;
     searchZip: string;
     selectedInterests: { id: number; name: string }[];
+    selectedCommunities?: CommunityFilterOption[];
     scrollPosition: number;
     timestamp: number;
 }
@@ -57,6 +65,8 @@ export default function PondPage() {
     const [currentUserName, setCurrentUserName] = useState('');
     const [currentUserProfilePic, setCurrentUserProfilePic] = useState<string | null>(null);
     const [selectedInterests, setSelectedInterests] = useState<{ id: number; name: string }[]>([]);
+    const [communityFilterOptions, setCommunityFilterOptions] = useState<CommunityFilterOption[]>([]);
+    const [selectedCommunities, setSelectedCommunities] = useState<CommunityFilterOption[]>([]);
     const [showSelectSingleModal, setShowSelectSingleModal] = useState(false);
     const [showInviteSingleModal, setShowInviteSingleModal] = useState(false);
     const [showTailorSearchModal, setShowTailorSearchModal] = useState(false);
@@ -84,16 +94,31 @@ export default function PondPage() {
     // Store current cache key for saveScrollPositionToCache on unmount
     const cacheKeyRef = useRef<string>('');
 
-    const getCacheKey = (selectedSingleIdOverride?: string | null) => {
+    const getCacheKey = (
+        selectedSingleIdOverride?: string | null,
+        filterOverride?: {
+            city?: string;
+            state?: string;
+            zip?: string;
+            selectedInterests?: { id: number; name: string }[];
+            selectedCommunities?: CommunityFilterOption[];
+        }
+    ) => {
         const singleId = selectedSingleIdOverride !== undefined
             ? (selectedSingleIdOverride || 'none')
             : (currentSponsoredSingle?.id || 'none');
+        const effectiveCity = filterOverride?.city ?? searchCity;
+        const effectiveState = filterOverride?.state ?? searchState;
+        const effectiveZip = filterOverride?.zip ?? searchZip;
+        const effectiveInterests = filterOverride?.selectedInterests ?? selectedInterests;
+        const effectiveCommunities = filterOverride?.selectedCommunities ?? selectedCommunities;
         return getPondCacheKey({
             selectedSingleId: singleId === 'none' ? null : singleId,
-            city: searchCity,
-            state: searchState,
-            zip: searchZip,
-            selectedInterests
+            city: effectiveCity,
+            state: effectiveState,
+            zip: effectiveZip,
+            selectedInterests: effectiveInterests,
+            selectedCommunityIds: effectiveCommunities.map((community) => community.id)
         });
     };
 
@@ -223,6 +248,7 @@ export default function PondPage() {
             setSearchState(cached.searchState);
             setSearchZip(cached.searchZip);
             setSelectedInterests(cached.selectedInterests);
+            setSelectedCommunities(cached.selectedCommunities || []);
             setLoading(false);
             setShowingCachedData(true);
             
@@ -255,10 +281,11 @@ export default function PondPage() {
                 searchState,
                 searchZip,
                 selectedInterests,
+                selectedCommunities,
                 scrollPosition: scrollPositionRef.current
             });
         }
-    }, [profiles, page, hasMore, searchCity, searchState, searchZip, selectedInterests, loading, currentSponsoredSingle]);
+    }, [profiles, page, hasMore, searchCity, searchState, searchZip, selectedInterests, selectedCommunities, loading, currentSponsoredSingle]);
 
     // Update scroll position ref on scroll (throttled for performance)
     // Save to localStorage only on unmount to avoid churn
@@ -343,13 +370,57 @@ export default function PondPage() {
         }
     };
 
-    const loadProfiles = async (isLoadMore = false, currentPage = page, forceRefresh = false, selectedSingleIdOverride?: string | null) => {
+    const loadCommunityFilterOptions = async () => {
+        try {
+            const response = await fetch('/api/communities/me');
+            if (!response.ok) {
+                console.error('Failed to load communities for filter options');
+                return;
+            }
+            const data = await response.json();
+            const communities: CommunityFilterOption[] = Array.isArray(data.communities)
+                ? data.communities
+                    .filter((community: any) => community?.id && community?.name)
+                    .map((community: any) => ({ id: String(community.id), name: String(community.name) }))
+                : [];
+            setCommunityFilterOptions(communities);
+            setSelectedCommunities((prev) =>
+                prev.map((selected) => communities.find((community) => community.id === selected.id) || selected)
+            );
+        } catch (error) {
+            console.error('Error loading communities for filter options:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (!user || orbitRole !== 'MATCHMAKR') return;
+        loadCommunityFilterOptions();
+    }, [user, orbitRole]);
+
+    const loadProfiles = async (
+        isLoadMore = false,
+        currentPage = page,
+        forceRefresh = false,
+        selectedSingleIdOverride?: string | null,
+        filterOverride?: {
+            city?: string;
+            state?: string;
+            zip?: string;
+            selectedInterests?: { id: number; name: string }[];
+            selectedCommunities?: CommunityFilterOption[];
+        }
+    ) => {
         const effectiveSingleId = selectedSingleIdOverride !== undefined ? selectedSingleIdOverride : currentSponsoredSingle?.id;
+        const effectiveCity = filterOverride?.city ?? searchCity;
+        const effectiveState = filterOverride?.state ?? searchState;
+        const effectiveZip = filterOverride?.zip ?? searchZip;
+        const effectiveInterests = filterOverride?.selectedInterests ?? selectedInterests;
+        const effectiveCommunities = filterOverride?.selectedCommunities ?? selectedCommunities;
         if (DEBUG) console.log('Pond page loadProfiles called with:', { isLoadMore, currentPage, page, forceRefresh, selectedSingleIdOverride });
         
         // If we have cached data and this isn't a forced refresh, show cached data immediately
         if (!forceRefresh && !isLoadMore) {
-            const cacheKey = getCacheKey(effectiveSingleId ?? undefined);
+            const cacheKey = getCacheKey(effectiveSingleId ?? undefined, filterOverride);
             const cached = loadFromCache(cacheKey);
             if (cached && cached.profiles.length > 0) {
                 if (DEBUG) console.log('Showing cached data immediately');
@@ -361,6 +432,7 @@ export default function PondPage() {
                 setSearchState(cached.searchState);
                 setSearchZip(cached.searchZip);
                 setSelectedInterests(cached.selectedInterests);
+                setSelectedCommunities(cached.selectedCommunities || []);
                 setLoading(false);
                 
                 // REMOVED: restoreScrollPosition(cached.scrollPosition);
@@ -370,12 +442,24 @@ export default function PondPage() {
                 // Fallback to immediate execution if requestIdleCallback is not available
                 if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
                     requestIdleCallback(() => {
-                        loadProfiles(false, 1, true);
+                        loadProfiles(false, 1, true, effectiveSingleId ?? null, {
+                            city: cached.searchCity,
+                            state: cached.searchState,
+                            zip: cached.searchZip,
+                            selectedInterests: cached.selectedInterests,
+                            selectedCommunities: cached.selectedCommunities || []
+                        });
                     }, { timeout: 2000 });
                 } else {
                     // Fallback: use setTimeout with 0 delay to run after current execution
                     setTimeout(() => {
-                        loadProfiles(false, 1, true);
+                        loadProfiles(false, 1, true, effectiveSingleId ?? null, {
+                            city: cached.searchCity,
+                            state: cached.searchState,
+                            zip: cached.searchZip,
+                            selectedInterests: cached.selectedInterests,
+                            selectedCommunities: cached.selectedCommunities || []
+                        });
                     }, 0);
                 }
                 return;
@@ -393,15 +477,16 @@ export default function PondPage() {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
             
-            // Use the new optimized API endpoint (selected_single_id passed for Step 2 filtering, not used yet)
+            // Server ranks Pond candidates using selected_single_id context + active search params.
             const params = new URLSearchParams({
                 page: currentPage.toString(),
                 limit: ITEMS_PER_PAGE.toString(),
-                city: searchCity,
-                state: searchState,
-                zip: searchZip,
+                city: effectiveCity,
+                state: effectiveState,
+                zip: effectiveZip,
                 selected_single_id: effectiveSingleId || '',
-                interests: JSON.stringify(selectedInterests)
+                interests: JSON.stringify(effectiveInterests),
+                community_ids: JSON.stringify(effectiveCommunities.map((community) => community.id))
             });
 
             const response = await fetch(`/api/profiles/pond?${params}`, {
@@ -463,18 +548,37 @@ export default function PondPage() {
     };
 
     const handleClearSearch = () => {
+        const clearedInterests: { id: number; name: string }[] = [];
+        const clearedCommunities: CommunityFilterOption[] = [];
         setSearchCity('');
         setSearchState('');
         setSearchZip('');
-        setSelectedInterests([]);
+        setSelectedInterests(clearedInterests);
+        setSelectedCommunities(clearedCommunities);
         setPage(1);
-        loadProfiles(false, 1);
+        loadProfiles(false, 1, false, undefined, {
+            city: '',
+            state: '',
+            zip: '',
+            selectedInterests: clearedInterests,
+            selectedCommunities: clearedCommunities
+        });
     };
 
     const handleSearchFromModal = () => {
         setPage(1);
         setShowTailorSearchModal(false);
         loadProfiles(false, 1);
+    };
+
+    const toggleCommunitySelection = (community: CommunityFilterOption) => {
+        setSelectedCommunities((prev) => {
+            const exists = prev.some((selected) => selected.id === community.id);
+            if (exists) {
+                return prev.filter((selected) => selected.id !== community.id);
+            }
+            return [...prev, community];
+        });
     };
 
     // Handler to open chat modal and fetch matchmakr info
@@ -735,7 +839,7 @@ export default function PondPage() {
                                         onClick={() => setShowTailorSearchModal(true)}
                                         className="orbit-btn-secondary px-3 py-1 text-sm flex-shrink-0 shadow-sm"
                                     >
-                                        Tailor Search
+                                        {selectedCommunities.length > 0 ? `Tailor Search (${selectedCommunities.length})` : 'Tailor Search'}
                                     </button>
                                 </div>
                             )}
@@ -753,9 +857,9 @@ export default function PondPage() {
                         {currentSponsoredSingle ? (
                             <>
                                 <p className="text-orbit-text text-lg">
-                                    No sponsored singles match {currentSponsoredSingle.name}&apos;s criteria in this community yet.
+                                    No sponsored singles match {currentSponsoredSingle.name}&apos;s criteria right now.
                                 </p>
-                                <p className="text-orbit-muted mt-2">Orbit is still growing — help shape it by inviting someone.</p>
+                                <p className="text-orbit-muted mt-2">Try adjusting Tailor Search filters, or help shape Orbit by inviting someone.</p>
                                 <button
                                     onClick={() => setShowInviteSingleModal(true)}
                                     className="orbit-ring mt-4 rounded-cta min-h-[44px] px-6 py-2 bg-orbit-gold text-orbit-bg-start hover:bg-orbit-goldDark font-semibold shadow-cta-entry transition-colors duration-200"
@@ -1033,6 +1137,50 @@ export default function PondPage() {
                                         onChange={setSelectedInterests}
                                     />
                                 </div>
+                            </div>
+
+                            {/* Community filter */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Communities</label>
+                                <div className="border border-gray-300 rounded-md bg-white">
+                                    {communityFilterOptions.length === 0 ? (
+                                        <div className="px-3 py-2 text-sm text-gray-500">
+                                            Join communities to filter by them.
+                                        </div>
+                                    ) : (
+                                        <div className="max-h-40 overflow-y-auto px-3 py-2 space-y-2">
+                                            {communityFilterOptions.map((community) => {
+                                                const isSelected = selectedCommunities.some((selected) => selected.id === community.id);
+                                                return (
+                                                    <label key={community.id} className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={() => toggleCommunitySelection(community)}
+                                                            className="h-4 w-4 rounded border-gray-300 text-primary-blue focus:ring-primary-blue"
+                                                        />
+                                                        <span>{community.name}</span>
+                                                    </label>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                                {selectedCommunities.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {selectedCommunities.map((community) => (
+                                            <button
+                                                key={community.id}
+                                                type="button"
+                                                onClick={() => toggleCommunitySelection(community)}
+                                                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                                            >
+                                                {community.name}
+                                                <span aria-hidden>&times;</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Action buttons */}
