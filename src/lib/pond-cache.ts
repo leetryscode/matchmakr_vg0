@@ -2,10 +2,10 @@
  * Pond cache key and utilities.
  * Used by pond page and by components that invalidate cache on profile edits.
  *
- * Cache key format: pond_cache_v3:<selected_single_id>:<city>:<state>:<zip>:<interestsHash>:<communitiesHash>
+ * Cache key format: pond_cache_v4:<selected_single_id>:<city>:<state>:<zip>:<interestsHash>:<communitiesHash>
  * Isolates caches per selected single + search params for Step 2 filtering.
  */
-export const POND_CACHE_KEY_PREFIX = 'pond_cache_v3';
+export const POND_CACHE_KEY_PREFIX = 'pond_cache_v4';
 
 export type PondCacheKeyParams = {
   selectedSingleId: string | null;

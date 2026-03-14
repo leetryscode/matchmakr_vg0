@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -43,6 +43,7 @@ function parseCommunityIds(raw: string | null): string[] {
 
 export async function GET(req: NextRequest) {
   const supabase = createClient();
+  const admin = createServiceClient();
   const { searchParams } = new URL(req.url);
 
   const page = parsePositiveInt(searchParams.get('page'), DEFAULT_PAGE);
@@ -56,6 +57,30 @@ export async function GET(req: NextRequest) {
   const communityIds = parseCommunityIds(searchParams.get('community_ids'));
 
   try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Verified current schema: profiles.id references auth.users.id.
+    // Keep sponsorship checks in profile-id domain after resolving caller profile.
+    const { data: callerProfile, error: callerError } = await admin
+      .from('profiles')
+      .select('id, user_type')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (callerError) {
+      console.error('Pond API caller profile lookup error:', callerError);
+      return NextResponse.json({ success: false, error: 'Failed to resolve caller profile.' }, { status: 500 });
+    }
+    if (!callerProfile) {
+      return NextResponse.json({ success: false, error: 'Profile not found.' }, { status: 404 });
+    }
+    if (callerProfile.user_type !== 'MATCHMAKR') {
+      return NextResponse.json({ success: false, error: 'Only sponsors can access Pond.' }, { status: 403 });
+    }
+
     // Require selected_single_id for filtered Pond; return empty list if missing
     if (!selectedSingleId) {
       return NextResponse.json({
@@ -69,6 +94,56 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid selected_single_id.' }, { status: 400 });
     }
 
+    const { data: selectedSingle, error: selectedSingleError } = await admin
+      .from('profiles')
+      .select('id')
+      .eq('id', selectedSingleId)
+      .eq('user_type', 'SINGLE')
+      .eq('sponsored_by_id', callerProfile.id)
+      .maybeSingle();
+
+    if (selectedSingleError) {
+      console.error('Pond API selected single authorization check error:', selectedSingleError);
+      return NextResponse.json({ success: false, error: 'Failed to authorize selected single.' }, { status: 500 });
+    }
+    if (!selectedSingle) {
+      return NextResponse.json({ success: false, error: 'Unauthorized selected_single_id.' }, { status: 403 });
+    }
+
+    let sanitizedCommunityIds = communityIds;
+    if (communityIds.length > 0) {
+      const { data: sponsoredSingles, error: sponsoredSinglesError } = await admin
+        .from('profiles')
+        .select('id')
+        .eq('sponsored_by_id', callerProfile.id)
+        .eq('user_type', 'SINGLE');
+
+      if (sponsoredSinglesError) {
+        console.error('Pond API sponsored singles lookup error:', sponsoredSinglesError);
+        return NextResponse.json({ success: false, error: 'Failed to authorize community filters.' }, { status: 500 });
+      }
+
+      const authorizedSourceProfileIds = [
+        callerProfile.id,
+        ...(sponsoredSingles ?? []).map((single) => single.id),
+      ];
+
+      const { data: authorizedMemberships, error: authorizedMembershipsError } = await admin
+        .from('community_members')
+        .select('community_id')
+        .in('profile_id', authorizedSourceProfileIds);
+
+      if (authorizedMembershipsError) {
+        console.error('Pond API authorized memberships lookup error:', authorizedMembershipsError);
+        return NextResponse.json({ success: false, error: 'Failed to authorize community filters.' }, { status: 500 });
+      }
+
+      const authorizedCommunityIds = new Set(
+        (authorizedMemberships ?? []).map((membership) => membership.community_id)
+      );
+      sanitizedCommunityIds = communityIds.filter((communityId) => authorizedCommunityIds.has(communityId));
+    }
+
     const { data: profiles, error } = await supabase.rpc('get_pond_candidates', {
       selected_single_id: selectedSingleId,
       page,
@@ -77,7 +152,7 @@ export async function GET(req: NextRequest) {
       state: searchState.trim() || null,
       zip: searchZip.trim() || null,
       selected_interest_ids: selectedInterestIds,
-      community_ids: communityIds,
+      community_ids: sanitizedCommunityIds,
     });
 
     if (error) {
