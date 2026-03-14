@@ -101,12 +101,12 @@ They are **context objects**, not destinations.
 | 2 | Singles cannot found communities. |
 | 3 | Singles can search for and join communities. |
 | 4 | Both user types can belong to multiple communities. |
-| 5 | Initial membership cap: **3 communities per user (enforced at join time).** |
+| 5 | Initial membership cap: **25 communities per user (enforced at join time).** |
 | 6 | Communities must never hard-block matches. They are filters only. |
 | 7 | Sponsor invites can preselect a community during onboarding. |
 | 8 | The invited user confirms membership rather than being silently auto-added. |
 | 9 | Users can browse and join communities later via a **Find a Community** flow. |
-| 10 | A user cannot join more than 3 communities simultaneously. |
+| 10 | A user cannot join more than 25 communities simultaneously. |
 | 11 | Users may leave communities in order to join different ones later. |
 | 12 | Leaving a community removes the corresponding row from community_members. |
 | 13 | Sponsors cannot create communities during onboarding; creation happens from the dashboard. |
@@ -194,7 +194,7 @@ Current MVP behavior:
 Authenticated endpoint to join a community.
 
 Current MVP behavior:
-- Enforces membership cap (3 communities)
+- Enforces membership cap (25 communities)
 - Allows joining open communities without invite token
 - Temporarily allows joining communities in normal flow without invite-only blocking
 
@@ -257,7 +257,7 @@ Indexes should support these patterns.
 
 ### Join Logic
 
-Joining requires authentication. Membership cap (3 per user) is enforced at join time.
+Joining requires authentication. Membership cap (25 per user) is enforced at join time.
 
 #### Invite-Only Community Join Logic (Long-Term Architecture)
 
@@ -299,12 +299,12 @@ Public community browse must expose **only safe metadata**, such as:
 - name
 - description
 - join_mode
-- created_at
+- founder_name
+- member_count
 
 Public browse must **not expose**:
 
 - member lists
-- founder identity
 - detailed network structure
 - any sensitive information
 
@@ -482,7 +482,7 @@ To prevent this system from becoming Facebook-like:
 
 Communities exist only to provide **context and filtering**.
 
-**Membership cap (3)** helps prevent identity sprawl.
+**Membership cap (25)** helps prevent identity sprawl while avoiding restrictive UX in MVP.
 
 **Community names:** Community names should be globally unique or enforced via slug uniqueness to avoid duplicate communities (e.g., multiple "San Diego" groups) unless explicitly intended. Not enforced in initial build; document for future consideration.
 
@@ -523,7 +523,7 @@ Unresolved design questions to revisit during implementation:
 - Sponsor validation trigger
 - Founder membership trigger
 - Public community browse endpoint (`GET /api/communities`, no auth required)
-- Join endpoint (`POST /api/communities/[id]/join`) with membership cap (3)
+- Join endpoint (`POST /api/communities/[id]/join`) with membership cap (25)
 - Onboarding integration with community selection
 - Invite-based community suggestion using invite `community_id`
 - Invite-only join validation using invite tokens
@@ -542,7 +542,7 @@ Invite-based onboarding suggestion and invite-only join logic are now driven by 
 
 - Community discovery ("Find a community" flow)
 - Joining communities — **join API implemented** (MVP currently treats communities as open in normal product flow; invite-only enforcement deferred)
-- Membership limits (3 per user) — **implemented**
+- Membership limits (25 per user) — **implemented**
 - Sponsor invite flow with optional community preselection — **implemented** (writes nullable `invite.community_id`)
 - Invite community suggestion for invited sponsors and singles — **implemented** (uses invite's explicit `community_id`)
 - Long-term invite-only architecture remains supported via `join_mode` and invite-bound `community_id`
@@ -572,11 +572,12 @@ Invite-based onboarding suggestion and invite-only join logic are now driven by 
 
 - Community data model (communities, community_members)
 - Public browse (`GET /api/communities`)
-- Join API with membership cap (3)
+- Join API with membership cap (25)
 - Leave API (founders cannot leave their own community)
 - Onboarding integration with community selection
 - Invite community suggestion based on invite `community_id`
 - Sponsor dashboard **My Communities** primary UI surface
+- Single dashboard **My Communities** section using the same section pattern with single-focused helper text
 - Communities page exploration/management surface (browse, join, leave, create)
 
 **Current MVP Behavior (Temporary):**
@@ -586,6 +587,7 @@ Invite-based onboarding suggestion and invite-only join logic are now driven by 
 - Create community UI does not expose `join_mode`
 - New communities are currently created as `open`
 - Normal join flow does not currently enforce invite-only restrictions
+- Communities page currently still shows a create CTA to singles; backend sponsor-only rule remains authoritative (`POST /api/communities` rejects non-sponsors)
 
 **Architecture Preserved (Not Removed):**
 
@@ -614,3 +616,4 @@ Invite-based onboarding suggestion and invite-only join logic are now driven by 
 | 2026-03-11 | Invite Explicit Community Context slices completed: invite creation writes nullable `invites.community_id`, invite read API sources community context from invite row, and invite-only join authorization requires matching `invite.community_id`. |
 | 2026-03-12 | UX direction clarified: sponsor dashboard **My Communities** is the primary communities entry point (not Settings), with horizontal tile/carousel framing, lightweight tile identity, and constrained early detail surface scope. Added entry-point hierarchy and implementation direction for next dashboard UI slice. |
 | 2026-03-12 | Temporary MVP simplification documented: user-facing product currently treats communities as open in normal flow; invite-only behavior is deferred in UI/join flow for first-user production testing. Long-term architecture (`join_mode`, invite-bound `community_id`) remains preserved. |
+| 2026-03-12 | Reference alignment update: membership cap updated to 25 across rules/spec/snapshot; public browse metadata clarified to include founder_name and member_count; single dashboard communities rollout reflected; temporary UI/backend mismatch for single create CTA documented. |
