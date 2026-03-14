@@ -4,7 +4,7 @@
 
 This document is the source of truth for the Orbit Communities feature. Future implementation prompts should reference this spec to ensure consistency and avoid re-explaining the concept each time.
 
-**Document structure:** Sections 1–5 define product specification (stable design intent). Section 6 defines implementation specification (how the system works in code). Section 13 provides the current implementation snapshot (what is built vs not yet implemented).
+**Document structure:** Sections 1–5 define product specification (stable design intent). Section 6 defines implementation specification (how the system works in code, including current MVP runtime behavior where applicable). Section 13 provides the current implementation snapshot (what is built vs not yet implemented).
 
 ---
 
@@ -13,8 +13,8 @@ This document is the source of truth for the Orbit Communities feature. Future i
 ### Current State
 
 - The app now has a many-to-many communities model via `communities` + `community_members`.
-- Pond still has a **transitional legacy dependency**: the live RPC uses `profiles.orbit_community_slug` as a hard gate.
-- This legacy slug-based gate is outdated relative to the new communities model and is scheduled for replacement.
+- Pond retrieval/ranking is now community-aware via many-to-many overlap in `get_pond_candidates`.
+- Sponsor-controlled community filtering is now live in Pond Tailor Search (multi-select with OR semantics).
 
 ### The Problem
 
@@ -63,7 +63,7 @@ Migration approach:
 
 - The old geographic community assignment during onboarding is removed.
 - The new `communities` and `community_members` tables will become the source of truth.
-- Transitional legacy reads (notably Pond slug gating via `profiles.orbit_community_slug`) are being retired in the Pond integration rollout.
+- Legacy Pond slug gating has been retired from active Pond retrieval/ranking.
 - Existing development or test profiles may be manually reassigned if needed.
 
 ---
@@ -98,7 +98,7 @@ They are **context objects**, not destinations.
 | # | Rule |
 |---|------|
 | 1 | Sponsors can found communities. |
-| 2 | Singles cannot found communities. | //this is currenntly not true in current design... we may alter later. 
+| 2 | Singles cannot found communities. |
 | 3 | Singles can search for and join communities. |
 | 4 | Both user types can belong to multiple communities. |
 | 5 | Initial membership cap: **25 communities per user (enforced at join time).** |
@@ -140,7 +140,8 @@ This preserves both:
 
 - Broad communities (San Diego, Harvard alumni)
 - Tighter sponsor-led networks
-## right now, we are only doing 'open' community type. LATER, we will add the 'sponsor_invite_only'. the backend exists for this currently, but no invite logic.  
+
+**Current MVP runtime mode:** new communities are created as `open` by default, and invite-only join enforcement is deferred in normal join flow.
 ---
 
 ## 6. Implementation Specification
@@ -149,9 +150,9 @@ This preserves both:
 
 ### Invite Community Context (Architecture Decision)
 
-Invites should support an **optional explicit community context**.
+Invites support an **optional explicit community context**.
 
-Invites are intended to carry:
+Invites carry:
 
 - `community_id` (nullable)
 
@@ -164,7 +165,7 @@ This replaces the earlier inference approach where invite community context was 
 
 **Why this change:** Inferred community context is ambiguous and can be wrong. A sponsor may belong to multiple communities, and an inferred choice may not be the intended context for the invite. Explicit invite community context is more trustworthy, more flexible, and more secure.
 
-*Example:* A sponsor in the San Diego community may invite someone in Nashville for a profession-based reason (for example, both are accountants). Inferring "San Diego" as the invite context may be arbitrary or wrong. The invite should either carry a specific intended community or no community at all.
+*Example:* A sponsor in the San Diego community may invite someone in Nashville for a profession-based reason (for example, both are accountants). Inferring "San Diego" as the invite context may be arbitrary or wrong. The invite should carry a specific intended community or remain community-agnostic (`NULL`).
 
 ---
 
@@ -202,6 +203,36 @@ Long-term architecture behavior (preserved in system design):
 - Invite-only communities require valid invite token
 - Invite status must be `PENDING`
 - Invite `community_id` must match target community
+
+**POST /api/communities/[id]/leave**  
+Authenticated endpoint to leave a community.
+
+Current behavior:
+- Founders cannot leave their own community
+- Non-members receive a not-member error
+
+**GET /api/communities/me**  
+Authenticated endpoint listing current user's memberships and related community metadata.
+
+Current behavior:
+- Returns joined communities with membership role/joined timestamp
+- Used by dashboard community surfaces
+
+**GET /api/profiles/pond/filters**  
+Authenticated sponsor-only endpoint returning Pond Tailor Search community options.
+
+Current behavior:
+- Sources options from sponsor + currently sponsored singles
+- Returns deduped options by `community_id` for flat pill UI rendering
+- Includes source metadata in payload (MVP UI currently ignores source badges)
+
+**GET /api/profiles/pond**  
+Authenticated sponsor-only Pond retrieval endpoint.
+
+Current behavior:
+- Enforces selected-single sponsorship ownership
+- Sanitizes submitted `community_ids` to caller-authorized set
+- Preserves OR semantics for applied community filters
 
 ---
 
@@ -316,18 +347,18 @@ Community join occurs **after signup** via API call. During onboarding, the user
 
 ---
 
-### Next Implementation Direction (UI Surface)
+### Current UI Surface Status
 
-The next intended implementation surface is the sponsor dashboard community UI, specifically the **My Communities** section.
+The sponsor dashboard **My Communities** section is now implemented as the primary communities entry point.
 
-Likely data source:
+Current data source:
 
-- `GET /api/communities/me` for the authenticated sponsor's current memberships / affiliations
+- `GET /api/communities/me` for the authenticated user's current memberships / affiliations
 
-Planned integration direction (later phases):
+Current integration state:
 
-- Connect to **Explore / Find Communities** flow
-- Connect to **Create Community** flow
+- Connected to **Explore / Find Communities** via Communities page entry
+- Connected to **Create Community** via Communities page flow (backend remains sponsor-authoritative)
 
 ---
 
@@ -432,7 +463,8 @@ Singles cannot found communities.
 If a sponsor invites a user with an explicit community context, that community will be suggested during onboarding but the user must confirm membership.
 
 - Singles may join **open communities** themselves.
-- Invite-only communities require sponsor invitation. Invite-only communities remain non-selectable during onboarding unless the invite carries an explicit `community_id` matching that community and a valid invite token is present.
+- **Long-term target behavior:** Invite-only communities require sponsor invitation. Invite-only communities remain non-selectable during onboarding unless the invite carries an explicit `community_id` matching that community and a valid invite token is present.
+- **Current MVP runtime behavior:** normal join flow currently bypasses invite-only enforcement; invite-only authorization remains deferred.
 
 ---
 
@@ -440,11 +472,11 @@ If a sponsor invites a user with an explicit community context, that community w
 
 The selected sponsored single remains the context for Pond retrieval and ranking.
 
-#### Current Live Behavior (Transitional)
+#### Current Live Behavior
 
-- Pond retrieval still depends on legacy `profiles.orbit_community_slug`.
-- Candidates are currently hard-gated to the selected context single's single slug.
-- This hard gate is legacy behavior and not the long-term communities design.
+- Pond retrieval/ranking is driven by the many-to-many communities model (no active slug hard gate in Pond retrieval path).
+- Baseline eligibility is not hard-gated by shared community membership.
+- Shared communities influence ranking; sponsor-selected community filters apply as OR constraints.
 
 #### Target Behavior
 
@@ -460,17 +492,17 @@ Shared community should **not** be a default hard eligibility gate.
 Communities should be used as:
 
 - A default ranking signal (community overlap)
-- A sponsor-controlled narrowing/filtering tool in a later phase
+- A sponsor-controlled narrowing/filtering tool
 - A liquidity-preserving context layer, not a brittle gate
 
 Default ranking direction:
 
 1. Shared community overlap with the selected context single
-2. Selected community filter matches (once community filters are added)
+2. Selected community filter matches (when filters are applied)
 3. Selected interest matches
 4. Recency
 
-#### Planned Community Filter Behavior
+#### Community Filter Behavior (Current)
 
 - Multi-select community filters
 - OR semantics across selected communities (not AND)
@@ -485,8 +517,6 @@ Community filters:
 ☑ North County
 ☐ Harvard alumni
 ```
-
-Community filtering controls are planned **after** retrieval/ranking is migrated off legacy slug gating.
 
 ---
 
@@ -534,7 +564,7 @@ Unresolved design questions to revisit during implementation:
 - Possible future roles beyond founder
 - Whether communities ever appear on public profiles
 
-**Architectural status:** Invite community context is now explicitly carried on invites via nullable `community_id`, and is used by onboarding suggestion and invite-only join authorization.
+**Architectural status:** Invite community context is explicitly carried on invites via nullable `community_id`, and is used by onboarding suggestion today. Invite-only join authorization remains the long-term model and is currently deferred in runtime join flow.
 
 ---
 
@@ -559,17 +589,17 @@ Unresolved design questions to revisit during implementation:
 - Founder membership trigger
 - Public community browse endpoint (`GET /api/communities`, no auth required)
 - Join endpoint (`POST /api/communities/[id]/join`) with membership cap (25)
+- Leave endpoint (`POST /api/communities/[id]/leave`)
+- Membership listing endpoint (`GET /api/communities/me`)
 - Onboarding integration with community selection
 - Invite-based community suggestion using invite `community_id`
-- Invite-only join validation using invite tokens
+- Invite context persisted on invite rows (`invite.community_id`)
 
-Invite-based onboarding suggestion and invite-only join logic are now driven by explicit `invite.community_id`.
+Invite-based onboarding suggestion is driven by explicit `invite.community_id`.
 
 **Not yet implemented in Phase 1:**
 
-- Community creation remains dashboard-only (not onboarding); **dashboard community creation UI is not yet implemented**
-- Dashboard community UI is not yet implemented
-- Pond migration from legacy `orbit_community_slug` gating to many-to-many community-overlap retrieval/ranking is not yet implemented
+- Runtime invite-only join enforcement (`sponsor_invite_only`) in normal join flow
 
 **Phase 1 DB foundation completed (2026-03-08):** `communities` and `community_members` created; sponsor-validation trigger added; founder-membership trigger added; RLS enabled without policies. Old geolocation system (`orbit_community_slug`) still present in profiles; onboarding no longer writes to it.
 
@@ -584,15 +614,15 @@ Invite-based onboarding suggestion and invite-only join logic are now driven by 
 
 ### Phase 3: Pond Integration
 
-Pond implementation order (explicit):
+Current status:
 
-- **Pond Phase 1:** Replace legacy slug-based hard gating with many-to-many community-overlap retrieval/ranking (`communities` + `community_members`) while keeping baseline eligibility limited to single/sponsored/not-self/mutual compatibility.
-- **Pond Phase 2:** Add sponsor-controlled multi-select community filtering in Pond UI/API.
-- **Pond Phase 3+:** Additional Pond polish and optional community signals.
+- **Pond Phase 1:** Completed — many-to-many community-overlap retrieval/ranking is live.
+- **Pond Phase 2:** Completed — sponsor-controlled multi-select community filtering is live in Pond UI/API.
+- **Pond Phase 3+:** Optional polish and additional community signals remain future work.
 
 Behavior requirements for Pond filtering/ranking:
 
-- Community overlap influences ranking before sponsor-facing community filter controls are added.
+- Community overlap is a core ranking signal alongside sponsor-facing community filter controls.
 - Community filters use multi-select OR behavior, not AND.
 - Community filters narrow/prioritize without acting as a brittle default hard gate.
 
@@ -617,11 +647,16 @@ Behavior requirements for Pond filtering/ranking:
 - Public browse (`GET /api/communities`)
 - Join API with membership cap (25)
 - Leave API (founders cannot leave their own community)
+- Membership listing API (`GET /api/communities/me`)
 - Onboarding integration with community selection
 - Invite community suggestion based on invite `community_id`
 - Sponsor dashboard **My Communities** primary UI surface
 - Single dashboard **My Communities** section using the same section pattern with single-focused helper text
 - Communities page exploration/management surface (browse, join, leave, create)
+- Pond many-to-many overlap ranking in `get_pond_candidates`
+- Pond community filters endpoint (`GET /api/profiles/pond/filters`)
+- Pond sponsor-controlled multi-select community filtering UI (Tailor Search)
+- Pond route hardening for sponsor authz + selected single ownership + community filter sanitization
 
 **Current MVP Behavior (Temporary):**
 
@@ -631,7 +666,6 @@ Behavior requirements for Pond filtering/ranking:
 - New communities are currently created as `open`
 - Normal join flow does not currently enforce invite-only restrictions
 - Communities page currently still shows a create CTA to singles; backend sponsor-only rule remains authoritative (`POST /api/communities` rejects non-sponsors)
-- Pond now uses many-to-many community overlap ranking in `get_pond_candidates` (legacy `orbit_community_slug` hard gating removed from Pond retrieval)
 
 **Architecture Preserved (Not Removed):**
 
@@ -641,8 +675,7 @@ Behavior requirements for Pond filtering/ranking:
 
 **Not Yet Implemented / Deferred:**
 
-- Pond refactor to many-to-many community-overlap retrieval/ranking (replace legacy slug hard gate)
-- Sponsor-controlled multi-select Pond community filtering (OR behavior) on top of overlap-ranked retrieval
+- Runtime invite-only join enforcement path for `sponsor_invite_only` communities
 - Lightweight community detail surface
 - Community dashboard signals
 
@@ -663,3 +696,5 @@ Behavior requirements for Pond filtering/ranking:
 | 2026-03-12 | Temporary MVP simplification documented: user-facing product currently treats communities as open in normal flow; invite-only behavior is deferred in UI/join flow for first-user production testing. Long-term architecture (`join_mode`, invite-bound `community_id`) remains preserved. |
 | 2026-03-12 | Reference alignment update: membership cap updated to 25 across rules/spec/snapshot; public browse metadata clarified to include founder_name and member_count; single dashboard communities rollout reflected; temporary UI/backend mismatch for single create CTA documented. |
 | 2026-03-13 | Pond documentation realignment: clarified live transitional behavior (`orbit_community_slug` hard gate in Pond RPC), defined target baseline eligibility (single/sponsored/not-self/mutual compatibility), set community-overlap-first ranking direction, and documented ordered Pond rollout (overlap ranking refactor first, sponsor-controlled multi-select OR filters second). |
+| 2026-03-14 | Accuracy update: aligned API surface and implementation snapshot with live code (`/api/communities/me`, `/api/communities/[id]/leave`, `/api/profiles/pond/filters`), marked Pond overlap ranking + sponsor community filtering as implemented, and clarified that invite-only join enforcement remains deferred in current runtime join flow. |
+| 2026-03-14 | Editorial source-of-truth pass: clarified current-vs-target wording across invite/onboarding/Pond sections, reduced ambiguous language, and tightened implementation phrasing without changing product intent. |
