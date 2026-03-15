@@ -2,6 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,200..900;1,200..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -103,6 +104,28 @@
   --orbit-font-heading: 'Crimson Pro', Georgia, serif;
   --orbit-font-body: 'Bahnschrift', 'Segoe UI', system-ui, sans-serif;
   --orbit-font-weight-heading: 400;
+  --orbit-font-weight-body: 400;
+}
+
+/* Navy Luxe — deeper, inkier navy with warm off-white text and antique gold accents. */
+:root[data-theme="navy-luxe"] {
+  --orbit-canvas:    11 20 38;
+  --orbit-bg-start:  11 20 38;
+  --orbit-bg-end:    13 24 41;
+  --orbit-surface-1: 15 27 46;
+  --orbit-surface-2: 17 29 51;
+  --orbit-surface-3: 13 24 41;
+  --orbit-border:    26 42 74;
+  --orbit-text:     232 228 220;
+  --orbit-text-2:   184 176 164;
+  --orbit-muted:    139 133 120;
+  --orbit-gold:     201 169 110;
+  --orbit-gold-dk:  168 137 78;
+  --orbit-success:  111 143 123;
+  --orbit-warning:  184 145 92;
+  --orbit-font-heading: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  --orbit-font-body: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  --orbit-font-weight-heading: 300;
   --orbit-font-weight-body: 400;
 }
 

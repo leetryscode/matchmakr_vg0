@@ -226,6 +226,16 @@ export default function SettingsPage() {
             <SectionHeader title="Appearance" className="mb-4" />
             <div className="flex gap-3 flex-wrap">
               <button
+                onClick={() => handleThemeChange('navy-luxe')}
+                className={`orbit-ring px-6 py-3 rounded-pill font-medium transition-colors ${
+                  theme === 'navy-luxe'
+                    ? 'orbit-surface-strong text-orbit-text'
+                    : 'orbit-btn-secondary'
+                }`}
+              >
+                Navy Luxe
+              </button>
+              <button
                 onClick={() => handleThemeChange('navy-classic')}
                 className={`orbit-ring px-6 py-3 rounded-pill font-medium transition-colors ${
                   theme === 'navy-classic'

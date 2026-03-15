@@ -67,11 +67,11 @@ function GlobalLayoutContent({ children, showBottomNav = true }: GlobalLayoutPro
   useEffect(() => {
     if (document.documentElement.dataset.theme) return;
     try {
-      const saved = localStorage.getItem('orbit_theme') ?? 'navy-classic';
-      const valid = ['navy-classic', 'plum-society', 'invitation-cream', 'dev-charcoal'].includes(saved) ? saved : 'navy-classic';
+      const saved = localStorage.getItem('orbit_theme') ?? 'navy-luxe';
+      const valid = ['navy-luxe', 'navy-classic', 'plum-society', 'invitation-cream', 'dev-charcoal'].includes(saved) ? saved : 'navy-luxe';
       document.documentElement.dataset.theme = valid;
     } catch {
-      document.documentElement.dataset.theme = 'navy-classic';
+      document.documentElement.dataset.theme = 'navy-luxe';
     }
   }, []);
 
