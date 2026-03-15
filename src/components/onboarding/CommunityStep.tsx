@@ -1,175 +1,55 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 export type CommunityIntent = { communityId: string } | null;
-
-interface CommunityBrowseItem {
-  id: string;
-  name: string;
-  description: string | null;
-  join_mode: string;
-  created_at: string;
-}
 
 interface CommunityStepProps {
   onNext: (intent: CommunityIntent) => void;
   variant?: 'single' | 'sponsor';
-  /** Inviter's suggested community (from invite flow). Shown first and marked recommended. */
+  /** Invited community (from invite flow). */
   prefillCommunityId?: string | null;
   prefillCommunityName?: string | null;
 }
 
-const SUBTEXT: Record<'single' | 'sponsor', string> = {
-  single: 'Orbit is growing deliberately, community by community. Select a community to join after you sign up, or skip for now.',
-  sponsor: 'Where do you make introductions? Select a community to join after you sign up, or skip for now.',
-};
-
-const JOIN_MODE_LABEL: Record<string, string> = {
-  open: 'Open',
-  sponsor_invite_only: 'Invite only',
-};
-
-function getJoinModeLabel(mode: string): string {
-  return JOIN_MODE_LABEL[mode] ?? mode.replaceAll('_', ' ');
-}
-
 export default function CommunityStep({ onNext, variant, prefillCommunityId, prefillCommunityName }: CommunityStepProps) {
-  const [communities, setCommunities] = useState<CommunityBrowseItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [joinSelected, setJoinSelected] = useState(true);
+  void variant;
 
-  const loadCommunities = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    fetch('/api/communities')
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load communities');
-        return res.json();
-      })
-      .then((data: { communities: CommunityBrowseItem[] }) => {
-        const list = data.communities ?? [];
-        setCommunities(list);
-        if (prefillCommunityId && list.some((c) => c.id === prefillCommunityId)) {
-          setSelectedId(prefillCommunityId);
-        }
-      })
-      .catch((err) => {
-        setError(err instanceof Error ? err.message : 'Failed to load communities');
-      })
-      .finally(() => setLoading(false));
-  }, [prefillCommunityId]);
+  const displayCommunityName = useMemo(() => {
+    const trimmed = prefillCommunityName?.trim();
+    if (trimmed) return trimmed;
+    return 'this community';
+  }, [prefillCommunityName]);
 
-  useEffect(() => {
-    loadCommunities();
-  }, [loadCommunities]);
-
-  const subtext = variant ? SUBTEXT[variant] : '';
-  const orderedCommunities =
-    prefillCommunityId && communities.some((c) => c.id === prefillCommunityId)
-      ? [
-          ...communities.filter((c) => c.id === prefillCommunityId),
-          ...communities.filter((c) => c.id !== prefillCommunityId),
-        ]
-      : communities;
-
-  const handleSelect = () => {
-    if (selectedId) {
-      onNext({ communityId: selectedId });
+  const handleNext = () => {
+    if (joinSelected && prefillCommunityId) {
+      onNext({ communityId: prefillCommunityId });
+      return;
     }
-  };
-  const handleSkip = () => {
     onNext(null);
   };
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-8">
-        <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
-          Orbit Community
-        </h1>
-        <p className="text-orbit-muted font-light">Loading communities...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-8">
-        <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
-          Orbit Community
-        </h1>
-        <p className="text-orbit-muted font-light">{error}</p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <button onClick={loadCommunities} className="orbit-btn-primary min-h-[48px] px-10 py-3">
-            Retry
-          </button>
-          <button onClick={handleSkip} className="orbit-btn-ghost text-orbit-text2 hover:text-orbit-text underline font-light">
-            Skip for now
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col items-center justify-center gap-8">
       <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
-        Orbit Community
+        You've been invited to join
       </h1>
-      {subtext && (
-        <p className="text-orbit-muted font-light text-center max-w-md">
-          {subtext}
-        </p>
-      )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
-        {orderedCommunities.map((c) => {
-          const isInviteOnly = c.join_mode === 'sponsor_invite_only';
-          const isRecommended = prefillCommunityId === c.id;
-          const isSelectable = !isInviteOnly || isRecommended;
-          return (
-            <button
-              key={c.id}
-              type="button"
-              disabled={!isSelectable}
-              onClick={() => isSelectable && setSelectedId(selectedId === c.id ? null : c.id)}
-              className={`orbit-ring flex flex-col gap-2 rounded-card-lg p-6 text-left text-lg font-light transition-all duration-200 ${
-                !isSelectable
-                  ? 'opacity-60 cursor-not-allowed border-orbit-border/50 bg-orbit-surface/50 text-orbit-muted'
-                  : selectedId === c.id
-                    ? 'orbit-surface-strong border-orbit-gold/60 text-orbit-text card-hover-subtle hover:-translate-y-0.5'
-                    : 'orbit-surface-soft text-orbit-text card-hover-subtle hover:-translate-y-0.5'
-              }`}
-            >
-              <span className="font-medium">{c.name}</span>
-              {isRecommended && (
-                <span className="text-sm text-orbit-gold font-light">Suggested by your inviter</span>
-              )}
-              {c.description && (
-                <span className="text-sm text-orbit-muted font-light line-clamp-2">{c.description}</span>
-              )}
-              <span className="text-xs text-orbit-muted">{getJoinModeLabel(c.join_mode)}</span>
-            </button>
-          );
-        })}
-      </div>
-      {orderedCommunities.length === 0 && (
-        <p className="text-orbit-muted font-light">No communities yet. You can create or join one later from the dashboard.</p>
-      )}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <button
-          onClick={handleSelect}
-          disabled={!selectedId}
-          className="orbit-btn-primary min-h-[48px] px-10 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Continue with selection
-        </button>
-        <button
-          onClick={handleSkip}
-          className="orbit-btn-ghost text-orbit-text2 hover:text-orbit-text underline font-light"
-        >
-          Skip — you can create or join a community later from the dashboard
+      <p className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
+        {displayCommunityName}
+      </p>
+      <label className="flex items-center gap-3 text-lg font-light text-orbit-text">
+        <input
+          type="checkbox"
+          checked={joinSelected}
+          onChange={(e) => setJoinSelected(e.target.checked)}
+          className="h-5 w-5 rounded border-orbit-border/70 bg-orbit-surface/80 text-orbit-gold focus:ring-orbit-gold"
+        />
+        Join this community
+      </label>
+      <div>
+        <button onClick={handleNext} className="orbit-btn-primary min-h-[48px] px-10 py-3">
+          Next
         </button>
       </div>
     </div>

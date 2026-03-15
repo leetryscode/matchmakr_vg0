@@ -30,3 +30,19 @@ Mixing case invites subtle bugs (e.g. `sex === 'male'` vs `sex === 'Male'`). The
 - Any code that compares `sex` directly (e.g. `sex === 'Male'`)
 
 **Data migration:** If existing rows have `'Male'` / `'Female'`, add a migration to `UPDATE profiles SET sex = LOWER(sex) WHERE sex IS NOT NULL` before changing application code.
+
+---
+
+## ToS Acceptance Retry (Email Confirmation Mode)
+
+**Status:** Future hardening task; not needed while immediate-session signup is enabled
+
+**Context:** Current onboarding assumes users are immediately signed in after account creation, so `tos_acceptances` is written in-session during signup.
+
+**Risk if changed later:** If email confirmation is enabled and signup returns no session, users can continue without a consent row being saved at that moment.
+
+**Recommendation:** Add a post-login reconciliation path:
+
+- On first authenticated load, check whether a `tos_acceptances` record exists for the current user and active policy versions.
+- If missing, prompt to confirm Terms/Privacy and write the row before or during dashboard entry.
+- Keep this idempotent (safe to re-run) and version-aware for future ToS/Privacy updates.

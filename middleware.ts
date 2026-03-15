@@ -68,7 +68,13 @@ export async function middleware(req: NextRequest) {
     // If user is not signed in and trying to access protected routes, redirect to welcome page
     if (!user) {
       // Allow access to public routes (welcome page, login, API endpoints)
-      if (req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/' || req.nextUrl.pathname.startsWith('/api/')) {
+      if (
+        req.nextUrl.pathname === '/login' ||
+        req.nextUrl.pathname === '/' ||
+        req.nextUrl.pathname === '/terms' ||
+        req.nextUrl.pathname === '/privacy' ||
+        req.nextUrl.pathname.startsWith('/api/')
+      ) {
         return res;
       }
       

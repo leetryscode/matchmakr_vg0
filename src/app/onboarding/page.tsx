@@ -12,6 +12,7 @@ import { orbitConfig } from '@/config/orbitConfig';
 import { getInviteMode, type InviteMode } from '@/lib/invite-mode';
 
 type CommunityIntent = { communityId: string } | null;
+type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 const initialOnboardingData = {
   userType: null as string | null,
@@ -44,10 +45,31 @@ export default function OnboardingPage() {
       name: mode.prefillName,
     };
   });
+  const [underageBlocked, setUnderageBlocked] = useState(false);
 
-  const showCommunityStep =
-    onboardingData.userType === 'Sponsor' ||
-    (onboardingData.userType === 'Single' && inviteMode !== null);
+  const hasInviteCommunity = inviteMode !== null && inviteMode.prefillCommunityId !== null;
+  const isSingle = onboardingData.userType === 'Single';
+
+  const visibleSteps: OnboardingStep[] = [
+    ...(inviteMode ? [] : [1 as const]),
+    2,
+    ...(isSingle ? ([3, 4] as const) : []),
+    ...(hasInviteCommunity ? ([5] as const) : []),
+    ...(isSingle ? ([6] as const) : []),
+    7,
+  ];
+
+  const getNextVisibleStep = (currentStep: OnboardingStep): OnboardingStep | null => {
+    const idx = visibleSteps.indexOf(currentStep);
+    if (idx === -1 || idx >= visibleSteps.length - 1) return null;
+    return visibleSteps[idx + 1];
+  };
+
+  const getPreviousVisibleStep = (currentStep: OnboardingStep): OnboardingStep | null => {
+    const idx = visibleSteps.indexOf(currentStep);
+    if (idx <= 0) return null;
+    return visibleSteps[idx - 1];
+  };
 
   const handleUserTypeSelect = (type: string) => {
     setOnboardingData({ ...onboardingData, userType: type });
@@ -59,11 +81,26 @@ export default function OnboardingPage() {
   };
 
   const handleTooYoung = () => {
-    alert('You must be 18 or older to join.');
-    router.push('/');
+    setUnderageBlocked(true);
   };
 
   const renderStep = () => {
+    if (underageBlocked) {
+      return (
+        <div className="flex flex-col items-center justify-center gap-6 text-center">
+          <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
+            You must be 18 or older to use Orbit.
+          </h1>
+          <button
+            onClick={() => router.push('/')}
+            className="orbit-btn-primary min-h-[48px] px-10 py-3"
+          >
+            Return to welcome
+          </button>
+        </div>
+      );
+    }
+
     switch (step) {
       case 1:
         return (
@@ -107,54 +144,55 @@ export default function OnboardingPage() {
       case 2:
         return (
           <NameStep
-            onNext={(name) => { setOnboardingData({ ...onboardingData, name }); setStep(3); }}
+            onNext={(name) => {
+              setOnboardingData({ ...onboardingData, name });
+              const nextStep = getNextVisibleStep(2);
+              if (nextStep) setStep(nextStep);
+            }}
             initialValue={onboardingData.name ?? undefined}
           />
         );
       case 3:
-        return <BirthdayStep onNext={(birthDate) => { setOnboardingData({ ...onboardingData, birthDate }); setStep(4); }} onTooYoung={handleTooYoung} />;
-      case 4:
-        return <SexStep onNext={(sex) => { setOnboardingData({ ...onboardingData, sex }); setStep(5); }} />;
-      case 5:
-        if (onboardingData.userType === 'Sponsor') {
-          return (
-            <CommunityStep
-              variant="sponsor"
-              prefillCommunityId={inviteMode?.prefillCommunityId ?? undefined}
-              prefillCommunityName={inviteMode?.prefillCommunityName ?? undefined}
-              onNext={(communityIntent) => {
-                setOnboardingData({ ...onboardingData, communityIntent });
-                setStep(6);
-              }}
-            />
-          );
-        }
         return (
-          <OpenToStep
-            onNext={(openTo) => {
-              setOnboardingData({ ...onboardingData, openTo });
-              setStep(showCommunityStep ? 6 : 7);
+          <BirthdayStep
+            onNext={(birthDate) => {
+              setOnboardingData({ ...onboardingData, birthDate });
+              const nextStep = getNextVisibleStep(3);
+              if (nextStep) setStep(nextStep);
+            }}
+            onTooYoung={handleTooYoung}
+          />
+        );
+      case 4:
+        return (
+          <SexStep
+            onNext={(sex) => {
+              setOnboardingData({ ...onboardingData, sex });
+              const nextStep = getNextVisibleStep(4);
+              if (nextStep) setStep(nextStep);
             }}
           />
         );
-      case 6:
-        if (onboardingData.userType === 'Sponsor') {
-          return (
-            <AccountCreationStep
-              onboardingData={onboardingData}
-              communityIntent={onboardingData.communityIntent}
-              initialEmail={inviteMode?.prefillEmail}
-            />
-          );
-        }
+      case 5:
         return (
           <CommunityStep
-            variant="single"
+            variant={onboardingData.userType === 'Sponsor' ? 'sponsor' : 'single'}
             prefillCommunityId={inviteMode?.prefillCommunityId ?? undefined}
             prefillCommunityName={inviteMode?.prefillCommunityName ?? undefined}
             onNext={(communityIntent) => {
               setOnboardingData({ ...onboardingData, communityIntent });
-              setStep(7);
+              const nextStep = getNextVisibleStep(5);
+              if (nextStep) setStep(nextStep);
+            }}
+          />
+        );
+      case 6:
+        return (
+          <OpenToStep
+            onNext={(openTo) => {
+              setOnboardingData({ ...onboardingData, openTo });
+              const nextStep = getNextVisibleStep(6);
+              if (nextStep) setStep(nextStep);
             }}
           />
         );
@@ -172,19 +210,23 @@ export default function OnboardingPage() {
   };
   
   const goBack = () => {
-    if (step > 2) {
-      if (step === 7 && !showCommunityStep) {
-        setStep(5);
-      } else {
-        setStep(step - 1);
-      }
-    } else if (inviteMode && step === 2) {
+    if (inviteMode && step === 2) {
       router.push(`/invite/${inviteMode.inviteToken}`);
-    } else if (step === 1) {
-      router.push('/');
-    } else {
-      setStep(1);
+      return;
     }
+
+    const previousStep = getPreviousVisibleStep(step as OnboardingStep);
+    if (previousStep) {
+      setStep(previousStep);
+      return;
+    }
+
+    if (step === 1) {
+      router.push('/');
+      return;
+    }
+
+    setStep(1);
   };
 
   return (
