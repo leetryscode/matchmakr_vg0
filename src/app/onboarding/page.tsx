@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import NameStep from '@/components/onboarding/NameStep';
 import SexStep from '@/components/onboarding/SexStep';
@@ -8,11 +8,12 @@ import BirthdayStep from '@/components/onboarding/BirthdayStep';
 import OpenToStep from '@/components/onboarding/OpenToStep';
 import CommunityStep from '@/components/onboarding/CommunityStep';
 import AccountCreationStep from '@/components/onboarding/AccountCreationStep';
+import HowItWorksStep from '@/components/onboarding/HowItWorksStep';
 import { orbitConfig } from '@/config/orbitConfig';
 import { getInviteMode, type InviteMode } from '@/lib/invite-mode';
 
 type CommunityIntent = { communityId: string } | null;
-type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 const initialOnboardingData = {
   userType: null as string | null,
@@ -32,7 +33,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(() => {
     if (typeof window === 'undefined') return 1;
     const mode = getInviteMode();
-    return mode ? 2 : 1;
+    return mode ? 3 : 1;
   });
   const [onboardingData, setOnboardingData] = useState(() => {
     if (typeof window === 'undefined') return initialOnboardingData;
@@ -46,17 +47,24 @@ export default function OnboardingPage() {
     };
   });
   const [underageBlocked, setUnderageBlocked] = useState(false);
+  const [howItWorksBackHandler, setHowItWorksBackHandler] = useState<(() => boolean) | null>(null);
 
   const hasInviteCommunity = inviteMode !== null && inviteMode.prefillCommunityId !== null;
   const isSingle = onboardingData.userType === 'Single';
 
+  useEffect(() => {
+    if (step !== 1) {
+      setHowItWorksBackHandler(null);
+    }
+  }, [step]);
+
   const visibleSteps: OnboardingStep[] = [
-    ...(inviteMode ? [] : [1 as const]),
-    2,
-    ...(isSingle ? ([3, 4] as const) : []),
-    ...(hasInviteCommunity ? ([5] as const) : []),
-    ...(isSingle ? ([6] as const) : []),
-    7,
+    ...(inviteMode ? [] : ([1, 2] as const)),
+    3,
+    ...(isSingle ? ([4, 5] as const) : []),
+    ...(hasInviteCommunity ? ([6] as const) : []),
+    ...(isSingle ? ([7] as const) : []),
+    8,
   ];
 
   const getNextVisibleStep = (currentStep: OnboardingStep): OnboardingStep | null => {
@@ -76,7 +84,7 @@ export default function OnboardingPage() {
     if (type === 'Vendor') {
       router.push('/onboarding/vendor');
     } else {
-      setStep(2);
+      setStep(3);
     }
   };
 
@@ -107,6 +115,18 @@ export default function OnboardingPage() {
 
     switch (step) {
       case 1:
+        return (
+          <HowItWorksStep
+            onNext={() => {
+              const nextStep = getNextVisibleStep(1);
+              if (nextStep) setStep(nextStep);
+            }}
+            onRegisterBackHandler={(handler) => {
+              setHowItWorksBackHandler(() => handler);
+            }}
+          />
+        );
+      case 2:
         return (
           <>
             <h1 className="onboarding-heading text-4xl font-light tracking-tight sm:text-6xl leading-[1.1]">
@@ -145,46 +165,33 @@ export default function OnboardingPage() {
             </div>
           </>
         );
-      case 2:
+      case 3:
         return (
           <NameStep
             onNext={(name) => {
               setOnboardingData({ ...onboardingData, name });
-              const nextStep = getNextVisibleStep(2);
+              const nextStep = getNextVisibleStep(3);
               if (nextStep) setStep(nextStep);
             }}
             initialValue={onboardingData.name ?? undefined}
           />
         );
-      case 3:
+      case 4:
         return (
           <BirthdayStep
             onNext={(birthDate) => {
               setOnboardingData({ ...onboardingData, birthDate });
-              const nextStep = getNextVisibleStep(3);
+              const nextStep = getNextVisibleStep(4);
               if (nextStep) setStep(nextStep);
             }}
             onTooYoung={handleTooYoung}
           />
         );
-      case 4:
+      case 5:
         return (
           <SexStep
             onNext={(sex) => {
               setOnboardingData({ ...onboardingData, sex });
-              const nextStep = getNextVisibleStep(4);
-              if (nextStep) setStep(nextStep);
-            }}
-          />
-        );
-      case 5:
-        return (
-          <CommunityStep
-            variant={onboardingData.userType === 'Sponsor' ? 'sponsor' : 'single'}
-            prefillCommunityId={inviteMode?.prefillCommunityId ?? undefined}
-            prefillCommunityName={inviteMode?.prefillCommunityName ?? undefined}
-            onNext={(communityIntent) => {
-              setOnboardingData({ ...onboardingData, communityIntent });
               const nextStep = getNextVisibleStep(5);
               if (nextStep) setStep(nextStep);
             }}
@@ -192,15 +199,28 @@ export default function OnboardingPage() {
         );
       case 6:
         return (
-          <OpenToStep
-            onNext={(openTo) => {
-              setOnboardingData({ ...onboardingData, openTo });
+          <CommunityStep
+            variant={onboardingData.userType === 'Sponsor' ? 'sponsor' : 'single'}
+            prefillCommunityId={inviteMode?.prefillCommunityId ?? undefined}
+            prefillCommunityName={inviteMode?.prefillCommunityName ?? undefined}
+            onNext={(communityIntent) => {
+              setOnboardingData({ ...onboardingData, communityIntent });
               const nextStep = getNextVisibleStep(6);
               if (nextStep) setStep(nextStep);
             }}
           />
         );
       case 7:
+        return (
+          <OpenToStep
+            onNext={(openTo) => {
+              setOnboardingData({ ...onboardingData, openTo });
+              const nextStep = getNextVisibleStep(7);
+              if (nextStep) setStep(nextStep);
+            }}
+          />
+        );
+      case 8:
         return (
           <AccountCreationStep
             onboardingData={onboardingData}
@@ -214,7 +234,7 @@ export default function OnboardingPage() {
   };
   
   const goBack = () => {
-    if (inviteMode && step === 2) {
+    if (inviteMode && step === 3) {
       router.push(`/invite/${inviteMode.inviteToken}`);
       return;
     }
@@ -226,6 +246,9 @@ export default function OnboardingPage() {
     }
 
     if (step === 1) {
+      if (howItWorksBackHandler && howItWorksBackHandler()) {
+        return;
+      }
       router.push('/');
       return;
     }
