@@ -74,11 +74,11 @@ function DashboardBootSplash() {
       style={{ backgroundColor }}
     >
       <div className="flex flex-col items-center gap-8">
-        <h1 className="font-light tracking-[0.2em] uppercase text-white/95 text-2xl sm:text-3xl">
+        <h1 className="font-light tracking-[0.2em] uppercase text-orbit-text text-2xl sm:text-3xl">
           Orbit
         </h1>
         <div
-          className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white"
+          className="h-8 w-8 animate-spin rounded-full border-2 border-orbit-border/50 border-t-orbit-text"
           aria-hidden
         />
       </div>

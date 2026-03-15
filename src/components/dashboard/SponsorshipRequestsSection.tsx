@@ -78,7 +78,7 @@ export default function SponsorshipRequestsSection({
               <button
                 onClick={() => handleAccept(req.id)}
                 disabled={actionLoading === req.id}
-                className="rounded-cta px-4 py-2 min-h-[40px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-cta px-4 py-2 min-h-[40px] bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {actionLoading === req.id ? 'Accepting...' : 'Accept'}
               </button>

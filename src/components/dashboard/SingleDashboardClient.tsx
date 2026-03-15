@@ -409,7 +409,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   // Helper: Render a chat row (used for both singles and matchmakr)
   const ChatRow = ({ photo, name, lastMessage, unreadCount, onClick, menu, timestamp, menuButton }: any) => (
     <div
-      className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50 mb-0.5"
+      className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 mb-0.5"
       role="button"
       tabIndex={0}
       onClick={e => { if ((e.target as HTMLElement).closest('.menu-btn')) return; onClick && onClick(e); }}
@@ -419,7 +419,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         {photo ? (
           <Image src={photo} alt={name} width={48} height={48} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-primary-blue">
+          <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-orbit-text">
             {name?.charAt(0).toUpperCase() || '?'}
           </div>
         )}
@@ -502,7 +502,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                           <button
                             onClick={() => handleAcceptSponsorship(req.id)}
                             disabled={requestActionLoading === req.id}
-                            className="rounded-cta px-4 py-2 min-h-[40px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="rounded-cta px-4 py-2 min-h-[40px] bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {requestActionLoading === req.id ? 'Accepting...' : acceptLabel}
                           </button>
@@ -615,7 +615,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                 <button onClick={() => { setShowUnmatchModal(false); setUnmatchTarget(null); }} className="orbit-btn-secondary px-6 py-2 rounded-md font-semibold">
                   Cancel
                 </button>
-                <button onClick={handleUnmatch} className="rounded-cta px-6 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200">
+                <button onClick={handleUnmatch} className="rounded-cta px-6 py-2 min-h-[44px] bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200">
                   Unmatch
                 </button>
               </div>
@@ -656,9 +656,9 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                 const photoUrl = sponsorPhotoMap[req.sponsor_id] ?? null;
                 const acceptLabel = sponsorNameMap[req.sponsor_id] ? `Yes, choose ${sponsorName}` : 'Yes, choose this sponsor';
                 return (
-                <GlassCard key={req.id} className="p-4 shadow-lg ring-1 ring-primary-blue/10 hover:shadow-xl transition-all duration-200">
+                <GlassCard key={req.id} className="p-4 shadow-lg ring-1 ring-orbit-gold/10 hover:shadow-xl transition-all duration-200">
                   <div className="flex items-start gap-3">
-                    <div className="shrink-0 w-12 h-12 rounded-full border border-white/20 overflow-hidden bg-white/5">
+                    <div className="shrink-0 w-12 h-12 rounded-full border border-orbit-border/30 overflow-hidden bg-orbit-surface-1/20">
                       {photoUrl ? (
                         <img src={photoUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -678,7 +678,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                         <button
                           onClick={() => handleAcceptSponsorship(req.id)}
                           disabled={requestActionLoading === req.id}
-                          className="rounded-cta px-4 py-2 min-h-[40px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="rounded-cta px-4 py-2 min-h-[40px] bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {requestActionLoading === req.id ? 'Accepting...' : acceptLabel}
                         </button>
@@ -725,15 +725,15 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
               </button>
             }
             menu={sponsorMenuOpen && (
-              <div ref={sponsorMenuRef} className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
+              <div ref={sponsorMenuRef} className="absolute right-0 mt-2 w-40 bg-orbit-surface-2 border border-orbit-border rounded-xl shadow-xl z-20 py-2">
                 <button
-                  className="block w-full text-left px-5 py-3 text-base text-primary-blue hover:bg-gray-50 rounded-xl font-semibold transition-colors"
+                  className="block w-full text-left px-5 py-3 text-base text-orbit-text hover:bg-orbit-surface-1 rounded-xl font-semibold transition-colors"
                   onClick={e => { e.stopPropagation(); router.push(`/profile/${sponsor.id}`); setSponsorMenuOpen(false); }}
                 >
                   View sponsor
                 </button>
                 <button
-                  className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
+                  className="block w-full text-left px-5 py-3 text-base text-orbit-warning hover:bg-orbit-surface-1 rounded-xl font-semibold transition-colors"
                   onClick={e => { e.stopPropagation(); setShowEndSponsorshipModal(true); setSponsorMenuOpen(false); }}
                 >
                   End sponsorship
@@ -783,9 +783,9 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                     </button>
                   }
                   menu={menuOpenIdx === idx && (
-                    <div ref={el => { menuRefs.current[idx] = el; }} className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
+                    <div ref={el => { menuRefs.current[idx] = el; }} className="absolute right-0 mt-2 w-40 bg-orbit-surface-2 border border-orbit-border rounded-xl shadow-xl z-20 py-2">
                       <button
-                        className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
+                        className="block w-full text-left px-5 py-3 text-base text-orbit-warning hover:bg-orbit-surface-1 rounded-xl font-semibold transition-colors"
                         onClick={e => { e.stopPropagation(); setShowUnmatchModal(true); setUnmatchTarget(row); setMenuOpenIdx(null); }}
                       >
                         Unmatch
@@ -880,8 +880,8 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
       />
       {/* Unmatch Confirmation Modal */}
       {showUnmatchModal && unmatchTarget && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-          <div className="bg-background-card rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-white/20">
+        <div className="fixed inset-0 bg-orbit-canvas/80 flex justify-center items-center z-50">
+          <div className="bg-orbit-surface-2 rounded-lg p-8 w-full max-w-md text-center shadow-xl border border-orbit-border/40">
             <h2 className="type-section mb-4">Unmatch with {unmatchTarget.otherSingle.name}?</h2>
             <p className="text-orbit-muted mb-6">
               This will permanently remove your match and chat history. You would need to be matched again to chat in the future.
@@ -890,7 +890,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
               <button onClick={() => { setShowUnmatchModal(false); setUnmatchTarget(null); }} className="orbit-btn-secondary px-6 py-2 rounded-md font-semibold">
                 Cancel
               </button>
-              <button onClick={handleUnmatch} className="rounded-cta px-6 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200">
+              <button onClick={handleUnmatch} className="rounded-cta px-6 py-2 min-h-[44px] bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200">
                 Unmatch
               </button>
             </div>

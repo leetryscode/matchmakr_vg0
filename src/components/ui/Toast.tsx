@@ -27,8 +27,8 @@ export default function Toast({ message, type, isVisible, onClose, duration = 30
             <div
                 className={`px-6 py-3 rounded-lg shadow-lg backdrop-blur-md border ${
                     type === 'success'
-                        ? 'bg-green-500/90 text-white border-green-400'
-                        : 'bg-red-500/90 text-white border-red-400'
+                        ? 'bg-orbit-success/90 text-orbit-canvas border-orbit-success/50'
+                        : 'bg-orbit-warning/90 text-orbit-canvas border-orbit-warning/50'
                 }`}
             >
                 <p className="font-medium text-sm">{message}</p>
@@ -36,4 +36,3 @@ export default function Toast({ message, type, isVisible, onClose, duration = 30
         </div>
     );
 }
-

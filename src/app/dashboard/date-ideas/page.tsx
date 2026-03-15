@@ -27,7 +27,7 @@ export default function DateIdeasPage() {
           {/* Coming Soon Content */}
           <GlassCard variant="1" className="p-8">
             <div className="text-center">
-              <p className="text-white/80 text-lg">Coming soon</p>
+              <p className="text-orbit-text2 text-lg">Coming soon</p>
             </div>
           </GlassCard>
           

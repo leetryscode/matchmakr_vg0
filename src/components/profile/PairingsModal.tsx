@@ -1,6 +1,6 @@
 /**
  * Pairings Modal
- * 
+ *
  * Modal for adding/editing sponsor-authored pairing qualities.
  * Allows selecting up to 5 predefined qualities and optionally a custom quality.
  */
@@ -77,9 +77,9 @@ export default function PairingsModal({
     if (saving) return;
 
     setError(null);
-    
+
     const isSelected = selectedQualityIds.includes(qualityId);
-    
+
     if (isSelected) {
       // Deselect
       setSelectedQualityIds(selectedQualityIds.filter((id) => id !== qualityId));
@@ -100,23 +100,23 @@ export default function PairingsModal({
     if (saving) return;
 
     setError(null);
-    
+
     // Normalize: remove line breaks and collapse whitespace
     const normalized = value.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
-    
+
     // Check length
     if (normalized.length > MAX_CUSTOM_QUALITY_CHARS) {
       setError(`Custom quality must be ${MAX_CUSTOM_QUALITY_CHARS} characters or less`);
       return;
     }
-    
+
     // Check if we can add custom (counting toward max)
     const wouldBeAtMax = (selectedQualityIds.length + (normalized.trim() ? 1 : 0)) > MAX_PAIRING_QUALITIES;
     if (wouldBeAtMax && normalized.trim()) {
       setError(`Maximum of ${MAX_PAIRING_QUALITIES} total qualities allowed`);
       return;
     }
-    
+
     setCustomQuality(normalized);
   };
 
@@ -184,10 +184,10 @@ export default function PairingsModal({
           display: none;
         }
       `}</style>
-      <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
-        <div className="bg-white/95 rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl border border-white/20 max-h-[85vh] flex flex-col">
+      <div className="fixed inset-0 bg-orbit-canvas/80 flex justify-center items-center z-50 p-4">
+        <div className="orbit-card rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl max-h-[85vh] flex flex-col">
           {/* Content area - scrollable */}
-          <div 
+          <div
             className="flex-1 overflow-y-auto mb-6 min-h-0 pairings-modal-scroll"
             style={{
               scrollbarWidth: 'none',
@@ -211,10 +211,10 @@ export default function PairingsModal({
                         className={`
                           px-3 py-1 rounded-full text-[13px] leading-snug border transition-all
                           ${isSelected
-                            ? 'bg-background-card border-border-light text-text-dark ring-2 ring-primary-blue/50'
+                            ? 'bg-orbit-surface-2 border-orbit-border text-orbit-text ring-2 ring-orbit-gold/30'
                             : isDisabled
-                            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                            : 'bg-white text-gray-900 border-gray-300 hover:border-primary-blue/50 hover:bg-gray-50'
+                            ? 'bg-orbit-surface-1 text-orbit-muted border-orbit-border cursor-not-allowed'
+                            : 'bg-orbit-surface-2 text-orbit-text border-orbit-border hover:border-orbit-gold/50 hover:bg-orbit-surface-1'
                           }
                           ${saving ? 'opacity-50 cursor-not-allowed' : ''}
                         `}
@@ -226,7 +226,7 @@ export default function PairingsModal({
                 </div>
                 {/* Subtle divider between groups (except last) */}
                 {groupIndex < qualitiesByCategory.length - 1 && (
-                  <div className="border-t border-gray-200/20 my-2"></div>
+                  <div className="border-t border-orbit-border/20 my-2"></div>
                 )}
               </div>
             ))}
@@ -246,7 +246,7 @@ export default function PairingsModal({
                     disabled={saving}
                     className={`
                       px-3 py-1 rounded-full text-[13px] leading-snug border transition-all
-                      bg-background-card border-border-light text-text-dark hover:bg-background-card/90 hover:border-text-dark/30
+                      bg-orbit-surface-2 border-orbit-border text-orbit-text hover:bg-orbit-surface-2/90 hover:border-orbit-text/30
                       ${saving ? 'opacity-50 cursor-not-allowed' : ''}
                     `}
                   >
@@ -259,8 +259,8 @@ export default function PairingsModal({
                     className={`
                       px-3 py-1 rounded-full text-[13px] leading-snug border transition-all
                       ${isMaxReached
-                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                        : 'bg-white/50 text-gray-500 border-gray-200/50 hover:border-gray-300 hover:bg-white/70 hover:text-gray-600'
+                        ? 'bg-orbit-surface-1 text-orbit-muted border-orbit-border cursor-not-allowed'
+                        : 'bg-orbit-surface-1/20 text-orbit-muted border-orbit-border/40 hover:border-orbit-border hover:bg-orbit-surface-1/40 hover:text-orbit-text2'
                       }
                       ${saving ? 'opacity-50 cursor-not-allowed' : ''}
                     `}
@@ -289,25 +289,25 @@ export default function PairingsModal({
                   placeholder="Enter a custom quality..."
                   maxLength={MAX_CUSTOM_QUALITY_CHARS}
                   disabled={saving}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-2 border border-orbit-border rounded-lg bg-orbit-surface-2 text-orbit-text placeholder:text-orbit-muted focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:border-orbit-gold/50 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <div className="flex justify-between items-center">
                   {error && (
-                    <p className="text-sm text-red-600 flex-1">{error}</p>
+                    <p className="text-sm text-orbit-warning flex-1">{error}</p>
                   )}
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleToggleCustomInput}
                       disabled={saving}
-                      className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                      className="text-xs text-orbit-muted hover:text-orbit-text2 disabled:opacity-50"
                     >
                       Cancel
                     </button>
                     <p
                       className={`text-xs ${
                         customQuality.length > MAX_CUSTOM_QUALITY_CHARS * 0.9
-                          ? 'text-gray-600'
-                          : 'text-gray-400'
+                          ? 'text-orbit-muted'
+                          : 'text-orbit-muted'
                       }`}
                     >
                       {customQuality.length}/{MAX_CUSTOM_QUALITY_CHARS}
@@ -320,23 +320,23 @@ export default function PairingsModal({
 
           {/* Error message (if not already shown above) */}
           {error && !error.includes('Maximum') && !error.includes('characters') && (
-            <p className="text-sm text-red-600 mt-4">{error}</p>
+            <p className="text-sm text-orbit-warning mt-4">{error}</p>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 border-t border-gray-200 pt-4">
+        <div className="flex gap-3 border-t border-orbit-border pt-4">
           <button
             onClick={onClose}
             disabled={saving}
-            className="flex-1 h-11 rounded-xl border border-gray-200 bg-white text-gray-900 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 h-11 rounded-xl border border-orbit-border bg-orbit-surface-2 text-orbit-text hover:bg-orbit-surface-1 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={!canSave}
-            className="flex-1 h-11 min-h-[44px] rounded-cta bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
+            className="flex-1 h-11 min-h-[44px] rounded-cta bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
@@ -346,4 +346,3 @@ export default function PairingsModal({
     </>
   );
 }
-

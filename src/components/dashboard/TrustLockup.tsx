@@ -171,7 +171,7 @@ export default function TrustLockup({
         {/* Primary circle (Single) */}
         <button
           onClick={() => router.push(`/profile/${primaryId}`)}
-          className="absolute rounded-full overflow-hidden flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent-teal-light transition-transform hover:scale-105"
+          className="absolute rounded-full overflow-hidden flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 transition-transform hover:scale-105"
           style={{
             left: `${primaryLeftFinal}px`,
             top: `${primaryTopFinal}px`,
@@ -214,7 +214,7 @@ export default function TrustLockup({
           (hasSponsor ? (
             <button
               onClick={() => router.push(`/profile/${secondaryId}`)}
-              className="absolute rounded-full overflow-hidden flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent-teal-light transition-transform hover:scale-105"
+              className="absolute rounded-full overflow-hidden flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 transition-transform hover:scale-105"
               style={{
                 left: `${secondaryLeftFinal}px`,
                 top: `${secondaryTopFinal}px`,
@@ -279,13 +279,13 @@ export default function TrustLockup({
       {hasSponsor && secondaryName ? (
         <button
           onClick={() => router.push(`/profile/${secondaryId}`)}
-          className="type-body text-white/70 hover:text-white/90 hover:underline focus:outline-none focus:underline transition-colors mt-4"
+          className="type-body text-orbit-text2 hover:text-orbit-text hover:underline focus:outline-none focus:underline transition-colors mt-4"
           aria-label={`View ${secondaryName}'s profile`}
         >
           Introduced by {secondaryName}
         </button>
       ) : (
-        <span className="type-body text-white/70 mt-4 block" aria-hidden>
+        <span className="type-body text-orbit-text2 mt-4 block" aria-hidden>
           Your introduction is waiting to happen
         </span>
       )}

@@ -127,7 +127,7 @@ export default function InvitePage() {
           </p>
           <Link
             href="/"
-            className="rounded-cta min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover px-10 py-3 no-underline"
+            className="rounded-cta min-h-[48px] bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover px-10 py-3 no-underline"
           >
             Go to Orbit
           </Link>
@@ -148,7 +148,7 @@ export default function InvitePage() {
           </p>
           <Link
             href="/"
-            className="rounded-cta min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover px-10 py-3 no-underline"
+            className="rounded-cta min-h-[48px] bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover px-10 py-3 no-underline"
           >
             Go to Orbit
           </Link>

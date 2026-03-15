@@ -301,7 +301,7 @@ export default function CommunitiesPage() {
                                                 type="button"
                                                 onClick={() => handleJoin(community.id)}
                                                 disabled={isJoining}
-                                                className="rounded-cta min-h-[40px] bg-action-primary px-4 py-2 text-sm font-semibold text-primary-blue shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active disabled:cursor-not-allowed disabled:opacity-60"
+                                                className="rounded-cta min-h-[40px] bg-action-primary px-4 py-2 text-sm font-semibold text-orbit-canvas shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active disabled:cursor-not-allowed disabled:opacity-60"
                                             >
                                                 {isJoining ? 'Joining...' : 'Join'}
                                             </button>
@@ -324,7 +324,7 @@ export default function CommunitiesPage() {
             </div>
 
             {showCreateModal ? (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-orbit-canvas/80 px-4">
                     <div className="w-full max-w-md rounded-2xl border border-orbit-border/60 orbit-surface-strong p-5 shadow-card">
                         <h2 className="type-section">Create a community</h2>
                         <form onSubmit={handleCreateCommunity} className="mt-4 space-y-3">
@@ -363,7 +363,7 @@ export default function CommunitiesPage() {
                                 New communities default to open server-side until invite-only UX is restored. */}
 
                             {createError ? (
-                                <p className="text-xs text-red-300">{createError}</p>
+                                <p className="text-xs text-orbit-warning">{createError}</p>
                             ) : null}
 
                             <div className="flex justify-end gap-2 pt-1">
@@ -381,7 +381,7 @@ export default function CommunitiesPage() {
                                 <button
                                     type="submit"
                                     disabled={creating}
-                                    className="rounded-cta min-h-[40px] bg-action-primary px-4 py-2 text-sm font-semibold text-primary-blue shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="rounded-cta min-h-[40px] bg-action-primary px-4 py-2 text-sm font-semibold text-orbit-canvas shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {creating ? 'Creating...' : 'Create'}
                                 </button>

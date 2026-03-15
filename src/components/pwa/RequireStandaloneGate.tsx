@@ -31,7 +31,7 @@ export default function RequireStandaloneGate({
   const { userType } = useAuth();
   const [isStandalone, setIsStandalone] = useState(true);
   const { triggerInstall, installing, showInstructions, setShowInstructions } = useInstallPrompt();
-  
+
   // Use user's role-based dashboard route, or fallback to /dashboard/matchmakr
   const defaultBackRoute = backRoute || getDashboardHref(userType) || '/dashboard/matchmakr';
 
@@ -40,10 +40,10 @@ export default function RequireStandaloneGate({
     const checkStandalone = () => {
       setIsStandalone(isStandaloneMode());
     };
-    
+
     checkStandalone();
     window.addEventListener('focus', checkStandalone);
-    
+
     return () => {
       window.removeEventListener('focus', checkStandalone);
     };
@@ -61,16 +61,16 @@ export default function RequireStandaloneGate({
       <div className="hidden">{children}</div>
 
       {/* Full-screen blocking overlay */}
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-        <div className="bg-primary-blue rounded-2xl p-6 max-w-md w-full shadow-xl border border-white/10">
+      <div className="fixed inset-0 bg-orbit-canvas/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div className="bg-orbit-surface-3 rounded-2xl p-6 max-w-md w-full shadow-xl border border-orbit-border/30">
           <div className="flex flex-col gap-4">
             {/* Header */}
-            <h3 className="text-white text-xl font-semibold text-center">
+            <h3 className="text-orbit-text text-xl font-semibold text-center">
               {title}
             </h3>
 
             {/* Body */}
-            <p className="text-white/80 text-sm text-center leading-relaxed">
+            <p className="text-orbit-text2 text-sm text-center leading-relaxed">
               {body}
             </p>
 
@@ -80,7 +80,7 @@ export default function RequireStandaloneGate({
               <button
                 onClick={triggerInstall}
                 disabled={installing}
-                className="w-full px-4 py-3 bg-white/20 hover:bg-white/30 border border-white/30 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 bg-orbit-surface-1/60 hover:bg-orbit-surface-1/80 border border-orbit-border/50 rounded-lg text-orbit-text text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {installing ? 'Installing...' : ctaLabel}
               </button>
@@ -89,7 +89,7 @@ export default function RequireStandaloneGate({
               {showBackButton && (
                 <button
                   onClick={() => router.push(defaultBackRoute)}
-                  className="w-full px-4 py-3 bg-transparent hover:bg-white/10 border border-white/20 rounded-lg text-white/80 hover:text-white text-sm font-medium transition-colors"
+                  className="w-full px-4 py-3 bg-transparent hover:bg-orbit-surface-1/40 border border-orbit-border/40 rounded-lg text-orbit-text2 hover:text-orbit-text text-sm font-medium transition-colors"
                 >
                   Back to Dashboard
                 </button>
@@ -109,4 +109,3 @@ export default function RequireStandaloneGate({
     </>
   );
 }
-

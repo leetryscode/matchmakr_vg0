@@ -46,7 +46,7 @@ export default function InviteGate({
           </p>
           <button
             onClick={onContinue}
-            className="rounded-cta min-h-[48px] bg-action-primary text-primary-blue font-bold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 px-10 py-3 no-underline w-full"
+            className="rounded-cta min-h-[48px] bg-action-primary text-orbit-canvas font-bold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200 px-10 py-3 no-underline w-full"
           >
             Continue
           </button>

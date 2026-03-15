@@ -34,7 +34,7 @@ export default function SendPreviewModal({
 
     const handleRecipientSelect = async (recipientId: string) => {
         if (isSending) return;
-        
+
         setSelectedRecipientId(recipientId);
         setIsSending(true);
 
@@ -51,13 +51,13 @@ export default function SendPreviewModal({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-orbit-canvas/80 flex items-center justify-center z-50" onClick={onClose}>
+            <div className="bg-orbit-surface-2 rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
                 <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    <h2 className="text-2xl font-bold text-orbit-text mb-2">
                         Send preview
                     </h2>
-                    <p className="text-gray-600">
+                    <p className="text-orbit-muted">
                         Choose one of your singles.
                     </p>
                 </div>
@@ -65,7 +65,7 @@ export default function SendPreviewModal({
                 {/* Optional: Show target single thumbnail */}
                 {targetSinglePhotoUrl && (
                     <div className="mb-4 flex justify-center">
-                        <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
+                        <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-orbit-border">
                             <img
                                 src={targetSinglePhotoUrl}
                                 alt={targetSingleName || 'Preview'}
@@ -78,10 +78,10 @@ export default function SendPreviewModal({
                 <div className="space-y-3 mb-6 max-h-96 overflow-y-auto">
                     {sponsoredSingles.length === 0 ? (
                         <div className="text-center py-8">
-                            <p className="text-gray-900 font-medium mb-2">
+                            <p className="text-orbit-text font-medium mb-2">
                                 You don't have any singles yet.
                             </p>
-                            <p className="text-gray-600 text-sm">
+                            <p className="text-orbit-muted text-sm">
                                 Invite a single to start making introductions.
                             </p>
                         </div>
@@ -97,13 +97,13 @@ export default function SendPreviewModal({
                                     disabled={isDisabled}
                                     className={`w-full p-4 border rounded-xl transition-all duration-200 flex items-center space-x-3 ${
                                         isSelected
-                                            ? 'border-accent-teal-light bg-accent-teal-light/10'
+                                            ? 'border-orbit-gold bg-orbit-gold/10'
                                             : isDisabled
-                                            ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
-                                            : 'border-gray-200 hover:border-accent-teal-light hover:bg-accent-teal-light/5'
+                                            ? 'border-orbit-border bg-orbit-surface-1 opacity-50 cursor-not-allowed'
+                                            : 'border-orbit-border hover:border-orbit-gold hover:bg-orbit-gold/10'
                                     }`}
                                 >
-                                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100 flex-shrink-0">
+                                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-orbit-border flex items-center justify-center bg-orbit-surface-1 flex-shrink-0">
                                         {single.photo ? (
                                             <img
                                                 src={single.photo}
@@ -111,19 +111,19 @@ export default function SendPreviewModal({
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            <span className="text-lg font-bold text-gray-500">
+                                            <span className="text-lg font-bold text-orbit-muted">
                                                 {single.name?.charAt(0).toUpperCase() || '?'}
                                             </span>
                                         )}
                                     </div>
                                     <div className="flex-1 text-left">
-                                        <div className="font-semibold text-gray-900">
+                                        <div className="font-semibold text-orbit-text">
                                             {single.name}
                                         </div>
                                     </div>
                                     {isSelected && isSending && (
                                         <div className="flex-shrink-0">
-                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-accent-teal-light"></div>
+                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orbit-gold"></div>
                                         </div>
                                     )}
                                 </button>
@@ -136,7 +136,7 @@ export default function SendPreviewModal({
                     <button
                         onClick={onClose}
                         disabled={isSending}
-                        className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-2 text-orbit-muted hover:text-orbit-text2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Cancel
                     </button>
@@ -145,4 +145,3 @@ export default function SendPreviewModal({
         </div>
     );
 }
-

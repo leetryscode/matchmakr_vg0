@@ -28,7 +28,7 @@ function DeleteAccountModal({ isOpen, onClose, onConfirm, isDeleting }: DeleteAc
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-orbit-canvas/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
       <div className="orbit-surface-strong backdrop-blur-md rounded-lg border border-orbit-border/50 shadow-xl max-w-md w-full p-6">
@@ -47,7 +47,7 @@ function DeleteAccountModal({ isOpen, onClose, onConfirm, isDeleting }: DeleteAc
           <button
             onClick={onConfirm}
             disabled={isDeleting}
-            className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2 bg-orbit-warning hover:bg-orbit-warning/90 text-orbit-canvas rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isDeleting ? (
               <>
@@ -305,7 +305,7 @@ export default function SettingsPage() {
                     <button
                       onClick={handleSaveName}
                       disabled={isSavingName}
-                      className="text-accent-teal-light hover:text-accent-teal text-sm font-medium disabled:opacity-50"
+                      className="text-orbit-gold hover:text-orbit-goldDark text-sm font-medium disabled:opacity-50"
                     >
                       {isSavingName ? 'Saving...' : 'Save'}
                     </button>
@@ -353,7 +353,7 @@ export default function SettingsPage() {
             {/* Delete Account Button */}
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold py-3 px-6 rounded-xl border border-red-500/30 hover:border-red-500/50 transition-all duration-200"
+              className="w-full bg-orbit-warning/20 hover:bg-orbit-warning/30 text-orbit-warning font-semibold py-3 px-6 rounded-xl border border-orbit-warning/30 hover:border-orbit-warning/50 transition-all duration-200"
             >
               Delete account
             </button>

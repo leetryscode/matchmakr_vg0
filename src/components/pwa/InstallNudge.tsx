@@ -143,14 +143,14 @@ export default function InstallNudge() {
 
   return (
     <div className="w-full max-w-full px-4 pt-4 pb-2">
-      <div className="bg-white/10 rounded-card-lg border border-white/20 shadow-card p-4">
+      <div className="bg-orbit-surface-1/40 rounded-card-lg border border-orbit-border/40 shadow-card p-4">
         <div className="flex flex-col gap-3">
           {/* Header */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
-              <h3 className="text-white text-sm font-medium mb-1">Install Orbit</h3>
-              <p className="text-white/70 text-xs">
-                {ios 
+              <h3 className="text-orbit-text text-sm font-medium mb-1">Install Orbit</h3>
+              <p className="text-orbit-muted text-xs">
+                {ios
                   ? 'Tap Share → Add to Home Screen.'
                   : 'Use your browser menu to install.'}
               </p>
@@ -161,7 +161,7 @@ export default function InstallNudge() {
           <div className="flex gap-2">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="px-3 py-1.5 text-white/80 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium transition-colors"
+              className="px-3 py-1.5 text-orbit-text2 bg-orbit-surface-1/20 hover:bg-orbit-surface-1/40 border border-orbit-border/30 rounded-lg text-xs font-medium transition-colors"
             >
               How to install
             </button>
@@ -170,7 +170,7 @@ export default function InstallNudge() {
                 dismissNudge();
                 setShouldShow(false);
               }}
-              className="px-3 py-1.5 text-white/60 hover:text-white/80 text-xs transition-colors"
+              className="px-3 py-1.5 text-orbit-muted hover:text-orbit-text2 text-xs transition-colors"
             >
               Not now
             </button>
@@ -178,8 +178,8 @@ export default function InstallNudge() {
 
           {/* Expanded steps */}
           {isExpanded && (
-            <div className="pt-2 border-t border-white/10">
-              <ol className="list-decimal list-inside space-y-2 text-white/70 text-xs">
+            <div className="pt-2 border-t border-orbit-border/30">
+              <ol className="list-decimal list-inside space-y-2 text-orbit-muted text-xs">
                 {ios ? (
                   <>
                     <li>Tap the Share button (square with arrow)</li>

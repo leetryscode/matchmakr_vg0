@@ -129,7 +129,7 @@ export default function PairingsSection({
           )}
         </div>
         {saveError && (
-          <p className="text-sm text-red-400 mt-2">{saveError}</p>
+          <p className="text-sm text-orbit-warning mt-2">{saveError}</p>
         )}
         {canEdit && (
           <PairingsModal
@@ -180,7 +180,7 @@ export default function PairingsSection({
         )}
       </div>
       {saveError && (
-        <p className="text-sm text-red-400 mt-2">{saveError}</p>
+        <p className="text-sm text-orbit-warning mt-2">{saveError}</p>
       )}
       {canEdit && (
         <PairingsModal

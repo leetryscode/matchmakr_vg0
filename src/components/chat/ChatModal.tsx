@@ -416,7 +416,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   // If the modal is open but the required data is not yet loaded, show a loading spinner
   if (open && (isSingleToSingle ? (!aboutSingle || !clickedSingle) : (!chatContext || contextLoading))) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
+      <div className="fixed inset-0 bg-orbit-canvas/80 flex items-center justify-center z-[9999]">
         <div className="bg-orbit-surface3 rounded-2xl p-8 shadow-xl w-[400px] text-center">
                           <div className="text-xl font-light mb-4 tracking-[0.05em] uppercase font-brand text-orbit-text">Loading...</div>
           <div className="flex justify-center items-center mt-4">
@@ -517,7 +517,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
       body="Chat is available in app mode only. Install Orbit for full access."
       showBackButton={false}
     >
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex sm:items-center sm:justify-center items-stretch justify-end z-[9999]">
+    <div className="fixed inset-0 bg-orbit-canvas/80 flex sm:items-center sm:justify-center items-stretch justify-end z-[9999]">
       <div 
         className="bg-orbit-surface3 w-full sm:w-[600px] sm:rounded-2xl p-0 shadow-xl h-[100dvh] flex flex-col text-center relative overflow-hidden"
         style={{
@@ -614,7 +614,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                 {(!ourSingle?.id || !theirSingle?.id) && !isSingleToSingle && (
                   <div className="text-orbit-muted text-xs mt-2">Both singles must be present to make the introduction.</div>
                 )}
-                {matchError && <div className="text-red-500 mt-2">{matchError}</div>}
+                {matchError && <div className="text-orbit-warning mt-2">{matchError}</div>}
               </div>
             </>
           )}

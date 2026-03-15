@@ -143,7 +143,7 @@ export default function IntroductionSignalSection({
             {renderedPrompt}
           </p>
           {saveError && (
-            <p className="text-sm text-red-400 mt-2 text-center">{saveError}</p>
+            <p className="text-sm text-orbit-warning mt-2 text-center">{saveError}</p>
           )}
         </div>
         {canEdit && (
@@ -182,7 +182,7 @@ export default function IntroductionSignalSection({
           {afterResponse}
         </p>
         {saveError && (
-          <p className="text-sm text-red-400 mt-2 text-center">{saveError}</p>
+          <p className="text-sm text-orbit-warning mt-2 text-center">{saveError}</p>
         )}
       </div>
       {canEdit && (

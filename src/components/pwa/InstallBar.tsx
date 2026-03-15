@@ -18,10 +18,10 @@ export default function InstallBar() {
     const checkStandalone = () => {
       setIsStandalone(isStandaloneMode());
     };
-    
+
     checkStandalone();
     window.addEventListener('focus', checkStandalone);
-    
+
     return () => {
       window.removeEventListener('focus', checkStandalone);
     };
@@ -51,17 +51,17 @@ export default function InstallBar() {
   return (
     <>
       {/* Sticky install bar */}
-      <div className="sticky top-0 z-40 w-full bg-primary-blue border-b border-white/10 shadow-lg">
+      <div className="sticky top-0 z-40 w-full bg-orbit-surface-3 border-b border-orbit-border/30 shadow-lg">
         <div className="px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-medium">
+            <p className="text-orbit-text text-sm font-medium">
               Orbit works better in app mode — install for full access.
             </p>
           </div>
           <button
             onClick={triggerInstall}
             disabled={installing}
-            className="flex-shrink-0 px-4 py-2 bg-white/20 hover:bg-white/30 border border-white/30 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            className="flex-shrink-0 px-4 py-2 bg-orbit-surface-1/60 hover:bg-orbit-surface-1/80 border border-orbit-border/50 rounded-lg text-orbit-text text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
             {installing ? 'Installing...' : 'Install Orbit'}
           </button>
@@ -78,4 +78,3 @@ export default function InstallBar() {
     </>
   );
 }
-

@@ -59,7 +59,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCl
 
   return (
     <div className="w-full">
-      <div className="relative w-full aspect-square bg-black/10 rounded-xl overflow-hidden">
+      <div className="relative w-full aspect-square bg-orbit-canvas/10 rounded-xl overflow-hidden">
         <div className="absolute inset-0">
           <Cropper
             image={image}
@@ -73,10 +73,10 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCl
           {/* Rule-of-thirds grid overlay - only visible during interaction */}
           {isInteracting && (
             <div className="pointer-events-none absolute inset-0">
-              <div className="absolute inset-y-0 left-1/3 w-px bg-white/20" />
-              <div className="absolute inset-y-0 left-2/3 w-px bg-white/20" />
-              <div className="absolute inset-x-0 top-1/3 h-px bg-white/20" />
-              <div className="absolute inset-x-0 top-2/3 h-px bg-white/20" />
+              <div className="absolute inset-y-0 left-1/3 w-px bg-orbit-surface-1/60" />
+              <div className="absolute inset-y-0 left-2/3 w-px bg-orbit-surface-1/60" />
+              <div className="absolute inset-x-0 top-1/3 h-px bg-orbit-surface-1/60" />
+              <div className="absolute inset-x-0 top-2/3 h-px bg-orbit-surface-1/60" />
             </div>
           )}
         </div>
@@ -95,11 +95,11 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCl
               setZoom(newZoom);
               bumpInteraction();
             }}
-            className="flex-1 h-1.5 bg-gray-200/70 rounded-full appearance-none cursor-pointer"
+            className="flex-1 h-1.5 bg-orbit-border/40 rounded-full appearance-none cursor-pointer"
             style={{ accentColor: ACCENT_COLOR }}
           />
           {isInteracting && (
-            <span className="text-xs text-gray-400 tabular-nums min-w-[3ch] text-right">
+            <span className="text-xs text-orbit-muted tabular-nums min-w-[3ch] text-right">
               {zoom.toFixed(1)}×
             </span>
           )}
@@ -109,7 +109,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCl
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 h-11 rounded-xl border border-gray-200 bg-white text-gray-900 hover:bg-gray-50 transition"
+          className="flex-1 h-11 rounded-xl border border-orbit-border bg-orbit-surface-2 text-orbit-text hover:bg-orbit-surface-1 transition"
         >
           Cancel
         </button>
@@ -117,7 +117,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCl
           type="button"
           onClick={handleSave}
           disabled={!croppedAreaPixels}
-          className="flex-1 h-11 min-h-[44px] rounded-cta bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
+          className="flex-1 h-11 min-h-[44px] rounded-cta bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
         >
           Use photo
         </button>
@@ -126,4 +126,4 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCl
   );
 };
 
-export default ImageCropper; 
+export default ImageCropper;

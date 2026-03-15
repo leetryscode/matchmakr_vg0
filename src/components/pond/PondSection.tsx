@@ -13,13 +13,13 @@ type PondSectionProps = {
 
 const variantClasses: Record<PondSectionVariant, string> = {
   default:
-    'rounded-2xl bg-background-card/60 border border-border-light/40 px-4 py-4 space-y-2',
+    'rounded-2xl bg-orbit-surface-2/60 border border-orbit-border/40 px-4 py-4 space-y-2',
   accent:
-    'rounded-2xl bg-background-card/85 border border-border-light/60 px-4 py-3 shadow-sm space-y-2',
+    'rounded-2xl bg-orbit-surface-2/85 border border-orbit-border/60 px-4 py-3 shadow-sm space-y-2',
   soft:
-    'rounded-2xl bg-background-card/55 border border-border-light/35 px-4 py-4 space-y-2',
+    'rounded-2xl bg-orbit-surface-2/55 border border-orbit-border/35 px-4 py-4 space-y-2',
   light:
-    'rounded-xl bg-background-card/35 border border-border-light/25 px-4 py-3 space-y-2',
+    'rounded-xl bg-orbit-surface-2/35 border border-orbit-border/25 px-4 py-3 space-y-2',
 };
 
 export default function PondSection({

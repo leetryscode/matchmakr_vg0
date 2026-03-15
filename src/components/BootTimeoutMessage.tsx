@@ -16,7 +16,7 @@ export default function BootTimeoutMessage() {
   if (!show) return null;
 
   return (
-    <p className="text-sm text-white/80 text-center max-w-xs">
+    <p className="text-sm text-orbit-text2 text-center max-w-xs">
       Having trouble connecting. Please try again.
     </p>
   );

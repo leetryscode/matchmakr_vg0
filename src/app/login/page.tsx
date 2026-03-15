@@ -74,7 +74,7 @@ export default function LoginPage() {
               required
               className="orbit-ring w-full rounded-xl border border-orbit-border/50 bg-orbit-surface/80 px-4 py-3 text-orbit-text placeholder:text-orbit-muted font-light"
             />
-            {error && <p className="text-red-500 font-light">{error}</p>}
+            {error && <p className="text-orbit-warning font-light">{error}</p>}
             <button
               type="submit"
               disabled={loadingSignIn}

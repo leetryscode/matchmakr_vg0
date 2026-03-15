@@ -14,9 +14,9 @@ type EntryCTAProps = {
 
 /** Entry CTA: white fill, slate blue text. For home, login, and other pre-dashboard flows only. */
 const entryCtaClasses =
-  'rounded-cta min-h-[48px] bg-action-entry text-primary-blue font-semibold shadow-cta-entry ' +
+  'rounded-cta min-h-[48px] bg-action-entry text-orbit-canvas font-semibold shadow-cta-entry ' +
   'hover:bg-action-entry-hover active:bg-action-entry-active ' +
-  'focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 ' +
+  'focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200 ' +
   'px-6 py-3 text-base tracking-[0.02em] ' +
   'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-entry';
 

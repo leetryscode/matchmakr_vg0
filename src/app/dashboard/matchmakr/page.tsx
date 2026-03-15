@@ -57,7 +57,7 @@ const IntroductionsCard = () => (
 
 const ManageSinglesList = () => (
      <div className="orbit-surface p-6 rounded-lg shadow-card mt-8 border border-orbit-border/50">
-        <h2 className="type-section mb-4 text-primary-blue">Manage Singles</h2>
+        <h2 className="type-section mb-4 text-orbit-gold">Manage Singles</h2>
         <div className="mt-4 p-4 border border-orbit-border/50 rounded-lg bg-orbit-surface/50">
              <p className="text-center type-meta">Chats with the singles you manage.</p>
         </div>

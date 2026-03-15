@@ -21,11 +21,11 @@ export default function InstallInstructionsSheet({ isOpen, onClose }: InstallIns
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-60 flex items-end justify-center z-50"
+      className="fixed inset-0 bg-orbit-canvas/80 flex items-end justify-center z-50"
       onClick={handleBackdropClick}
     >
       <div
-        className="bg-primary-blue rounded-t-2xl p-6 max-w-md w-full shadow-xl border-t border-white/10"
+        className="bg-orbit-surface-3 rounded-t-2xl p-6 max-w-md w-full shadow-xl border-t border-orbit-border/30"
         onClick={(e) => e.stopPropagation()}
         style={{
           paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))',
@@ -34,10 +34,10 @@ export default function InstallInstructionsSheet({ isOpen, onClose }: InstallIns
         <div className="flex flex-col gap-4">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h3 className="text-white text-lg font-semibold">Install Orbit</h3>
+            <h3 className="text-orbit-text text-lg font-semibold">Install Orbit</h3>
             <button
               onClick={onClose}
-              className="text-white/60 hover:text-white transition-colors p-1"
+              className="text-orbit-muted hover:text-orbit-text transition-colors p-1"
               aria-label="Close"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,16 +47,16 @@ export default function InstallInstructionsSheet({ isOpen, onClose }: InstallIns
           </div>
 
           {/* Body */}
-          <p className="text-white/80 text-sm">Install takes a few seconds.</p>
+          <p className="text-orbit-text2 text-sm">Install takes a few seconds.</p>
 
           {/* Steps */}
-          <ol className="list-decimal list-inside space-y-3 text-white/90 text-sm">
+          <ol className="list-decimal list-inside space-y-3 text-orbit-text text-sm">
             {ios ? (
               <>
                 <li className="flex items-center gap-2">
                   <span>Tap the Share icon</span>
                   <svg
-                    className="w-4 h-4 inline-flex items-center justify-center text-white/80 flex-shrink-0"
+                    className="w-4 h-4 inline-flex items-center justify-center text-orbit-text2 flex-shrink-0"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
@@ -85,7 +85,7 @@ export default function InstallInstructionsSheet({ isOpen, onClose }: InstallIns
           {/* Close button */}
           <button
             onClick={onClose}
-            className="mt-2 px-4 py-2 bg-white/20 hover:bg-white/30 border border-white/30 rounded-lg text-white text-sm font-medium transition-colors"
+            className="mt-2 px-4 py-2 bg-orbit-surface-1/60 hover:bg-orbit-surface-1/80 border border-orbit-border/50 rounded-lg text-orbit-text text-sm font-medium transition-colors"
           >
             Got it
           </button>
@@ -94,4 +94,3 @@ export default function InstallInstructionsSheet({ isOpen, onClose }: InstallIns
     </div>
   );
 }
-

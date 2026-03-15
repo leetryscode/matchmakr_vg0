@@ -37,7 +37,7 @@ export default function PreviewRow({
           'ui-rowcard flex items-center gap-3 select-none',
           'opacity-[0.88] cursor-default pointer-events-none',
           'rounded-card-lg shadow-card px-5 py-3',
-          'border border-border-light/60'
+          'border border-orbit-border/60'
         )}
         role="presentation"
         aria-disabled="true"

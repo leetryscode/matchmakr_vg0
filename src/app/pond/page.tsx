@@ -751,7 +751,7 @@ export default function PondPage() {
         return (
             <div className="min-h-screen bg-transparent text-orbit-text p-4 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mx-auto"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orbit-gold mx-auto"></div>
                     <p className="mt-4 text-orbit-text">Loading...</p>
                 </div>
             </div>
@@ -788,7 +788,7 @@ export default function PondPage() {
                                             <img 
                                                 src={currentSponsoredSingle.photo} 
                                                 alt={currentSponsoredSingle.name} 
-                                                className="w-8 h-8 rounded-full object-cover border border-border-light"
+                                                className="w-8 h-8 rounded-full object-cover border border-orbit-border"
                                             />
                                         ) : (
                                             <div className="w-8 h-8 rounded-full orbit-surface border border-orbit-border/50 flex items-center justify-center">
@@ -851,7 +851,7 @@ export default function PondPage() {
 
                 {loading ? (
                     <div className="text-center py-8">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mx-auto"></div>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orbit-gold mx-auto"></div>
                         <p className="mt-4 text-orbit-text">Loading profiles...</p>
                     </div>
                 ) : profiles.length === 0 ? (
@@ -910,7 +910,7 @@ export default function PondPage() {
                                                     )}
                                                 </div>
                                                 <button
-                                                    className="absolute bottom-5 right-4 z-10 px-3 py-1.5 rounded-full text-on-dark-overlay text-xs font-medium bg-white/20 backdrop-blur-sm border border-white/25 hover:bg-white/30 active:scale-95 transition-colors"
+                                                    className="absolute bottom-5 right-4 z-10 px-3 py-1.5 rounded-full text-on-dark-overlay text-xs font-medium bg-orbit-surface-1/40 backdrop-blur-sm border border-orbit-border/40 hover:bg-orbit-surface-1/60 active:scale-95 transition-colors"
                                                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenSendPreview(profile); }}
                                                 >
                                                     Send preview
@@ -942,7 +942,7 @@ export default function PondPage() {
                                                 </div>
                                             )}
                                             {/* Action zone: pairings → intro → interests → coordinate (solid, no gradient) */}
-                                            <div className="bg-black/10">
+                                            <div className="bg-orbit-canvas/10">
                                                 <div className={`px-4 sm:px-6 md:px-8 space-y-4 ${hasEndorsement ? 'pt-4 pb-2' : 'pt-5 pb-2'}`}>
                                                     <div className="-mt-1">
                                                         <PairingsSection
@@ -1089,13 +1089,13 @@ export default function PondPage() {
 
             {/* Tailor Search Modal */}
             {showTailorSearchModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowTailorSearchModal(false)}>
-                    <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-orbit-canvas/80 flex items-center justify-center z-50" onClick={() => setShowTailorSearchModal(false)}>
+                    <div className="bg-orbit-surface-2 rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl border border-orbit-border/40" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900">Filter by community</h2>
+                            <h2 className="text-2xl font-bold text-orbit-text">Filter by community</h2>
                             <button
                                 onClick={() => setShowTailorSearchModal(false)}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                className="text-orbit-muted hover:text-orbit-text transition-colors"
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1107,7 +1107,7 @@ export default function PondPage() {
                             {/* Community filter */}
                             <div>
                                 {communityFilterOptions.length === 0 ? (
-                                    <div className="text-sm text-gray-500">
+                                    <div className="text-sm text-orbit-muted">
                                         Join communities to filter by them.
                                     </div>
                                 ) : (
@@ -1123,10 +1123,10 @@ export default function PondPage() {
                                                         tabIndex={0}
                                                         aria-pressed={isSelected}
                                                         onClick={() => toggleCommunitySelection(community.community_id)}
-                                                        className={`inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 ${
+                                                        className={`inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 ${
                                                             isSelected
-                                                                ? 'bg-primary-blue text-white border-primary-blue hover:bg-primary-blue/90'
-                                                                : 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100'
+                                                                ? 'bg-orbit-gold text-orbit-canvas border-orbit-gold hover:bg-orbit-goldDark'
+                                                                : 'bg-orbit-surface-1 text-orbit-text2 border-orbit-border hover:bg-orbit-surface-2'
                                                         }`}
                                                     >
                                                         {community.community_name}
@@ -1142,7 +1142,7 @@ export default function PondPage() {
                             <div className="flex gap-2 pt-2">
                                 <button
                                     onClick={handleSearchFromModal}
-                                    className="flex-1 rounded-cta min-h-[44px] px-6 py-2 bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200"
+                                    className="flex-1 rounded-cta min-h-[44px] px-6 py-2 bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200"
                                 >
                                     Search
                                 </button>
@@ -1151,7 +1151,7 @@ export default function PondPage() {
                                         handleClearSearch();
                                         setShowTailorSearchModal(false);
                                     }}
-                                    className="flex-1 rounded-cta min-h-[44px] px-6 py-2 bg-action-secondary text-primary-blue font-semibold hover:bg-action-secondary-hover focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200"
+                                    className="flex-1 rounded-cta min-h-[44px] px-6 py-2 bg-action-secondary text-orbit-text font-semibold hover:bg-action-secondary-hover focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200"
                                 >
                                     Clear
                                 </button>

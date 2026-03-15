@@ -95,7 +95,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                         return (
                             <div
                                 key={single.id}
-                                className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
+                                className="ui-rowcard ui-rowcard-hover group relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-orbit-gold/30"
                                 role="button"
                                 tabIndex={0}
                                 onClick={e => {
@@ -110,7 +110,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                                     } 
                                 }}
                             >
-                                <div className="w-14 h-14 rounded-full flex items-center justify-center bg-background-card border-2 border-border-light overflow-hidden flex-shrink-0">
+                                <div className="w-14 h-14 rounded-full flex items-center justify-center bg-orbit-surface-2 border-2 border-orbit-border overflow-hidden flex-shrink-0">
                                     {single.profile_pic_url ? (
                                         <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full rounded-full object-cover" />
                                     ) : (

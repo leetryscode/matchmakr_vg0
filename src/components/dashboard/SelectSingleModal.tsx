@@ -75,13 +75,13 @@ export default function SelectSingleModal({
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl">
+        <div className="fixed inset-0 bg-orbit-canvas/80 flex items-center justify-center z-50">
+            <div className="bg-orbit-surface-2 rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl">
                 <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    <h2 className="text-2xl font-bold text-orbit-text mb-2">
                         Which of your singles?
                     </h2>
-                    <p className="text-gray-600">
+                    <p className="text-orbit-muted">
                         Select which of your singles this chat with {otherMatchmakrName} is about.
                     </p>
                 </div>
@@ -91,13 +91,13 @@ export default function SelectSingleModal({
                         <button
                             key={single.id}
                             onClick={() => handleSingleSelected(single.id)}
-                            className={`w-full p-4 border rounded-xl hover:border-accent-teal-light hover:bg-accent-teal-light/5 transition-all duration-200 flex items-center space-x-3 ${
+                            className={`w-full p-4 border rounded-xl hover:border-orbit-gold hover:bg-orbit-gold/10 transition-all duration-200 flex items-center space-x-3 ${
                                 currentSelectedSingleId === single.id
-                                    ? 'border-accent-teal-light bg-accent-teal-light/10'
-                                    : 'border-gray-200'
+                                    ? 'border-orbit-gold bg-orbit-gold/10'
+                                    : 'border-orbit-border'
                             }`}
                         >
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100">
+                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-orbit-border flex items-center justify-center bg-orbit-surface-1">
                                 {single.photo ? (
                                     <img
                                         src={single.photo}
@@ -105,36 +105,36 @@ export default function SelectSingleModal({
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <span className="text-lg font-bold text-gray-500">
+                                    <span className="text-lg font-bold text-orbit-muted">
                                         {single.name?.charAt(0).toUpperCase() || '?'}
                                     </span>
                                 )}
                             </div>
                             <div className="flex-1 text-left">
-                                <div className="font-semibold text-gray-900">
+                                <div className="font-semibold text-orbit-text">
                                     {single.name}
                                 </div>
                             </div>
                             {currentSelectedSingleId === single.id && (
-                                <div className="text-accent-teal-light">✓</div>
+                                <div className="text-orbit-gold">✓</div>
                             )}
                         </button>
                     ))}
-                    
+
                     {/* Show "You have no singles yet" message if no singles */}
                     {sponsoredSingles.length === 0 && (
-                        <div className="w-full p-4 border rounded-xl border-gray-200 bg-gray-50 opacity-50 flex items-center space-x-3">
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100">
-                                <span className="text-lg font-bold text-gray-400">?</span>
+                        <div className="w-full p-4 border rounded-xl border-orbit-border bg-orbit-surface-1 opacity-50 flex items-center space-x-3">
+                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-orbit-border flex items-center justify-center bg-orbit-surface-1">
+                                <span className="text-lg font-bold text-orbit-muted">?</span>
                             </div>
                             <div className="flex-1 text-left">
-                                <div className="font-semibold text-gray-500">
+                                <div className="font-semibold text-orbit-muted">
                                     You have no singles yet
                                 </div>
                             </div>
                         </div>
                     )}
-                    
+
                     {/* Always show "Someone Else!" option - triggers invite flow */}
                     <button
                         onClick={() => {
@@ -142,13 +142,13 @@ export default function SelectSingleModal({
                                 onInviteSingle();
                             }
                         }}
-                        className="w-full p-4 border rounded-xl hover:border-accent-teal-light hover:bg-accent-teal-light/5 transition-all duration-200 flex items-center space-x-3 border-gray-200"
+                        className="w-full p-4 border rounded-xl hover:border-orbit-gold hover:bg-orbit-gold/10 transition-all duration-200 flex items-center space-x-3 border-orbit-border"
                     >
-                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100">
-                            <span className="text-lg font-bold text-gray-500">?</span>
+                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-orbit-border flex items-center justify-center bg-orbit-surface-1">
+                            <span className="text-lg font-bold text-orbit-muted">?</span>
                         </div>
                         <div className="flex-1 text-left">
-                            <div className="font-semibold text-gray-900">
+                            <div className="font-semibold text-orbit-text">
                                 Someone Else!
                             </div>
                         </div>
@@ -158,7 +158,7 @@ export default function SelectSingleModal({
                 <div className="flex justify-end">
                     <button
                         onClick={onClose}
-                        className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                        className="px-6 py-2 text-orbit-muted hover:text-orbit-text2 transition-colors"
                     >
                         Cancel
                     </button>
@@ -166,4 +166,4 @@ export default function SelectSingleModal({
             </div>
         </div>
     );
-} 
+}

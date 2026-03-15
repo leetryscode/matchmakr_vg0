@@ -33,7 +33,7 @@ export default function InviteSingleReferralRow({ onClick, className }: InviteSi
           'rounded-card-lg shadow-card px-5 py-3',
           'border border-orbit-border/50',
           'cursor-pointer hover:bg-orbit-border/20 transition-colors',
-          'focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2'
+          'focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2'
         )}
         aria-label="Help grow Orbit - Invite someone you trust to join Orbit"
       >

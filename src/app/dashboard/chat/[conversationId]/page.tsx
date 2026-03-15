@@ -514,7 +514,7 @@ export default function ChatPage() {
                     Make the introduction
                   </button>
                 ) : null}
-                {matchError && <div className="text-xs text-red-500 mt-1 whitespace-nowrap">{matchError}</div>}
+                {matchError && <div className="text-xs text-orbit-warning mt-1 whitespace-nowrap">{matchError}</div>}
               </div>
             </div>
           )}
@@ -610,7 +610,7 @@ export default function ChatPage() {
 
       {/* Approval Confirmation Modal */}
       {showApprovalModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
+        <div className="fixed inset-0 bg-orbit-canvas/80 flex items-center justify-center z-[9999]">
           <div className="bg-orbit-surface3 rounded-2xl p-8 shadow-xl max-w-md w-full mx-4 text-center">
             <h3 className="type-section mb-4 text-orbit-text">Make the introduction?</h3>
             <p className="mb-6 text-orbit-text2">When both sponsors agree, the singles will be connected.</p>

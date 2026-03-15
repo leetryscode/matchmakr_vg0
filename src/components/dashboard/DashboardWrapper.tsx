@@ -98,7 +98,7 @@ export default function DashboardWrapper({ children, expectedUserType }: Dashboa
     return (
       <div className="flex min-h-[100dvh] items-center justify-center bg-transparent text-orbit-text">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orbit-surface-3 mx-auto mb-4"></div>
           <div className="text-orbit-text text-lg">Loading...</div>
         </div>
       </div>

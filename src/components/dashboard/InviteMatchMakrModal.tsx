@@ -41,7 +41,7 @@ const InviteMatchMakrModal = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-orbit-canvas/80 flex justify-center items-center z-50">
             <div className="orbit-surface-strong rounded-lg p-8 w-full max-w-md text-center border border-orbit-border/50">
                 <h2 className="type-section mb-4">Invite a sponsor</h2>
                 <p className="text-orbit-muted mb-6">
@@ -68,7 +68,7 @@ const InviteMatchMakrModal = ({
                     <button onClick={onClose} className="orbit-btn-secondary px-4 py-2 rounded-md" disabled={isLoading}>
                         Cancel
                     </button>
-                    <button onClick={handleSendInvite} className="rounded-cta px-4 py-2 min-h-[44px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200" disabled={isLoading}>
+                    <button onClick={handleSendInvite} className="rounded-cta px-4 py-2 min-h-[44px] bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200" disabled={isLoading}>
                         {isLoading ? 'Sending...' : 'Send Invite'}
                     </button>
                 </div>
@@ -77,4 +77,4 @@ const InviteMatchMakrModal = ({
     );
 };
 
-export default InviteMatchMakrModal; 
+export default InviteMatchMakrModal;

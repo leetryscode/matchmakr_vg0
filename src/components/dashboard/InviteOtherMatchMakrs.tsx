@@ -62,8 +62,8 @@ const InviteOtherMatchMakrModal = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-background-card rounded-xl p-8 w-full max-w-md text-center shadow-card border border-white/20">
+        <div className="fixed inset-0 bg-orbit-canvas/80 flex justify-center items-center z-50">
+            <div className="bg-orbit-surface-2 rounded-xl p-8 w-full max-w-md text-center shadow-card border border-orbit-border/40">
                 <h2 className="type-section mb-4">Invite a fellow sponsor</h2>
                 <p className="text-orbit-muted mb-6 leading-relaxed">
                     Invite a friend to join our community helping friends find love.
@@ -110,7 +110,7 @@ const InviteOtherMatchMakrModal = ({
                     <button
                         onClick={handleSend}
                         disabled={isLoading || !email.trim()}
-                        className="rounded-cta px-6 py-3 min-h-[48px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-cta px-6 py-3 min-h-[48px] bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isLoading ? 'Sending...' : 'Send invite'}
                     </button>
@@ -134,15 +134,15 @@ export default function InviteOtherMatchMakrs() {
 
     return (
         <>
-            <div className="bg-white/10 p-8 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-white/20 mb-8">
+            <div className="bg-orbit-surface-1/20 p-8 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-orbit-border/30 mb-8">
                 <h2 className="type-display mb-3">Sponsor chat</h2>
                 <p className="text-orbit-text2 text-lg leading-relaxed mb-6">Chat windows with other sponsors like you, on behalf of their sponsored singles</p>
-                <div className="text-center p-12 bg-white/10 rounded-2xl border-2 border-dashed border-white/20 mb-6">
+                <div className="text-center p-12 bg-orbit-surface-1/20 rounded-2xl border-2 border-dashed border-orbit-border/30 mb-6">
                     <p className="text-orbit-muted text-lg">No sponsor chats</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="w-full rounded-cta min-h-[48px] bg-action-primary text-primary-blue font-semibold text-lg shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 py-4 px-8"
+                    className="w-full rounded-cta min-h-[48px] bg-action-primary text-orbit-canvas font-semibold text-lg shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200 py-4 px-8"
                 >
                     Invite a sponsor
                 </button>

@@ -465,7 +465,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                 className="absolute right-0 mt-2 w-40 orbit-surface-strong border border-orbit-border/50 rounded-lg shadow-lg z-10"
               >
                 <button
-                  className="block w-full text-left px-4 py-2 text-red-600 hover:bg-orbit-surface/50 rounded-t-lg"
+                  className="block w-full text-left px-4 py-2 text-orbit-warning hover:bg-orbit-surface/50 rounded-t-lg"
                   onClick={e => { e.stopPropagation(); setConfirmDelete({otherId, profileName: profile?.name || 'this sponsor'}); setMenuOpen(null); }}
                 >
                   Delete chat
@@ -591,7 +591,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       )}
       {/* Invite Sponsor Modal */}
       {isInviteSponsorModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-orbit-canvas/80 flex justify-center items-center z-50">
           <div className="orbit-surface-strong rounded-xl p-8 w-full max-w-md text-center shadow-card border border-orbit-border/50">
             <h2 className="type-section mb-4">Invite a fellow sponsor</h2>
             <p className="text-orbit-muted mb-6 leading-relaxed">
@@ -645,7 +645,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
       )}
       {/* Confirmation Modal */}
       {confirmDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999]">
+        <div className="fixed inset-0 bg-orbit-canvas/80 flex items-center justify-center z-[9999]">
           <div className="bg-orbit-surface3 rounded-2xl p-8 shadow-xl max-w-sm w-full text-center">
             <h3 className="type-section mb-4 text-orbit-text">Delete chat?</h3>
             <p className="mb-6 text-orbit-text2">Delete chat for both parties? This clears the conversation for everyone. You can reconnect with this sponsor if you need to coordinate again.</p>
@@ -657,7 +657,7 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({ userI
                 Cancel
               </button>
               <button
-                className="px-6 py-2 bg-red-600 text-white rounded-md font-semibold hover:bg-red-700"
+                className="px-6 py-2 bg-orbit-warning text-orbit-canvas rounded-md font-semibold hover:bg-orbit-warning/90"
                 onClick={async () => {
                   setDeletingChatId(confirmDelete.otherId);
                   

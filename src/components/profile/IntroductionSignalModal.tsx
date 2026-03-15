@@ -1,6 +1,6 @@
 /**
  * Introduction Signal Modal
- * 
+ *
  * Modal for adding/editing sponsor-authored introduction signals.
  * Allows cycling through prompts and entering a short response.
  */
@@ -174,32 +174,32 @@ export default function IntroductionSignalModal({
   const canSave = !isResponseEmpty && !saving && !error;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
-      <div className="bg-white/95 rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl border border-white/20">
+    <div className="fixed inset-0 bg-orbit-canvas/80 flex justify-center items-center z-50 p-4">
+      <div className="orbit-card rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
         {/* Prompt selection */}
         <div className="mb-6">
           <div className="flex items-center gap-3">
             <button
               onClick={handlePreviousPrompt}
-              className="flex-shrink-0 w-9 h-9 rounded-full border border-gray-200 bg-white/80 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-blue/30 transition-all opacity-60 hover:opacity-100"
+              className="flex-shrink-0 w-9 h-9 rounded-full border border-orbit-border bg-orbit-surface-2 hover:bg-orbit-surface-1 hover:border-orbit-border focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 transition-all opacity-60 hover:opacity-100"
               aria-label="Previous prompt"
             >
-              <ChevronLeftIcon className="w-5 h-5 text-gray-600" />
+              <ChevronLeftIcon className="w-5 h-5 text-orbit-muted" />
             </button>
             <div className="flex-1">
-              <p className="text-base text-gray-800 leading-relaxed font-medium text-left">
+              <p className="text-base text-orbit-text leading-relaxed font-medium text-left">
                 {renderedPrompt}
               </p>
             </div>
             <button
               onClick={handleNextPrompt}
-              className="flex-shrink-0 w-9 h-9 rounded-full border border-gray-200 bg-white/80 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-blue/30 transition-all opacity-60 hover:opacity-100"
+              className="flex-shrink-0 w-9 h-9 rounded-full border border-orbit-border bg-orbit-surface-2 hover:bg-orbit-surface-1 hover:border-orbit-border focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 transition-all opacity-60 hover:opacity-100"
               aria-label="Next prompt"
             >
-              <ChevronRightIcon className="w-5 h-5 text-gray-600" />
+              <ChevronRightIcon className="w-5 h-5 text-orbit-muted" />
             </button>
           </div>
-          <div className="border-t border-gray-200 mt-4"></div>
+          <div className="border-t border-orbit-border mt-4"></div>
         </div>
 
         {/* Response input */}
@@ -212,25 +212,25 @@ export default function IntroductionSignalModal({
             }}
             placeholder="Enter your response..."
             rows={2}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue resize-none text-sm"
+            className="w-full px-4 py-3 border border-orbit-border rounded-lg bg-orbit-surface-2 text-orbit-text placeholder:text-orbit-muted focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:border-orbit-gold/50 resize-none text-sm"
             maxLength={INTRODUCTION_SIGNAL_MAX_CHARS}
           />
           <div className="flex justify-between items-center mt-2">
             {error && (
-              <p className="text-sm text-red-600 flex-1">{error}</p>
+              <p className="text-sm text-orbit-warning flex-1">{error}</p>
             )}
             <p
               className={`text-xs ${
                 currentChars > INTRODUCTION_SIGNAL_MAX_CHARS * 0.9
-                  ? 'text-gray-600'
-                  : 'text-gray-400'
+                  ? 'text-orbit-muted'
+                  : 'text-orbit-muted'
               }`}
             >
               {currentChars}/{INTRODUCTION_SIGNAL_MAX_CHARS}
             </p>
           </div>
           {currentPrompt.maxWords && (
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-orbit-muted mt-1">
               Maximum {currentPrompt.maxWords} words
             </p>
           )}
@@ -241,14 +241,14 @@ export default function IntroductionSignalModal({
           <button
             onClick={onClose}
             disabled={saving}
-            className="flex-1 h-11 rounded-xl border border-gray-200 bg-white text-gray-900 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 h-11 rounded-xl border border-orbit-border bg-orbit-surface-2 text-orbit-text hover:bg-orbit-surface-1 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={!canSave}
-            className="flex-1 h-11 min-h-[44px] rounded-cta bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
+            className="flex-1 h-11 min-h-[44px] rounded-cta bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
@@ -257,4 +257,3 @@ export default function IntroductionSignalModal({
     </div>
   );
 }
-

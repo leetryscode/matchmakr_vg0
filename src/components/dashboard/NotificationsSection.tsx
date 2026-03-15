@@ -333,7 +333,7 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
                       disabled={isAcknowledging || isDismissing}
                       className={`absolute top-4 right-3 p-1.5 rounded-md border transition-all ease-out focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 ${
                         isAcknowledging
-                          ? 'bg-status-in-motion/20 border-status-in-motion/50 scale-[1.06]'
+                          ? 'bg-orbit-gold/20 border-orbit-gold/50 scale-[1.06]'
                           : 'bg-transparent border-orbit-border/50 hover:bg-orbit-border/20 hover:border-orbit-border/70'
                       } ${isDismissing ? 'opacity-60' : 'opacity-100'}`}
                       style={{ transitionDuration: `${ACK_MS}ms` }}

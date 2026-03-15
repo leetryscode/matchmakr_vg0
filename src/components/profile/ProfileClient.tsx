@@ -372,7 +372,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                         {canEditProfile && (
                           <button
                             type="button"
-                            className="ml-1 text-orbit-text2 hover:text-red-400 transition-colors"
+                            className="ml-1 text-orbit-text2 hover:text-orbit-warning transition-colors"
                             onClick={async () => {
                               const newInterests = interests.filter(i => i.id !== interest.id);
                               setSavingInterests(true);
@@ -428,17 +428,17 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
           {/* Sponsored Singles Section - only for MATCHMAKR profiles */}
           {profile.user_type === 'MATCHMAKR' && (
-            <div className="border-t border-white/10 pt-4">
+            <div className="border-t border-orbit-border/30 pt-4">
               <h2 className="text-lg font-semibold text-orbit-text">Sponsored Singles</h2>
               {sponsoredSingles && sponsoredSingles.length > 0 ? (
                 <div className="mt-4 grid grid-cols-3 gap-4">
                   {sponsoredSingles.map(single => (
                     <Link href={`/profile/${single.id}`} key={single.id} className="text-center group">
-                      <div className="w-20 h-20 rounded-full mx-auto overflow-hidden border-2 border-border-light group-hover:border-primary-blue transition-all duration-300">
+                      <div className="w-20 h-20 rounded-full mx-auto overflow-hidden border-2 border-orbit-border group-hover:border-orbit-gold transition-all duration-300">
                         {single.profile_pic_url ? (
                           <img src={single.profile_pic_url} alt={single.name || 'Single'} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full bg-background-main flex items-center justify-center">
+                          <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
                             <span className="text-2xl font-bold text-orbit-text">
                               {single.name?.charAt(0).toUpperCase() || '?'}
                             </span>
@@ -460,18 +460,18 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
             <>
               {/* Show "Profile managed by" when viewer is NOT the sponsor */}
               {!isSponsorViewing && (
-                <div className="border-t border-white/10 mt-6">
+                <div className="border-t border-orbit-border/30 mt-6">
                   <div className="px-4 py-4">
                     <div className="text-orbit-text font-semibold mb-1">Profile managed by</div>
                     <div className="text-orbit-muted text-xs mb-3">Trusted contact for this profile</div>
-                    <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                    <div className="mt-3 rounded-xl border border-orbit-border/30 bg-orbit-surface-1/20 px-4 py-3">
                       <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 shrink-0">
+                        <div className="w-12 h-12 rounded-full overflow-hidden border border-orbit-border/30 shrink-0">
                           {matchmakrProfile.profile_pic_url ? (
                             <img src={matchmakrProfile.profile_pic_url} alt={matchmakrProfile.name || 'Sponsor'} className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full bg-white/10 flex items-center justify-center">
+                            <div className="w-full h-full bg-orbit-surface-1/40 flex items-center justify-center">
                               <span className="text-xl font-bold text-orbit-text">
                                 {matchmakrProfile.name?.charAt(0).toUpperCase() || '?'}
                               </span>
@@ -501,15 +501,15 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
 
               {/* Show "Sponsor tools" when viewer IS the sponsor */}
               {isSponsorViewing && (
-                <div className="border-t border-white/10 mt-6">
+                <div className="border-t border-orbit-border/30 mt-6">
                   <div className="px-4 py-4">
                     <div className="text-orbit-text text-base font-semibold mb-1">Sponsor-only actions</div>
                     <div className="text-orbit-text2 text-xs font-medium opacity-70 mb-3">Only you can do these.</div>
-                    <div className="mt-3 rounded-xl border border-white/10 bg-white/5">
+                    <div className="mt-3 rounded-xl border border-orbit-border/30 bg-orbit-surface-1/20">
                       {/* Message your single row */}
                       <button
                         onClick={handleMessageAsSponsor}
-                        className="w-full flex items-center justify-between py-3 px-4 border-b border-white/10 hover:bg-white/5 transition-colors text-left"
+                        className="w-full flex items-center justify-between py-3 px-4 border-b border-orbit-border/30 hover:bg-orbit-surface-1/20 transition-colors text-left"
                       >
                         <span className="text-orbit-text font-medium">Message your single{profile.name ? `, ${profile.name}` : ''}</span>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-orbit-muted">
@@ -520,10 +520,10 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                       <button
                         onClick={() => setShowEndSponsorshipModal(true)}
                         disabled={endingSponsorship}
-                        className="w-full flex items-center justify-between py-3 px-4 hover:bg-white/5 transition-colors text-left disabled:opacity-50"
+                        className="w-full flex items-center justify-between py-3 px-4 hover:bg-orbit-surface-1/20 transition-colors text-left disabled:opacity-50"
                       >
-                        <span className="text-red-400 font-medium">End sponsorship</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400">
+                        <span className="text-orbit-warning font-medium">End sponsorship</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-orbit-warning">
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
                       </button>

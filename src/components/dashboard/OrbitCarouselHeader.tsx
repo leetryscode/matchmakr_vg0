@@ -794,8 +794,8 @@ export default function OrbitCarouselHeader({
                 }}
                 className={
                   isPreview
-                    ? 'absolute left-1/2 top-1/2 w-[52px] h-[52px] rounded-full bg-gray-200 overflow-hidden flex items-center justify-center pointer-events-none select-none'
-                    : 'orbit-avatar-highlight absolute left-1/2 top-1/2 w-[52px] h-[52px] rounded-full bg-gray-200 overflow-hidden flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-200'
+                    ? 'absolute left-1/2 top-1/2 w-[52px] h-[52px] rounded-full bg-orbit-surface-1 overflow-hidden flex items-center justify-center pointer-events-none select-none'
+                    : 'orbit-avatar-highlight absolute left-1/2 top-1/2 w-[52px] h-[52px] rounded-full bg-orbit-surface-1 overflow-hidden flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-200'
                 }
                 style={{
                   transform: transform,
@@ -861,7 +861,7 @@ export default function OrbitCarouselHeader({
             aria-label={`View ${centerUser.name}'s profile`}
           >
             <div
-              className="orbit-avatar-highlight orbit-avatar-sponsor w-[84px] h-[84px] rounded-full bg-gray-200 overflow-hidden flex items-center justify-center relative"
+              className="orbit-avatar-highlight orbit-avatar-sponsor w-[84px] h-[84px] rounded-full bg-orbit-surface-1 overflow-hidden flex items-center justify-center relative"
               style={{
                 border: '2px solid rgb(var(--orbit-gold))',
                 boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)',

@@ -11,7 +11,7 @@ const TemplateManagedSingleCard: React.FC<TemplateManagedSingleCardProps> = ({ o
     return (
         <div
             onClick={onInviteClick}
-            className="orbit-card hover:shadow-card-hover hover:-translate-y-[1px] active:translate-y-0 active:shadow-card transition-all duration-200 p-4 group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
+            className="orbit-card hover:shadow-card-hover hover:-translate-y-[1px] active:translate-y-0 active:shadow-card transition-all duration-200 p-4 group cursor-pointer focus:outline-none focus:ring-2 focus:ring-orbit-gold/30"
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {

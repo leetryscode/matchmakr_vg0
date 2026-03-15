@@ -439,13 +439,13 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                         {displayItems.map((item, idx) => (
                             <div className="keen-slider__slide relative w-full min-w-full h-full flex items-center justify-center" key={idx}>
                                 {item === ADD_PHOTO_SLOT && photos.length === 0 ? (
-                                    <div className="relative w-full h-full bg-background-card border border-border-light flex items-center justify-center">
+                                    <div className="relative w-full h-full bg-orbit-surface-2 border border-orbit-border flex items-center justify-center">
                                         <span className="text-6xl font-bold text-on-dark-overlay">
                                             {profileName?.charAt(0).toUpperCase() || '?'}
                                         </span>
                                         {canEdit && (
                                             <button
-                                                className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-slate-800 text-sm rounded-full border border-white/30 hover:bg-white transition-colors"
+                                                className="absolute bottom-4 right-4 px-3 py-1.5 bg-orbit-surface-2/90 backdrop-blur-sm text-orbit-text text-sm rounded-full border border-orbit-border/50 hover:bg-orbit-surface-2 transition-colors"
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
@@ -544,15 +544,15 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                                     <EllipsisVerticalIcon className="w-6 h-6" />
                                                 </button>
                                                 {activeMenuPhotoUrl === item && (
-                                                    <div ref={menuRef} className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg z-20 py-2 border border-gray-200">
+                                                    <div ref={menuRef} className="absolute right-0 mt-2 w-32 bg-orbit-surface-2 rounded-xl shadow-lg z-20 py-2 border border-orbit-border">
                                                         <button
-                                                            className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-xl font-semibold transition-colors"
+                                                            className="block w-full text-left px-4 py-2 text-orbit-text2 hover:bg-orbit-surface-1 rounded-xl font-semibold transition-colors"
                                                             onClick={() => handleEditClick(item)}
                                                         >
                                                             Replace Photo
                                                         </button>
                                                         <button
-                                                            className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-xl font-semibold transition-colors"
+                                                            className="block w-full text-left px-4 py-2 text-orbit-warning hover:bg-orbit-surface-1 rounded-xl font-semibold transition-colors"
                                                             onClick={() => { setActiveMenuPhotoUrl(null); handlePhotoDelete(item); }}
                                                         >
                                                             Delete Photo
@@ -569,13 +569,13 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                 ) : (
                     <>
                         {photos.length === 0 ? (
-                            <div className="relative w-full h-full bg-background-card border border-border-light flex items-center justify-center">
+                            <div className="relative w-full h-full bg-orbit-surface-2 border border-orbit-border flex items-center justify-center">
                                 <span className="text-6xl font-bold text-on-dark-overlay">
                                     {profileName?.charAt(0).toUpperCase() || '?'}
                                 </span>
                                 {canEdit && (
                                     <button
-                                        className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-slate-800 text-sm rounded-full border border-white/30 hover:bg-white transition-colors z-50"
+                                        className="absolute bottom-4 right-4 px-3 py-1.5 bg-orbit-surface-2/90 backdrop-blur-sm text-orbit-text text-sm rounded-full border border-orbit-border/50 hover:bg-orbit-surface-2 transition-colors z-50"
                                         style={{ pointerEvents: 'auto', zIndex: 50 }}
                                         onClick={(e) => {
                                             e.preventDefault();
@@ -681,15 +681,15 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                             <EllipsisVerticalIcon className="w-6 h-6" />
                                         </button>
                                         {activeMenuPhotoUrl === displayItems[0] && (
-                                            <div ref={menuRef} className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg z-20 py-2 border border-gray-200">
+                                            <div ref={menuRef} className="absolute right-0 mt-2 w-32 bg-orbit-surface-2 rounded-xl shadow-lg z-20 py-2 border border-orbit-border">
                                                 <button
-                                                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-xl font-semibold transition-colors"
+                                                    className="block w-full text-left px-4 py-2 text-orbit-text2 hover:bg-orbit-surface-1 rounded-xl font-semibold transition-colors"
                                                     onClick={() => handleEditClick(displayItems[0] as string)}
                                                 >
                                                     Replace Photo
                                                 </button>
                                                 <button
-                                                    className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded-xl font-semibold transition-colors"
+                                                    className="block w-full text-left px-4 py-2 text-orbit-warning hover:bg-orbit-surface-1 rounded-xl font-semibold transition-colors"
                                                     onClick={() => { setActiveMenuPhotoUrl(null); handlePhotoDelete(displayItems[0] as string); }}
                                                 >
                                                     Delete Photo
@@ -734,8 +734,8 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
             />
             {/* Image Cropper Modal */}
             {imageToCrop && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[2px] p-4">
-                    <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl ring-1 ring-black/10">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-orbit-canvas/80 backdrop-blur-[2px] p-4">
+                    <div className="w-full max-w-lg rounded-2xl bg-orbit-surface-2 shadow-xl ring-1 ring-orbit-border/20">
                         <div className="p-5 sm:p-6">
                             <ImageCropper
                                 image={imageToCrop}
