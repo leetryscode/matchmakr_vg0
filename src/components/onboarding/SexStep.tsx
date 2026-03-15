@@ -10,7 +10,7 @@ export default function SexStep({ onNext }: SexStepProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-8">
       <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
-        Select your sex
+        What's your sex?
       </h1>
       <div className="flex gap-4">
         <button

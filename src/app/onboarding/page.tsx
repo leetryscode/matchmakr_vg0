@@ -106,7 +106,7 @@ export default function OnboardingPage() {
         return (
           <>
             <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] text-orbit-text leading-[1.1]">
-              Select User Type
+              How will you use Orbit?
             </h1>
             <div className={`grid grid-cols-1 gap-4 ${orbitConfig.enableVendors ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} md:gap-8`}>
               <button
@@ -115,7 +115,7 @@ export default function OnboardingPage() {
               >
                 <h3 className="text-2xl font-light text-orbit-text">Single →</h3>
                 <div className="text-lg font-light text-orbit-text2">
-                  I'm open to being introduced.
+                  I'm looking to meet someone
                 </div>
               </button>
               <button
@@ -124,7 +124,7 @@ export default function OnboardingPage() {
               >
                 <h3 className="text-2xl font-light text-orbit-text">Sponsor →</h3>
                 <div className="text-lg font-light text-orbit-text2">
-                  I want to introduce my friends.
+                  I want to introduce my friends
                 </div>
               </button>
               {orbitConfig.enableVendors && (
@@ -233,7 +233,7 @@ export default function OnboardingPage() {
     <main className="flex min-h-[100dvh] flex-col items-center justify-center bg-transparent text-orbit-text p-4">
        <div className="absolute top-4 left-4">
         <button onClick={goBack} className="orbit-btn-ghost text-orbit-text2 hover:text-orbit-text underline font-light">
-          {step > 1 ? 'Back' : 'Home'}
+          Back
         </button>
       </div>
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 text-center">

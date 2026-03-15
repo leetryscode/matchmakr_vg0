@@ -229,7 +229,7 @@ export default function AccountCreationStep({ onboardingData, communityIntent = 
         Create your account
       </h1>
       <p className="text-xl text-orbit-muted font-light">
-        Almost there! No need to check your email after this step, you'll go straight to your dashboard.
+        Last step — you'll go straight to your dashboard after this.
       </p>
       <div className="flex flex-col gap-4 w-full max-w-md">
         <input
@@ -306,7 +306,7 @@ export default function AccountCreationStep({ onboardingData, communityIntent = 
         disabled={!canSubmit}
         className="orbit-btn-primary min-h-[48px] px-10 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? 'Signing up...' : 'Complete Sign Up'}
+        {loading ? 'Signing up...' : 'Create Account'}
       </button>
        {/* Placeholder for social logins, can be implemented later */}
     </div>

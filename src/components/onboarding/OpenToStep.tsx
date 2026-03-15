@@ -18,7 +18,7 @@ export default function OpenToStep({ onNext }: OpenToStepProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-8">
       <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
-        Open to being introduced to
+        Open to meeting
       </h1>
       <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md justify-center">
         {OPTIONS.map((opt) => (
