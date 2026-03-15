@@ -79,6 +79,14 @@ export default function OnboardingPage() {
     return visibleSteps[idx - 1];
   };
 
+  const currentVisibleStepIndex = visibleSteps.indexOf(step as OnboardingStep);
+  const progressPercent = (() => {
+    if (visibleSteps.length <= 1) return 95;
+    if (currentVisibleStepIndex < 0) return 12;
+    const rawPercent = (currentVisibleStepIndex / (visibleSteps.length - 1)) * 100;
+    return Math.min(95, Math.max(12, rawPercent));
+  })();
+
   const handleUserTypeSelect = (type: string) => {
     setOnboardingData({ ...onboardingData, userType: type });
   };
@@ -282,8 +290,14 @@ export default function OnboardingPage() {
           &#8249;
         </button>
       </div>
-      <div className="container flex w-full flex-col items-center justify-center px-4 py-16">
+      <div className="container flex w-full flex-col items-center justify-center px-4 pt-16 pb-24">
         {renderStep()}
+      </div>
+      <div className="fixed bottom-0 left-0 right-0 h-[3px] bg-white/10">
+        <div
+          className="h-full rounded-r-[2px] bg-[rgb(var(--orbit-gold)_/_0.95)]"
+          style={{ width: `${progressPercent}%`, transition: 'width 0.4s ease' }}
+        />
       </div>
     </main>
   );
