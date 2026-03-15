@@ -464,17 +464,13 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   );
 
   if (!sponsor) {
-    // Unsponsored Single state: Invite Sponsor CTA + empty states
+    // Unsponsored Single state: How Orbit Works + Invite Sponsor CTA
     return (
       <>
         <ProfileSection />
         <div className="flex flex-col w-full">
-          {/* Notifications */}
-          <section className="mt-10 first:mt-0">
-            <NotificationsSection userId={userId} />
-          </section>
 
-          {/* Pending sponsorship requests */}
+          {/* Pending sponsorship requests — actionable, always shown when present */}
           {pendingRequests.length > 0 && (
             <section className="mt-10">
               <SectionHeader title="Pending invitations" />
@@ -526,109 +522,74 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
               </div>
             </section>
           )}
-          
-          {/* Sponsor chat section — same Preview Row pattern when no sponsor */}
+
+          {/* How Orbit Works */}
           <section className="mt-10">
-            <SectionHeader title="Sponsor chat" right={<InviteAction />} />
-            <p className="mt-4 type-meta text-orbit-muted">
-              Invite someone to be your sponsor to get started.
-            </p>
-            <div className="mt-4">
-              <PreviewRow title="Sponsor Name" subtitle="Chat with your sponsor about connections" />
-            </div>
+            <SectionHeader title="How Orbit works" />
+            <GlassCard className="mt-4 p-5">
+              <div className="flex flex-col gap-5">
+                {[
+                  { n: '1', title: 'Your sponsor builds your profile', sub: 'Someone who knows you best tells your story' },
+                  { n: '2', title: 'They connect with other sponsors', sub: 'Sponsors talk to find someone great for you' },
+                  { n: '3', title: 'You get introduced', sub: 'When both sponsors agree, you meet someone worth meeting' },
+                ].map(({ n, title, sub }) => (
+                  <div key={n} className="flex items-start gap-4">
+                    <div className="shrink-0 w-7 h-7 rounded-full border border-orbit-border/60 flex items-center justify-center">
+                      <span className="type-meta font-semibold text-primary-blue leading-none">{n}</span>
+                    </div>
+                    <div>
+                      <p className="type-body font-semibold text-orbit-text">{title}</p>
+                      <p className="type-meta text-orbit-muted mt-0.5">{sub}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
           </section>
-          
+
+          {/* Who knows you best? — invite sponsor CTA */}
+          <section className="mt-6">
+            <GlassCard className="p-5">
+              <button
+                onClick={() => setIsInviteOpen(true)}
+                className="w-full rounded-cta px-6 py-4 min-h-[52px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 text-base tracking-[0.02em]"
+              >
+                Who knows you best?
+              </button>
+              <p className="type-meta text-orbit-muted text-center mt-3">Invite them to be your sponsor.</p>
+            </GlassCard>
+          </section>
+
           <InviteMatchMakrModal
             isOpen={isInviteOpen}
             onClose={() => setIsInviteOpen(false)}
             onSuccess={(mode) => setToast({ message: mode === 'connect' ? 'Request sent' : 'Invite sent', type: 'success' })}
-          />
-          
-          {/* My matches — show real chat rows when singleChats exist (e.g. sponsor deleted but match remains) */}
-          <section className="mt-10">
-            <SectionHeader title="Introduced by my sponsor" />
-            {singleChats.length === 0 ? (
-              <>
-                <p className="mt-4 type-meta text-orbit-muted">
-                  Conversations begin here after your sponsor makes an introduction.
-                </p>
-                <div className="mt-4">
-                  <PreviewRow title="Alex" subtitle="Introduced by Paula" label="Preview" />
-                  <InviteSingleReferralRow onClick={() => setIsInviteSingleReferralOpen(true)} />
-                </div>
-              </>
-            ) : (
-              <div className="mt-4 flex flex-col gap-4">
-                {singleChats.map((row, idx) => (
-                  <ChatRow
-                    key={row.otherSingle.id}
-                    photo={row.otherSingle.photo}
-                    name={row.otherSingle.name}
-                    lastMessage={row.lastMessage ? row.lastMessage.content : 'Click to chat'}
-                    unreadCount={row.unreadCount}
-                    onClick={() => handleOpenSingleChat(row)}
-                    timestamp={row.lastMessage ? new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                    menuButton={
-                      <button
-                        className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-orbit-surface/50 focus:outline-none transition-colors text-orbit-text2"
-                        onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); }}
-                        tabIndex={-1}
-                        aria-label="Open menu"
-                      >
-                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                          <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
-                          <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
-                          <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
-                        </svg>
-                      </button>
-                    }
-                    menu={menuOpenIdx === idx && (
-                      <div ref={el => { menuRefs.current[idx] = el; }} className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2">
-                        <button
-                          className="block w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50 rounded-xl font-semibold transition-colors"
-                          onClick={e => { e.stopPropagation(); setShowUnmatchModal(true); setUnmatchTarget(row); setMenuOpenIdx(null); }}
-                        >
-                          Unmatch
-                        </button>
-                      </div>
-                    )}
-                  />
-                ))}
-                <InviteSingleReferralRow onClick={() => setIsInviteSingleReferralOpen(true)} />
-              </div>
-            )}
-          </section>
-          
-          <InviteSingleReferralModal
-            isOpen={isInviteSingleReferralOpen}
-            onClose={() => setIsInviteSingleReferralOpen(false)}
-            onSuccess={() => setToast({ message: 'Invite sent.', type: 'success' })}
           />
 
           {/* Communities */}
           <section className="mt-10">
             <MyCommunitiesSection
               descriptionText="Communities help sponsors discover compatible singles."
-                helperText="Find the communities that you are a part of, most members join a few"
+              helperText="Find the communities that you are a part of, most members join a few"
             />
           </section>
-          
+
           {/* Preview cards section - only renders when there are previews */}
           <PreviewCardsSection userId={userId} />
-          
-          {/* Availability section - underneath the chat sections */}
+
+          {/* Availability section */}
           <div className="mt-12">
             <SectionHeader title="Availability" />
-            <AvailabilitySection 
+            <AvailabilitySection
               status={displayStatus}
               userId={userId}
             />
           </div>
-          
+
           {/* Footer spacer with brand mark */}
           <DashboardFooterSpacer />
         </div>
-        {/* Single-to-Single Chat Modal (needed when unsponsored but has matches) */}
+        {/* Single-to-Single Chat Modal (edge case: unsponsored user with an existing match) */}
         {openChat && selectedSingle && (
           <ChatModal
             open={openChat}
