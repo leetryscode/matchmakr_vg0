@@ -81,11 +81,15 @@ export default function OnboardingPage() {
 
   const handleUserTypeSelect = (type: string) => {
     setOnboardingData({ ...onboardingData, userType: type });
-    if (type === 'Vendor') {
+  };
+
+  const handleUserTypeNext = () => {
+    if (!onboardingData.userType) return;
+    if (onboardingData.userType === 'Vendor') {
       router.push('/onboarding/vendor');
-    } else {
-      setStep(3);
+      return;
     }
+    setStep(3);
   };
 
   const handleTooYoung = () => {
@@ -135,7 +139,9 @@ export default function OnboardingPage() {
             <div className={`mt-8 grid w-full max-w-3xl grid-cols-1 gap-4 ${orbitConfig.enableVendors ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} md:gap-6`}>
               <button
                 onClick={() => handleUserTypeSelect('Single')}
-                className="onboarding-selection flex min-h-[120px] flex-col justify-center gap-2 text-left transition-colors"
+                className={`onboarding-selection flex min-h-[120px] flex-col justify-center gap-2 text-left transition-colors ${
+                  onboardingData.userType === 'Single' ? 'onboarding-selection-active' : ''
+                }`}
               >
                 <h3 className="onboarding-heading text-2xl font-medium">Single</h3>
                 <div className="onboarding-muted text-base">
@@ -144,7 +150,9 @@ export default function OnboardingPage() {
               </button>
               <button
                 onClick={() => handleUserTypeSelect('Sponsor')}
-                className="onboarding-selection flex min-h-[120px] flex-col justify-center gap-2 text-left transition-colors"
+                className={`onboarding-selection flex min-h-[120px] flex-col justify-center gap-2 text-left transition-colors ${
+                  onboardingData.userType === 'Sponsor' ? 'onboarding-selection-active' : ''
+                }`}
               >
                 <h3 className="onboarding-heading text-2xl font-medium">Sponsor</h3>
                 <div className="onboarding-muted text-base">
@@ -154,7 +162,9 @@ export default function OnboardingPage() {
               {orbitConfig.enableVendors && (
                 <button
                   onClick={() => handleUserTypeSelect('Vendor')}
-                  className="onboarding-selection flex min-h-[120px] flex-col justify-center gap-2 text-left transition-colors"
+                  className={`onboarding-selection flex min-h-[120px] flex-col justify-center gap-2 text-left transition-colors ${
+                    onboardingData.userType === 'Vendor' ? 'onboarding-selection-active' : ''
+                  }`}
                 >
                   <h3 className="onboarding-heading text-2xl font-medium">Vendor</h3>
                   <div className="onboarding-muted text-base">
@@ -162,6 +172,15 @@ export default function OnboardingPage() {
                   </div>
                 </button>
               )}
+            </div>
+            <div className="onboarding-step-actions">
+              <button
+                onClick={handleUserTypeNext}
+                disabled={!onboardingData.userType}
+                className="onboarding-btn-primary"
+              >
+                Next
+              </button>
             </div>
           </>
         );
