@@ -19,26 +19,30 @@ const NameStep: React.FC<NameStepProps> = ({ onNext, initialValue = '' }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full space-y-8">
-      <div className="orbit-surface-strong w-full max-w-md p-8 space-y-6 rounded-card-lg shadow-card text-center">
-        <h2 className="text-3xl font-light text-orbit-text leading-[1.1]">What's your name?</h2>
+    <div className="onboarding-step-shell">
+      <div className="onboarding-step-content">
+        <div className="w-full max-w-md space-y-6 text-center">
+        <h2 className="onboarding-heading text-3xl leading-[1.1] sm:text-4xl">What's your name?</h2>
         <input
           type="text"
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="orbit-ring w-full rounded-xl border border-orbit-border/50 bg-orbit-surface/80 px-4 py-3 text-orbit-text placeholder:text-orbit-muted font-light"
+          className="onboarding-input"
           placeholder="Enter your name"
         />
       </div>
-      
-      <button
-        onClick={handleNext}
-        disabled={!name.trim()}
-        className="orbit-btn-primary min-h-[48px] px-10 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Next
-      </button>
+      </div>
+
+      <div className="onboarding-step-actions">
+        <button
+          onClick={handleNext}
+          disabled={!name.trim()}
+          className="onboarding-btn-primary"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };

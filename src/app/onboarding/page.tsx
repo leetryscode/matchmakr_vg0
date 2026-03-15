@@ -87,16 +87,20 @@ export default function OnboardingPage() {
   const renderStep = () => {
     if (underageBlocked) {
       return (
-        <div className="flex flex-col items-center justify-center gap-6 text-center">
-          <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
+        <div className="onboarding-step-shell">
+          <div className="onboarding-step-content">
+            <h1 className="onboarding-heading text-3xl leading-[1.1] tracking-tight sm:text-5xl">
             You must be 18 or older to use Orbit.
-          </h1>
-          <button
-            onClick={() => router.push('/')}
-            className="orbit-btn-primary min-h-[48px] px-10 py-3"
-          >
-            Return to welcome
-          </button>
+            </h1>
+          </div>
+          <div className="onboarding-step-actions">
+            <button
+              onClick={() => router.push('/')}
+              className="onboarding-btn-primary"
+            >
+              Return to welcome
+            </button>
+          </div>
         </div>
       );
     }
@@ -105,35 +109,35 @@ export default function OnboardingPage() {
       case 1:
         return (
           <>
-            <h1 className="text-5xl font-light tracking-tight sm:text-[5rem] text-orbit-text leading-[1.1]">
+            <h1 className="onboarding-heading text-4xl font-light tracking-tight sm:text-6xl leading-[1.1]">
               How will you use Orbit?
             </h1>
-            <div className={`grid grid-cols-1 gap-4 ${orbitConfig.enableVendors ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} md:gap-8`}>
+            <div className={`mt-8 grid w-full max-w-3xl grid-cols-1 gap-4 ${orbitConfig.enableVendors ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} md:gap-6`}>
               <button
                 onClick={() => handleUserTypeSelect('Single')}
-                className="orbit-ring flex max-w-xs flex-col gap-4 rounded-card-lg orbit-card p-6 text-orbit-text card-hover-subtle transition-all duration-300 hover:-translate-y-1"
+                className="onboarding-selection flex min-h-[120px] flex-col justify-center gap-2 text-left transition-colors"
               >
-                <h3 className="text-2xl font-light text-orbit-text">Single →</h3>
-                <div className="text-lg font-light text-orbit-text2">
+                <h3 className="onboarding-heading text-2xl font-medium">Single</h3>
+                <div className="onboarding-muted text-base">
                   I'm looking to meet someone
                 </div>
               </button>
               <button
                 onClick={() => handleUserTypeSelect('Sponsor')}
-                className="orbit-ring flex max-w-xs flex-col gap-4 rounded-card-lg orbit-card p-6 text-orbit-text card-hover-subtle transition-all duration-300 hover:-translate-y-1"
+                className="onboarding-selection flex min-h-[120px] flex-col justify-center gap-2 text-left transition-colors"
               >
-                <h3 className="text-2xl font-light text-orbit-text">Sponsor →</h3>
-                <div className="text-lg font-light text-orbit-text2">
+                <h3 className="onboarding-heading text-2xl font-medium">Sponsor</h3>
+                <div className="onboarding-muted text-base">
                   I want to introduce my friends
                 </div>
               </button>
               {orbitConfig.enableVendors && (
                 <button
                   onClick={() => handleUserTypeSelect('Vendor')}
-                  className="orbit-ring flex max-w-xs flex-col gap-4 rounded-card-lg orbit-card p-6 text-orbit-text card-hover-subtle transition-all duration-300 hover:-translate-y-1"
+                  className="onboarding-selection flex min-h-[120px] flex-col justify-center gap-2 text-left transition-colors"
                 >
-                  <h3 className="text-2xl font-light text-orbit-text">Vendor →</h3>
-                  <div className="text-lg font-light text-orbit-text2">
+                  <h3 className="onboarding-heading text-2xl font-medium">Vendor</h3>
+                  <div className="onboarding-muted text-base">
                     I want to promote my business for dates.
                   </div>
                 </button>
@@ -230,13 +234,13 @@ export default function OnboardingPage() {
   };
 
   return (
-    <main className="flex min-h-[100dvh] flex-col items-center justify-center bg-transparent text-orbit-text p-4">
+    <main className="flex min-h-[100dvh] flex-col items-center justify-center bg-transparent p-4">
        <div className="absolute top-4 left-4">
-        <button onClick={goBack} className="orbit-btn-ghost text-orbit-text2 hover:text-orbit-text underline font-light">
-          Back
+        <button onClick={goBack} className="onboarding-back-chevron" aria-label="Back">
+          &#8249;
         </button>
       </div>
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 text-center">
+      <div className="container flex w-full flex-col items-center justify-center px-4 py-16">
         {renderStep()}
       </div>
     </main>

@@ -224,91 +224,95 @@ export default function AccountCreationStep({ onboardingData, communityIntent = 
     (!isSponsor || confirmedSponsorAge);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-8 text-center">
-      <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
-        Create your account
-      </h1>
-      <p className="text-xl text-orbit-muted font-light">
-        Last step — you'll go straight to your dashboard after this.
-      </p>
-      <div className="flex flex-col gap-4 w-full max-w-md">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="orbit-ring w-full rounded-xl border border-orbit-border/50 bg-orbit-surface/80 px-4 py-3 text-orbit-text placeholder:text-orbit-muted font-light"
-        />
-        <input
-          type="password"
-          placeholder="Password (at least 6 characters)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="orbit-ring w-full rounded-xl border border-orbit-border/50 bg-orbit-surface/80 px-4 py-3 text-orbit-text placeholder:text-orbit-muted font-light"
-        />
-      </div>
-      <div className="flex w-full max-w-md flex-col gap-3 rounded-card-lg border border-orbit-border/50 bg-orbit-surface/60 p-4 text-left">
-        <label className="flex items-start gap-3 text-sm font-light text-orbit-text">
+    <div className="onboarding-step-shell">
+      <div className="onboarding-step-content">
+        <h1 className="onboarding-heading text-3xl leading-[1.1] tracking-tight sm:text-5xl">
+          Create your account
+        </h1>
+        <p className="onboarding-muted text-base sm:text-lg">
+          Last step — you'll go straight to your dashboard after this.
+        </p>
+        <div className="flex w-full max-w-md flex-col gap-4">
           <input
-            type="checkbox"
-            checked={acceptedLegal}
-            onChange={(e) => setAcceptedLegal(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-orbit-border/70 bg-orbit-surface/80 text-orbit-gold focus:ring-orbit-gold"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="onboarding-input"
           />
-          <span>
-            I agree to the{' '}
-            <Link href="/terms" target="_blank" rel="noopener noreferrer" className="text-orbit-gold underline">
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-orbit-gold underline">
-              Privacy Policy
-            </Link>
-            .
-          </span>
-        </label>
-        {isSponsor && (
-          <label className="flex items-start gap-3 text-sm font-light text-orbit-text">
+          <input
+            type="password"
+            placeholder="Password (at least 6 characters)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="onboarding-input"
+          />
+        </div>
+        <div className="w-full max-w-md rounded-xl border border-white/15 bg-white/5 p-4 text-left">
+          <label className="onboarding-muted flex items-start gap-3 text-sm">
             <input
               type="checkbox"
-              checked={confirmedSponsorAge}
-              onChange={(e) => setConfirmedSponsorAge(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-orbit-border/70 bg-orbit-surface/80 text-orbit-gold focus:ring-orbit-gold"
+              checked={acceptedLegal}
+              onChange={(e) => setAcceptedLegal(e.target.checked)}
+              className="onboarding-checkbox mt-0.5"
             />
-            <span>I confirm I am 18 years of age or older.</span>
+            <span>
+              I agree to the{' '}
+              <Link href="/terms" target="_blank" rel="noopener noreferrer" className="onboarding-link">
+                Terms of Service
+              </Link>{' '}
+              and{' '}
+              <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="onboarding-link">
+                Privacy Policy
+              </Link>
+              .
+            </span>
           </label>
+          {isSponsor && (
+            <label className="onboarding-muted mt-3 flex items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                checked={confirmedSponsorAge}
+                onChange={(e) => setConfirmedSponsorAge(e.target.checked)}
+                className="onboarding-checkbox mt-0.5"
+              />
+              <span>I confirm I am 18 years of age or older.</span>
+            </label>
+          )}
+        </div>
+        {error && <p className="onboarding-muted text-sm">{error}</p>}
+        {consentWarning && (
+          <div className="onboarding-warning-box w-full max-w-md rounded-xl p-4 text-left">
+            <p className="onboarding-muted text-sm text-white/75">{consentWarning}</p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button
+                onClick={handleRetryConsent}
+                disabled={loading}
+                className="onboarding-btn-primary min-h-[40px] px-6 py-2 text-sm"
+              >
+                Retry
+              </button>
+              <button
+                onClick={handleContinueAnyway}
+                disabled={loading}
+                className="onboarding-btn-ghost"
+              >
+                Continue anyway
+              </button>
+            </div>
+          </div>
         )}
       </div>
-      {error && <p className="text-red-500 font-light">{error}</p>}
-      {consentWarning && (
-        <div className="flex w-full max-w-md flex-col gap-3 rounded-card-lg border border-orbit-warning/45 bg-orbit-warning/24 p-4 text-left">
-          <p className="text-sm font-light text-orbit-text">{consentWarning}</p>
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={handleRetryConsent}
-              disabled={loading}
-              className="orbit-btn-primary min-h-[40px] px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Retry
-            </button>
-            <button
-              onClick={handleContinueAnyway}
-              disabled={loading}
-              className="orbit-btn-ghost text-orbit-text2 underline font-light hover:text-orbit-text disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Continue anyway
-            </button>
-          </div>
-        </div>
-      )}
-      <button
-        onClick={handleSignUp}
-        disabled={!canSubmit}
-        className="orbit-btn-primary min-h-[48px] px-10 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {loading ? 'Signing up...' : 'Create Account'}
-      </button>
-       {/* Placeholder for social logins, can be implemented later */}
+      <div className="onboarding-step-actions">
+        <button
+          onClick={handleSignUp}
+          disabled={!canSubmit}
+          className="onboarding-btn-primary"
+        >
+          {loading ? 'Signing up...' : 'Create Account'}
+        </button>
+      </div>
+      {/* Placeholder for social logins, can be implemented later */}
     </div>
   );
 } 

@@ -31,24 +31,26 @@ export default function CommunityStep({ onNext, variant, prefillCommunityId, pre
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-8">
-      <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
-        You've been invited to join
-      </h1>
-      <p className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
-        {displayCommunityName}
-      </p>
-      <label className="flex items-center gap-3 text-lg font-light text-orbit-text">
-        <input
-          type="checkbox"
-          checked={joinSelected}
-          onChange={(e) => setJoinSelected(e.target.checked)}
-          className="h-5 w-5 rounded border-orbit-border/70 bg-orbit-surface/80 text-orbit-gold focus:ring-orbit-gold"
-        />
-        Join this community
-      </label>
-      <div>
-        <button onClick={handleNext} className="orbit-btn-primary min-h-[48px] px-10 py-3">
+    <div className="onboarding-step-shell">
+      <div className="onboarding-step-content">
+        <h1 className="onboarding-heading text-3xl leading-[1.1] tracking-tight sm:text-5xl">
+          You've been invited to join
+        </h1>
+        <p className="onboarding-accent-text text-3xl font-light leading-[1.1] tracking-tight sm:text-5xl">
+          {displayCommunityName}
+        </p>
+        <label className="onboarding-muted flex items-center gap-3 text-base sm:text-lg">
+          <input
+            type="checkbox"
+            checked={joinSelected}
+            onChange={(e) => setJoinSelected(e.target.checked)}
+            className="onboarding-checkbox"
+          />
+          Join this community
+        </label>
+      </div>
+      <div className="onboarding-step-actions">
+        <button onClick={handleNext} className="onboarding-btn-primary">
           Next
         </button>
       </div>

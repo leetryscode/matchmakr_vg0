@@ -56,50 +56,54 @@ export default function BirthdayStep({ onNext, onTooYoung }: BirthdayStepProps) 
     /^\d{4}$/.test(year);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-8">
-      <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
-        What's your birthday?
-      </h1>
-      <p className="text-orbit-muted font-light">MM / DD / YYYY</p>
-      <div className="flex gap-3 justify-center flex-wrap">
-        <input
-          type="text"
-          inputMode="numeric"
-          value={month}
-          onChange={(e) => setMonth(e.target.value.replace(/\D/g, '').slice(0, 2))}
-          placeholder="MM"
-          maxLength={2}
-          className="orbit-ring w-20 rounded-xl border border-orbit-border/50 bg-orbit-surface/80 px-4 py-3 text-center text-orbit-text placeholder:text-orbit-muted font-light"
-        />
-        <input
-          type="text"
-          inputMode="numeric"
-          value={day}
-          onChange={(e) => setDay(e.target.value.replace(/\D/g, '').slice(0, 2))}
-          placeholder="DD"
-          maxLength={2}
-          className="orbit-ring w-20 rounded-xl border border-orbit-border/50 bg-orbit-surface/80 px-4 py-3 text-center text-orbit-text placeholder:text-orbit-muted font-light"
-        />
-        <input
-          type="text"
-          inputMode="numeric"
-          value={year}
-          onChange={(e) => setYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
-          placeholder="YYYY"
-          maxLength={4}
-          className="orbit-ring w-24 rounded-xl border border-orbit-border/50 bg-orbit-surface/80 px-4 py-3 text-center text-orbit-text placeholder:text-orbit-muted font-light"
-        />
+    <div className="onboarding-step-shell">
+      <div className="onboarding-step-content">
+        <h1 className="onboarding-heading text-3xl leading-[1.1] tracking-tight sm:text-5xl">
+          What's your birthday?
+        </h1>
+        <p className="onboarding-muted">MM / DD / YYYY</p>
+        <div className="flex flex-wrap justify-center gap-3">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={month}
+            onChange={(e) => setMonth(e.target.value.replace(/\D/g, '').slice(0, 2))}
+            placeholder="MM"
+            maxLength={2}
+            className="onboarding-input w-20 text-center"
+          />
+          <input
+            type="text"
+            inputMode="numeric"
+            value={day}
+            onChange={(e) => setDay(e.target.value.replace(/\D/g, '').slice(0, 2))}
+            placeholder="DD"
+            maxLength={2}
+            className="onboarding-input w-20 text-center"
+          />
+          <input
+            type="text"
+            inputMode="numeric"
+            value={year}
+            onChange={(e) => setYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
+            placeholder="YYYY"
+            maxLength={4}
+            className="onboarding-input w-24 text-center"
+          />
+        </div>
+        {invalidDateError && (
+          <p className="onboarding-muted text-sm">Please enter a valid date (e.g. no Feb 30).</p>
+        )}
       </div>
-      {invalidDateError && (
-        <p className="text-sm text-red-500 font-light">Please enter a valid date (e.g. no Feb 30).</p>
-      )}
-      <button
-        onClick={handleNext}
-        disabled={!valid}
-        className="orbit-btn-primary min-h-[48px] px-10 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Next
-      </button>
+      <div className="onboarding-step-actions">
+        <button
+          onClick={handleNext}
+          disabled={!valid}
+          className="onboarding-btn-primary"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }

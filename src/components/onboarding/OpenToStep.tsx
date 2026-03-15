@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 export type OpenToValue = 'men' | 'women' | 'both';
 
@@ -15,21 +15,44 @@ const OPTIONS: { value: OpenToValue; label: string }[] = [
 ];
 
 export default function OpenToStep({ onNext }: OpenToStepProps) {
+  const [selectedOpenTo, setSelectedOpenTo] = useState<OpenToValue | null>(null);
+
   return (
-    <div className="flex flex-col items-center justify-center gap-8">
-      <h1 className="text-4xl font-light text-orbit-text leading-[1.1] tracking-tight sm:text-[4rem]">
-        Open to meeting
-      </h1>
-      <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md justify-center">
-        {OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => onNext(opt.value)}
-            className="orbit-ring orbit-surface-soft rounded-card-lg px-6 py-4 text-orbit-text card-hover-subtle transition-all duration-200 font-light text-lg"
-          >
-            {opt.label}
-          </button>
-        ))}
+    <div className="onboarding-step-shell">
+      <div className="onboarding-step-content">
+        <h1 className="onboarding-heading text-3xl leading-[1.1] tracking-tight sm:text-5xl">
+          Open to meeting
+        </h1>
+        <div className="w-full max-w-md">
+          <div className="flex gap-4">
+            {OPTIONS.slice(0, 2).map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setSelectedOpenTo(opt.value)}
+                className={`onboarding-selection flex-1 text-center ${selectedOpenTo === opt.value ? 'onboarding-selection-active' : ''}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={() => setSelectedOpenTo(OPTIONS[2].value)}
+              className={`onboarding-selection w-[48%] text-center ${selectedOpenTo === OPTIONS[2].value ? 'onboarding-selection-active' : ''}`}
+            >
+              {OPTIONS[2].label}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="onboarding-step-actions">
+        <button
+          onClick={() => selectedOpenTo && onNext(selectedOpenTo)}
+          disabled={!selectedOpenTo}
+          className="onboarding-btn-primary"
+        >
+          Next
+        </button>
       </div>
     </div>
   );
