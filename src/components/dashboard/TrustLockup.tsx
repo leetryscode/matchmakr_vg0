@@ -177,7 +177,7 @@ export default function TrustLockup({
             top: `${primaryTopFinal}px`,
             width: `${config.primarySizePx}px`,
             height: `${config.primarySizePx}px`,
-            border: `${config.borderWidth} solid ${config.borderColor}`,
+            border: '2px solid rgb(var(--orbit-gold))',
             boxShadow: config.primaryShadow,
             backgroundColor: palette.border.light,
             zIndex: primaryZIndex,
@@ -186,11 +186,11 @@ export default function TrustLockup({
         >
           {primaryAvatarUrl ? (
             <>
-              <Image 
-                src={primaryAvatarUrl} 
-                alt={primaryName} 
-                width={config.primarySizePx} 
-                height={config.primarySizePx} 
+              <Image
+                src={primaryAvatarUrl}
+                alt={primaryName}
+                width={config.primarySizePx}
+                height={config.primarySizePx}
                 className="object-cover w-full h-full"
               />
               {/* Lens highlight overlay */}
@@ -203,7 +203,7 @@ export default function TrustLockup({
               />
             </>
           ) : (
-            <span className="text-primary-blue font-bold" style={{ fontSize: `${config.primarySizePx * 0.4}px` }}>
+            <span className="font-bold" style={{ fontSize: `${config.primarySizePx * 0.4}px`, color: 'rgb(var(--orbit-gold))' }}>
               {primaryName?.charAt(0).toUpperCase() || '?'}
             </span>
           )}
@@ -220,7 +220,7 @@ export default function TrustLockup({
                 top: `${secondaryTopFinal}px`,
                 width: `${config.secondarySizePx}px`,
                 height: `${config.secondarySizePx}px`,
-                border: `${config.borderWidth} solid ${config.borderColor}`,
+                border: '2px solid rgb(var(--orbit-gold))',
                 boxShadow: config.secondaryShadow,
                 backgroundColor: palette.border.light,
                 zIndex: secondaryZIndex,
@@ -245,32 +245,31 @@ export default function TrustLockup({
                   />
                 </>
               ) : (
-                <span className="text-primary-blue font-bold" style={{ fontSize: `${config.secondarySizePx * 0.4}px` }}>
+                <span className="font-bold" style={{ fontSize: `${config.secondarySizePx * 0.4}px`, color: 'rgb(var(--orbit-gold))' }}>
                   {secondaryName?.charAt(0).toUpperCase() || '?'}
                 </span>
               )}
             </button>
           ) : (
             <div
-              className="absolute rounded-full overflow-hidden flex items-center justify-center pointer-events-none select-none"
+              className="absolute rounded-full flex items-center justify-center pointer-events-none select-none"
               style={{
                 left: `${secondaryLeftFinal}px`,
                 top: `${secondaryTopFinal}px`,
                 width: `${config.secondarySizePx}px`,
                 height: `${config.secondarySizePx}px`,
-                border: `${config.borderWidth} solid ${config.borderColor}`,
+                border: '2px dashed rgb(var(--orbit-gold) / 0.40)',
                 boxShadow: config.secondaryShadow,
                 backgroundColor: palette.border.light,
                 zIndex: secondaryZIndex,
-                opacity: 0.8,
               }}
               aria-hidden
             >
               <span
-                className="text-primary-blue/70 font-bold"
-                style={{ fontSize: `${config.secondarySizePx * 0.4}px` }}
+                className="font-bold"
+                style={{ fontSize: `${config.secondarySizePx * 0.4}px`, color: 'rgb(var(--orbit-gold))', opacity: 0.5 }}
               >
-                ?
+                +
               </span>
             </div>
           ))}
@@ -287,7 +286,7 @@ export default function TrustLockup({
         </button>
       ) : (
         <span className="type-body text-white/70 mt-4 block" aria-hidden>
-          Introduced by your sponsor
+          Your introduction is waiting to happen
         </span>
       )}
     </div>

@@ -87,6 +87,12 @@ const config: Config = {
         'source-sans': ['Source Sans Pro', 'sans-serif'],
         'raleway': ['Raleway', 'sans-serif'],
         'brand': ['Bahnschrift Light', 'Bahnschrift', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
+        'orbit-heading': ['var(--orbit-font-heading)'],
+        'orbit-body': ['var(--orbit-font-body)'],
+      },
+      fontWeight: {
+        'orbit-heading': 'var(--orbit-font-weight-heading)',
+        'orbit-body': 'var(--orbit-font-weight-body)',
       },
       backgroundImage: {
         'dashboard': `linear-gradient(to bottom right, ${palette.primary.blue}, ${palette.primary.teal})`,

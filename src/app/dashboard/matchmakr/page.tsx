@@ -301,7 +301,7 @@ async function MatchMakrDashboardContent() {
         <DashboardLayout firstName={firstName} userId={user.id} userType="MATCHMAKR">
             {/* Greeting */}
             <div className="pt-0 px-4">
-                <div className="type-display mb-1">Hello, {firstName}</div>
+                <div className="type-display mb-1" style={{ fontWeight: 'var(--orbit-font-weight-heading)' }}>Hello, {firstName}</div>
             </div>
             
             {/* Orbit Carousel Header - full-bleed on mobile, clip horizontal overflow */}

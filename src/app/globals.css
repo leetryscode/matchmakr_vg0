@@ -37,6 +37,9 @@
   --orbit-success:  111 143 123;  /* #6F8F7B */
   --orbit-warning:  184 145 92;   /* #B8915C */
   --orbit-font-heading: 'Bahnschrift Light', Bahnschrift, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --orbit-font-body: 'Bahnschrift', 'Segoe UI', system-ui, sans-serif;
+  --orbit-font-weight-heading: 300;
+  --orbit-font-weight-body: 400;
 }
 
 /* Theme overrides — :root above = navy-classic default (safe fallback if script fails) */
@@ -56,6 +59,9 @@
   --orbit-success:  111 143 123;
   --orbit-warning:  184 145 92;
   --orbit-font-heading: 'Bahnschrift Light', Bahnschrift, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --orbit-font-body: 'Bahnschrift', 'Segoe UI', system-ui, sans-serif;
+  --orbit-font-weight-heading: 300;
+  --orbit-font-weight-body: 400;
 }
 
 :root[data-theme="plum-society"] {
@@ -74,6 +80,9 @@
   --orbit-success:  111 143 123;
   --orbit-warning:  184 145 92;
   --orbit-font-heading: 'Bahnschrift Light', Bahnschrift, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --orbit-font-body: 'Bahnschrift', 'Segoe UI', system-ui, sans-serif;
+  --orbit-font-weight-heading: 300;
+  --orbit-font-weight-body: 400;
 }
 
 :root[data-theme="invitation-cream"] {
@@ -92,6 +101,9 @@
   --orbit-success:   92 124 108;
   --orbit-warning:   156 118 76;
   --orbit-font-heading: 'Crimson Pro', Georgia, serif;
+  --orbit-font-body: 'Bahnschrift', 'Segoe UI', system-ui, sans-serif;
+  --orbit-font-weight-heading: 400;
+  --orbit-font-weight-body: 400;
 }
 
 /* Dev Charcoal — internal/QA/debug theme (not brand-facing). Neutral grayscale, strong contrast. */
@@ -111,6 +123,9 @@
   --orbit-success:   111 143 123;
   --orbit-warning:   184 145 92;
   --orbit-font-heading: 'Bahnschrift Light', Bahnschrift, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --orbit-font-body: 'Bahnschrift', 'Segoe UI', system-ui, sans-serif;
+  --orbit-font-weight-heading: 300;
+  --orbit-font-weight-body: 400;
 }
 
 /* Text on dark overlay (e.g. profile card gradient) — always light for contrast */

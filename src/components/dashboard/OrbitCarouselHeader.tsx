@@ -802,7 +802,9 @@ export default function OrbitCarouselHeader({
                   opacity: effectiveOpacity,
                   zIndex: zIndex,
                   willChange: 'transform',
-                  border: `${ORBIT_VISUALS.border.width} solid ${ORBIT_VISUALS.border.color}`,
+                  border: isPreview
+                    ? '2px dashed rgb(var(--orbit-gold) / 0.40)'
+                    : '2px solid rgb(var(--orbit-gold))',
                   boxShadow: boxShadow,
                 }}
                 {...(isPreview
@@ -821,7 +823,7 @@ export default function OrbitCarouselHeader({
                     })}
               >
                 {isPreview ? (
-                  <span className="text-on-dark-overlay font-bold text-sm inline-block scale-95 drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]" aria-hidden>?</span>
+                  <span className="font-bold text-sm" style={{ color: 'rgb(var(--orbit-gold))', opacity: 0.5 }} aria-hidden>+</span>
                 ) : satellite.avatarUrl ? (
                   <img
                     src={satellite.avatarUrl}
@@ -829,7 +831,7 @@ export default function OrbitCarouselHeader({
                     className="object-cover w-full h-full"
                   />
                 ) : (
-                  <span className="text-on-dark-overlay font-bold text-sm">
+                  <span className="font-bold text-sm" style={{ color: 'rgb(var(--orbit-gold))' }}>
                     {satellite.name?.charAt(0).toUpperCase() || '?'}
                   </span>
                 )}
@@ -859,8 +861,9 @@ export default function OrbitCarouselHeader({
             aria-label={`View ${centerUser.name}'s profile`}
           >
             <div
-              className="orbit-avatar-highlight orbit-avatar-sponsor w-[84px] h-[84px] rounded-full border border-slate-900/10 bg-gray-200 overflow-hidden flex items-center justify-center relative"
-              style={{ 
+              className="orbit-avatar-highlight orbit-avatar-sponsor w-[84px] h-[84px] rounded-full bg-gray-200 overflow-hidden flex items-center justify-center relative"
+              style={{
+                border: '2px solid rgb(var(--orbit-gold))',
                 boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)',
                 zIndex: 10
               }}
@@ -872,7 +875,7 @@ export default function OrbitCarouselHeader({
                   className="object-cover w-full h-full"
                 />
               ) : (
-                <span className="text-on-dark-overlay font-bold text-2xl">
+                <span className="font-bold text-2xl" style={{ color: 'rgb(var(--orbit-gold))' }}>
                   {centerUser.name?.charAt(0).toUpperCase() || '?'}
                 </span>
               )}

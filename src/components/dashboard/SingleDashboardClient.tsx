@@ -392,7 +392,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
     <div className="flex flex-col">
       {/* Personalized greeting */}
       <div className="text-left self-start mb-4">
-        <h1 className="type-display">Hello, {userName?.split(' ')[0] || 'there'}</h1>
+        <h1 className="type-display" style={{ fontWeight: 'var(--orbit-font-weight-heading)' }}>Hello, {userName?.split(' ')[0] || 'there'}</h1>
       </div>
       {/* Trust Lockup: Single + Sponsor relationship */}
       <TrustLockup
