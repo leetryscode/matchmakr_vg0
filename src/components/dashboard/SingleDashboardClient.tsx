@@ -525,8 +525,8 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
 
           {/* How Orbit Works */}
           <section className="mt-10">
-            <SectionHeader title="How Orbit works" />
-            <GlassCard className="mt-4 p-5">
+            <GlassCard className="p-5">
+              <p className="type-label font-semibold text-orbit-text mb-4">How Orbit works</p>
               <div className="flex flex-col gap-5">
                 {[
                   { n: '1', title: 'Your sponsor builds your profile', sub: 'Someone who knows you best tells your story' },
@@ -534,8 +534,8 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                   { n: '3', title: 'You get introduced', sub: 'When both sponsors agree, you meet someone worth meeting' },
                 ].map(({ n, title, sub }) => (
                   <div key={n} className="flex items-start gap-4">
-                    <div className="shrink-0 w-7 h-7 rounded-full border border-orbit-border/60 flex items-center justify-center">
-                      <span className="type-meta font-semibold text-primary-blue leading-none">{n}</span>
+                    <div className="shrink-0 w-7 h-7 rounded-full border border-orbit-gold flex items-center justify-center">
+                      <span className="type-meta font-semibold text-orbit-gold leading-none">{n}</span>
                     </div>
                     <div>
                       <p className="type-body font-semibold text-orbit-text">{title}</p>
@@ -549,15 +549,13 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
 
           {/* Who knows you best? — invite sponsor CTA */}
           <section className="mt-6">
-            <GlassCard className="p-5">
-              <button
-                onClick={() => setIsInviteOpen(true)}
-                className="w-full rounded-cta px-6 py-4 min-h-[52px] bg-action-primary text-primary-blue font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 transition-colors duration-200 text-base tracking-[0.02em]"
-              >
-                Who knows you best?
-              </button>
-              <p className="type-meta text-orbit-muted text-center mt-3">Invite them to be your sponsor.</p>
-            </GlassCard>
+            <button
+              onClick={() => setIsInviteOpen(true)}
+              className="w-full rounded-cta px-6 py-5 bg-orbit-gold text-orbit-canvas font-semibold shadow-cta-entry hover:opacity-90 active:opacity-80 focus:outline-none focus:ring-2 focus:ring-orbit-gold focus:ring-offset-2 transition-opacity duration-200 text-center"
+            >
+              <span className="block text-base tracking-[0.02em]">Who knows you best?</span>
+              <span className="block type-meta text-orbit-canvas/70 mt-1">Invite them to be your sponsor.</span>
+            </button>
           </section>
 
           <InviteMatchMakrModal
