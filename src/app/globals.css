@@ -362,7 +362,7 @@ body {
   }
 
   .type-meta {
-    @apply text-xs text-orbit-muted leading-normal;
+    @apply text-sm text-orbit-text2 leading-relaxed;
   }
 
   /* Interactive row cards: chat rows, list items — surface1, minimal shadow */

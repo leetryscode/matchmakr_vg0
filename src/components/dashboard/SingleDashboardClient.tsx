@@ -646,14 +646,35 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         {/* Sponsor status card — waiting for first introduction */}
         {!hasIntroductions && (
           <section className="mt-6">
-            <GlassCard className="p-5" style={{ borderLeft: '3px solid rgb(var(--orbit-gold))' }}>
-              <p className="type-body text-orbit-text" style={{ fontWeight: 500 }}>
-                {sponsor.name} is your sponsor
-              </p>
-              <p className="type-meta text-orbit-muted mt-2">
-                They're connecting with other sponsors to find the right introduction for you. You'll see it here when it happens.
-              </p>
-            </GlassCard>
+            {displayStatus === 'NEEDS_ATTENTION' ? (
+              // State 2a: Has sponsor, profile incomplete — sponsor is building it
+              <div
+                className="cursor-pointer"
+                onClick={() => router.push(`/profile/${userId}`)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') router.push(`/profile/${userId}`); }}
+              >
+                <GlassCard className="p-5" style={{ borderLeft: '3px solid rgb(var(--orbit-gold))' }}>
+                  <p className="type-body text-orbit-text" style={{ fontWeight: 500 }}>
+                    {sponsor.name} is building your profile
+                  </p>
+                  <p className="type-meta text-orbit-muted mt-2">
+                    Your sponsor is setting up your Orbit profile. Want to speed things up? Send them a message.
+                  </p>
+                </GlassCard>
+              </div>
+            ) : (
+              // State 2b: Has sponsor, profile complete, no introductions yet
+              <GlassCard className="p-5" style={{ borderLeft: '3px solid rgb(var(--orbit-gold))' }}>
+                <p className="type-body text-orbit-text" style={{ fontWeight: 500 }}>
+                  {sponsor.name} is your sponsor
+                </p>
+                <p className="type-meta text-orbit-muted mt-2">
+                  They're connecting with other sponsors to find the right introduction for you. You'll see it here when it happens.
+                </p>
+              </GlassCard>
+            )}
           </section>
         )}
 
