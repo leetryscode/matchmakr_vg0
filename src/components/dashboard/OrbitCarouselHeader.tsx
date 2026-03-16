@@ -36,8 +36,8 @@ const ROTATION_RATE_DEG_PER_MS = 360 / (REVOLUTION_MINUTES * 60 * 1000); // degr
 // Warm gray / moonlight tones avoid "sticker" feel; irregular dashes feel more astronomical.
 const ORBIT_STROKE_WIDTH = 2.25;
 const ORBIT_DASH_ARRAY = '10 8 6 12'; // Irregular: longer dashes, varying gaps
-const ORBIT_BACK_STROKE = 'rgba(195, 205, 222, 0.42)'; // Moonlight / warm gray
-const ORBIT_FRONT_STROKE = 'rgba(210, 218, 232, 0.52)'; // Slightly brighter moonlight
+const ORBIT_BACK_STROKE = 'rgb(var(--orbit-gold) / 0.2)'; // Warm gold at low opacity
+const ORBIT_FRONT_STROKE = 'rgb(var(--orbit-gold) / 0.3)'; // Warm gold, slightly brighter
 const ORBIT_PATH_BLUR = 0.35; // Subtle softness, pushes path into mist
 
 // Orbit visual tuning constants (single source of truth)
