@@ -634,17 +634,35 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
     );
   }
 
+  const hasIntroductions = singleChats.length > 0;
+
   return (
     <>
       {/* Profile section - hero surface */}
       <ProfileSection />
-      
+
       {/* Sections with proper spacing */}
       <div className="flex flex-col w-full">
-        {/* Notifications */}
+        {/* Sponsor status card — waiting for first introduction */}
+        {!hasIntroductions && (
+          <section className="mt-6">
+            <GlassCard className="p-5" style={{ borderLeft: '3px solid rgb(var(--orbit-gold))' }}>
+              <p className="type-body text-orbit-text" style={{ fontWeight: 500 }}>
+                {sponsor.name} is your sponsor
+              </p>
+              <p className="type-meta text-orbit-muted mt-2">
+                They're connecting with other sponsors to find the right introduction for you. You'll see it here when it happens.
+              </p>
+            </GlassCard>
+          </section>
+        )}
+
+        {/* Notifications — only in full dashboard state */}
+        {hasIntroductions && (
         <section className="mt-10 first:mt-0">
           <NotificationsSection userId={userId} />
         </section>
+        )}
 
         {/* Pending sponsorship requests */}
         {pendingRequests.length > 0 && (
@@ -744,60 +762,50 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           </div>
         </section>
         
-        {/* My Matches Section — when empty, show Preview Row (cold-start); real intros render unchanged */}
+        {/* My Matches Section — only shown once introductions exist */}
+        {hasIntroductions && (
         <section className="mt-10">
           <SectionHeader title="Introduced by my sponsor" />
-          {singleChats.length === 0 ? (
-            <>
-              <p className="mt-4 type-meta text-orbit-muted">
-                Conversations begin here after your sponsor makes an introduction.
-              </p>
-              <div className="mt-4">
-                <PreviewRow title="Alex" subtitle={`Introduced by ${sponsor?.name || 'your sponsor'}`} label="Preview" />
-                <InviteSingleReferralRow onClick={() => setIsInviteSingleReferralOpen(true)} />
-              </div>
-            </>
-          ) : (
-            <div className="mt-4 flex flex-col gap-4">
-              {singleChats.map((row, idx) => (
-                <ChatRow
-                  key={row.otherSingle.id}
-                  photo={row.otherSingle.photo}
-                  name={row.otherSingle.name}
-                  lastMessage={row.lastMessage ? row.lastMessage.content : 'Click to chat'}
-                  unreadCount={row.unreadCount}
-                  onClick={() => handleOpenSingleChat(row)}
-                  timestamp={row.lastMessage ? new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                  menuButton={
+          <div className="mt-4 flex flex-col gap-4">
+            {singleChats.map((row, idx) => (
+              <ChatRow
+                key={row.otherSingle.id}
+                photo={row.otherSingle.photo}
+                name={row.otherSingle.name}
+                lastMessage={row.lastMessage ? row.lastMessage.content : 'Click to chat'}
+                unreadCount={row.unreadCount}
+                onClick={() => handleOpenSingleChat(row)}
+                timestamp={row.lastMessage ? new Date(row.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                menuButton={
+                  <button
+                    className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-orbit-surface/50 focus:outline-none transition-colors text-orbit-text2"
+                    onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); setSponsorMenuOpen(false); }}
+                    tabIndex={-1}
+                    aria-label="Open menu"
+                  >
+                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                      <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
+                      <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                      <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
+                    </svg>
+                  </button>
+                }
+                menu={menuOpenIdx === idx && (
+                  <div ref={el => { menuRefs.current[idx] = el; }} className="absolute right-0 mt-2 w-40 bg-orbit-surface-2 border border-orbit-border rounded-xl shadow-xl z-20 py-2">
                     <button
-                      className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-orbit-surface/50 focus:outline-none transition-colors text-orbit-text2"
-                      onClick={e => { e.stopPropagation(); setMenuOpenIdx(idx === menuOpenIdx ? null : idx); setSponsorMenuOpen(false); }}
-                      tabIndex={-1}
-                      aria-label="Open menu"
+                      className="block w-full text-left px-5 py-3 text-base text-orbit-warning hover:bg-orbit-surface-1 rounded-xl font-semibold transition-colors"
+                      onClick={e => { e.stopPropagation(); setShowUnmatchModal(true); setUnmatchTarget(row); setMenuOpenIdx(null); }}
                     >
-                      <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
-                        <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
-                        <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
-                      </svg>
+                      Unmatch
                     </button>
-                  }
-                  menu={menuOpenIdx === idx && (
-                    <div ref={el => { menuRefs.current[idx] = el; }} className="absolute right-0 mt-2 w-40 bg-orbit-surface-2 border border-orbit-border rounded-xl shadow-xl z-20 py-2">
-                      <button
-                        className="block w-full text-left px-5 py-3 text-base text-orbit-warning hover:bg-orbit-surface-1 rounded-xl font-semibold transition-colors"
-                        onClick={e => { e.stopPropagation(); setShowUnmatchModal(true); setUnmatchTarget(row); setMenuOpenIdx(null); }}
-                      >
-                        Unmatch
-                      </button>
-                    </div>
-                  )}
-                />
-              ))}
-              <InviteSingleReferralRow onClick={() => setIsInviteSingleReferralOpen(true)} />
-            </div>
-          )}
+                  </div>
+                )}
+              />
+            ))}
+            <InviteSingleReferralRow onClick={() => setIsInviteSingleReferralOpen(true)} />
+          </div>
         </section>
+        )}
 
         {/* Communities */}
         <section className="mt-10">
@@ -806,7 +814,14 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             helperText="Find the communities that you are a part of, most members join a few"
           />
         </section>
-        
+
+        {/* Help grow Orbit — shown in waiting state (in full state it lives inside the matches section) */}
+        {!hasIntroductions && (
+          <div className="mt-4">
+            <InviteSingleReferralRow onClick={() => setIsInviteSingleReferralOpen(true)} />
+          </div>
+        )}
+
         {/* Preview cards section - only renders when there are previews */}
         <PreviewCardsSection userId={userId} />
         
