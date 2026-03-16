@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import PhotoGallery from './PhotoGallery';
 import EditProfileModal from './EditProfileModal';
-import EditProfileButton from './EditProfileButton';
 import IntroductionSignalSection from './IntroductionSignalSection';
 import PairingsSection from './PairingsSection';
 import Link from 'next/link';
@@ -66,6 +65,9 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   const [showInterestsInput, setShowInterestsInput] = useState(false);
   const [interests, setInterests] = useState<Interest[]>([]);
   const [loadingInterests, setLoadingInterests] = useState(false);
+  const [isEditingOccupation, setIsEditingOccupation] = useState(false);
+  const [occupationValue, setOccupationValue] = useState(profile.occupation || '');
+  const [savingOccupation, setSavingOccupation] = useState(false);
   const [showSelectSingleModal, setShowSelectSingleModal] = useState(false);
   const [showInviteSingleModal, setShowInviteSingleModal] = useState(false);
   const [isEndorsementEditOpen, setIsEndorsementEditOpen] = useState(false);
@@ -130,9 +132,6 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
     }
   }, [orbitRole, isOwnProfile, isSponsorViewing, canEditProfile, profile.user_type]);
   
-  // Singles can edit their own basic info (name, occupation, location) but not bio
-  const canEditBasicInfo = orbitRole === 'SINGLE' && isOwnProfile && profile.user_type === 'SINGLE';
-
   // Fetch interests for this profile on mount
   React.useEffect(() => {
     if (profile.id) {
@@ -143,6 +142,18 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
         .finally(() => setLoadingInterests(false));
     }
   }, [profile.id]);
+
+  const handleSaveOccupation = async () => {
+    const trimmed = occupationValue.trim().slice(0, 50);
+    setIsEditingOccupation(false);
+    if (trimmed === (profile.occupation || '')) return;
+    setSavingOccupation(true);
+    await supabase
+      .from('profiles')
+      .update({ occupation: trimmed || null })
+      .eq('id', profile.id);
+    setSavingOccupation(false);
+  };
 
   const handleSaveInterests = async (newInterests: Interest[]) => {
     setSavingInterests(true);
@@ -214,16 +225,66 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
     <>
       <div className="min-h-screen pt-0 pb-4 px-4 sm:p-6 md:p-8">
         <div className="-mx-4 sm:mx-0">
-          <PhotoGallery 
-            userId={profile.id} 
+          <PhotoGallery
+            userId={profile.id}
             photos={profile.photos}
             userType={profile.user_type}
             canEdit={canEditProfile}
             profileName={profile.name}
             name={profile.name}
             age={age}
+            occupation={isViewingOwnSingleProfile ? null : profile.occupation}
           />
         </div>
+
+        {/* Mobile occupation row — visible only below md, hidden on desktop where the identity block handles it */}
+        {profile.user_type === 'SINGLE' && (
+          <div className="md:hidden px-4 pt-1">
+            {isViewingOwnSingleProfile ? (
+              isEditingOccupation ? (
+                <input
+                  type="text"
+                  value={occupationValue}
+                  onChange={e => setOccupationValue(e.target.value.slice(0, 50))}
+                  onBlur={handleSaveOccupation}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') { e.preventDefault(); handleSaveOccupation(); }
+                    if (e.key === 'Escape') { setOccupationValue(profile.occupation || ''); setIsEditingOccupation(false); }
+                  }}
+                  className="text-sm text-orbit-text bg-orbit-surface border border-orbit-border rounded px-2 py-0.5 w-48 focus:outline-none focus:border-orbit-gold"
+                  autoFocus
+                  disabled={savingOccupation}
+                  maxLength={50}
+                />
+              ) : occupationValue ? (
+                <button
+                  className="flex items-center gap-1 text-sm text-orbit-text2 hover:text-orbit-text transition-colors"
+                  onClick={() => setIsEditingOccupation(true)}
+                >
+                  {occupationValue}
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="text-orbit-muted shrink-0" aria-hidden>
+                    <path d="M11.5 1.5a1.414 1.414 0 0 1 2 2L5 12H3v-2L11.5 1.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              ) : (
+                <button
+                  className="flex items-center gap-1 text-sm text-orbit-muted hover:text-orbit-text transition-colors"
+                  onClick={() => setIsEditingOccupation(true)}
+                >
+                  + Add occupation
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="shrink-0" aria-hidden>
+                    <path d="M11.5 1.5a1.414 1.414 0 0 1 2 2L5 12H3v-2L11.5 1.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              )
+            ) : (
+              profile.occupation && (
+                <p className="text-sm text-orbit-text2">{profile.occupation}</p>
+              )
+            )}
+          </div>
+        )}
+
         <div className="space-y-6">
           {/* Primary Identity Block */}
           <div className="hidden md:block">
@@ -246,23 +307,44 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                       {profile.zip_code && ` ${profile.zip_code}`}
                     </p>
                   )}
-                  {profile.occupation && (
-                    <p className="text-lg text-orbit-text mt-1 flex items-center">
-                      <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
-                        <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                          <path d="M6.5 1h3a1 1 0 0 1 1 1v1h2.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.5V2a1 1 0 0 1 1-1z" fill="currentColor"/>
-                          <path d="M6.5 3h3v1h-3V3z" fill="currentColor"/>
-                        </svg>
-                      </span>
-                      {profile.occupation}
-                    </p>
+                  {isViewingOwnSingleProfile ? (
+                    isEditingOccupation ? (
+                      <input
+                        type="text"
+                        value={occupationValue}
+                        onChange={e => setOccupationValue(e.target.value.slice(0, 50))}
+                        onBlur={handleSaveOccupation}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') { e.preventDefault(); handleSaveOccupation(); }
+                          if (e.key === 'Escape') { setOccupationValue(profile.occupation || ''); setIsEditingOccupation(false); }
+                        }}
+                        className="mt-1 text-sm text-orbit-text bg-orbit-surface border border-orbit-border rounded px-2 py-0.5 w-48 focus:outline-none focus:border-orbit-gold"
+                        autoFocus
+                        disabled={savingOccupation}
+                        maxLength={50}
+                      />
+                    ) : occupationValue ? (
+                      <p
+                        className="text-sm text-orbit-text2 mt-1 cursor-pointer hover:text-orbit-text transition-colors"
+                        onClick={() => setIsEditingOccupation(true)}
+                        title="Click to edit"
+                      >
+                        {occupationValue}
+                      </p>
+                    ) : (
+                      <button
+                        className="mt-1 text-sm text-orbit-muted hover:text-orbit-text transition-colors"
+                        onClick={() => setIsEditingOccupation(true)}
+                      >
+                        + Add occupation
+                      </button>
+                    )
+                  ) : (
+                    profile.occupation && (
+                      <p className="text-sm text-orbit-text2 mt-1">{profile.occupation}</p>
+                    )
                   )}
                 </div>
-                {canEditBasicInfo && (
-                  <div className="ml-4">
-                    <EditProfileButton profile={profile} singleBasicInfoOnly={true} />
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -369,7 +451,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                     {!showInterestsInput && interests.slice(0, 6).map(interest => (
                       <span key={interest.id} className="orbit-surface-soft px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 text-orbit-text">
                         {interest.name}
-                        {canEditProfile && (
+                        {(canEditProfile || isViewingOwnSingleProfile) && (
                           <button
                             type="button"
                             className="ml-1 text-orbit-text2 hover:text-orbit-warning transition-colors"
@@ -395,7 +477,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                         )}
                       </span>
                     ))}
-                    {canEditProfile && (
+                    {(canEditProfile || isViewingOwnSingleProfile) && (
                       <button
                         className="orbit-btn-secondary px-3 py-1 rounded-full text-xs font-semibold"
                         onClick={() => setShowInterestsInput(v => !v)}
@@ -405,7 +487,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                       </button>
                     )}
                   </div>
-                  {showInterestsInput && canEditProfile && (
+                  {showInterestsInput && (canEditProfile || isViewingOwnSingleProfile) && (
                     <div className="mt-2">
                       <InterestsInput
                         value={interests}

@@ -111,6 +111,7 @@ interface PhotoGalleryProps {
     name?: string | null;
     age?: number | null;
     interests?: Array<{id: number, name: string}>;
+    occupation?: string | null;
 }
 
 const MAX_PHOTOS_SINGLE = 6;
@@ -118,7 +119,7 @@ const MAX_PHOTOS_MATCHMAKR = 1;
 const MAX_PHOTOS_VENDOR = 6;
 const ADD_PHOTO_SLOT = 'ADD_PHOTO_SLOT';
 
-export default function PhotoGallery({ userId, photos: initialPhotos, userType = 'SINGLE', canEdit = true, profileName = null, name = null, age = null, interests = [] }: PhotoGalleryProps) {
+export default function PhotoGallery({ userId, photos: initialPhotos, userType = 'SINGLE', canEdit = true, profileName = null, name = null, age = null, interests = [], occupation = null }: PhotoGalleryProps) {
     const supabase = createClient();
     const router = useRouter();
     const [photos, setPhotos] = useState(initialPhotos ? initialPhotos.filter((p): p is string => typeof p === 'string' && p.trim() !== '') : []);
@@ -704,11 +705,12 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                 )}
                 {/* Gradient overlay */}
                 <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/70 to-transparent z-10" />
-                {/* Name + Age overlay */}
+                {/* Name + Age + Occupation overlay */}
                 {name && (
                     <div className="absolute bottom-4 left-4 z-20 text-on-dark-overlay">
                         <div className="text-2xl font-semibold">{name}</div>
                         {age && <div className="text-sm opacity-90">{age}</div>}
+                        {occupation && <div className="text-xs opacity-75 mt-0.5">{occupation}</div>}
                     </div>
                 )}
                 {/* Photo indicator dots overlay for carousel */}
