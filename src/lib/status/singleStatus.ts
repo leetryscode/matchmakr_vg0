@@ -210,11 +210,11 @@ export type PreviewResponseStatus = 'PENDING' | 'OPEN_TO_IT' | 'NOT_SURE_YET';
 
 /** Base for single-facing preview response option pills (outline only, text-sm). */
 const PREVIEW_OPTION_PILL_BASE =
-  'inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold bg-transparent';
+  'inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold bg-orbit-surface-1';
 
 const OPTION_PILL_STYLES = {
-  success: 'border-[rgb(var(--orbit-success)/0.28)] text-orbit-success',
-  border: 'border-[rgb(var(--orbit-border)/0.28)] text-orbit-text2',
+  success: 'border-[rgb(var(--orbit-success)/0.6)] text-orbit-success',
+  border: 'border-[rgb(var(--orbit-border)/0.6)] text-orbit-text2',
 } as const;
 
 /**

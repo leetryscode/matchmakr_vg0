@@ -32,17 +32,13 @@ export default function SendPreviewModal({
 
     if (!open) return null;
 
-    const handleRecipientSelect = async (recipientId: string) => {
-        if (isSending) return;
-
-        setSelectedRecipientId(recipientId);
+    const handleSend = async () => {
+        if (!selectedRecipientId || isSending) return;
         setIsSending(true);
-
         try {
-            await onSend(recipientId);
-            // onSend handles success/error and closing
+            await onSend(selectedRecipientId);
+            // onSend handles success/error toast and modal close
         } catch (error) {
-            // Error is handled by parent via toast
             console.error('Error sending preview:', error);
         } finally {
             setIsSending(false);
@@ -51,21 +47,23 @@ export default function SendPreviewModal({
     };
 
     return (
-        <div className="fixed inset-0 bg-orbit-canvas/80 flex items-center justify-center z-50" onClick={onClose}>
-            <div className="bg-orbit-surface-2 rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
-                <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold text-orbit-text mb-2">
+        <div className="fixed inset-0 bg-orbit-canvas/95 flex items-center justify-center z-50" onClick={onClose}>
+            <div className="bg-orbit-surface-2 rounded-2xl overflow-hidden max-w-md w-full mx-4 shadow-xl border border-orbit-border/40" onClick={(e) => e.stopPropagation()}>
+
+                {/* Header */}
+                <div className="bg-orbit-canvas px-6 pt-6 pb-4 text-center">
+                    <h2 className="text-xl font-bold text-orbit-text mb-1">
                         Send preview
                     </h2>
-                    <p className="text-orbit-muted">
+                    <p className="text-sm text-orbit-muted">
                         Choose one of your singles.
                     </p>
                 </div>
 
-                {/* Optional: Show target single thumbnail */}
+                {/* Optional: target single thumbnail */}
                 {targetSinglePhotoUrl && (
-                    <div className="mb-4 flex justify-center">
-                        <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-orbit-border">
+                    <div className="pt-4 flex justify-center">
+                        <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-orbit-border">
                             <img
                                 src={targetSinglePhotoUrl}
                                 alt={targetSingleName || 'Preview'}
@@ -75,11 +73,12 @@ export default function SendPreviewModal({
                     </div>
                 )}
 
-                <div className="space-y-3 mb-6 max-h-96 overflow-y-auto">
+                {/* Singles list */}
+                <div className="px-6 py-4 space-y-2 max-h-72 overflow-y-auto">
                     {sponsoredSingles.length === 0 ? (
                         <div className="text-center py-8">
                             <p className="text-orbit-text font-medium mb-2">
-                                You don't have any singles yet.
+                                You don&apos;t have any singles yet.
                             </p>
                             <p className="text-orbit-muted text-sm">
                                 Invite a single to start making introductions.
@@ -88,19 +87,15 @@ export default function SendPreviewModal({
                     ) : (
                         sponsoredSingles.map((single) => {
                             const isSelected = selectedRecipientId === single.id;
-                            const isDisabled = isSending && !isSelected;
-
                             return (
                                 <button
                                     key={single.id}
-                                    onClick={() => handleRecipientSelect(single.id)}
-                                    disabled={isDisabled}
-                                    className={`w-full p-4 border rounded-xl transition-all duration-200 flex items-center space-x-3 ${
+                                    onClick={() => setSelectedRecipientId(single.id)}
+                                    disabled={isSending}
+                                    className={`w-full p-4 border rounded-xl transition-all duration-200 flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed ${
                                         isSelected
                                             ? 'border-orbit-gold bg-orbit-gold/10'
-                                            : isDisabled
-                                            ? 'border-orbit-border bg-orbit-surface-1 opacity-50 cursor-not-allowed'
-                                            : 'border-orbit-border hover:border-orbit-gold hover:bg-orbit-gold/10'
+                                            : 'border-orbit-border/40 bg-orbit-surface-2 hover:border-orbit-gold/50 hover:bg-orbit-gold/5'
                                     }`}
                                 >
                                     <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-orbit-border flex items-center justify-center bg-orbit-surface-1 flex-shrink-0">
@@ -132,13 +127,21 @@ export default function SendPreviewModal({
                     )}
                 </div>
 
-                <div className="flex justify-end">
+                {/* Footer */}
+                <div className="px-6 pb-6 pt-2 flex gap-3 justify-end">
                     <button
                         onClick={onClose}
                         disabled={isSending}
-                        className="px-6 py-2 text-orbit-muted hover:text-orbit-text2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="orbit-btn-secondary px-5 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Cancel
+                    </button>
+                    <button
+                        onClick={handleSend}
+                        disabled={!selectedRecipientId || isSending}
+                        className="rounded-full px-5 py-2.5 text-sm font-semibold bg-orbit-gold text-orbit-canvas hover:bg-orbit-goldDark active:bg-orbit-goldDark/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        {isSending ? 'Sending…' : 'Send preview'}
                     </button>
                 </div>
             </div>

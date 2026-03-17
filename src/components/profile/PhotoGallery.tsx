@@ -534,7 +534,7 @@ export default function PhotoGallery({ userId, photos: initialPhotos, userType =
                                         {canEdit && (
                                             <div className="absolute top-2 right-2 z-10">
                                                 <button
-                                                    className="p-2 rounded-full bg-black/40 hover:bg-black/70 text-on-dark-overlay"
+                                                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/60 hover:bg-black/80 active:bg-black/90 text-on-dark-overlay"
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         e.stopPropagation();

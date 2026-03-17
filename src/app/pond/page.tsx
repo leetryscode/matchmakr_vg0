@@ -922,7 +922,7 @@ export default function PondPage() {
                                                     <div>
                                                         <div className="flex justify-between items-center mb-3">
                                                             <h2 className="text-orbit-text text-base font-semibold">Why I&apos;d introduce them</h2>
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex items-center gap-2 min-w-0">
                                                                 {sponsorPhotoUrl ? (
                                                                     <img src={sponsorPhotoUrl} alt={sponsorName} className="w-6 h-6 rounded-full object-cover border border-orbit-border/50 shrink-0" />
                                                                 ) : (
@@ -930,7 +930,7 @@ export default function PondPage() {
                                                                         <span className="text-orbit-text font-bold text-[9px]">{sponsorName.charAt(0).toUpperCase()}</span>
                                                                     </div>
                                                                 )}
-                                                                <span className="text-orbit-text2 text-sm whitespace-nowrap">{sponsorName}</span>
+                                                                <span className="text-orbit-text2 text-sm truncate min-w-0">{sponsorName}</span>
                                                             </div>
                                                         </div>
                                                         <div className="relative pt-1.5 pb-1.5 pl-3 pr-4">

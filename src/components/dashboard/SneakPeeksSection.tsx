@@ -146,7 +146,7 @@ const SneakPeekCard: React.FC<SneakPeekCardProps> = ({ sneakPeek, targetName, re
                 {/* Center: Names + status pill (primary metadata) */}
                 <div className="flex-1 flex flex-col items-center justify-center min-w-0">
                     <div className="flex items-center gap-1.5 text-sm">
-                        <span className="text-orbit-text font-semibold whitespace-nowrap">
+                        <span className="text-orbit-text font-semibold truncate min-w-0">
                             {recipientName || 'Your single'}
                         </span>
                         <span className="orbit-muted">·</span>

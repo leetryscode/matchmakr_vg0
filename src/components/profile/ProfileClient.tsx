@@ -295,18 +295,6 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                   {age && (
                     <p className="text-lg text-orbit-text mt-1">{age}</p>
                   )}
-                  {profile.user_type === 'SINGLE' && (profile.city || profile.state || profile.zip_code) && (
-                    <p className="text-orbit-text mt-1 flex items-center">
-                      <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '6px' }}>
-                        <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
-                          <path d="M8 1C5.24 1 3 3.24 3 6c0 2.25 5 9 5 9s5-6.75 5-9c0-2.76-2.24-5-5-5z" fill="currentColor" stroke="none"/>
-                          <circle cx="8" cy="6" r="2" fill="currentColor"/>
-                        </svg>
-                      </span>
-                      {[profile.city, profile.state].filter(Boolean).join(', ')}
-                      {profile.zip_code && ` ${profile.zip_code}`}
-                    </p>
-                  )}
                   {isViewingOwnSingleProfile ? (
                     isEditingOccupation ? (
                       <input
