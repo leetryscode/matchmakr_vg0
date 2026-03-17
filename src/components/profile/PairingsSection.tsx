@@ -20,6 +20,7 @@ interface PairingsSectionProps {
   canEdit?: boolean; // isSponsorOfThisSingle
   viewerIsProfileOwner?: boolean; // isViewingOwnSingleProfile
   compact?: boolean; // tighter spacing for PondView
+  sponsorName?: string; // used for ghosted-state label
 }
 
 /**
@@ -53,6 +54,7 @@ export default function PairingsSection({
   canEdit = false,
   viewerIsProfileOwner = false,
   compact = false,
+  sponsorName,
 }: PairingsSectionProps) {
   const supabase = createClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -112,6 +114,13 @@ export default function PairingsSection({
     setIsModalOpen(false);
   };
 
+  const GHOSTED_PILLS = [
+    'Reflective',
+    'Comfortable with ambition',
+    'Enjoys quiet weekends',
+    'Expresses care through actions',
+  ];
+
   // Empty state
   if (isEmpty) {
     return (
@@ -128,6 +137,25 @@ export default function PairingsSection({
             </button>
           )}
         </div>
+        {viewerIsProfileOwner && (
+          <>
+            <div className={`flex flex-wrap items-center justify-center ${compact ? 'gap-x-2 gap-y-1.5' : 'gap-2'} mb-2`}>
+              {GHOSTED_PILLS.map((label) => (
+                <span
+                  key={label}
+                  className="border border-orbit-border/20 bg-transparent px-4 py-1.5 rounded-full text-base font-medium italic text-orbit-muted opacity-40"
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+            <p className="text-xs text-orbit-muted mt-1 text-center">
+              {sponsorName
+                ? `${sponsorName} will choose the best pairings for you.`
+                : 'Your sponsor will choose the best pairings for you.'}
+            </p>
+          </>
+        )}
         {saveError && (
           <p className="text-sm text-orbit-warning mt-2">{saveError}</p>
         )}

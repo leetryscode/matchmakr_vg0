@@ -338,9 +338,10 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
           </div>
 
           {/* Helper Note - only for single viewing own profile */}
-          {isOwnProfile && profile.user_type === 'SINGLE' && orbitRole === 'SINGLE' && (
-            <div className="text-sm text-orbit-muted italic">
-              Your Sponsor manages your Orbit profile. If something looks off, chat with them.
+          {isViewingOwnSingleProfile && (
+            <div className="text-sm text-orbit-text">
+              This is your Orbit profile — written by someone who knows you best. When{' '}
+              {matchmakrProfile?.name ?? 'your sponsor'} fills it out, other sponsors will see what makes you worth introducing.
             </div>
           )}
 
@@ -376,9 +377,20 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
                       >
                         "
                       </span>
-                      <p className={sponsor.endorsement ? "text-orbit-text2 text-base font-normal leading-relaxed" : "text-orbit-muted text-base font-normal leading-relaxed"}>
-                        {sponsor.endorsement || 'This is where your sponsor writes about you...'}
-                      </p>
+                      {endorsementBlank && isViewingOwnSingleProfile ? (
+                        <>
+                          <p className="text-orbit-muted text-base font-normal leading-relaxed italic opacity-40">
+                            {firstName} is the kind of person who remembers your birthday and shows up with your favorite coffee. He&apos;s thoughtful, sharp, and genuinely funny once you get past the quiet exterior.
+                          </p>
+                          <p className="text-xs text-orbit-muted mt-3">
+                            {sponsor.name ? `${sponsor.name} will write something like this about you` : 'Your sponsor will write something like this about you'}
+                          </p>
+                        </>
+                      ) : (
+                        <p className={sponsor.endorsement ? "text-orbit-text2 text-base font-normal leading-relaxed" : "text-orbit-muted text-base font-normal leading-relaxed"}>
+                          {sponsor.endorsement || 'This is where your sponsor writes about you...'}
+                        </p>
+                      )}
                       <span
                         aria-hidden
                         className="pointer-events-none select-none absolute right-0 bottom-0 text-orbit-muted text-3xl leading-none"
@@ -414,6 +426,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
               pairingsSignal={profile.pairings_signal}
               canEdit={isSponsorOfThisSingle}
               viewerIsProfileOwner={isViewingOwnSingleProfile}
+              sponsorName={matchmakrProfile?.name ?? undefined}
             />
           )}
 

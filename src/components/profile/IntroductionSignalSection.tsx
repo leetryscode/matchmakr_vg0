@@ -76,8 +76,9 @@ export default function IntroductionSignalSection({
   const defaultPrompt = getDefaultIntroductionPrompt();
   const displayName = firstName || 'This person';
   
-  // Visibility rule: hide if blank AND !canEdit AND !viewerIsProfileOwner
-  if (isEmpty && !canEdit && !viewerIsProfileOwner) {
+  // Visibility rule: hide if blank AND viewer cannot edit
+  // Singles viewing their own empty profile see nothing here (task spec: hide entirely)
+  if (isEmpty && !canEdit) {
     return null;
   }
 
