@@ -656,9 +656,17 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') router.push(`/profile/${userId}`); }}
               >
                 <GlassCard className="p-5" style={{ borderLeft: '3px solid rgb(var(--orbit-gold))' }}>
-                  <p className="type-body text-orbit-text" style={{ fontWeight: 500 }}>
-                    {sponsor.name} is building your profile
-                  </p>
+                  <div className="flex justify-between items-baseline">
+                    <p className="type-body text-orbit-text" style={{ fontWeight: 500 }}>
+                      {sponsor.name} is building your profile
+                    </p>
+                    <span
+                      className="text-sm text-orbit-muted hover:text-orbit-text2 cursor-pointer shrink-0 ml-3"
+                      onClick={e => { e.stopPropagation(); router.push(`/profile/${userId}`); }}
+                    >
+                      View profile
+                    </span>
+                  </div>
                   <p className="type-meta text-orbit-muted mt-2">
                     Your sponsor is setting up your Orbit profile. Want to speed things up? Send them a message.
                   </p>
@@ -667,9 +675,17 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             ) : (
               // State 2b: Has sponsor, profile complete, no introductions yet
               <GlassCard className="p-5" style={{ borderLeft: '3px solid rgb(var(--orbit-gold))' }}>
-                <p className="type-body text-orbit-text" style={{ fontWeight: 500 }}>
-                  {sponsor.name} is your sponsor
-                </p>
+                <div className="flex justify-between items-baseline">
+                  <p className="type-body text-orbit-text" style={{ fontWeight: 500 }}>
+                    {sponsor.name} is your sponsor
+                  </p>
+                  <span
+                    className="text-sm text-orbit-muted hover:text-orbit-text2 cursor-pointer shrink-0 ml-3"
+                    onClick={() => router.push(`/profile/${userId}`)}
+                  >
+                    View profile
+                  </span>
+                </div>
                 <p className="type-meta text-orbit-muted mt-2">
                   They're connecting with other sponsors to find the right introduction for you. You'll see it here when it happens.
                 </p>
