@@ -201,7 +201,7 @@ export default function CommunitiesPage() {
                     <div className="max-w-xl">
                         <h1 className="type-section">Communities</h1>
                         <p className="mt-2 text-sm text-orbit-muted">
-                            Discover communities, join open ones, or create your own.
+                            Your communities tell sponsors where to look. Join the circles you belong to.
                         </p>
                     </div>
                     <button

@@ -99,12 +99,9 @@ export default function MyCommunitiesSection({
         <div className="orbit-surface-strong rounded-card-lg px-4 py-5">
             <div className="mb-3">
                 <h2 className="type-section text-orbit-text">My Communities</h2>
-                <p className="mt-1 text-xs text-orbit-muted">
-                    {descriptionText}
-                </p>
-                {helperText ? (
-                    <p className="mt-2 text-xs text-orbit-muted">
-                        {helperText}
+                {descriptionText ? (
+                    <p className="mt-1 text-xs text-orbit-muted">
+                        {descriptionText}
                     </p>
                 ) : null}
             </div>
@@ -132,17 +129,12 @@ export default function MyCommunitiesSection({
                     <ExploreTile />
                 </div>
             ) : communities.length === 0 ? (
-                <div>
-                    <p className="mb-3 text-sm text-orbit-muted">
-                        You have not joined any communities yet.
-                    </p>
-                    <div
-                        className="flex flex-nowrap gap-3 overflow-x-auto whitespace-nowrap pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                        role="list"
-                        aria-label="Communities row"
-                    >
-                        <ExploreTile />
-                    </div>
+                <div
+                    className="flex flex-nowrap gap-3 overflow-x-auto whitespace-nowrap pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    role="list"
+                    aria-label="Communities row"
+                >
+                    <ExploreTile />
                 </div>
             ) : (
                 <div

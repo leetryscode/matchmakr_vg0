@@ -567,8 +567,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
           {/* Communities */}
           <section className="mt-10">
             <MyCommunitiesSection
-              descriptionText="Communities help sponsors discover compatible singles."
-              helperText="Find the communities that you are a part of, most members join a few"
+              descriptionText="Your communities tell your sponsor where to look. Join the circles you belong to."
             />
           </section>
 
@@ -847,8 +846,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         {/* Communities */}
         <section className="mt-10">
           <MyCommunitiesSection
-            descriptionText="Communities help sponsors discover compatible singles."
-            helperText="Find the communities that you are a part of, most members join a few"
+            descriptionText="Your communities tell your sponsor where to look. Join the circles you belong to."
           />
         </section>
 

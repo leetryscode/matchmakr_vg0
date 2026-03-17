@@ -368,7 +368,7 @@ async function MatchMakrDashboardContent() {
 
                 {/* My Communities */}
                 <section className="mt-10">
-                    <MyCommunitiesSection />
+                    <MyCommunitiesSection descriptionText="Great introductions start with shared worlds. Join the communities you know best." />
                 </section>
 
                 {/* Introductions destination card */}
