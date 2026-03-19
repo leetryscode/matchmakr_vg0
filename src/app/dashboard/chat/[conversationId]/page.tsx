@@ -8,6 +8,7 @@ import GroupedMessageList from '@/components/chat/GroupedMessageList';
 import RequireStandaloneGate from '@/components/pwa/RequireStandaloneGate';
 import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
 import { SCROLL_PIN_THRESHOLD_PX } from '@/constants/chat';
+import { useKeyboardScrollFix } from '@/hooks/useKeyboardScrollFix';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -24,10 +25,11 @@ export default function ChatPage() {
   const didInitialScrollRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const chatMessagesRef = useRef<any[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const isInputFocusedRef = useRef<boolean>(false);
 
   const supabase = getSupabaseClient();
-  const channelRef = useRef<any>(null); // Track channel to prevent double-subscribe
-  const instanceIdRef = useRef<string>(`chat-${conversationId}-${Math.random().toString(36).substr(2, 9)}`);
+  const channelRef = useRef<any>(null);
   
   // Match approval states
   const [matchStatus, setMatchStatus] = useState<'none' | 'pending' | 'matched' | 'can-approve'>('none');
@@ -42,24 +44,17 @@ export default function ChatPage() {
     if (!conversationId || !currentUserId) return; // Guard against auth transitions
     
     const channelName = `messages-${conversationId}`;
-    const instanceId = instanceIdRef.current;
-    
-    console.log(`[REALTIME-DEBUG] ${instanceId} | ChatPage | SUBSCRIBE | channel: ${channelName}`);
-    
+
     // Cleanup previous channel if exists (guard against double-subscribe)
     if (channelRef.current) {
-      console.log(`[REALTIME-DEBUG] ${instanceId} | ChatPage | CLEANUP-PREV | channel: ${channelName}`);
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
-    
+
     const channel = supabase.channel(channelName)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
         const newMessage = payload.new;
-        console.log('Realtime message received:', newMessage);
-        // If the new message belongs to this conversation, add it to chatMessages
         if (newMessage.conversation_id === conversationId) {
-          console.log('Adding message to chat:', newMessage);
           setChatMessages(prev => {
             // Replace optimistic in place to avoid DOM churn and scroll jump
             let idx = -1;
@@ -82,15 +77,12 @@ export default function ChatPage() {
           }
         }
       })
-      .subscribe((status) => {
-        console.log(`[REALTIME-DEBUG] ${instanceId} | ChatPage | SUBSCRIBE-STATUS | channel: ${channelName} | status: ${status}`);
-      });
+      .subscribe();
     
     channelRef.current = channel;
     
     return () => {
       if (channelRef.current) {
-        console.log(`[REALTIME-DEBUG] ${instanceId} | ChatPage | CLEANUP | channel: ${channelName}`);
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
@@ -156,6 +148,11 @@ export default function ChatPage() {
   const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
     bottomRef.current?.scrollIntoView({ behavior, block: 'end' });
   };
+
+  // Scroll to bottom if pinned — used by keyboard fix hook
+  useKeyboardScrollFix(true, isInputFocusedRef, () => {
+    if (isNearBottomNow()) requestAnimationFrame(() => requestAnimationFrame(() => scrollToBottom()));
+  });
 
   // Reset initial scroll flag when conversation changes
   useEffect(() => {
@@ -227,8 +224,6 @@ export default function ChatPage() {
     };
   }, []);
 
-  // Add typing indicator state
-  const [isTyping, setIsTyping] = useState(false);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
   // Fetch match status when chat context is available
@@ -343,7 +338,11 @@ export default function ChatPage() {
     setSending(true);
     const messageContent = messageText.trim();
     setMessageText('');
-    
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.focus();
+    }
+
     // Add optimistic message
     const optimisticMessage = {
       id: `temp-${Date.now()}`,
@@ -387,7 +386,6 @@ export default function ChatPage() {
         );
         
         if (!hasRealMessage) {
-          console.log('Message not received via realtime, refetching...');
           // Refetch messages
           const historyRes = await fetch(`/api/messages/history?conversation_id=${conversationId}`);
           const historyData = await historyRes.json();
@@ -414,13 +412,11 @@ export default function ChatPage() {
       showBackButton={true}
     >
     <div
-      className="h-[100dvh] flex flex-col overflow-hidden p-0 sm:p-2 bg-orbit-surface3"
+      className="h-[100dvh] flex flex-col overflow-hidden p-0 sm:p-2 bg-orbit-surface3 overscroll-none"
       style={{ paddingBottom: 'calc(var(--bottom-nav-h,0px) + env(safe-area-inset-bottom))' }}
     >
-      {/* Fixed header section */}
-      <div className="sticky top-0 z-20 bg-orbit-surface3/90 backdrop-blur-sm w-full rounded-none shadow-2xl">
-          {/* New sticky top bar */}
-          <div className="sticky top-0 z-10 bg-orbit-surface3 border-b border-orbit-border/50">
+      {/* Header */}
+      <div className="sticky top-0 z-20 bg-orbit-surface3 border-b border-orbit-border/50 w-full shadow-2xl">
             <div className="flex items-center gap-3 px-4 py-3">
               <button 
                 onClick={() => {
@@ -461,9 +457,8 @@ export default function ChatPage() {
                 );
               })()}
             </div>
-          </div>
-          
-          {/* Compact singles context row - sticky below top bar */}
+
+          {/* Compact singles context row */}
           {chatContext && (
             <div className="px-4 py-1.5 border-b border-orbit-border/50 bg-orbit-surface3 flex items-center gap-3">
               {/* Left: Overlapping avatars */}
@@ -521,7 +516,7 @@ export default function ChatPage() {
       </div>
       
       {/* Scrollable chat area */}
-      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 py-4 text-left bg-orbit-canvas relative">
+      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 py-4 text-left bg-orbit-canvas relative" onClick={() => textareaRef.current?.blur()}>
           <div className="flex flex-col">
             {chatMessages.length > 0 && (
               <GroupedMessageList
@@ -545,24 +540,6 @@ export default function ChatPage() {
                 }}
               />
             )}
-            {/* Typing indicator — inside flex column so it participates in scroll height */}
-            {isTyping && (
-              <div className="flex justify-end items-center my-4">
-                <div className="max-w-[70%] flex flex-col items-end">
-                  <div className="font-semibold text-orbit-text text-xs mb-1 text-right">
-                    You
-                  </div>
-                  <div className="px-5 py-3 rounded-2xl orbit-surface-soft text-orbit-muted italic">
-                    typing...
-                  </div>
-                </div>
-                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-orbit-border ml-4 flex-shrink-0 flex items-center justify-center">
-                  <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
-                    <span className="text-lg font-bold text-orbit-text2">M</span>
-                  </div>
-                </div>
-              </div>
-            )}
             <div ref={bottomRef} className="h-px" />
           </div>
 
@@ -578,7 +555,7 @@ export default function ChatPage() {
               title="Scroll to bottom"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7 14L12 9L17 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M7 10L12 15L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
           )}
@@ -586,26 +563,33 @@ export default function ChatPage() {
       
       {/* Input Section — non-fixed so keyboard shrinks viewport naturally */}
       <div className="z-30 bg-orbit-surface3 border-t border-orbit-border/50 px-4 py-4 flex items-center gap-3 flex-shrink-0">
-          <input
-            type="text"
-            className="flex-1 border border-orbit-border/50 rounded-2xl px-4 py-4 text-orbit-text bg-orbit-surface/80 focus:border-orbit-gold focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 placeholder:text-orbit-muted placeholder:italic text-base"
+          <textarea
+            ref={textareaRef}
+            rows={1}
+            className="flex-1 border border-orbit-border/50 rounded-2xl px-4 py-4 text-orbit-text bg-orbit-surface/80 focus:border-orbit-gold focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 placeholder:text-orbit-muted placeholder:italic text-base resize-none max-h-[7.5rem] overflow-y-auto leading-normal"
             placeholder={`Send a message`}
             value={messageText}
-            onChange={e => setMessageText(e.target.value)}
+            onChange={e => {
+              setMessageText(e.target.value);
+              e.target.style.height = 'auto';
+              e.target.style.height = e.target.scrollHeight + 'px';
+            }}
+            onFocus={() => { isInputFocusedRef.current = true; }}
+            onBlur={() => { isInputFocusedRef.current = false; }}
             disabled={sending}
-            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(); } }}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
+            }}
           />
-          {messageText.trim() && (
-            <button
-              className="flex items-center justify-center w-14 h-14 rounded-full bg-orbit-gold text-orbit-text shadow-cta-entry hover:opacity-90 active:opacity-95 transition-opacity border-0"
-              onClick={handleSendMessage}
-              disabled={sending}
-            >
-              <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(-45deg)' }}>
-                <path d="M8 24L24 16L8 8V14L20 16L8 18V24Z" fill="currentColor"/>
-              </svg>
-            </button>
-          )}
+          <button
+            className={`flex items-center justify-center w-14 h-14 rounded-full bg-orbit-gold text-orbit-text shadow-cta-entry hover:opacity-90 active:opacity-95 transition-opacity border-0 flex-shrink-0 ${!messageText.trim() ? 'opacity-0 pointer-events-none' : ''}`}
+            onClick={handleSendMessage}
+            disabled={sending}
+          >
+            <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(-45deg)' }}>
+              <path d="M8 24L24 16L8 8V14L20 16L8 18V24Z" fill="currentColor"/>
+            </svg>
+          </button>
       </div>
 
       {/* Approval Confirmation Modal */}

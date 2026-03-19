@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 
 export type ChatMessage = {
   id: string;
@@ -25,6 +26,22 @@ export default function GroupedMessageList({
 }: GroupedMessageListProps) {
   if (!messages || messages.length === 0) {
     return null;
+  }
+
+  // Format a date for the separator label
+  function formatDateLabel(date: Date): string {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const isSameDay = (a: Date, b: Date) =>
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+
+    if (isSameDay(date, today)) return 'Today';
+    if (isSameDay(date, yesterday)) return 'Yesterday';
+    return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
   }
 
   // Helper function to determine bubble corner radius based on position in group
@@ -83,8 +100,24 @@ export default function GroupedMessageList({
 
         const formattedTime = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+        // Date separator: show when this message is on a different calendar day than the previous
+        const msgDate = new Date(msg.created_at);
+        const prevDate = i > 0 ? new Date(messages[i - 1].created_at) : null;
+        const showDateSeparator = !prevDate ||
+          msgDate.getFullYear() !== prevDate.getFullYear() ||
+          msgDate.getMonth() !== prevDate.getMonth() ||
+          msgDate.getDate() !== prevDate.getDate();
+
         return (
-          <div key={msg.id} className={`${spacingClass} flex ${isMine ? 'justify-end' : 'justify-start'} items-end`}>
+          <React.Fragment key={msg.id}>
+          {showDateSeparator && (
+            <div className="flex items-center justify-center my-3">
+              <span className="text-xs text-orbit-text/40 px-3 select-none">
+                {formatDateLabel(msgDate)}
+              </span>
+            </div>
+          )}
+          <div className={`${spacingClass} flex ${isMine ? 'justify-end' : 'justify-start'} items-end`}>
             {/* Left avatar column — always reserved to avoid horizontal shift when avatar appears/disappears */}
             {!isMine && (
               <div className="w-10 h-8 flex-shrink-0 mr-2.5 flex items-center justify-end self-end">
@@ -108,7 +141,7 @@ export default function GroupedMessageList({
               <div
                 className={`px-4 py-2.5 ${getBubbleRadiusClass(isMine, isFirstInGroup, isLastInGroup)} ${msg.optimistic ? 'opacity-60' : ''} ${
                   isMine
-                    ? 'orbit-surface text-orbit-text font-medium border border-orbit-border/50'
+                    ? 'bg-orbit-gold/15 text-orbit-text font-medium border border-orbit-border/50'
                     : 'orbit-surface text-orbit-text font-medium border border-orbit-border/50'
                 }`}
               >
@@ -140,6 +173,7 @@ export default function GroupedMessageList({
               </div>
             )}
           </div>
+          </React.Fragment>
         );
       })}
     </>

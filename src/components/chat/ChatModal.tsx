@@ -7,6 +7,8 @@ import RequireStandaloneGate from '../pwa/RequireStandaloneGate';
 import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
 import GroupedMessageList from './GroupedMessageList';
 import { SCROLL_PIN_THRESHOLD_PX } from '@/constants/chat';
+import { getSupabaseClient } from '@/lib/supabase/client';
+import { useKeyboardScrollFix } from '@/hooks/useKeyboardScrollFix';
 
 interface ChatModalProps {
   open: boolean;
@@ -36,9 +38,9 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   const isInputFocusedRef = useRef<boolean>(false);
   const prevMsgCount = useRef<number>(0);
   const loadingTimeout = useRef<NodeJS.Timeout | null>(null);
-  
-  // Threshold for determining if user is "pinned" to bottom (in pixels)
-  const SCROLL_PIN_THRESHOLD_PX = 48;
+  const channelRef = useRef<any>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const supabase = getSupabaseClient();
   const [matchStatus, setMatchStatus] = useState<'none' | 'pending' | 'matched' | 'can-approve'>('none');
   const [matchLoading, setMatchLoading] = useState(false);
   const [matchError, setMatchError] = useState<string | null>(null);
@@ -111,37 +113,12 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     };
   }, [open]);
 
-  // Handle keyboard open/close via VisualViewport
-  useEffect(() => {
-    if (!open) return;
-
-    const handleViewportResize = () => {
-      // Only scroll if input is focused and user is pinned to bottom
-      if (isInputFocusedRef.current && isPinnedRef.current) {
-        scrollToBottomIfPinned('keyboard-resize');
-      }
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleViewportResize);
-      return () => {
-        window.visualViewport?.removeEventListener('resize', handleViewportResize);
-      };
-    }
-  }, [open]);
+  // Handle keyboard open/close via VisualViewport (shared hook)
+  useKeyboardScrollFix(open, isInputFocusedRef, () => scrollToBottomIfPinned('keyboard-resize'));
 
   // Fetch chat history and context
   useEffect(() => {
     if (!open) return;
-    
-    // Debug: Log the props to verify correct context
-    console.log('ChatModal: Fetching chat data with context:', {
-      currentUserId,
-      otherUserId,
-      aboutSingle: aboutSingle?.id,
-      clickedSingle: clickedSingle?.id,
-      isSingleToSingle
-    });
     
     let isMounted = true;
     const fetchChatData = async () => {
@@ -213,6 +190,59 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     scrollToBottomIfPinned('new-message');
   }, [chatMessages, open, chatLoading]);
 
+  // Realtime subscription for incoming messages
+  useEffect(() => {
+    if (!open || !currentUserId) return;
+
+    const conversationId = chatContext?.conversation_id;
+    if (!isSingleToSingle && !conversationId) return;
+
+    const channelName = isSingleToSingle
+      ? `modal-single-${currentUserId}-${otherUserId}`
+      : `modal-conv-${conversationId}`;
+
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
+    const channel = supabase.channel(channelName)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+        const newMessage = payload.new;
+
+        const belongs = isSingleToSingle
+          ? ((newMessage.sender_id === currentUserId && newMessage.recipient_id === otherUserId) ||
+             (newMessage.sender_id === otherUserId && newMessage.recipient_id === currentUserId))
+          : newMessage.conversation_id === conversationId;
+        if (!belongs) return;
+
+        setChatMessages(prev => {
+          // Replace optimistic in place to avoid DOM churn; otherwise append
+          let idx = -1;
+          for (let i = prev.length - 1; i >= 0; i--) {
+            if (prev[i].optimistic && prev[i].content === newMessage.content && prev[i].sender_id === newMessage.sender_id) {
+              idx = i;
+              break;
+            }
+          }
+          if (idx === -1) return [...prev, newMessage];
+          const copy = prev.slice();
+          copy[idx] = newMessage;
+          return copy;
+        });
+      })
+      .subscribe();
+
+    channelRef.current = channel;
+
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, [open, currentUserId, chatContext?.conversation_id, isSingleToSingle, otherUserId]);
+
   // Fetch match status for the two singles
   useEffect(() => {
     if (isSingleToSingle) {
@@ -254,11 +284,38 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     setCanChatLoading(false);
   };
 
+  // Core send — used by handleSendMessage and handleRetryFailed
+  const sendMessageContent = async (content: string, optimisticId: string) => {
+    const messageData: any = {
+      sender_id: currentUserId,
+      recipient_id: otherUserId,
+      content,
+    };
+    if (!isSingleToSingle && aboutSingle.id && clickedSingle.id) {
+      messageData.about_single_id = aboutSingle.id;
+      messageData.clicked_single_id = clickedSingle.id;
+    }
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(messageData),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setChatMessages(prev => prev.map(m => m.id === optimisticId ? { ...m, failed: true } : m));
+      }
+    } catch {
+      setChatMessages(prev => prev.map(m => m.id === optimisticId ? { ...m, failed: true } : m));
+    }
+  };
+
   // Send message
   const handleSendMessage = async () => {
     if (!currentUserId || !otherUserId || !messageText.trim()) return;
+    const optimisticId = `optimistic-${Date.now()}`;
     const optimisticMsg = {
-      id: `optimistic-${Date.now()}`,
+      id: optimisticId,
       sender_id: currentUserId,
       recipient_id: otherUserId,
       content: messageText.trim(),
@@ -267,6 +324,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     };
     setChatMessages(prev => [...prev, optimisticMsg]);
     setMessageText('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.focus();
+    }
     setSending(true);
 
     // Treat sending as explicit intent to be at bottom; scroll after paint
@@ -276,28 +337,19 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
         bottomRef.current?.scrollIntoView({ block: 'end' });
       });
     });
-    try {
-      const messageData: any = {
-        sender_id: currentUserId,
-        recipient_id: otherUserId,
-        content: optimisticMsg.content,
-      };
-      // Add about_single_id and clicked_single_id for MatchMakr-to-MatchMakr chat
-      if (!isSingleToSingle && aboutSingle.id && clickedSingle.id) {
-        messageData.about_single_id = aboutSingle.id;
-        messageData.clicked_single_id = clickedSingle.id;
-      }
-      const res = await fetch('/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(messageData),
-      });
-      const data = await res.json();
-      if (!data.success) {
-        alert(data.error || 'This message couldn\'t be sent. Please try again.');
-      }
-    } catch (err) {
-      alert('This message couldn\'t be sent. Please try again.');
+
+    await sendMessageContent(optimisticMsg.content, optimisticId);
+    setSending(false);
+  };
+
+  // Retry all failed messages
+  const handleRetryFailed = async () => {
+    const failed = chatMessages.filter(m => m.failed);
+    if (failed.length === 0) return;
+    setChatMessages(prev => prev.map(m => m.failed ? { ...m, failed: false } : m));
+    setSending(true);
+    for (const msg of failed) {
+      await sendMessageContent(msg.content, msg.id);
     }
     setSending(false);
   };
@@ -517,13 +569,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
       body="Chat is available in app mode only. Install Orbit for full access."
       showBackButton={false}
     >
-    <div className="fixed inset-0 bg-orbit-canvas/80 flex sm:items-center sm:justify-center items-stretch justify-end z-[9999]">
+    <div className="fixed inset-0 bg-orbit-canvas/80 flex sm:items-center sm:justify-center items-stretch justify-end z-[9999] overscroll-none">
       <div 
         className="bg-orbit-surface3 w-full sm:w-[600px] sm:rounded-2xl p-0 shadow-xl h-[100dvh] flex flex-col text-center relative overflow-hidden"
-        style={{
-          paddingTop: 'env(safe-area-inset-top)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-        }}
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         {/* Header/About Section */}
         <div className={isSingleToSingle ? "border-b border-orbit-border/50" : "p-8 border-b border-orbit-border/50"}>
@@ -620,7 +669,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
           )}
         </div>
         {/* Chat History Section */}
-        <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain bg-orbit-canvas px-6 py-4 pb-20 text-left">
+        <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain bg-orbit-canvas px-6 py-4 text-left" onClick={() => textareaRef.current?.blur()}>
           <div className="flex flex-col">
             {/* Scroll-away intro panel for single-to-single chats */}
             {isSingleToSingle && canChat && (
@@ -673,35 +722,48 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                 }}
               />
             )}
+            {/* Inline send-failure retry */}
+            {chatMessages.some(m => m.failed) && (
+              <button
+                onClick={handleRetryFailed}
+                className="text-red-400 text-xs text-center mt-2 w-full py-1 hover:text-red-300 active:text-red-500 transition-colors"
+              >
+                Failed to send · Tap to retry
+              </button>
+            )}
             {/* Bottom sentinel for scroll detection */}
             <div ref={bottomRef} className="h-px" />
           </div>
         </div>
         {/* Input Section */}
-        <div className="sticky bottom-0 z-10 bg-orbit-surface3 border-t border-orbit-border/50 p-6 flex items-center gap-3">
-          <input
-            type="text"
-            className="flex-1 border border-orbit-border/50 rounded-2xl px-4 py-3 text-orbit-text bg-orbit-surface/80 focus:border-orbit-gold focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 placeholder:text-orbit-muted placeholder:italic text-base"
+        <div className="flex-shrink-0 z-10 bg-orbit-surface3 border-t border-orbit-border/50 px-6 pt-6 flex items-center gap-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
+          <textarea
+            ref={textareaRef}
+            rows={1}
+            className="flex-1 border border-orbit-border/50 rounded-2xl px-4 py-3 text-orbit-text bg-orbit-surface/80 focus:border-orbit-gold focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 placeholder:text-orbit-muted placeholder:italic text-base resize-none max-h-[7.5rem] overflow-y-auto leading-normal"
             placeholder={`Send a message to ${otherUserName}`}
             value={messageText}
-            onChange={e => setMessageText(e.target.value)}
+            onChange={e => {
+              setMessageText(e.target.value);
+              e.target.style.height = 'auto';
+              e.target.style.height = e.target.scrollHeight + 'px';
+            }}
             onFocus={() => { isInputFocusedRef.current = true; }}
             onBlur={() => { isInputFocusedRef.current = false; }}
             disabled={sending || (isSingleToSingle && !canChat)}
-            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(); } }}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
+            }}
           />
-          {messageText.trim() && (
-            <button
-              className="flex items-center justify-center w-12 h-12 rounded-full bg-orbit-gold text-orbit-text shadow-cta-entry hover:opacity-90 active:opacity-95 transition-opacity border-0"
-              onClick={handleSendMessage}
-              disabled={sending || (isSingleToSingle && !canChat)}
-            >
-              {/* SVG Arrow Icon, up and right, rotated 45deg */}
-              <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(-45deg)' }}>
-                <path d="M8 24L24 16L8 8V14L20 16L8 18V24Z" fill="currentColor"/>
-              </svg>
-            </button>
-          )}
+          <button
+            className={`flex items-center justify-center w-12 h-12 rounded-full bg-orbit-gold text-orbit-text shadow-cta-entry hover:opacity-90 active:opacity-95 transition-opacity border-0 flex-shrink-0 ${!messageText.trim() ? 'opacity-0 pointer-events-none' : ''}`}
+            onClick={handleSendMessage}
+            disabled={sending || (isSingleToSingle && !canChat)}
+          >
+            <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(-45deg)' }}>
+              <path d="M8 24L24 16L8 8V14L20 16L8 18V24Z" fill="currentColor"/>
+            </svg>
+          </button>
         </div>
         {/* Responsive Close/Back Button - only show for MatchMakr↔MatchMakr chats */}
         {!isSingleToSingle && (

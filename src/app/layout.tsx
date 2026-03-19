@@ -6,6 +6,7 @@ import { themeColor } from '../config/theme';
 
 export const viewport: Viewport = {
   themeColor,
+  interactiveWidget: 'resizes-visual',
 };
 
 /**

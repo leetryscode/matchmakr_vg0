@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import GroupedMessageList from '@/components/chat/GroupedMessageList';
 import { SCROLL_PIN_THRESHOLD_PX } from '@/constants/chat';
+import { useKeyboardScrollFix } from '@/hooks/useKeyboardScrollFix';
 
 export default function SingleChatPage() {
   const router = useRouter();
@@ -22,6 +23,8 @@ export default function SingleChatPage() {
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const didInitialScrollRef = useRef(false);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const isInputFocusedRef = useRef<boolean>(false);
 
   const supabase = getSupabaseClient();
 
@@ -44,6 +47,11 @@ export default function SingleChatPage() {
     const dist = c.scrollHeight - (c.scrollTop + c.clientHeight);
     return dist < SCROLL_PIN_THRESHOLD_PX;
   };
+
+  // Scroll to bottom if pinned — used by keyboard fix hook
+  useKeyboardScrollFix(true, isInputFocusedRef, () => {
+    if (isNearBottomNow()) requestAnimationFrame(() => requestAnimationFrame(() => scrollToBottom()));
+  });
 
   // Fetch current user ID, profile info, and user_type
   useEffect(() => {
@@ -173,24 +181,17 @@ export default function SingleChatPage() {
     });
   }, [chatMessages.length]);
 
-  // Add typing indicator state
-  const [isTyping, setIsTyping] = useState(false);
 
   // Realtime subscription for new messages
   const channelRef = useRef<any>(null);
-  const instanceIdRef = useRef<string>(`single-chat-${singleId}-${Math.random().toString(36).substr(2, 9)}`);
 
   // Realtime subscription — guard until resolvedOtherId exists (avoids sponsorInfo race)
   useEffect(() => {
     if (!currentUserId || !resolvedOtherId) return;
 
     const channelName = `single-messages-${currentUserId}-${singleId}`;
-    const instanceId = instanceIdRef.current;
-
-    console.log(`[REALTIME-DEBUG] ${instanceId} | SingleChatPage | SUBSCRIBE | channel: ${channelName}`);
 
     if (channelRef.current) {
-      console.log(`[REALTIME-DEBUG] ${instanceId} | SingleChatPage | CLEANUP-PREV | channel: ${channelName}`);
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
@@ -216,15 +217,12 @@ export default function SingleChatPage() {
           });
         }
       })
-      .subscribe((status) => {
-        console.log(`[REALTIME-DEBUG] ${instanceId} | SingleChatPage | SUBSCRIBE-STATUS | channel: ${channelName} | status: ${status}`);
-      });
+      .subscribe();
 
     channelRef.current = channel;
 
     return () => {
       if (channelRef.current) {
-        console.log(`[REALTIME-DEBUG] ${instanceId} | SingleChatPage | CLEANUP | channel: ${channelName}`);
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
@@ -246,6 +244,10 @@ export default function SingleChatPage() {
     };
     setChatMessages(prev => [...prev, optimisticMsg]);
     setMessageText('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.focus();
+    }
 
     // Explicit intent: after sending, user wants to be at the bottom
     requestAnimationFrame(() => {
@@ -284,7 +286,7 @@ export default function SingleChatPage() {
 
   return (
     <div
-      className="h-[100dvh] flex flex-col overflow-hidden p-0 sm:p-2 bg-orbit-surface3"
+      className="h-[100dvh] flex flex-col overflow-hidden p-0 sm:p-2 bg-orbit-surface3 overscroll-none"
       style={{ paddingBottom: 'calc(var(--bottom-nav-h,0px) + env(safe-area-inset-bottom))' }}
     >
       {/* Sticky top bar */}
@@ -330,7 +332,7 @@ export default function SingleChatPage() {
       </div>
       
       {/* Chat history */}
-      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 py-4 text-left bg-orbit-canvas">
+      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 py-4 text-left bg-orbit-canvas" onClick={() => textareaRef.current?.blur()}>
           <div className="flex flex-col">
             {chatMessages.length > 0 && (
               <GroupedMessageList
@@ -354,49 +356,39 @@ export default function SingleChatPage() {
                 }}
               />
             )}
-            {isTyping && (
-              <div className="flex justify-end items-center my-4">
-                <div className="max-w-[70%] flex flex-col items-end">
-                  <div className="font-semibold text-orbit-text text-xs mb-1 text-right">
-                    You
-                  </div>
-                  <div className="px-5 py-3 rounded-2xl orbit-surface-soft text-orbit-muted italic">
-                    typing...
-                  </div>
-                </div>
-                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-orbit-border ml-4 flex-shrink-0 flex items-center justify-center">
-                  <div className="w-full h-full bg-orbit-canvas flex items-center justify-center">
-                    <span className="text-lg font-bold text-orbit-text2">M</span>
-                  </div>
-                </div>
-              </div>
-            )}
             <div ref={bottomRef} className="h-px" />
           </div>
       </div>
       
       {/* Input Section — non-fixed so keyboard shrinks viewport naturally */}
       <div className="z-30 bg-orbit-surface3 border-t border-orbit-border/50 px-4 py-4 flex items-center gap-3 flex-shrink-0">
-          <input
-            type="text"
-            className="flex-1 border border-orbit-border/50 rounded-2xl px-4 py-4 text-orbit-text bg-orbit-surface/80 focus:border-orbit-gold focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 placeholder:text-orbit-muted placeholder:italic text-base"
+          <textarea
+            ref={textareaRef}
+            rows={1}
+            className="flex-1 border border-orbit-border/50 rounded-2xl px-4 py-4 text-orbit-text bg-orbit-surface/80 focus:border-orbit-gold focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 placeholder:text-orbit-muted placeholder:italic text-base resize-none max-h-[7.5rem] overflow-y-auto leading-normal"
             placeholder={`Send a message to ${singleInfo?.name || 'your single'}`}
             value={messageText}
-            onChange={e => setMessageText(e.target.value)}
+            onChange={e => {
+              setMessageText(e.target.value);
+              e.target.style.height = 'auto';
+              e.target.style.height = e.target.scrollHeight + 'px';
+            }}
+            onFocus={() => { isInputFocusedRef.current = true; }}
+            onBlur={() => { isInputFocusedRef.current = false; }}
             disabled={sending}
-            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(); } }}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
+            }}
           />
-          {messageText.trim() && (
-            <button
-              className="flex items-center justify-center w-14 h-14 rounded-full bg-orbit-gold text-orbit-text shadow-cta-entry hover:opacity-90 active:opacity-95 transition-opacity border-0"
-              onClick={handleSendMessage}
-              disabled={sending}
-            >
-              <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(-45deg)' }}>
-                <path d="M8 24L24 16L8 8V14L20 16L8 18V24Z" fill="currentColor"/>
-              </svg>
-            </button>
-          )}
+          <button
+            className={`flex items-center justify-center w-14 h-14 rounded-full bg-orbit-gold text-orbit-text shadow-cta-entry hover:opacity-90 active:opacity-95 transition-opacity border-0 flex-shrink-0 ${!messageText.trim() ? 'opacity-0 pointer-events-none' : ''}`}
+            onClick={handleSendMessage}
+            disabled={sending}
+          >
+            <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(-45deg)' }}>
+              <path d="M8 24L24 16L8 8V14L20 16L8 18V24Z" fill="currentColor"/>
+            </svg>
+          </button>
       </div>
     </div>
   );
