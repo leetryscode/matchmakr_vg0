@@ -13,7 +13,12 @@ export function getSupabaseClient(): SupabaseClient {
   if (!supabaseClientInstance) {
     supabaseClientInstance = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        realtime: {
+          transport: globalThis.WebSocket,
+        },
+      }
     )
   }
   return supabaseClientInstance

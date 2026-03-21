@@ -217,6 +217,8 @@ export function RealtimeMessagesProvider({
     const msg = payload.new;
     if (!msg) return;
 
+    console.log('[RT-DIAG] Raw message received:', msg.id, 'conversation_id:', msg.conversation_id, 'sender:', msg.sender_id);
+
     const convId: string | null = msg.conversation_id ?? null;
     const routingKey = convId
       ? convId
@@ -231,6 +233,7 @@ export function RealtimeMessagesProvider({
 
     // Dispatch to registered consumer callback
     const entry = callbacksRef.current.get(routingKey);
+    console.log('[RT-DIAG] Routing key:', routingKey, 'Listener found:', !!entry);
     if (entry) {
       entry.onMessage(msg);
     }
@@ -288,6 +291,7 @@ export function RealtimeMessagesProvider({
           (payload) => handleMessageRef.current(payload)
         )
         .subscribe((status: string) => {
+          console.log('[RT-DIAG] Channel subscribe status:', status);
           if (status === 'SUBSCRIBED') {
             backoffRef.current = 1000;
             if (retryTimerRef.current) {
@@ -343,6 +347,7 @@ export function RealtimeMessagesProvider({
       onMessage: MessageCallback,
       onRefreshNeeded?: RefreshCallback
     ) => {
+      console.log('[RT-DIAG] Registered listener for key:', key);
       callbacksRef.current.set(key, { onMessage, onRefreshNeeded });
     },
     []
