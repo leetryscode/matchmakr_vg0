@@ -7,6 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { orbitConfig } from '@/config/orbitConfig';
 import { normalizeToOrbitRole, OrbitUserRole } from '@/types/orbit';
 import { NotificationsProvider } from './NotificationsContext';
+import { RealtimeMessagesProvider } from './RealtimeMessagesContext';
 
 /** Session guard: avoid spamming ensure-nudges API within same app session per user+type */
 const nudgeCheckRanThisSession = new Set<string>();
@@ -239,7 +240,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{ user, loading, userType, orbitRole, sponsoredById, signOut }}>
       <NotificationsProvider>
-        {children}
+        <RealtimeMessagesProvider userId={user?.id ?? null}>
+          {children}
+        </RealtimeMessagesProvider>
       </NotificationsProvider>
     </AuthContext.Provider>
   );

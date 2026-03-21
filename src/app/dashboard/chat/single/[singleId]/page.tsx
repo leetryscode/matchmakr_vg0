@@ -7,10 +7,17 @@ import { getSupabaseClient } from '@/lib/supabase/client';
 import GroupedMessageList from '@/components/chat/GroupedMessageList';
 import { SCROLL_PIN_THRESHOLD_PX } from '@/constants/chat';
 import { useKeyboardScrollFix } from '@/hooks/useKeyboardScrollFix';
+import { useRealtimeMessages } from '@/contexts/RealtimeMessagesContext';
 
 export default function SingleChatPage() {
   const router = useRouter();
   const { singleId } = useParams();
+  const {
+    registerConversation,
+    unregisterConversation,
+    notifySent,
+    getDirectKey,
+  } = useRealtimeMessages();
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
   const [messageText, setMessageText] = useState('');
@@ -28,14 +35,17 @@ export default function SingleChatPage() {
 
   const supabase = getSupabaseClient();
 
+  // Coerce singleId from useParams() to string (it can be string | string[])
+  const singleIdStr = Array.isArray(singleId) ? singleId[0] : singleId as string;
+
   // Stable otherId — gate until we can disambiguate (SINGLE + sponsorInfo unknown = don't guess)
   const resolvedOtherId = useMemo(() => {
-    if (!singleId) return null;
-    if (currentUserType !== 'SINGLE') return singleId;
+    if (!singleIdStr) return null;
+    if (currentUserType !== 'SINGLE') return singleIdStr;
 
     if (sponsorInfo === undefined) return null;
-    return sponsorInfo?.id ?? singleId;
-  }, [singleId, currentUserType, sponsorInfo]);
+    return sponsorInfo?.id ?? singleIdStr;
+  }, [singleIdStr, currentUserType, sponsorInfo]);
 
   const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
     bottomRef.current?.scrollIntoView({ behavior, block: 'end' });
@@ -108,14 +118,14 @@ export default function SingleChatPage() {
 
   // Fetch single info and chat history (uses resolvedOtherId for consistency)
   useEffect(() => {
-    if (!singleId || !currentUserId || !resolvedOtherId) return;
+    if (!singleIdStr || !currentUserId || !resolvedOtherId) return;
 
     setChatLoading(true);
     const fetchChatData = async () => {
       const { data: singleData } = await supabase
         .from('profiles')
         .select('id, name, photos')
-        .eq('id', singleId)
+        .eq('id', singleIdStr)
         .single();
 
       if (singleData) {
@@ -132,7 +142,7 @@ export default function SingleChatPage() {
       setChatLoading(false);
 
       if (currentUserType === 'SINGLE' && !sponsorInfo?.id) {
-        const conversationKey = `firstChat_${currentUserId}_${singleId}`;
+        const conversationKey = `firstChat_${currentUserId}_${singleIdStr}`;
         const hasOpenedBefore = localStorage.getItem(conversationKey);
         if (!hasOpenedBefore) {
           localStorage.setItem(conversationKey, 'true');
@@ -140,22 +150,22 @@ export default function SingleChatPage() {
       }
     };
     fetchChatData();
-  }, [singleId, currentUserId, resolvedOtherId, currentUserType, sponsorInfo?.id]);
+  }, [singleIdStr, currentUserId, resolvedOtherId, currentUserType, sponsorInfo?.id]);
 
   // Mark messages as read as soon as chat is opened
   useEffect(() => {
-    if (!singleId || !currentUserId || !resolvedOtherId) return;
+    if (!singleIdStr || !currentUserId || !resolvedOtherId) return;
     fetch('/api/messages/mark-read', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: currentUserId, otherId: resolvedOtherId }),
     });
-  }, [singleId, currentUserId, resolvedOtherId]);
+  }, [singleIdStr, currentUserId, resolvedOtherId]);
 
   // Reset initial scroll flag when conversation changes
   useEffect(() => {
     didInitialScrollRef.current = false;
-  }, [singleId]);
+  }, [singleIdStr]);
 
   // Initial scroll once when chat loads
   useEffect(() => {
@@ -182,56 +192,52 @@ export default function SingleChatPage() {
   }, [chatMessages.length]);
 
 
-  // Realtime subscription for new messages
-  const channelRef = useRef<any>(null);
-
-  // Realtime subscription — guard until resolvedOtherId exists (avoids sponsorInfo race)
+  // Register with global realtime provider — guard until resolvedOtherId exists (avoids sponsorInfo race)
   useEffect(() => {
     if (!currentUserId || !resolvedOtherId) return;
 
-    const channelName = `single-messages-${currentUserId}-${singleId}`;
+    const key = getDirectKey(currentUserId, resolvedOtherId);
 
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
-
-    const channel = supabase.channel(channelName)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-        const newMessage = payload.new;
-        if ((newMessage.sender_id === currentUserId && newMessage.recipient_id === resolvedOtherId) ||
-            (newMessage.sender_id === resolvedOtherId && newMessage.recipient_id === currentUserId)) {
-          setChatMessages(prev => {
-            // Replace optimistic in place to avoid DOM churn and scroll jump
-            let idx = -1;
-            for (let i = prev.length - 1; i >= 0; i--) {
-              if (prev[i].optimistic && prev[i].content === newMessage.content && prev[i].sender_id === newMessage.sender_id) {
-                idx = i;
-                break;
-              }
-            }
-            if (idx === -1) return [...prev, newMessage];
-            const copy = prev.slice();
-            copy[idx] = newMessage;
-            return copy;
-          });
+    const appendMessage = (newMessage: any) => {
+      setChatMessages(prev => {
+        let idx = -1;
+        for (let i = prev.length - 1; i >= 0; i--) {
+          if (
+            prev[i].optimistic &&
+            prev[i].content === newMessage.content &&
+            prev[i].sender_id === newMessage.sender_id
+          ) {
+            idx = i;
+            break;
+          }
         }
-      })
-      .subscribe();
+        if (idx === -1) return [...prev, newMessage];
+        const copy = prev.slice();
+        copy[idx] = newMessage;
+        return copy;
+      });
+    };
 
-    channelRef.current = channel;
-
-    return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
+    const onRefreshNeeded = async () => {
+      try {
+        const res = await fetch(`/api/messages/history?userId=${currentUserId}&otherId=${resolvedOtherId}`);
+        const data = await res.json();
+        if (data.success && data.messages) setChatMessages(data.messages);
+      } catch {
+        // Silent
       }
     };
-  }, [currentUserId, resolvedOtherId, singleId]);
+
+    registerConversation(key, appendMessage, onRefreshNeeded);
+
+    return () => {
+      unregisterConversation(key);
+    };
+  }, [currentUserId, resolvedOtherId, getDirectKey]);
 
   // Send message
   const handleSendMessage = async () => {
-    if (!messageText.trim() || !singleId || !currentUserId || !resolvedOtherId) return;
+    if (!messageText.trim() || !singleIdStr || !currentUserId || !resolvedOtherId) return;
     setSending(true);
 
     const optimisticMsg = {
@@ -265,6 +271,7 @@ export default function SingleChatPage() {
           content: optimisticMsg.content,
         }),
       });
+      notifySent(getDirectKey(currentUserId, resolvedOtherId));
     } finally {
       setSending(false);
     }

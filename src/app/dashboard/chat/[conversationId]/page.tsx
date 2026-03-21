@@ -9,10 +9,17 @@ import RequireStandaloneGate from '@/components/pwa/RequireStandaloneGate';
 import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
 import { SCROLL_PIN_THRESHOLD_PX } from '@/constants/chat';
 import { useKeyboardScrollFix } from '@/hooks/useKeyboardScrollFix';
+import { useRealtimeMessages } from '@/contexts/RealtimeMessagesContext';
 
 export default function ChatPage() {
   const router = useRouter();
   const { conversationId } = useParams();
+  const {
+    registerConversation,
+    unregisterConversation,
+    notifySent,
+    setActiveConversationId,
+  } = useRealtimeMessages();
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
   const [messageText, setMessageText] = useState('');
@@ -20,16 +27,13 @@ export default function ChatPage() {
   const [chatContext, setChatContext] = useState<any>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
-  const fallbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const shouldAutoScrollRef = useRef<boolean>(true);
   const didInitialScrollRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const chatMessagesRef = useRef<any[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const isInputFocusedRef = useRef<boolean>(false);
 
   const supabase = getSupabaseClient();
-  const channelRef = useRef<any>(null);
   
   // Match approval states
   const [matchStatus, setMatchStatus] = useState<'none' | 'pending' | 'matched' | 'can-approve'>('none');
@@ -39,55 +43,50 @@ export default function ChatPage() {
   const [approvalLoading, setApprovalLoading] = useState(false);
   const prevMatchStatus = useRef<string>('');
 
-  // Realtime subscription for new messages
+  // Register with global realtime provider for incoming messages
   useEffect(() => {
-    if (!conversationId || !currentUserId) return; // Guard against auth transitions
-    
-    const channelName = `messages-${conversationId}`;
+    if (!conversationId || !currentUserId) return;
 
-    // Cleanup previous channel if exists (guard against double-subscribe)
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
+    const key = conversationId as string;
 
-    const channel = supabase.channel(channelName)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-        const newMessage = payload.new;
-        if (newMessage.conversation_id === conversationId) {
-          setChatMessages(prev => {
-            // Replace optimistic in place to avoid DOM churn and scroll jump
-            let idx = -1;
-            for (let i = prev.length - 1; i >= 0; i--) {
-              if (prev[i].optimistic && prev[i].content === newMessage.content && prev[i].sender_id === newMessage.sender_id) {
-                idx = i;
-                break;
-              }
-            }
-            if (idx === -1) return [...prev, newMessage];
-            const copy = prev.slice();
-            copy[idx] = newMessage;
-            return copy;
-          });
-          
-          // Clear any pending fallback timeout since we got the real message
-          if (fallbackTimeoutRef.current) {
-            clearTimeout(fallbackTimeoutRef.current);
-            fallbackTimeoutRef.current = null;
+    const appendMessage = (newMessage: any) => {
+      setChatMessages(prev => {
+        let idx = -1;
+        for (let i = prev.length - 1; i >= 0; i--) {
+          if (
+            prev[i].optimistic &&
+            prev[i].content === newMessage.content &&
+            prev[i].sender_id === newMessage.sender_id
+          ) {
+            idx = i;
+            break;
           }
         }
-      })
-      .subscribe();
-    
-    channelRef.current = channel;
-    
-    return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
+        if (idx === -1) return [...prev, newMessage];
+        const copy = prev.slice();
+        copy[idx] = newMessage;
+        return copy;
+      });
+    };
+
+    const onRefreshNeeded = async () => {
+      try {
+        const res = await fetch(`/api/messages/history?conversation_id=${conversationId}`);
+        const data = await res.json();
+        if (data.success && data.messages) setChatMessages(data.messages);
+      } catch {
+        // Silent
       }
     };
-  }, [conversationId, currentUserId]); // supabase is singleton, stable
+
+    registerConversation(key, appendMessage, onRefreshNeeded);
+    setActiveConversationId(key);
+
+    return () => {
+      unregisterConversation(key);
+      setActiveConversationId(null);
+    };
+  }, [conversationId, currentUserId]);
 
   // Fetch chat context and messages
   useEffect(() => {
@@ -131,11 +130,6 @@ export default function ChatPage() {
       }),
     });
   }, [chatContext, currentUserId]);
-
-  // Keep chatMessagesRef in sync for use in timeouts/callbacks
-  useEffect(() => {
-    chatMessagesRef.current = chatMessages;
-  }, [chatMessages]);
 
   const isNearBottomNow = () => {
     const c = chatContainerRef.current;
@@ -200,29 +194,6 @@ export default function ChatPage() {
     return () => container.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (fallbackTimeoutRef.current) {
-        clearTimeout(fallbackTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Set a flag to refresh dashboard when leaving this page
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      sessionStorage.setItem('chatPageVisited', 'true');
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      // Set the flag when component unmounts (user navigates away)
-      sessionStorage.setItem('chatPageVisited', 'true');
-    };
-  }, []);
 
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
@@ -376,27 +347,9 @@ export default function ChatPage() {
           clicked_single_id: chatContext.otherUserSingle?.id,
         }),
       });
-      
-      // Set up fallback refetch if realtime doesn't work
-      fallbackTimeoutRef.current = setTimeout(async () => {
-        const hasRealMessage = chatMessagesRef.current.some(msg =>
-          !msg.optimistic &&
-          msg.content === messageContent &&
-          msg.sender_id === currentUserId
-        );
-        
-        if (!hasRealMessage) {
-          // Refetch messages
-          const historyRes = await fetch(`/api/messages/history?conversation_id=${conversationId}`);
-          const historyData = await historyRes.json();
-          if (historyData.success && historyData.messages) {
-            setChatMessages(historyData.messages);
-          }
-        }
-      }, 2000); // Wait 2 seconds for realtime
-      
+      // Signal to the global provider: start 3-second fallback timer
+      notifySent(chatContext.conversation_id);
     } catch (error) {
-      // Remove optimistic message on error
       setChatMessages(prev => prev.filter(msg => !msg.optimistic));
       console.error('Failed to send message:', error);
     } finally {

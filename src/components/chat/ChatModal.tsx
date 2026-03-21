@@ -7,8 +7,8 @@ import RequireStandaloneGate from '../pwa/RequireStandaloneGate';
 import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
 import GroupedMessageList from './GroupedMessageList';
 import { SCROLL_PIN_THRESHOLD_PX } from '@/constants/chat';
-import { getSupabaseClient } from '@/lib/supabase/client';
 import { useKeyboardScrollFix } from '@/hooks/useKeyboardScrollFix';
+import { useRealtimeMessages } from '@/contexts/RealtimeMessagesContext';
 
 interface ChatModalProps {
   open: boolean;
@@ -26,6 +26,13 @@ interface ChatModalProps {
 
 const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, currentUserName, currentUserProfilePic, otherUserId, otherUserName, otherUserProfilePic, aboutSingle, clickedSingle, isSingleToSingle = false }) => {
   const { registerChatModal, unregisterChatModal } = useChatModal();
+  const {
+    registerConversation,
+    unregisterConversation,
+    notifySent,
+    setActiveConversationId,
+    getDirectKey,
+  } = useRealtimeMessages();
   const modalId = useId();
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
@@ -38,9 +45,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   const isInputFocusedRef = useRef<boolean>(false);
   const prevMsgCount = useRef<number>(0);
   const loadingTimeout = useRef<NodeJS.Timeout | null>(null);
-  const channelRef = useRef<any>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const supabase = getSupabaseClient();
   const [matchStatus, setMatchStatus] = useState<'none' | 'pending' | 'matched' | 'can-approve'>('none');
   const [matchLoading, setMatchLoading] = useState(false);
   const [matchError, setMatchError] = useState<string | null>(null);
@@ -190,55 +195,61 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     scrollToBottomIfPinned('new-message');
   }, [chatMessages, open, chatLoading]);
 
-  // Realtime subscription for incoming messages
+  // Register with global realtime provider for incoming messages
   useEffect(() => {
     if (!open || !currentUserId) return;
 
     const conversationId = chatContext?.conversation_id;
     if (!isSingleToSingle && !conversationId) return;
 
-    const channelName = isSingleToSingle
-      ? `modal-single-${currentUserId}-${otherUserId}`
-      : `modal-conv-${conversationId}`;
+    const key = isSingleToSingle
+      ? getDirectKey(currentUserId, otherUserId)
+      : conversationId!;
 
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
+    const appendMessage = (newMessage: any) => {
+      setChatMessages(prev => {
+        let idx = -1;
+        for (let i = prev.length - 1; i >= 0; i--) {
+          if (
+            prev[i].optimistic &&
+            prev[i].content === newMessage.content &&
+            prev[i].sender_id === newMessage.sender_id
+          ) {
+            idx = i;
+            break;
+          }
+        }
+        if (idx === -1) return [...prev, newMessage];
+        const copy = prev.slice();
+        copy[idx] = newMessage;
+        return copy;
+      });
+    };
+
+    const onRefreshNeeded = async () => {
+      let historyUrl = `/api/messages/history?userId=${currentUserId}&otherId=${otherUserId}`;
+      if (conversationId) historyUrl += `&conversation_id=${conversationId}`;
+      else if (!isSingleToSingle && aboutSingle?.id && clickedSingle?.id) {
+        historyUrl += `&about_single_id=${aboutSingle.id}&clicked_single_id=${clickedSingle.id}`;
+      }
+      try {
+        const res = await fetch(historyUrl);
+        const data = await res.json();
+        if (data.success && data.messages) setChatMessages(data.messages);
+      } catch {
+        // Silent
+      }
+    };
+
+    registerConversation(key, appendMessage, onRefreshNeeded);
+    if (!isSingleToSingle && conversationId) {
+      setActiveConversationId(conversationId);
     }
 
-    const channel = supabase.channel(channelName)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-        const newMessage = payload.new;
-
-        const belongs = isSingleToSingle
-          ? ((newMessage.sender_id === currentUserId && newMessage.recipient_id === otherUserId) ||
-             (newMessage.sender_id === otherUserId && newMessage.recipient_id === currentUserId))
-          : newMessage.conversation_id === conversationId;
-        if (!belongs) return;
-
-        setChatMessages(prev => {
-          // Replace optimistic in place to avoid DOM churn; otherwise append
-          let idx = -1;
-          for (let i = prev.length - 1; i >= 0; i--) {
-            if (prev[i].optimistic && prev[i].content === newMessage.content && prev[i].sender_id === newMessage.sender_id) {
-              idx = i;
-              break;
-            }
-          }
-          if (idx === -1) return [...prev, newMessage];
-          const copy = prev.slice();
-          copy[idx] = newMessage;
-          return copy;
-        });
-      })
-      .subscribe();
-
-    channelRef.current = channel;
-
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
+      unregisterConversation(key);
+      if (!isSingleToSingle) {
+        setActiveConversationId(null);
       }
     };
   }, [open, currentUserId, chatContext?.conversation_id, isSingleToSingle, otherUserId]);
@@ -286,6 +297,11 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
 
   // Core send — used by handleSendMessage and handleRetryFailed
   const sendMessageContent = async (content: string, optimisticId: string) => {
+    const conversationId = chatContext?.conversation_id;
+    const key = isSingleToSingle
+      ? getDirectKey(currentUserId, otherUserId)
+      : conversationId ?? '';
+
     const messageData: any = {
       sender_id: currentUserId,
       recipient_id: otherUserId,
@@ -302,7 +318,9 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
         body: JSON.stringify(messageData),
       });
       const data = await res.json();
-      if (!data.success) {
+      if (data.success) {
+        if (key) notifySent(key);
+      } else {
         setChatMessages(prev => prev.map(m => m.id === optimisticId ? { ...m, failed: true } : m));
       }
     } catch {
