@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 
 interface NotificationsSectionProps {
   userId?: string;
+  hideNudgeInviteSingle?: boolean;
 }
 
 const ACK_MS = 260;
@@ -18,7 +19,7 @@ const SLIDE_MS = 420;
  * Shared NotificationsSection component for both Sponsor and Single dashboards.
  * Displays notifications as stacked cards with dismiss functionality.
  */
-export default function NotificationsSection({ userId: _userIdProp }: NotificationsSectionProps) {
+export default function NotificationsSection({ userId: _userIdProp, hideNudgeInviteSingle = false }: NotificationsSectionProps) {
   const { user } = useAuth();
   // Notifications come from context (NotificationsProvider) - userId prop is ignored
   const { notifications, activeCount, loading, refresh, dismissNotification } = useNotifications();
@@ -266,6 +267,7 @@ export default function NotificationsSection({ userId: _userIdProp }: Notificati
         const visibleNotifications = notifications.filter((n) => {
           if (dismissing.has(n.id)) return true;
           if (optimisticallyDismissed.has(n.id)) return false;
+          if (hideNudgeInviteSingle && n.type === 'nudge_invite_single') return false;
           return true;
         });
         if (visibleNotifications.length === 0) {

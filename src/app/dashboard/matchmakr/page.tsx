@@ -12,6 +12,7 @@ import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer'
 import ManagedSinglesGrid from '@/components/dashboard/ManagedSinglesGrid';
 import SneakPeeksSection from '@/components/dashboard/SneakPeeksSection';
 import SponsorshipRequestsSection from '@/components/dashboard/SponsorshipRequestsSection';
+import SponsorWelcomeCard from '@/components/dashboard/SponsorWelcomeCard';
 import MyCommunitiesSection from '@/components/dashboard/MyCommunitiesSection';
 import Link from 'next/link';
 import { createSponsorLoginNotifications } from '@/lib/notifications/sponsor-login';
@@ -324,11 +325,18 @@ async function MatchMakrDashboardContent() {
                 />
             </div>
             
+            {/* Welcome card — shown only when sponsor has no managed singles */}
+            {processedSponsoredSingles.length === 0 && (
+                <div className="mt-6">
+                    <SponsorWelcomeCard />
+                </div>
+            )}
+
             {/* Consistent vertical rhythm between sections */}
             <div className="flex flex-col">
                 {/* Notifications */}
                 <section className="mt-10 first:mt-0">
-                    <NotificationsSection userId={user.id} />
+                    <NotificationsSection userId={user.id} hideNudgeInviteSingle={processedSponsoredSingles.length === 0} />
                 </section>
 
                 {/* Sponsorship requests (singles who invited this sponsor) */}
