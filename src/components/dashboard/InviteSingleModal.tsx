@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { inviteSingleByEmail } from '@/lib/invite';
 
@@ -78,8 +79,8 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
         onClose();
     };
 
-    return (
-        <div className="fixed inset-0 bg-orbit-canvas/80 flex items-center justify-center z-50">
+    return createPortal(
+        <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
             <div className="bg-orbit-surface-2 rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl border border-orbit-border/40">
                 <div className="text-center mb-6">
                     <h2 className="text-2xl font-bold text-orbit-text mb-2">
@@ -99,13 +100,10 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
                             type="text"
                             value={label}
                             onChange={(e) => setLabel(e.target.value)}
-                            placeholder="Name (for your reference)"
-                            className="w-full border border-orbit-border rounded-xl px-4 py-3 text-orbit-text bg-orbit-surface-2 focus:border-orbit-gold/50 focus:outline-none focus:ring-2 focus:ring-orbit-gold/30"
+                            placeholder="Their name"
+                            className="w-full border border-orbit-border rounded-xl px-4 py-3 text-orbit-text bg-orbit-canvas placeholder:text-orbit-muted focus:border-orbit-gold/50 focus:outline-none focus:ring-2 focus:ring-orbit-gold/30"
                             disabled={isLoading || success}
                         />
-                        <p className="text-xs text-orbit-muted mt-1">
-                            This helps you keep track. They can change their name after joining.
-                        </p>
                     </div>
                     <div>
                         <input
@@ -113,7 +111,7 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="name@email.com"
-                            className="w-full border border-orbit-border rounded-xl px-4 py-3 text-orbit-text bg-orbit-surface-2 focus:border-orbit-gold/50 focus:outline-none focus:ring-2 focus:ring-orbit-gold/30"
+                            className="w-full border border-orbit-border rounded-xl px-4 py-3 text-orbit-text bg-orbit-canvas placeholder:text-orbit-muted focus:border-orbit-gold/50 focus:outline-none focus:ring-2 focus:ring-orbit-gold/30"
                             disabled={isLoading || success}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && !isLoading && !success) {
@@ -130,7 +128,7 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
                             <select
                                 value={selectedCommunityId}
                                 onChange={(e) => setSelectedCommunityId(e.target.value)}
-                                className="w-full border border-orbit-border rounded-xl px-4 py-3 text-orbit-text bg-orbit-surface-2 focus:border-orbit-gold/50 focus:outline-none focus:ring-2 focus:ring-orbit-gold/30"
+                                className="w-full border border-orbit-border rounded-xl px-4 py-3 text-orbit-text bg-orbit-canvas focus:border-orbit-gold/50 focus:outline-none focus:ring-2 focus:ring-orbit-gold/30"
                                 disabled={isLoading || success}
                             >
                                 <option value="">No community (general invite)</option>
@@ -161,12 +159,13 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
                     <button
                         onClick={handleSendInvite}
                         disabled={isLoading || success || !email.trim()}
-                        className="rounded-cta min-h-[44px] px-6 py-2 bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-action-primary"
+                        className="rounded-cta min-h-[44px] px-6 py-2 bg-orbit-gold text-orbit-canvas font-semibold focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-opacity duration-200 hover:opacity-90 active:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isLoading ? 'Sending...' : success ? 'Invite sent' : 'Send invite'}
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

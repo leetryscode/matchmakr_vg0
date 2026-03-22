@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 interface EndSponsorshipModalProps {
   isOpen: boolean;
@@ -47,9 +48,9 @@ export default function EndSponsorshipModal({
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 bg-orbit-canvas/80 flex justify-center items-center z-50"
+      className="fixed inset-0 bg-black flex justify-center items-center z-50"
       onClick={handleBackdropClick}
     >
       <div className="bg-orbit-surface-2 rounded-2xl p-8 shadow-xl max-w-sm w-full text-center mx-4">
@@ -74,6 +75,7 @@ export default function EndSponsorshipModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
