@@ -96,7 +96,7 @@ export default function MyCommunitiesSection({
     }, [loadCommunities]);
 
     return (
-        <div className="orbit-surface-strong rounded-card-lg px-4 py-5">
+        <div>
             <div className="mb-3">
                 <h2 className="type-section text-orbit-text">My Communities</h2>
                 {descriptionText ? (
