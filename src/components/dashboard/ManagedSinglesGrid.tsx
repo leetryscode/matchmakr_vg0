@@ -51,7 +51,7 @@ export default function ManagedSinglesGrid({ singles, inviteRows = [], userId }:
   return (
     <div>
       <SectionHeader
-        title="Managed Singles"
+        title="People you're introducing"
         className="mt-10"
         right={
           <button

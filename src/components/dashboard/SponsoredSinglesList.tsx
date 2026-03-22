@@ -5,7 +5,6 @@ import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import SectionHeader from '@/components/ui/SectionHeader';
-import PreviewRow from '@/components/ui/PreviewRow';
 
 interface SponsoredSingle {
     id: string;
@@ -84,13 +83,14 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
         }
     }, [pathname, userId, sponsoredSingles]);
 
+    if (!sponsoredSingles || sponsoredSingles.length === 0) return null;
+
     return (
         <>
             {/* Section header */}
-            <SectionHeader title="Chat with your singles" />
+            <SectionHeader title="Chat with your sponsored singles" />
             <div className="mt-4 flex flex-col gap-4">
-                {sponsoredSingles && sponsoredSingles.length > 0 ? (
-                    sponsoredSingles.map(single => {
+                {sponsoredSingles.map(single => {
                         const lastMsg = latestMessages[single.id] || singleChats?.[single.id];
                         return (
                             <div
@@ -130,17 +130,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
                                 </div>
                             </div>
                         );
-                    })
-                ) : (
-                    <>
-                        <p className="type-meta text-orbit-muted">
-                            Conversations with singles you sponsor will appear here.
-                        </p>
-                        <div className="mt-2">
-                            <PreviewRow title="Single Name" subtitle="Chat with your sponsored single" label="Preview" />
-                        </div>
-                    </>
-                )}
+                    })}
             </div>
         </>
     );

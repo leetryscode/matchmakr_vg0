@@ -281,13 +281,9 @@ export default function SneakPeeksSection({ sponsorId, sponsoredSingles }: Sneak
             {loading ? (
                 <div className="orbit-muted text-sm">Loading...</div>
             ) : visibleSneakPeeks.length === 0 ? (
-                <div className="mt-4 orbit-surface rounded-card-lg px-5 py-4">
-                    <div className="mb-3">
-                        <p className="text-xs orbit-muted">No previews sent yet. This is what your single will see:</p>
-                    </div>
-                    <div className="flex flex-col gap-3">
-                        <ExamplePreviewCard />
-                    </div>
+                <div className="mt-4">
+                    <p className="text-xs text-orbit-muted mb-3">Before making an introduction, you can send your single a preview to see if there's interest.</p>
+                    <ExamplePreviewCard />
                 </div>
             ) : (
                 <div className="mt-4 px-[3px] py-4">

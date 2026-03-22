@@ -272,9 +272,8 @@ const MatchMakrChatListClient: React.FC<MatchMakrChatListClientProps> = ({
         {sponsorChats.length === 0 ? (
           <GlassCard variant="1" className="p-4 mb-6">
             <div className="text-center">
-              <h3 className="type-body mb-1">No sponsor chats yet</h3>
               <p className="type-meta">
-                Message another sponsor to coordinate introductions.
+                Once your single is on Orbit, you'll start meeting other sponsors and your conversations will show up here.
               </p>
             </div>
           </GlassCard>
