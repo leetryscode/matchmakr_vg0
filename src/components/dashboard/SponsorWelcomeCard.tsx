@@ -143,7 +143,7 @@ export default function SponsorWelcomeCard() {
                 <div
                     onTouchStart={handleTouchStart}
                     onTouchEnd={handleTouchEnd}
-                    className="relative min-h-[9rem] select-none"
+                    className="relative h-[14rem] select-none"
                 >
                     <div
                         className="transition-opacity duration-200"

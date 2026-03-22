@@ -271,18 +271,7 @@ export default function NotificationsSection({ userId: _userIdProp, hideNudgeInv
           return true;
         });
         if (visibleNotifications.length === 0) {
-          return (
-            <div className="flex flex-col gap-3">
-              <GlassCard variant="soft" className="p-4">
-                <div className="text-center py-2">
-                  <p className="type-meta">No notifications yet.</p>
-                  {isDevMode && (
-                    <p className="type-meta text-orbit-muted mt-2">Use "Add example" button above to create one.</p>
-                  )}
-                </div>
-              </GlassCard>
-            </div>
-          );
+          return null;
         }
         const lastIndex = visibleNotifications.length - 1;
         const stackDisabled = dismissing.size > 0 || acknowledging.size > 0;
