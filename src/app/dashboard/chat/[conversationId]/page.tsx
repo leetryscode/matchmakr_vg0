@@ -50,6 +50,7 @@ export default function ChatPage() {
     const key = conversationId as string;
 
     const appendMessage = (newMessage: any) => {
+      console.log('[SHAPE-DEBUG] Incoming realtime message:', JSON.stringify(newMessage, null, 2));
       setChatMessages(prev => {
         let idx = -1;
         for (let i = prev.length - 1; i >= 0; i--) {
@@ -100,7 +101,11 @@ export default function ChatPage() {
       // Fetch chat history
       const historyRes = await fetch(`/api/messages/history?conversation_id=${conversationId}`);
       const historyData = await historyRes.json();
-      setChatMessages(historyData.success && historyData.messages ? historyData.messages : []);
+      const messages = historyData.success && historyData.messages ? historyData.messages : [];
+      if (messages.length > 0) {
+        console.log('[SHAPE-DEBUG] History message example:', JSON.stringify(messages[0], null, 2));
+      }
+      setChatMessages(messages);
       setChatLoading(false);
     };
     fetchChatData();
