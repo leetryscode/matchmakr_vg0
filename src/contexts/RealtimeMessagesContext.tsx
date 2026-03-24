@@ -62,6 +62,7 @@ export interface ConversationSummary {
 
 type MessageCallback = (message: any) => void;
 type RefreshCallback = () => void | Promise<void>;
+type DirectMessageCallback = (message: any) => void;
 
 interface CallbackEntry {
   onMessage: MessageCallback;
@@ -118,6 +119,13 @@ export interface RealtimeMessagesContextValue {
 
   /** Force a full re-fetch of conversations from the API (e.g. after tab restore). */
   refreshConversations: () => Promise<void>;
+
+  /**
+   * Subscribe to all direct (conversation_id: null) messages.
+   * Returns an unsubscribe function — call it in the consumer's cleanup.
+   * Used by dashboard surfaces that need live updates without an open chat.
+   */
+  onDirectMessage: (callback: DirectMessageCallback) => () => void;
 }
 
 // ─── Context ────────────────────────────────────────────────────────────────
@@ -147,6 +155,7 @@ export function RealtimeMessagesProvider({
 
   // Refs that are safe to read inside Supabase callbacks without stale closures
   const callbacksRef = useRef<Map<string, CallbackEntry>>(new Map());
+  const directMessageListenersRef = useRef<Set<DirectMessageCallback>>(new Set());
   const fallbackTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
     new Map()
   );
@@ -217,8 +226,6 @@ export function RealtimeMessagesProvider({
     const msg = payload.new;
     if (!msg) return;
 
-    console.log('[RT-DIAG] Raw message received:', msg.id, 'conversation_id:', msg.conversation_id, 'sender:', msg.sender_id);
-
     const convId: string | null = msg.conversation_id ?? null;
     const routingKey = convId
       ? convId
@@ -233,7 +240,6 @@ export function RealtimeMessagesProvider({
 
     // Dispatch to registered consumer callback
     const entry = callbacksRef.current.get(routingKey);
-    console.log('[RT-DIAG] Routing key:', routingKey, 'Listener found:', !!entry);
     if (entry) {
       entry.onMessage(msg);
     }
@@ -264,6 +270,9 @@ export function RealtimeMessagesProvider({
           [convId]: (prev[convId] || 0) + 1,
         }));
       }
+    } else {
+      // Direct message (no conversation_id) — fire dashboard-level listeners
+      directMessageListenersRef.current.forEach((cb) => cb(msg));
     }
   };
 
@@ -291,7 +300,6 @@ export function RealtimeMessagesProvider({
           (payload) => handleMessageRef.current(payload)
         )
         .subscribe((status: string) => {
-          console.log('[RT-DIAG] Channel subscribe status:', status);
           if (status === 'SUBSCRIBED') {
             backoffRef.current = 1000;
             if (retryTimerRef.current) {
@@ -347,7 +355,6 @@ export function RealtimeMessagesProvider({
       onMessage: MessageCallback,
       onRefreshNeeded?: RefreshCallback
     ) => {
-      console.log('[RT-DIAG] Registered listener for key:', key);
       callbacksRef.current.set(key, { onMessage, onRefreshNeeded });
     },
     []
@@ -382,6 +389,13 @@ export function RealtimeMessagesProvider({
     setUnreadCounts((prev) => ({ ...prev, [conversationId]: 0 }));
   }, []);
 
+  const onDirectMessage = useCallback((callback: DirectMessageCallback): (() => void) => {
+    directMessageListenersRef.current.add(callback);
+    return () => {
+      directMessageListenersRef.current.delete(callback);
+    };
+  }, []);
+
   // ── Context value ─────────────────────────────────────────────────────────
 
   const value: RealtimeMessagesContextValue = {
@@ -394,6 +408,7 @@ export function RealtimeMessagesProvider({
     conversations,
     unreadCounts,
     refreshConversations,
+    onDirectMessage,
   };
 
   return (

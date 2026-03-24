@@ -20,6 +20,7 @@ import AvailabilitySection from '@/components/dashboard/AvailabilitySection';
 import Toast from '@/components/ui/Toast';
 import { computeSingleStatus, SingleStatus } from '@/lib/status/singleStatus';
 import MyCommunitiesSection from '@/components/dashboard/MyCommunitiesSection';
+import { useRealtimeMessages } from '@/contexts/RealtimeMessagesContext';
 
 /** Get initials from name for avatar fallback (e.g. "Lee Smith" → "LS", "Lee" → "L") */
 function getInitials(name: string): string {
@@ -97,6 +98,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
   const [requestActionLoading, setRequestActionLoading] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const supabase = getSupabaseClient();
+  const { onDirectMessage } = useRealtimeMessages();
 
   useEffect(() => {
     setPendingRequests(pendingSponsorshipRequests);
@@ -256,6 +258,37 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
     };
     fetchSponsorChat();
   }, [userId, sponsor]);
+
+  // Subscribe to direct messages — update sponsor chat preview live
+  useEffect(() => {
+    if (!sponsor) return;
+    const unsubscribe = onDirectMessage((msg) => {
+      const isSponsorMessage =
+        (msg.sender_id === sponsor.id && msg.recipient_id === userId) ||
+        (msg.sender_id === userId && msg.recipient_id === sponsor.id);
+      if (isSponsorMessage) {
+        setSponsorLastMessage(msg.content);
+        setSponsorTimestamp(new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        if (msg.sender_id === sponsor.id) {
+          setSponsorUnreadCount((prev) => prev + 1);
+        }
+        return;
+      }
+
+      // Single↔single direct message — update the matching introduced single's preview
+      setSingleChats((prev) =>
+        prev.map((row) => {
+          if (!row.otherSingle) return row;
+          const isMatch =
+            row.otherSingle.id === msg.sender_id ||
+            row.otherSingle.id === msg.recipient_id;
+          if (!isMatch) return row;
+          return { ...row, lastMessage: { content: msg.content, created_at: msg.created_at } };
+        })
+      );
+    });
+    return unsubscribe;
+  }, [onDirectMessage, sponsor, userId]);
 
   // Close menus on outside click/touch
   useEffect(() => {

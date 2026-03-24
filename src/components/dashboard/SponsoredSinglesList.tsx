@@ -91,7 +91,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
             <SectionHeader title="Chat with your sponsored singles" />
             <div className="mt-4 flex flex-col gap-4">
                 {sponsoredSingles.map(single => {
-                        const lastMsg = latestMessages[single.id] || singleChats?.[single.id];
+                        const lastMsg = singleChats?.[single.id] || latestMessages[single.id];
                         return (
                             <div
                                 key={single.id}
