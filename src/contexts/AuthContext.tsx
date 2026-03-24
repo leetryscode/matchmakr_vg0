@@ -211,20 +211,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (orbitRoleRef.current) {
             const role = orbitRoleRef.current.toLowerCase();
             console.log('[AuthContext] Redirecting to dashboard:', role);
-            router.push(`/dashboard/${role}`);
+            router.replace(`/dashboard/${role}`);
           } else if (userTypeRef.current) {
             // Fallback: normalize and redirect
             const normalized = normalizeToOrbitRole(userTypeRef.current);
             if (normalized) {
               console.log('[AuthContext] Redirecting to dashboard (normalized):', normalized.toLowerCase());
-              router.push(`/dashboard/${normalized.toLowerCase()}`);
+              router.replace(`/dashboard/${normalized.toLowerCase()}`);
             } else {
               console.log('[AuthContext] No normalized role, redirecting to default dashboard');
-              router.push('/dashboard/matchmakr'); // Default fallback
+              router.replace('/dashboard/matchmakr'); // Default fallback
             }
           } else {
             console.warn('[AuthContext] SIGNED_IN but no user type found after fetch - redirecting to default dashboard');
-            router.push('/dashboard/matchmakr');
+            router.replace('/dashboard/matchmakr');
           }
         }
       }
@@ -232,6 +232,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, [supabase, router, pathname]);
+
+  // Popstate safety net: if an authenticated user back-swipes to an auth route
+  // (e.g. login page slipping into history via OAuth quirks), bounce them back.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handlePopState = () => {
+      const target = window.location.pathname;
+      const isAuthRoute =
+        target === '/' ||
+        target === '/login' ||
+        target.startsWith('/auth/');
+
+      if (user && isAuthRoute) {
+        const role = orbitRoleRef.current?.toLowerCase() ?? 'matchmakr';
+        router.replace(`/dashboard/${role}`);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [user, router]);
 
   const signOut = async () => {
     await supabase.auth.signOut();

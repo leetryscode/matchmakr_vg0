@@ -104,7 +104,7 @@ export default function VendorOnboardingPage() {
         // If we have a session, try to automatically sign in
         if (signUpData.session) {
           console.log('Session available, redirecting to vendor dashboard');
-          router.push('/dashboard/vendor');
+          router.replace('/dashboard/vendor');
         } else {
           // Try to sign in manually
           console.log('No session, attempting manual signin...');
@@ -119,7 +119,7 @@ export default function VendorOnboardingPage() {
             router.push('/login');
           } else {
             console.log('Auto-signin successful, redirecting to vendor dashboard');
-            router.push('/dashboard/vendor');
+            router.replace('/dashboard/vendor');
           }
         }
       }
