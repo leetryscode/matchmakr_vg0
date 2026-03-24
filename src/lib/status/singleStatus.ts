@@ -19,14 +19,15 @@ export interface SingleStatusInput {
  * Computes the status for a single based on their profile state and match count.
  *
  * Priority order (mutually exclusive):
- * 1. PAUSED - paused_at is NOT NULL
- * 2. NEEDS_ATTENTION - profile not ready (missing photo or endorsement)
- * 3. INVITED - onboarded_at is NULL and profile not ready (subsumed by NEEDS_ATTENTION above)
- * 4. IN_MOTION - approved_match_count > 0
- * 5. NEEDS_INTRODUCTION - profile ready, no active matches (even if onboarded_at is null)
+ * 1. PAUSED           - paused_at IS NOT NULL
+ * 2. INVITED          - onboarded_at IS NULL (single hasn't joined yet)
+ * 3. NEEDS_ATTENTION  - onboarded but profile incomplete (missing photo or endorsement)
+ * 4. IN_MOTION        - approved_match_count > 0
+ * 5. NEEDS_INTRODUCTION - profile ready, no active matches
  *
- * "Needs attention" strictly means profile is missing required sponsor inputs.
- * If onboarded_at is null but profile is ready (photos + endorsement) → NEEDS_INTRODUCTION or IN_MOTION.
+ * INVITED and NEEDS_ATTENTION are now distinct:
+ *   INVITED        = "waiting for them to join" — sponsor can build a draft profile
+ *   NEEDS_ATTENTION = "they've joined but the profile isn't ready yet"
  *
  * @param single - Single profile data with match count
  * @returns Computed status
@@ -37,7 +38,12 @@ export function computeSingleStatus(single: SingleStatusInput): SingleStatus {
     return 'PAUSED';
   }
 
-  // 2. NEEDS_ATTENTION: Profile is incomplete (missing photo or endorsement)
+  // 2. INVITED: Single hasn't completed onboarding yet
+  if (single.onboarded_at === null) {
+    return 'INVITED';
+  }
+
+  // 3. NEEDS_ATTENTION: Onboarded but profile is incomplete (missing photo or endorsement)
   const photosEmpty = !single.photos || single.photos.length === 0;
   const endorsementBlank = !single.matchmakr_endorsement ||
     single.matchmakr_endorsement.trim() === '';
@@ -45,9 +51,6 @@ export function computeSingleStatus(single: SingleStatusInput): SingleStatus {
   if (photosEmpty || endorsementBlank) {
     return 'NEEDS_ATTENTION';
   }
-
-  // 3. Profile is ready. INVITED only when onboarded_at null + profile not ready (handled above).
-  // If onboarded_at is null but profile ready → treat as NEEDS_INTRODUCTION or IN_MOTION.
 
   // 4. IN_MOTION: Has active approved matches
   if (single.approved_match_count > 0) {
@@ -230,41 +233,55 @@ export function getPreviewOptionPillClasses(status: 'OPEN_TO_IT' | 'NOT_SURE_YET
 export type InviteRowStatus = 'INVITED' | 'AWAITING_APPROVAL' | 'ACCEPTED' | 'DECLINED';
 
 // Example test cases (for documentation/sanity checking):
-// 
-// Example 1: INVITED
+//
+// Example 1: INVITED (onboarded_at null — hasn't joined yet)
 // computeSingleStatus({
+//   paused_at: null,
 //   onboarded_at: null,
 //   photos: [],
 //   matchmakr_endorsement: null,
 //   approved_match_count: 0
 // }) => 'INVITED'
 //
-// Example 2: NEEDS_ATTENTION (no photos)
+// Example 2: INVITED even if sponsor pre-filled draft fields (still hasn't joined)
 // computeSingleStatus({
+//   paused_at: null,
+//   onboarded_at: null,
+//   photos: ['photo1.jpg'],
+//   matchmakr_endorsement: 'Great person',
+//   approved_match_count: 0
+// }) => 'INVITED'
+//
+// Example 3: NEEDS_ATTENTION (onboarded, but missing photos)
+// computeSingleStatus({
+//   paused_at: null,
 //   onboarded_at: '2024-01-01T00:00:00Z',
 //   photos: [],
 //   matchmakr_endorsement: 'Great person',
 //   approved_match_count: 0
 // }) => 'NEEDS_ATTENTION'
 //
-// Example 3: NEEDS_ATTENTION (no endorsement)
+// Example 4: NEEDS_ATTENTION (onboarded, but missing endorsement)
 // computeSingleStatus({
+//   paused_at: null,
 //   onboarded_at: '2024-01-01T00:00:00Z',
 //   photos: ['photo1.jpg'],
 //   matchmakr_endorsement: '',
 //   approved_match_count: 0
 // }) => 'NEEDS_ATTENTION'
 //
-// Example 4: IN_MOTION
+// Example 5: IN_MOTION
 // computeSingleStatus({
+//   paused_at: null,
 //   onboarded_at: '2024-01-01T00:00:00Z',
 //   photos: ['photo1.jpg'],
 //   matchmakr_endorsement: 'Great person',
 //   approved_match_count: 2
 // }) => 'IN_MOTION'
 //
-// Example 5: NEEDS_INTRODUCTION
+// Example 6: NEEDS_INTRODUCTION
 // computeSingleStatus({
+//   paused_at: null,
 //   onboarded_at: '2024-01-01T00:00:00Z',
 //   photos: ['photo1.jpg'],
 //   matchmakr_endorsement: 'Great person',

@@ -218,14 +218,12 @@ async function MatchMakrDashboardContent() {
             matchmakr_endorsement: single.matchmakr_endorsement,
             approved_match_count: approvedMatchCount
         });
-        // Sponsor view: INVITED (onboarded_at null) → NEEDS_ATTENTION (action-oriented)
-        const displayStatus = status === 'INVITED' ? 'NEEDS_ATTENTION' : status;
 
         return {
             ...single,
             profile_pic_url: single.photos && single.photos.length > 0 ? single.photos[0] : null,
             approved_match_count: approvedMatchCount,
-            status: displayStatus,
+            status,
             sponsor_label: single.sponsor_label
         };
     }) || [];
