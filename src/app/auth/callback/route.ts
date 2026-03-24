@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { normalizeToOrbitRole } from '@/types/orbit'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -20,7 +21,10 @@ export async function GET(request: Request) {
 
       let redirectUrl = '/dashboard/matchmakr' // default
       if (profile?.user_type) {
-        redirectUrl = `/dashboard/${profile.user_type.toLowerCase()}`
+        const orbitRole = normalizeToOrbitRole(profile.user_type)
+        if (orbitRole) {
+          redirectUrl = `/dashboard/${orbitRole.toLowerCase()}`
+        }
       }
 
       console.log('Auth callback successful, redirecting to:', redirectUrl);

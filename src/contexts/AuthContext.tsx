@@ -123,7 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             document.cookie.split(';').forEach(function(c) {
               document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
             });
-            router.push('/');
+            router.replace('/');
           }
           setUser(null);
         } else if (!user) {
@@ -147,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           document.cookie.split(';').forEach(function(c) {
             document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
           });
-          router.push('/');
+          router.replace('/');
         }
         setUser(null);
       } finally {
@@ -171,7 +171,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setOrbitRole(null);
           setSponsoredById(null);
           nudgeCheckRanThisSession.clear();
-          router.push('/');
+          router.replace('/');
         } else if (event === 'SIGNED_IN' && session?.user) {
           // Check current path FIRST before doing anything else
           // Use window.location.pathname for accurate current path in async callback

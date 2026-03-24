@@ -1,6 +1,20 @@
 # CLAUDE.md
 
+# CLAUDE.md
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Critical Context
+
+- **Orbit is an introductions platform, not a dating app.** Sponsors (typically married friends) create profiles for singles they know and introduce them to other sponsors' singles. Singles never swipe or browse. Key positioning: "I'm not on the apps — I have an Orbit."
+- **"MatchMakr" in code = "Sponsor"** in all new code and UI copy. The codebase uses "matchmakr" as a legacy term. Always use "Sponsor" going forward.
+- **Vendor, Pond, and Forum features are NOT active.** Do not build on, reference, or extend them. They exist in the codebase but are deprecated or future scope.
+- **SQL migrations:** Generate as `.sql` files only. Lee runs them manually in the Supabase SQL editor. NEVER execute migrations directly. NEVER run `supabase db push`.
+- **The migration files in `/supabase` are out of sync with the live database.** Do not trust them as the source of truth for the current schema.
+- **UI copy tone:** Warm and conversational. Use "introduce" not "set up." The app should feel premium, curated, and trust-based. Avoid anything that feels like a generic dating app.
+- **Onboarding styling** uses a dark/luxe aesthetic (dark navy + gold/cream accent) scoped via `onboarding-*` CSS classes, separate from the global Orbit theme system.
+- **Singles don't edit their own profiles** — sponsors curate profiles for them.
+- **Sponsors can ONLY communicate with other sponsors.** There is no UI for a sponsor to message a single who isn't theirs. This is a core trust guardrail.
 
 ## Commands
 
@@ -15,19 +29,16 @@ No test framework is configured.
 
 ## Architecture Overview
 
-**Orbit** is a matchmaking platform (formerly MatchMakr) built on Next.js 14 App Router + Supabase.
+**Orbit** (codebase name: MatchMakr_v0) is built on Next.js 14 App Router + Supabase.
 
 ### User Roles
 
-Three distinct roles with different data models and routing:
+Two active roles with different data models and routing:
 
-| Role | Also Called | DB Table | Dashboard |
-|------|-------------|----------|-----------|
-| `SINGLE` | — | `profiles` | `/dashboard/single` |
-| `MATCHMAKR` | Sponsor | `profiles` | `/dashboard/matchmakr` |
-| `VENDOR` | — | `vendor_profiles` | `/dashboard/vendor` |
-
-**Important:** Vendor users are normalized to `MATCHMAKR` for Orbit routing logic. See `src/types/orbit.ts` and `src/config/orbitConfig.ts`.
+| Role (in code) | Preferred Term | DB Table | Dashboard |
+|----------------|---------------|----------|-----------|
+| `SINGLE` | Single | `profiles` | `/dashboard/single` |
+| `MATCHMAKR` | **Sponsor** | `profiles` | `/dashboard/matchmakr` |
 
 ### Auth & State
 
@@ -44,8 +55,7 @@ src/
 │   ├── api/          # REST API routes (conversations, matches, invites, etc.)
 │   ├── auth/         # Auth callback routes
 │   ├── dashboard/    # Role-specific dashboards + chat
-│   ├── onboarding/   # Multi-step onboarding (single & vendor paths)
-│   ├── pond/         # Single discovery page
+│   ├── onboarding/   # Multi-step onboarding (single & sponsor paths)
 │   └── invite/[token]/ # Invite gate
 ├── components/
 │   ├── dashboard/    # Dashboard-specific components
@@ -57,19 +67,17 @@ src/
 ├── lib/              # Supabase clients, utilities, caching helpers
 └── types/            # orbit.ts, pairings.ts, sneak-peek.ts
 supabase/
-├── migrations/       # 20+ SQL migration files
+├── migrations/       # SQL migration files (OUT OF SYNC — do not trust)
 └── functions/        # Edge functions
 ```
 
 ### Core Flows
 
-**Match/Sponsorship:** Sponsors invite or sponsor singles → both sponsors approve → singles can chat directly.
+**Introductions:** Sponsors connect with other sponsors → both sponsors approve an introduction between their respective singles → singles can then chat directly.
 
-**Chat:** Sponsor↔Sponsor (about a specific single) and Single↔Sponsor chats. Real-time via Supabase subscriptions. See `NotificationsContext` for unread counts.
+**Chat:** Sponsor↔Sponsor (discussing potential introductions) and Single↔Sponsor chats. Real-time via Supabase subscriptions. See `NotificationsContext` for unread counts.
 
-**Onboarding:** Role selection → conditional steps → account creation → community selection. Invite mode (`src/lib/invite-mode.ts`) affects available paths.
-
-**Vendor Offers:** Vendors create offers in `vendor_profiles`; singles/sponsors browse via `/dashboard/date-ideas`.
+**Onboarding:** Role selection → conditional steps → account creation → community selection. Invite mode (`src/lib/invite-mode.ts`) affects available paths. Sponsor: 4 screens (HowItWorks → UserType → Name → Account). Single: 7 screens (adds Birthday, Sex, OpenTo). ToS/Privacy acceptance tracked in `tos_acceptances` table.
 
 ### Styling
 
@@ -77,8 +85,14 @@ Tailwind CSS with a custom theme system. Themes (`navy-classic`, `plum-society`,
 
 ### Feature Flags
 
-`src/config/orbitConfig.ts` controls feature availability. Forum and vendor features are currently toggled here.
+`src/config/orbitConfig.ts` controls feature availability. Forum and vendor features are currently toggled off.
 
 ### Database
 
-Supabase PostgreSQL with Row Level Security. Key tables: `profiles`, `vendor_profiles`, `conversations`, `messages`, `matches`, `notifications`. Performance views exist for complex queries — prefer views over raw joins where available. See `supabase/migrations/` for schema history.
+Supabase PostgreSQL with Row Level Security. Key tables: `profiles`, `conversations`, `messages`, `matches`, `notifications`, `tos_acceptances`. Performance views exist for complex queries — prefer views over raw joins where available.
+
+### Current Priorities
+
+1. Dashboard empty states — what sponsors and singles see after completing onboarding, with guided first actions.
+2. Landing page at orbitintroductions.com — needs real marketing copy/design.
+3. Orbit Coach feature (cold start solution, details TBD).
