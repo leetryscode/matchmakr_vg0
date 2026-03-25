@@ -144,7 +144,7 @@ export default function PairingsPillSelector({
                         px-3 py-1 rounded-full text-[13px] leading-snug border transition-all
                         ${
                           isSelected
-                            ? 'bg-orbit-surface-2 border-orbit-border text-orbit-text ring-2 ring-orbit-gold/30'
+                            ? 'bg-orbit-gold border-orbit-gold text-orbit-canvas'
                             : isDisabled
                             ? 'bg-orbit-surface-1 text-orbit-muted border-orbit-border cursor-not-allowed'
                             : 'bg-orbit-surface-2 text-orbit-text border-orbit-border hover:border-orbit-gold/50 hover:bg-orbit-surface-1'
@@ -176,7 +176,7 @@ export default function PairingsPillSelector({
                     onChange({ qualityIds: selectedQualityIds, customQuality: '' });
                   }}
                   disabled={disabled}
-                  className="px-3 py-1 rounded-full text-[13px] leading-snug border transition-all bg-orbit-surface-2 border-orbit-border text-orbit-text hover:bg-orbit-surface-2/90 hover:border-orbit-text/30 disabled:opacity-50"
+                  className="px-3 py-1 rounded-full text-[13px] leading-snug border transition-all bg-orbit-gold border-orbit-gold text-orbit-canvas hover:opacity-90 disabled:opacity-50"
                 >
                   {customQuality.trim()}
                 </button>

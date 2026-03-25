@@ -168,7 +168,7 @@ export default function DraftProfileWalkthrough({
               rows={5}
               disabled={saving}
               maxLength={ENDORSEMENT_MAX_CHARS}
-              className="w-full px-4 py-3 border border-orbit-border rounded-lg bg-orbit-surface-2 text-orbit-text placeholder:text-orbit-muted focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:border-orbit-gold/50 resize-none text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 border border-orbit-border rounded-lg bg-orbit-surface1 text-orbit-text placeholder:text-orbit-muted focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:border-orbit-gold/50 resize-none text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <div className="flex justify-end mt-1">
               <p className="text-xs text-orbit-muted">
@@ -282,14 +282,14 @@ export default function DraftProfileWalkthrough({
           <button
             onClick={handleSkip}
             disabled={saving}
-            className="flex-1 h-11 rounded-xl border border-orbit-border bg-orbit-surface-2 text-orbit-text hover:bg-orbit-surface-1 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 h-11 rounded-xl border border-orbit-border bg-transparent text-orbit-muted hover:text-orbit-text hover:border-orbit-muted transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Skip
           </button>
           <button
             onClick={handleSaveAndContinue}
             disabled={saving}
-            className="flex-1 h-11 rounded-cta bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className="flex-1 h-11 rounded-cta bg-orbit-gold text-orbit-canvas font-semibold hover:opacity-90 active:opacity-80 focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:ring-offset-2 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             {saving ? 'Saving…' : isLastStep ? 'Done' : 'Save & Continue'}
           </button>
