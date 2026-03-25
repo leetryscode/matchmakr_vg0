@@ -199,9 +199,9 @@ export default function DraftProfileEditor({ invite, userId }: DraftProfileEdito
   const allFilled = firstEmptySection === null;
 
   const PROMPTS: Record<SectionKey, string> = {
-    endorsement: `Start here — what makes ${displayName} someone worth meeting?`,
-    pairings: `Select a few qualities that describe ${displayName}`,
-    introduction: `What does ${displayName} light up about?`,
+    endorsement: `Start here — tell other sponsors about ${displayName}`,
+    pairings: `You know ${displayName} — pick the traits that fit.`,
+    introduction: `Pick a prompt and fill in the blank — quick and fun.`,
     photo: `A photo helps other sponsors picture ${displayName}`,
   };
 
@@ -272,7 +272,7 @@ export default function DraftProfileEditor({ invite, userId }: DraftProfileEdito
       {/* All-filled success message */}
       {allFilled && (
         <p className="text-sm text-orbit-muted mb-5 text-center">
-          Looking good! {displayName}&apos;s draft profile is ready.
+          Looking good! When {displayName} joins Orbit and accepts your sponsorship, everything here becomes their live profile.
         </p>
       )}
 

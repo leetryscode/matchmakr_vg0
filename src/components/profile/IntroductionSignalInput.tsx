@@ -135,7 +135,7 @@ export default function IntroductionSignalInput({
           placeholder="Enter your response..."
           rows={2}
           disabled={disabled}
-          className="w-full px-4 py-3 border border-orbit-border rounded-lg bg-orbit-surface-2 text-orbit-text placeholder:text-orbit-muted focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:border-orbit-gold/50 resize-none text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-3 border border-orbit-border rounded-lg bg-orbit-surface1 text-orbit-text placeholder:text-orbit-muted focus:outline-none focus:ring-2 focus:ring-orbit-gold/30 focus:border-orbit-gold/50 resize-none text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           maxLength={INTRODUCTION_SIGNAL_MAX_CHARS}
         />
         <div className="flex justify-end items-center mt-1">

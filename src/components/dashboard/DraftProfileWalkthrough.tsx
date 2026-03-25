@@ -158,8 +158,8 @@ export default function DraftProfileWalkthrough({
         return (
           <div>
             <p className="text-orbit-muted text-sm mb-4">
-              Share what makes {displayName} a great person to date. A specific
-              trait or example works better than a general compliment.
+              How do you know {displayName}? What would you tell a friend about them?
+              A quick story or detail goes a long way — other sponsors will read this first.
             </p>
             <textarea
               value={endorsement}
@@ -182,7 +182,7 @@ export default function DraftProfileWalkthrough({
         return (
           <div>
             <p className="text-orbit-muted text-sm mb-4">
-              Pick qualities you think {displayName} is looking for in a partner.
+              You know {displayName} — pick the traits that fit. Other sponsors will use this to spot a great pairing.
             </p>
             <div className="max-h-[340px] overflow-y-auto">
               <PairingsPillSelector
@@ -197,7 +197,7 @@ export default function DraftProfileWalkthrough({
         return (
           <div>
             <p className="text-orbit-muted text-sm mb-4">
-              Choose a prompt and write a short introduction for {displayName}.
+              Pick a prompt and fill in the blank — quick, fun, and totally optional.
             </p>
             <IntroductionSignalInput
               profileName={inviteeName}
@@ -238,8 +238,8 @@ export default function DraftProfileWalkthrough({
           <div>
             <h2 className="text-xl font-semibold text-orbit-text">
               {step === 1 && 'In your own words…'}
-              {step === 2 && `What's ${displayName} looking for?`}
-              {step === 3 && `Introduce ${displayName}`}
+              {step === 2 && `Describe ${displayName}'s energy`}
+              {step === 3 && `A little more about ${displayName}`}
               {step === 4 && 'Add a photo'}
             </h2>
             <p className="text-xs text-orbit-muted mt-0.5">
