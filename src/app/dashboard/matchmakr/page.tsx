@@ -119,10 +119,10 @@ async function MatchMakrDashboardContent() {
         .eq('user_type', 'SINGLE')
         .order('created_at', { ascending: true });
 
-    // Fetch invites created by this sponsor
+    // Fetch invites created by this sponsor (include draft fields for welcome card)
     const { data: invites } = await supabase
         .from('invites')
-        .select('id, invitee_email, invitee_phone_e164, invitee_user_id, invitee_label, status, created_at, claimed_at')
+        .select('id, invitee_email, invitee_phone_e164, invitee_user_id, invitee_label, status, created_at, claimed_at, draft_endorsement, draft_pairings_signal, draft_introduction_signal, draft_photos')
         .eq('inviter_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -266,6 +266,24 @@ async function MatchMakrDashboardContent() {
             };
         });
 
+    // Build invite summaries for the welcome card (only the pending/non-joined rows)
+    const welcomeCardInvites = inviteRows.map((row) => {
+        const raw = (invites ?? []).find((inv) => inv.id === row.id);
+        const hasDraftProfile = raw
+            ? raw.draft_endorsement !== null &&
+              raw.draft_pairings_signal !== null &&
+              raw.draft_introduction_signal !== null &&
+              raw.draft_photos !== null &&
+              Array.isArray(raw.draft_photos) &&
+              (raw.draft_photos as unknown[]).length > 0
+            : true;
+        return {
+            id: row.id,
+            invitee_label: row.invitee_label,
+            hasDraftProfile,
+        };
+    });
+
     const firstName = profile.name?.split(' ')[0] || profile.name || 'User';
 
     // Fetch the current user's name and profile picture
@@ -326,7 +344,7 @@ async function MatchMakrDashboardContent() {
             {/* Welcome card — shown only when sponsor has no managed singles */}
             {processedSponsoredSingles.length === 0 && (
                 <div className="mt-6">
-                    <SponsorWelcomeCard userId={user.id} />
+                    <SponsorWelcomeCard userId={user.id} invites={welcomeCardInvites} />
                 </div>
             )}
 
@@ -373,8 +391,8 @@ async function MatchMakrDashboardContent() {
                 </section>
 
                 {/* My Communities */}
-                <section className="mt-10">
-                    <MyCommunitiesSection descriptionText="Great introductions start with shared worlds. Join the communities you know best." />
+                <section className="mt-10" id="my-communities">
+                    <MyCommunitiesSection descriptionText="Your communities signal the worlds you connect. When your singles join Orbit, they'll add their own — but yours come first." />
                 </section>
 
                 {/* Introductions destination card */}

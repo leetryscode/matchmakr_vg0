@@ -197,23 +197,14 @@ export default function CommunitiesPage() {
     return (
         <main className="min-h-screen px-4 py-8 text-orbit-text">
             <div className="mx-auto w-full max-w-3xl">
-                <div className="mb-6 flex items-start justify-between gap-4">
-                    <div className="max-w-xl">
-                        <h1 className="type-section">Communities</h1>
-                        <p className="mt-2 text-sm text-orbit-muted">
-                            Your communities tell sponsors where to look. Join the circles you belong to.
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setShowCreateModal(true);
-                            setCreateError(null);
-                        }}
-                        className="orbit-btn-secondary min-h-[40px] rounded-lg px-4 py-2 text-sm"
-                    >
-                        Create a community
-                    </button>
+                {/* Page header — no create button here */}
+                <div className="mb-6">
+                    <h1 className="type-section">Communities</h1>
+                    <p className="mt-2 text-sm leading-relaxed text-orbit-muted" style={{ lineHeight: '1.5' }}>
+                        Communities are the worlds you belong to — your neighborhood, your alumni network, your run club.
+                        When sponsors search for their single, they can filter by community to find singles and sponsors who share their world.
+                        Join the ones that represent you.
+                    </p>
                 </div>
 
                 {error ? (
@@ -231,12 +222,12 @@ export default function CommunitiesPage() {
 
                 {isLoading ? (
                     <div className="space-y-3">
-                        <div className="h-28 animate-pulse rounded-2xl border border-orbit-border/40 orbit-surface-strong" />
-                        <div className="h-28 animate-pulse rounded-2xl border border-orbit-border/40 orbit-surface-strong" />
-                        <div className="h-28 animate-pulse rounded-2xl border border-orbit-border/40 orbit-surface-strong" />
+                        <div className="h-24 animate-pulse rounded-2xl border border-orbit-border/40 bg-orbit-surface2" />
+                        <div className="h-24 animate-pulse rounded-2xl border border-orbit-border/40 bg-orbit-surface2" />
+                        <div className="h-24 animate-pulse rounded-2xl border border-orbit-border/40 bg-orbit-surface2" />
                     </div>
                 ) : sortedCommunities.length === 0 ? (
-                    <div className="rounded-2xl border border-orbit-border/60 orbit-surface-strong px-4 py-5">
+                    <div className="rounded-2xl border border-orbit-border/60 bg-orbit-surface2 px-4 py-5">
                         <p className="text-sm text-orbit-muted">
                             No communities yet. Create one to begin building a trusted network.
                         </p>
@@ -252,64 +243,88 @@ export default function CommunitiesPage() {
                             return (
                                 <div
                                     key={community.id}
-                                    className="rounded-2xl border border-orbit-border/60 orbit-surface-strong px-4 py-4"
+                                    className="rounded-2xl border border-orbit-border/60 bg-orbit-surface2 px-4 py-4"
                                 >
-                                    <div className="flex flex-wrap items-start justify-between gap-3">
+                                    {/* Header row: name/founder on left, member count + action on right */}
+                                    <div className="flex items-start justify-between gap-3">
                                         <div className="min-w-0">
-                                            <h2 className="type-section truncate">{community.name}</h2>
-                                            <p className="mt-1 text-xs text-orbit-muted">
-                                                Founder: {community.founder_name || 'Unknown'}
+                                            <h2 className="truncate text-base font-medium text-orbit-text">
+                                                {community.name}
+                                            </h2>
+                                            <p className="mt-0.5 text-xs text-orbit-muted">
+                                                Founded by {community.founder_name || 'Unknown'}
                                             </p>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex flex-shrink-0 items-center gap-3">
+                                            <span className="text-xs text-orbit-muted">
+                                                {community.member_count} {community.member_count === 1 ? 'member' : 'members'}
+                                            </span>
                                             {/* TEMP MVP: hide invite-only/open presentation in product UI.
                                                 All communities are currently shown as joinable while invite-only UX is deferred. */}
-                                            <span className="rounded-full border border-orbit-border/60 px-2 py-1 text-xs text-orbit-muted">
-                                                {community.member_count} members
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {community.description ? (
-                                        <p className="mt-2 text-sm text-orbit-text2">{community.description}</p>
-                                    ) : (
-                                        <p className="mt-2 text-sm text-orbit-muted">No description provided.</p>
-                                    )}
-
-                                    <div className="mt-4">
-                                        {isMember ? (
-                                            myRole === 'founder' ? (
-                                                <button
-                                                    type="button"
-                                                    disabled
-                                                    className="min-h-[40px] rounded-lg border border-orbit-border/60 bg-orbit-surface px-4 py-2 text-sm text-orbit-muted"
-                                                >
-                                                    Founder
-                                                </button>
+                                            {isMember ? (
+                                                myRole === 'founder' ? (
+                                                    <span className="text-xs text-orbit-muted">Founder</span>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleLeave(community.id)}
+                                                        disabled={isLeaving}
+                                                        className="text-xs text-orbit-muted underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                                                    >
+                                                        {isLeaving ? 'Leaving...' : 'Joined'}
+                                                    </button>
+                                                )
                                             ) : (
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleLeave(community.id)}
-                                                    disabled={isLeaving}
-                                                    className="orbit-btn-secondary min-h-[40px] rounded-lg px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                                                    onClick={() => handleJoin(community.id)}
+                                                    disabled={isJoining}
+                                                    className="rounded-full bg-orbit-gold px-4 py-[5px] text-xs font-medium text-orbit-canvas disabled:cursor-not-allowed disabled:opacity-60"
                                                 >
-                                                    {isLeaving ? 'Leaving...' : 'Leave community'}
+                                                    {isJoining ? 'Joining...' : 'Join'}
                                                 </button>
-                                            )
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                onClick={() => handleJoin(community.id)}
-                                                disabled={isJoining}
-                                                className="rounded-cta min-h-[40px] bg-action-primary px-4 py-2 text-sm font-semibold text-orbit-canvas shadow-cta-entry hover:bg-action-primary-hover active:bg-action-primary-active disabled:cursor-not-allowed disabled:opacity-60"
-                                            >
-                                                {isJoining ? 'Joining...' : 'Join'}
-                                            </button>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
+
+                                    {/* Description — max 2 lines */}
+                                    {community.description ? (
+                                        <p
+                                            className="mt-2 text-[13px] text-orbit-text2"
+                                            style={{
+                                                display: '-webkit-box',
+                                                WebkitLineClamp: 2,
+                                                WebkitBoxOrient: 'vertical',
+                                                overflow: 'hidden',
+                                            }}
+                                        >
+                                            {community.description}
+                                        </p>
+                                    ) : null}
                                 </div>
                             );
                         })}
+
+                        {/* Subtle "create" card at the bottom */}
+                        <div
+                            className="rounded-2xl border border-orbit-border/60 bg-orbit-surface2 px-4 py-4"
+                            style={{ opacity: 0.6 }}
+                        >
+                            <div className="flex items-center justify-between gap-3">
+                                <p className="text-sm text-orbit-muted">Don&apos;t see your community?</p>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowCreateModal(true);
+                                        setCreateError(null);
+                                    }}
+                                    className="rounded-full border px-4 py-[5px] text-xs font-medium text-orbit-gold"
+                                    style={{ borderColor: 'rgba(var(--orbit-gold), 0.4)' }}
+                                >
+                                    Create one
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -325,7 +340,7 @@ export default function CommunitiesPage() {
 
             {showCreateModal ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-orbit-canvas/80 px-4">
-                    <div className="w-full max-w-md rounded-2xl border border-orbit-border/60 orbit-surface-strong p-5 shadow-card">
+                    <div className="w-full max-w-md rounded-2xl border border-orbit-border/60 bg-orbit-surface2 p-5 shadow-card">
                         <h2 className="type-section">Create a community</h2>
                         <form onSubmit={handleCreateCommunity} className="mt-4 space-y-3">
                             <div>
