@@ -181,14 +181,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const isValidPage = 
             currentPath === '/pond' ||
             currentPath.startsWith('/profile/') ||
-            currentPath.match(/^\/dashboard\/(matchmakr|single|vendor|settings|chat)/);
+            currentPath.match(/^\/dashboard\/(matchmakr|single|vendor|settings|chat|invite)/);
           
           // Only redirect from login/welcome/auth pages, or invalid dashboard routes
           const shouldRedirect = !isValidPage && (
             currentPath === '/' || 
             currentPath === '/login' || 
             currentPath.startsWith('/auth/') ||
-            (currentPath.startsWith('/dashboard/') && !currentPath.match(/^\/dashboard\/(matchmakr|single|vendor|settings|chat)/))
+            (currentPath.startsWith('/dashboard/') && !currentPath.match(/^\/dashboard\/(matchmakr|single|vendor|settings|chat|invite)/))
           );
           
           // If we're on a valid page, don't redirect at all - just fetch user type in background

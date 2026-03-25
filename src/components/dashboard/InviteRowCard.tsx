@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { getStatusPillClasses, type InviteRowStatus } from '@/lib/status/singleStatus';
@@ -36,6 +37,51 @@ function formatInviteDate(iso: string | undefined): string {
   }
 }
 
+const RescindConfirmModal: React.FC<{
+  name: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  loading: boolean;
+}> = ({ name, onConfirm, onCancel, loading }) => {
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}
+      onClick={onCancel}
+    >
+      <div
+        className="orbit-surface2 rounded-2xl p-6 max-w-sm w-full shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-lg font-semibold text-orbit-text mb-2">Rescind invitation?</h2>
+        <p className="type-body text-orbit-muted mb-6">
+          This will cancel your invitation to <span className="text-orbit-text font-medium">{name}</span>. You can always send a new one later.
+        </p>
+        <div className="flex gap-3 justify-end">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={loading}
+            className="orbit-btn-secondary px-4 py-2 rounded-lg type-meta disabled:opacity-50"
+          >
+            Never mind
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={loading}
+            className="px-4 py-2 rounded-lg type-meta font-medium text-white disabled:opacity-50 transition-opacity hover:opacity-90"
+            style={{ backgroundColor: '#b34a4a' }}
+          >
+            {loading ? 'Rescinding…' : 'Rescind'}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+};
+
 const InviteRowCard: React.FC<InviteRowCardProps> = ({
   inviteId,
   inviteeEmail,
@@ -49,14 +95,19 @@ const InviteRowCard: React.FC<InviteRowCardProps> = ({
 }) => {
   const router = useRouter();
   const [rescindLoading, setRescindLoading] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const primaryLabel = inviteeLabel || inviteeEmail || inviteePhoneE164 || 'Invited';
   const dateStr = formatInviteDate(createdAt);
   const isClickable = !!onClick;
   const canRescind = (status === 'INVITED' || status === 'AWAITING_APPROVAL') && !rescindLoading;
 
-  const handleRescind = async (e: React.MouseEvent) => {
+  const handleRescindClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!canRescind) return;
+    setShowConfirm(true);
+  };
+
+  const handleRescindConfirm = async () => {
     setRescindLoading(true);
     try {
       const supabase = getSupabaseClient();
@@ -71,6 +122,7 @@ const InviteRowCard: React.FC<InviteRowCardProps> = ({
       console.error('Rescind error:', err);
       setRescindLoading(false);
     }
+    setShowConfirm(false);
   };
 
   let description: string;
@@ -134,17 +186,25 @@ const InviteRowCard: React.FC<InviteRowCardProps> = ({
         {canRescind && (
           <button
             type="button"
-            onClick={handleRescind}
+            onClick={handleRescindClick}
             disabled={rescindLoading}
             className="type-meta orbit-muted hover:opacity-80 underline underline-offset-2 transition-colors disabled:opacity-50"
           >
-            {rescindLoading ? 'Rescinding…' : 'Rescind'}
+            Rescind
           </button>
         )}
       </div>
       <div className="type-meta">
         {description}
       </div>
+      {showConfirm && (
+        <RescindConfirmModal
+          name={primaryLabel}
+          onConfirm={handleRescindConfirm}
+          onCancel={() => setShowConfirm(false)}
+          loading={rescindLoading}
+        />
+      )}
     </div>
   );
 };
