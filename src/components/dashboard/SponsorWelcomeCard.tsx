@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import InviteSingleModal from './InviteSingleModal';
+import DraftProfileWalkthrough from './DraftProfileWalkthrough';
 
 const QUOTES = [
     {
@@ -25,9 +26,14 @@ const QUOTES = [
 const AUTO_ADVANCE_MS = 16000;
 const SWIPE_THRESHOLD = 40;
 
-export default function SponsorWelcomeCard() {
+interface SponsorWelcomeCardProps {
+    userId: string;
+}
+
+export default function SponsorWelcomeCard({ userId }: SponsorWelcomeCardProps) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [walkthrough, setWalkthrough] = useState<{ inviteId: string; inviteeName: string | null } | null>(null);
     const [isVisible, setIsVisible] = useState(true); // crossfade state
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const touchStartX = useRef<number | null>(null);
@@ -217,7 +223,20 @@ export default function SponsorWelcomeCard() {
             <InviteSingleModal
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
+                onNewSingleInvited={(inviteId, inviteeName) => {
+                    setIsModalOpen(false);
+                    setWalkthrough({ inviteId, inviteeName });
+                }}
             />
+
+            {walkthrough && (
+                <DraftProfileWalkthrough
+                    inviteId={walkthrough.inviteId}
+                    inviteeName={walkthrough.inviteeName}
+                    userId={userId}
+                    onClose={() => setWalkthrough(null)}
+                />
+            )}
         </>
     );
 }

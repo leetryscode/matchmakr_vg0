@@ -326,7 +326,7 @@ async function MatchMakrDashboardContent() {
             {/* Welcome card — shown only when sponsor has no managed singles */}
             {processedSponsoredSingles.length === 0 && (
                 <div className="mt-6">
-                    <SponsorWelcomeCard />
+                    <SponsorWelcomeCard userId={user.id} />
                 </div>
             )}
 
