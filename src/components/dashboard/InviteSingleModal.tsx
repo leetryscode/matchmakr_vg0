@@ -13,9 +13,10 @@ interface MyCommunity {
 interface InviteSingleModalProps {
     open: boolean;
     onClose: () => void;
+    onNewSingleInvited?: (inviteId: string, inviteeName: string | null) => void;
 }
 
-export default function InviteSingleModal({ open, onClose }: InviteSingleModalProps) {
+export default function InviteSingleModal({ open, onClose, onNewSingleInvited }: InviteSingleModalProps) {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [label, setLabel] = useState('');
@@ -54,15 +55,28 @@ export default function InviteSingleModal({ open, onClose }: InviteSingleModalPr
             );
             setSuccess(true);
             setMessage(result.message);
-            setEmail('');
-            setLabel('');
-            setSelectedCommunityId('');
             router.refresh();
-            setTimeout(() => {
+            if (result.isNewInvite && result.inviteId && onNewSingleInvited) {
+                // Path A: new invite — hand off to walkthrough immediately
+                const capturedLabel = label.trim() || null;
+                const capturedInviteId = result.inviteId;
+                setEmail('');
+                setLabel('');
+                setSelectedCommunityId('');
                 setMessage('');
                 setSuccess(false);
                 onClose();
-            }, 1500);
+                onNewSingleInvited(capturedInviteId, capturedLabel);
+            } else {
+                setEmail('');
+                setLabel('');
+                setSelectedCommunityId('');
+                setTimeout(() => {
+                    setMessage('');
+                    setSuccess(false);
+                    onClose();
+                }, 1500);
+            }
         } catch (error: unknown) {
             setMessage(error instanceof Error ? error.message : 'An error occurred.');
         } finally {

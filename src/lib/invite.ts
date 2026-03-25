@@ -17,7 +17,7 @@ export async function inviteSingleByEmail(
   email: string,
   inviteeLabel?: string | null,
   communityId?: string | null
-): Promise<{ success: true; message: string }> {
+): Promise<{ success: true; message: string; inviteId?: string; isNewInvite?: boolean }> {
   const normalized = normalizeEmail(email);
   if (!normalized) {
     throw new Error('Please enter a valid email address');
@@ -42,13 +42,23 @@ export async function inviteSingleByEmail(
     }),
   });
 
-  const data = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+  const data = (await res.json().catch(() => ({}))) as {
+    error?: string;
+    message?: string;
+    invite_id?: string;
+    status?: string;
+  };
 
   if (!res.ok) {
     throw new Error(data?.error || 'An error occurred.');
   }
 
-  return { success: true, message: data?.message || 'Invite sent.' };
+  return {
+    success: true,
+    message: data?.message || 'Invite sent.',
+    inviteId: data?.invite_id,
+    isNewInvite: data?.status === 'pending',
+  };
 }
 
 /**

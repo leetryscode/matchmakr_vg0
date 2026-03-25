@@ -7,6 +7,7 @@ import ManagedSingleCard from './ManagedSingleCard';
 import TemplateManagedSingleCard from './TemplateManagedSingleCard';
 import InviteRowCard, { type InviteRowStatus } from './InviteRowCard';
 import InviteSingleModal from './InviteSingleModal';
+import DraftProfileWalkthrough from './DraftProfileWalkthrough';
 
 import { SingleStatus } from '@/lib/status/singleStatus';
 
@@ -39,6 +40,7 @@ interface ManagedSinglesGridProps {
 export default function ManagedSinglesGrid({ singles, inviteRows = [], userId }: ManagedSinglesGridProps) {
   const router = useRouter();
   const [isInviteSingleModalOpen, setIsInviteSingleModalOpen] = useState(false);
+  const [walkthrough, setWalkthrough] = useState<{ inviteId: string; inviteeName: string | null } | null>(null);
 
   const handleCardClick = (singleId: string) => {
     router.push(`/profile/${singleId}`);
@@ -98,7 +100,20 @@ export default function ManagedSinglesGrid({ singles, inviteRows = [], userId }:
       <InviteSingleModal
         open={isInviteSingleModalOpen}
         onClose={() => setIsInviteSingleModalOpen(false)}
+        onNewSingleInvited={(inviteId, inviteeName) => {
+          setIsInviteSingleModalOpen(false);
+          setWalkthrough({ inviteId, inviteeName });
+        }}
       />
+
+      {walkthrough && userId && (
+        <DraftProfileWalkthrough
+          inviteId={walkthrough.inviteId}
+          inviteeName={walkthrough.inviteeName}
+          userId={userId}
+          onClose={() => setWalkthrough(null)}
+        />
+      )}
     </div>
   );
 }
