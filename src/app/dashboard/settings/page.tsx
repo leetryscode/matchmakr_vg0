@@ -360,6 +360,11 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* LLC Attribution */}
+        <p className="text-center text-orbit-muted mt-5" style={{ fontSize: '11px' }}>
+          Orbit is a product of Catherine Lake Creations LLC
+        </p>
+
         {/* Delete Account Modal */}
         <DeleteAccountModal
           isOpen={showDeleteModal}

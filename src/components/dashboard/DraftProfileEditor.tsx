@@ -19,7 +19,7 @@ import { getPairingQualityById } from '@/lib/pairings';
 import PairingsModal from '@/components/profile/PairingsModal';
 import IntroductionSignalModal from '@/components/profile/IntroductionSignalModal';
 import DraftPhotoUpload from '@/components/dashboard/DraftPhotoUpload';
-import './DraftProfileEditor.css';
+import AnimatedGoldBorder from '@/components/ui/AnimatedGoldBorder';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -75,10 +75,7 @@ function SectionCard({ isHighlighted, allFilled, children }: SectionCardProps) {
     );
   }
   return (
-    <div
-      className="draft-border-glow"
-      style={{ padding: '1.5px', borderRadius: '17.5px' }}
-    >
+    <AnimatedGoldBorder>
       {/*
         Inner card. border-color: transparent removes the orbit-surface border so
         the conic-gradient in the wrapper padding area shows unobstructed.
@@ -87,7 +84,7 @@ function SectionCard({ isHighlighted, allFilled, children }: SectionCardProps) {
       <div className="orbit-card p-5 relative" style={{ borderColor: 'transparent' }}>
         {children}
       </div>
-    </div>
+    </AnimatedGoldBorder>
   );
 }
 

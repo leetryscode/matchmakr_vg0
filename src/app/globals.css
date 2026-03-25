@@ -43,6 +43,35 @@
   --orbit-font-weight-body: 400;
 }
 
+/* ── Animated gold border utility ────────────────────────────────────────────
+   Usage: wrap any card with <div class="animated-gold-border" style="padding:1.5px;border-radius:<card-radius+1.5px>">
+   The wrapper div must have overflow:hidden applied (or use the AnimatedGoldBorder React component).
+   The inner card should have border-color:transparent so the gradient shows through.
+*/
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0turn;
+  inherits: false;
+}
+
+.animated-gold-border {
+  --border-angle: 0turn;
+  background: conic-gradient(
+    from var(--border-angle),
+    transparent 0%,
+    transparent 25%,
+    rgb(212 184 132) 35%,
+    rgb(212 184 132 / 0.6) 45%,
+    transparent 55%,
+    transparent 100%
+  );
+  animation: animated-gold-border-spin 3s linear infinite;
+}
+
+@keyframes animated-gold-border-spin {
+  to { --border-angle: 1turn; }
+}
+
 /* Theme overrides — :root above = navy-classic default (safe fallback if script fails) */
 :root[data-theme="navy-classic"] {
   --orbit-canvas:    12 31 53;

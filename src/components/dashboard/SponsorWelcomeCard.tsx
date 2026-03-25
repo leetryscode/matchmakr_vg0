@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import InviteSingleModal from './InviteSingleModal';
 import DraftProfileWalkthrough from './DraftProfileWalkthrough';
+import AnimatedGoldBorder from '@/components/ui/AnimatedGoldBorder';
 
 const QUOTES = [
     {
@@ -123,7 +124,13 @@ function WelcomeCardState1({
     const quote = QUOTES[activeIndex];
 
     return (
-        <div className="relative rounded-2xl border border-orbit-gold/20 bg-orbit-gold/[0.04] px-5 py-6 overflow-hidden">
+        <AnimatedGoldBorder borderRadius="17.5px">
+        <div className="relative rounded-2xl border border-transparent bg-orbit-canvas px-5 py-6 overflow-hidden">
+            {/* Gold tint overlay — must be a child element, not bg-orbit-gold/[0.04] on the card itself,
+                because the parent (AnimatedGoldBorder) has the gradient background and a transparent
+                card background would let it bleed through the entire card interior. */}
+            <div className="absolute inset-0 bg-orbit-gold/[0.04] pointer-events-none" />
+
             {/* Decorative top accent line */}
             <div
                 className="absolute top-0 left-0 right-0 h-[2px]"
@@ -211,6 +218,7 @@ function WelcomeCardState1({
                 Invite them to your Orbit
             </button>
         </div>
+        </AnimatedGoldBorder>
     );
 }
 
@@ -243,7 +251,11 @@ function WelcomeCardState2({
     };
 
     return (
-        <div className="relative rounded-2xl border border-orbit-gold/20 bg-orbit-gold/[0.04] px-5 py-6 overflow-hidden">
+        <AnimatedGoldBorder borderRadius="17.5px">
+        <div className="relative rounded-2xl border border-transparent bg-orbit-canvas px-5 py-6 overflow-hidden">
+            {/* Gold tint overlay — solid canvas base required; see State1 comment */}
+            <div className="absolute inset-0 bg-orbit-gold/[0.04] pointer-events-none" />
+
             {/* Decorative top accent line */}
             <div
                 className="absolute top-0 left-0 right-0 h-[2px]"
@@ -294,6 +306,7 @@ function WelcomeCardState2({
                 )}
             </div>
         </div>
+        </AnimatedGoldBorder>
     );
 }
 
