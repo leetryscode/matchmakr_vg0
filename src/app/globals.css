@@ -121,7 +121,7 @@
   --orbit-muted:    139 133 120;
   --orbit-gold:     201 169 110;
   --orbit-gold-dk:  168 137 78;
-  --orbit-success:  111 143 123;
+  --orbit-success:  123 168 138;  /* #7BA88A — slightly brighter than default */
   --orbit-warning:  184 145 92;
   --orbit-font-heading: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
   --orbit-font-body: 'DM Sans', 'Segoe UI', system-ui, sans-serif;

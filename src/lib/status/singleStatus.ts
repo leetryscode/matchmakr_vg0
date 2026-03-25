@@ -142,10 +142,10 @@ export function getStatusDescription(status: SingleStatus, approvedMatchCount: n
 }
 
 // --- Centralized alpha tuning ---
-const PILL_BG_ALPHA = 0.24;
-const PILL_BORDER_ALPHA = 0.28;
+const PILL_BG_ALPHA = 0.30;
+const PILL_BORDER_ALPHA = 0.34;
 const CAPSULE_BORDER_ALPHA = 0.45;
-const NEUTRAL_BG_ALPHA = 0.18;
+const NEUTRAL_BG_ALPHA = 0.28;
 
 // --- Utility to generate rgb(var(--orbit-*)/alpha) ---
 function orbit(token: string, alpha: number): string {
@@ -162,29 +162,29 @@ const STATUS_TOKEN: Record<string, string> = {
   OPEN_TO_IT: 'success',
   ACCEPTED: 'success',
 
-  PAUSED: 'border',
-  INVITED: 'border',
-  NEEDS_INTRODUCTION: 'border',
-  DECLINED: 'border',
-  NOT_SURE_YET: 'border',
-  DISMISSED: 'border',
-  EXPIRED: 'border',
+  PAUSED: 'muted',
+  INVITED: 'muted',
+  NEEDS_INTRODUCTION: 'muted',
+  DECLINED: 'muted',
+  NOT_SURE_YET: 'muted',
+  DISMISSED: 'muted',
+  EXPIRED: 'muted',
   // Invite system edge cases (future-proof)
-  CANCELLED: 'border',
-  RESCINDED: 'border',
+  CANCELLED: 'muted',
+  RESCINDED: 'muted',
 };
 
 // Pre-built pill/capsule class strings — fully literal so Tailwind content scan finds them.
 // Do NOT construct arbitrary-value classes via template strings at runtime.
 const PILL_STYLES = {
-  warning: 'bg-[rgb(var(--orbit-warning)/0.24)] text-orbit-warning border-[rgb(var(--orbit-warning)/0.28)]',
-  success: 'bg-[rgb(var(--orbit-success)/0.24)] text-orbit-success border-[rgb(var(--orbit-success)/0.28)]',
-  border: 'bg-[rgb(var(--orbit-border)/0.18)] text-orbit-text2 border-[rgb(var(--orbit-border)/0.28)]',
+  warning: 'bg-[rgb(var(--orbit-warning)/0.30)] text-orbit-warning border-[rgb(var(--orbit-warning)/0.34)]',
+  success: 'bg-[rgb(var(--orbit-success)/0.30)] text-orbit-success border-[rgb(var(--orbit-success)/0.34)]',
+  muted: 'bg-[rgb(var(--orbit-muted)/0.28)] text-orbit-text2 border-[rgb(var(--orbit-muted)/0.34)]',
 } as const;
 const CAPSULE_STYLES = {
   warning: 'border-2 border-[rgb(var(--orbit-warning)/0.45)]',
   success: 'border-2 border-[rgb(var(--orbit-success)/0.45)]',
-  border: 'border-2 border-[rgb(var(--orbit-border)/0.45)]',
+  muted: 'border-2 border-[rgb(var(--orbit-muted)/0.45)]',
 } as const;
 
 const PILL_BASE =
@@ -195,7 +195,7 @@ const PILL_BASE =
  * Uses arbitrary rgb(var(--orbit-*)/alpha) values; no Tailwind safelist required.
  */
 export function getStatusPillClasses(status: string): string {
-  const token = (STATUS_TOKEN[status] ?? 'border') as keyof typeof PILL_STYLES;
+  const token = (STATUS_TOKEN[status] ?? 'muted') as keyof typeof PILL_STYLES;
   return `${PILL_BASE} ${PILL_STYLES[token]}`;
 }
 
@@ -204,7 +204,7 @@ export function getStatusPillClasses(status: string): string {
  * Capsule uses border-2; thicker than pill (1px).
  */
 export function getPreviewCapsuleBorderClasses(status: string): string {
-  const token = (STATUS_TOKEN[status] ?? 'border') as keyof typeof CAPSULE_STYLES;
+  const token = (STATUS_TOKEN[status] ?? 'muted') as keyof typeof CAPSULE_STYLES;
   return CAPSULE_STYLES[token];
 }
 
@@ -217,7 +217,7 @@ const PREVIEW_OPTION_PILL_BASE =
 
 const OPTION_PILL_STYLES = {
   success: 'border-[rgb(var(--orbit-success)/0.6)] text-orbit-success',
-  border: 'border-[rgb(var(--orbit-border)/0.6)] text-orbit-text2',
+  muted: 'border-[rgb(var(--orbit-muted)/0.6)] text-orbit-text2',
 } as const;
 
 /**
@@ -225,7 +225,7 @@ const OPTION_PILL_STYLES = {
  * Outline-only: border + text, no bg fill. Distinct from status pills (filled).
  */
 export function getPreviewOptionPillClasses(status: 'OPEN_TO_IT' | 'NOT_SURE_YET'): string {
-  const token = (STATUS_TOKEN[status] ?? 'border') as keyof typeof OPTION_PILL_STYLES;
+  const token = (STATUS_TOKEN[status] ?? 'muted') as keyof typeof OPTION_PILL_STYLES;
   return `${PREVIEW_OPTION_PILL_BASE} ${OPTION_PILL_STYLES[token]}`;
 }
 
