@@ -91,7 +91,13 @@ export default function ManagedSinglesGrid({ singles, inviteRows = [], userId }:
               status={row.status}
               createdAt={row.created_at}
               declineSubtext={row.decline_subtext}
-              onClick={row.is_clickable && row.profile_id ? () => handleCardClick(row.profile_id!) : undefined}
+              onClick={
+                row.is_clickable && row.profile_id
+                  ? () => handleCardClick(row.profile_id!)
+                  : row.status === 'INVITED'
+                  ? () => router.push(`/dashboard/invite/${row.id}`)
+                  : undefined
+              }
             />
           ))}
         </div>

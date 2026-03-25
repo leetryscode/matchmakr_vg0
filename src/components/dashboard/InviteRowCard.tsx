@@ -51,7 +51,7 @@ const InviteRowCard: React.FC<InviteRowCardProps> = ({
   const [rescindLoading, setRescindLoading] = useState(false);
   const primaryLabel = inviteeLabel || inviteeEmail || inviteePhoneE164 || 'Invited';
   const dateStr = formatInviteDate(createdAt);
-  const isClickable = status === 'ACCEPTED' && !!inviteeUserId && !!onClick;
+  const isClickable = !!onClick;
   const canRescind = (status === 'INVITED' || status === 'AWAITING_APPROVAL') && !rescindLoading;
 
   const handleRescind = async (e: React.MouseEvent) => {
