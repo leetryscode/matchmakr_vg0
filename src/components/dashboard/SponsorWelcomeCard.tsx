@@ -5,6 +5,10 @@ import Link from 'next/link';
 import InviteSingleModal from './InviteSingleModal';
 import DraftProfileWalkthrough from './DraftProfileWalkthrough';
 import AnimatedGoldBorder from '@/components/ui/AnimatedGoldBorder';
+import ImageCropper from '@/components/profile/ImageCropper';
+import { Area } from 'react-easy-crop';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 
 const QUOTES = [
     {
@@ -28,6 +32,56 @@ const QUOTES = [
 const AUTO_ADVANCE_MS = 16000;
 const SWIPE_THRESHOLD = 40;
 
+// ─── Image crop helper (same pipeline as PhotoGallery) ────────────────────────
+
+const createImage = (url: string): Promise<HTMLImageElement> =>
+    new Promise((resolve, reject) => {
+        const image = new window.Image();
+        image.addEventListener('load', () => resolve(image));
+        image.addEventListener('error', (error) => reject(error));
+        image.setAttribute('crossOrigin', 'anonymous');
+        image.src = url;
+    });
+
+async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob | null> {
+    const image = await createImage(imageSrc);
+    const cropX = Math.max(0, Math.round(pixelCrop.x));
+    const cropY = Math.max(0, Math.round(pixelCrop.y));
+    const cropW = Math.max(1, Math.round(pixelCrop.width));
+    const cropH = Math.max(1, Math.round(pixelCrop.height));
+
+    const cropCanvas = document.createElement('canvas');
+    const cropCtx = cropCanvas.getContext('2d');
+    if (!cropCtx) return null;
+    cropCanvas.width = cropW;
+    cropCanvas.height = cropH;
+    cropCtx.drawImage(image, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+    const OUTPUT_SIZE = 1080;
+    const outputCanvas = document.createElement('canvas');
+    const outputCtx = outputCanvas.getContext('2d');
+    if (!outputCtx) return null;
+    outputCanvas.width = OUTPUT_SIZE;
+    outputCanvas.height = OUTPUT_SIZE;
+    outputCtx.imageSmoothingEnabled = true;
+    outputCtx.imageSmoothingQuality = 'high';
+    outputCtx.drawImage(cropCanvas, 0, 0, cropCanvas.width, cropCanvas.height, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
+
+    return new Promise((resolve) => {
+        outputCanvas.toBlob(
+            (file) => {
+                cropCanvas.width = cropCanvas.height = 0;
+                outputCanvas.width = outputCanvas.height = 0;
+                resolve(file);
+            },
+            'image/jpeg',
+            0.85
+        );
+    });
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface WelcomeCardInvite {
     id: string;
     invitee_label: string | null;
@@ -37,6 +91,8 @@ interface WelcomeCardInvite {
 interface SponsorWelcomeCardProps {
     userId: string;
     invites: WelcomeCardInvite[];
+    hasPhoto: boolean;
+    hasCommunities: boolean;
 }
 
 // ─── State 1: No invites yet ──────────────────────────────────────────────────
@@ -238,9 +294,17 @@ function buildStatusLine(invites: WelcomeCardInvite[]): string {
 function WelcomeCardState2({
     invites,
     onInviteClick,
+    hasPhoto,
+    hasCommunities,
+    onPhotoUploadClick,
+    isUploadingPhoto,
 }: {
     invites: WelcomeCardInvite[];
     onInviteClick: () => void;
+    hasPhoto: boolean;
+    hasCommunities: boolean;
+    onPhotoUploadClick: () => void;
+    isUploadingPhoto: boolean;
 }) {
     const incompleteDrafts = invites.filter(inv => !inv.hasDraftProfile);
     const firstIncomplete = incompleteDrafts[0];
@@ -249,6 +313,40 @@ function WelcomeCardState2({
     const handleScrollToCommunities = () => {
         document.getElementById('my-communities')?.scrollIntoView({ behavior: 'smooth' });
     };
+
+    // Determine the one conditional action by priority
+    let conditionalAction: React.ReactNode = null;
+    if (!hasPhoto) {
+        conditionalAction = (
+            <button
+                onClick={onPhotoUploadClick}
+                disabled={isUploadingPhoto}
+                className="w-full border border-orbit-gold/40 text-orbit-gold font-medium text-sm py-2.5 rounded-xl hover:bg-orbit-gold/10 active:bg-orbit-gold/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                {isUploadingPhoto ? 'Uploading\u2026' : 'Add your photo'}
+            </button>
+        );
+    } else if (!hasCommunities) {
+        conditionalAction = (
+            <button
+                onClick={handleScrollToCommunities}
+                className="w-full border border-orbit-gold/40 text-orbit-gold font-medium text-sm py-2.5 rounded-xl hover:bg-orbit-gold/10 active:bg-orbit-gold/15 transition-colors"
+            >
+                Join your communities
+            </button>
+        );
+    } else if (incompleteDrafts.length > 0 && firstIncomplete) {
+        conditionalAction = (
+            <Link
+                href={`/dashboard/invite/${firstIncomplete.id}`}
+                className="w-full border border-orbit-gold/20 text-orbit-text/70 font-medium text-sm py-2.5 rounded-xl hover:bg-orbit-gold/5 active:bg-orbit-gold/10 transition-colors text-center"
+            >
+                {incompleteDrafts.length === 1
+                    ? `Finish ${firstIncomplete.invitee_label || 'their'}\u2019s profile`
+                    : "Finish building your singles\u2019 profiles"}
+            </Link>
+        );
+    }
 
     return (
         <AnimatedGoldBorder borderRadius="17.5px">
@@ -277,7 +375,7 @@ function WelcomeCardState2({
 
             {/* Actions */}
             <div className="flex flex-col gap-3">
-                {/* Invite another single */}
+                {/* Invite another single — always shown */}
                 <button
                     onClick={onInviteClick}
                     className="w-full bg-orbit-gold text-orbit-canvas font-medium text-sm py-2.5 rounded-xl hover:opacity-90 active:opacity-80 transition-opacity"
@@ -285,25 +383,8 @@ function WelcomeCardState2({
                     Invite another single
                 </button>
 
-                {/* Join communities */}
-                <button
-                    onClick={handleScrollToCommunities}
-                    className="w-full border border-orbit-gold/40 text-orbit-gold font-medium text-sm py-2.5 rounded-xl hover:bg-orbit-gold/10 active:bg-orbit-gold/15 transition-colors"
-                >
-                    Join your communities
-                </button>
-
-                {/* Finish draft profile (conditional) */}
-                {incompleteDrafts.length > 0 && firstIncomplete && (
-                    <Link
-                        href={`/dashboard/invite/${firstIncomplete.id}`}
-                        className="w-full border border-orbit-gold/20 text-orbit-text/70 font-medium text-sm py-2.5 rounded-xl hover:bg-orbit-gold/5 active:bg-orbit-gold/10 transition-colors text-center"
-                    >
-                        {incompleteDrafts.length === 1
-                            ? `Finish ${firstIncomplete.invitee_label || 'their'}\u2019s profile`
-                            : "Finish building your singles\u2019 profiles"}
-                    </Link>
-                )}
+                {/* One conditional action */}
+                {conditionalAction}
             </div>
         </div>
         </AnimatedGoldBorder>
@@ -312,18 +393,112 @@ function WelcomeCardState2({
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
-export default function SponsorWelcomeCard({ userId, invites }: SponsorWelcomeCardProps) {
+export default function SponsorWelcomeCard({ userId, invites, hasPhoto: hasPhotoProp, hasCommunities }: SponsorWelcomeCardProps) {
+    const supabase = createClient();
+    const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [walkthrough, setWalkthrough] = useState<{ inviteId: string; inviteeName: string | null } | null>(null);
+    const [hasPhoto, setHasPhoto] = useState(hasPhotoProp);
+    const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleInviteClick = () => setIsModalOpen(true);
+
+    const handlePhotoUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => setImageToCrop(reader.result as string);
+        reader.readAsDataURL(file);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const handleCropComplete = async (croppedAreaPixels: Area) => {
+        if (!imageToCrop) return;
+        setImageToCrop(null);
+        setIsUploadingPhoto(true);
+        try {
+            const blob = await getCroppedImg(imageToCrop, croppedAreaPixels);
+            if (!blob) throw new Error('Could not crop image.');
+
+            const fileName = `${Date.now()}.jpeg`;
+            const filePath = `${userId}/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('profile_pictures')
+                .upload(filePath, blob, { contentType: 'image/jpeg', upsert: false });
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('profile_pictures')
+                .getPublicUrl(filePath);
+
+            // Fetch current photos to build updated array
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('photos')
+                .eq('id', userId)
+                .single();
+            const currentPhotos = (profile?.photos as string[] | null) ?? [];
+            const updatedPhotos = [...currentPhotos, publicUrl];
+
+            const { error: dbError } = await supabase
+                .from('profiles')
+                .update({ photos: updatedPhotos })
+                .eq('id', userId);
+            if (dbError) throw dbError;
+
+            setHasPhoto(true);
+            router.refresh();
+        } catch (err: any) {
+            alert(err.message || 'Upload failed. Please try again.');
+        } finally {
+            setIsUploadingPhoto(false);
+        }
+    };
 
     return (
         <>
             {invites.length === 0 ? (
                 <WelcomeCardState1 onInviteClick={handleInviteClick} />
             ) : (
-                <WelcomeCardState2 invites={invites} onInviteClick={handleInviteClick} />
+                <WelcomeCardState2
+                    invites={invites}
+                    onInviteClick={handleInviteClick}
+                    hasPhoto={hasPhoto}
+                    hasCommunities={hasCommunities}
+                    onPhotoUploadClick={handlePhotoUploadClick}
+                    isUploadingPhoto={isUploadingPhoto}
+                />
+            )}
+
+            {/* Hidden file input for photo upload */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+            />
+
+            {/* Image crop modal */}
+            {imageToCrop && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-orbit-canvas/80 backdrop-blur-[2px] p-4">
+                    <div className="w-full max-w-lg rounded-2xl bg-orbit-surface-2 shadow-xl ring-1 ring-orbit-border/20">
+                        <div className="p-5 sm:p-6">
+                            <ImageCropper
+                                image={imageToCrop}
+                                onCropComplete={handleCropComplete}
+                                onClose={() => setImageToCrop(null)}
+                            />
+                        </div>
+                    </div>
+                </div>
             )}
 
             <InviteSingleModal

@@ -295,6 +295,13 @@ async function MatchMakrDashboardContent() {
     const currentUserName = userProfile?.name || '';
     const currentUserProfilePic = userProfile?.photos && userProfile.photos.length > 0 ? userProfile.photos[0] : null;
 
+    // Fetch whether the sponsor has joined any communities
+    const { count: communitiesCount } = await supabase
+        .from('community_members')
+        .select('*', { count: 'exact', head: true })
+        .eq('profile_id', user.id);
+    const hasCommunities = (communitiesCount ?? 0) > 0;
+
     // Fetch all messages where user is sender or recipient (for singles)
     const { data: singleMessages } = processedSponsoredSingles.length > 0 ? await supabase
         .from('messages')
@@ -344,7 +351,12 @@ async function MatchMakrDashboardContent() {
             {/* Welcome card — shown only when sponsor has no managed singles */}
             {processedSponsoredSingles.length === 0 && (
                 <div className="mt-6">
-                    <SponsorWelcomeCard userId={user.id} invites={welcomeCardInvites} />
+                    <SponsorWelcomeCard
+                    userId={user.id}
+                    invites={welcomeCardInvites}
+                    hasPhoto={currentUserProfilePic !== null}
+                    hasCommunities={hasCommunities}
+                />
                 </div>
             )}
 
