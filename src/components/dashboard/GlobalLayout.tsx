@@ -33,6 +33,7 @@ function shouldShowBottomNavForPath(pathname: string): boolean {
   // Allowed routes (show nav)
   if (pathname.startsWith('/dashboard')) return true;
   if (pathname.startsWith('/pond')) return true;
+  if (pathname.startsWith('/communities')) return true;
   if (pathname.startsWith('/profile/')) return true;
   
   // Default to false for unknown routes

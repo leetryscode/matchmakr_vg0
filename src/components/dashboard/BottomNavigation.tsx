@@ -36,10 +36,10 @@ function PondBubble({ href }: { href: string }) {
     return (
         <Link
             href={href}
-            className="flex flex-col items-center justify-center focus:outline-none rounded-card-lg orbit-surface-strong shadow-card overflow-hidden text-orbit-gold"
+            className="flex flex-col items-center justify-center focus:outline-none rounded-card-lg orbit-surface-strong overflow-hidden text-orbit-gold"
             aria-label="Discover"
             title="Discover"
-            style={{ height: `${BOTTOM_NAV_HEIGHT_PX}px`, width: '74px', gap: '4px' }}
+            style={{ height: `${BOTTOM_NAV_HEIGHT_PX}px`, width: '74px', gap: '4px', boxShadow: '0 -8px 24px rgba(0, 0, 0, 0.6), 0 -2px 8px rgba(0, 0, 0, 0.4)' }}
         >
             {/*
              * SVG geometry: two circles, r=14, centers 18px apart (cx=16, cx=34).
@@ -171,16 +171,15 @@ interface NavItemButtonProps {
 
 function NavItemButton({ onClick, icon, label }: NavItemButtonProps) {
     return (
-        <button 
+        <button
             onClick={onClick}
-            className="flex flex-col items-center justify-center focus:outline-none min-w-[44px]"
+            className="flex-1 flex flex-col items-center justify-center focus:outline-none"
             aria-label={label}
             title={label}
         >
-            <div className="flex items-center justify-center text-orbit-text2 hover:text-orbit-text transition-colors" style={{ width: '22px', height: '22px' }}>
+            <div className="flex items-center justify-center text-orbit-muted hover:text-orbit-text2 transition-colors duration-150" style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
-            <span className="type-meta mt-1 truncate max-w-full text-orbit-text2">{label}</span>
         </button>
     );
 }
@@ -196,14 +195,18 @@ function NavItemLink({ href, icon, label, isActive = false }: NavItemLinkProps) 
     return (
         <Link
             href={href}
-            className="flex flex-col items-center justify-center focus:outline-none min-w-[44px]"
+            className="flex-1 flex flex-col items-center justify-center focus:outline-none"
             aria-label={label}
             title={label}
         >
             <div className={`flex items-center justify-center transition-colors duration-150 ${isActive ? 'text-orbit-gold' : 'text-orbit-muted hover:text-orbit-text2'}`} style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
-            <span className={`type-meta mt-1 truncate max-w-full transition-colors duration-150 ${isActive ? 'text-orbit-gold' : 'text-orbit-muted'}`}>{label}</span>
+            {isActive && (
+                <span className="type-meta mt-1 text-orbit-gold nav-label-active" style={{ lineHeight: '1' }}>
+                    {label}
+                </span>
+            )}
         </Link>
     );
 }
@@ -274,7 +277,7 @@ export default function BottomNavigation({ userId: _userId }: BottomNavigationPr
         {
             key: 'dashboard',
             kind: 'link',
-            label: 'Dashboard',
+            label: 'Home',
             href: getDashboardHref(userType),
             icon: (
                 // Home icon (dashboard concept)
@@ -302,7 +305,7 @@ export default function BottomNavigation({ userId: _userId }: BottomNavigationPr
         {
             key: 'community',
             kind: 'link',
-            label: 'Community',
+            label: 'Communities',
             href: '/communities',
             icon: (
                 // People group icon (two person silhouettes side by side)
@@ -341,16 +344,27 @@ export default function BottomNavigation({ userId: _userId }: BottomNavigationPr
             }}
         >
             {/* Floating bottom navigation pill — orbit-surface-strong for hierarchy */}
-            <nav 
-                className="flex-1 rounded-card-lg px-4 py-3 overflow-hidden orbit-surface-strong shadow-card"
-                style={{ 
+            <nav
+                className="flex-1 rounded-card-lg px-4 py-3 overflow-hidden orbit-surface-strong"
+                style={{
                     height: `${BOTTOM_NAV_HEIGHT_PX}px`,
                     minWidth: 0,
+                    boxShadow: '0 -8px 24px rgba(0, 0, 0, 0.6), 0 -2px 8px rgba(0, 0, 0, 0.4)',
                 }}
             >
-                {/* Inner container with full height - labels below icons */}
+                {/* Label mount animation — fade + slide up */}
+                <style>{`
+                    @keyframes nav-label-in {
+                        from { opacity: 0; transform: translateY(4px); }
+                        to   { opacity: 1; transform: translateY(0); }
+                    }
+                    .nav-label-active {
+                        animation: nav-label-in 150ms ease-out both;
+                    }
+                `}</style>
+                {/* Inner container — flex-1 children self-distribute; equal columns prevent layout shift */}
                 {/* Order: Dashboard → Ideas → Community → Settings */}
-                <div className="flex items-center justify-around gap-4 h-full min-w-0">
+                <div className="flex items-center h-full min-w-0">
                     {visibleItems.map(item => renderNavItem(item, pathname))}
                 </div>
             </nav>
