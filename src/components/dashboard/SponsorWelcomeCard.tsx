@@ -393,15 +393,30 @@ function WelcomeCardState2({
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
-export default function SponsorWelcomeCard({ userId, invites, hasPhoto: hasPhotoProp, hasCommunities }: SponsorWelcomeCardProps) {
+export default function SponsorWelcomeCard({ userId, invites, hasPhoto: hasPhotoProp, hasCommunities: hasCommunitiesProp }: SponsorWelcomeCardProps) {
     const supabase = createClient();
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [walkthrough, setWalkthrough] = useState<{ inviteId: string; inviteeName: string | null } | null>(null);
     const [hasPhoto, setHasPhoto] = useState(hasPhotoProp);
+    // Initialize from server prop but re-check client-side on mount — the Next.js router
+    // cache can serve a 30-second-stale RSC payload, so the server prop may still say
+    // hasCommunities=false even after the sponsor joined a community and navigated back.
+    const [hasCommunities, setHasCommunities] = useState(hasCommunitiesProp);
     const [imageToCrop, setImageToCrop] = useState<string | null>(null);
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        fetch('/api/communities/me')
+            .then(r => r.json())
+            .then(data => {
+                if (Array.isArray(data.communities)) {
+                    setHasCommunities(data.communities.length > 0);
+                }
+            })
+            .catch(() => {/* silently keep server-prop value */});
+    }, []);
 
     const handleInviteClick = () => setIsModalOpen(true);
 
