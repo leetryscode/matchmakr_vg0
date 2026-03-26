@@ -82,6 +82,9 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
   // In Orbit, only MATCHMAKR (Sponsors) can edit profiles
   // Singles viewing their own profile should see read-only view
   const canEditProfile = orbitRole === 'MATCHMAKR' && (isOwnProfile || isSponsorViewing);
+
+  // Singles can add/edit photos on their own profile
+  const canEditPhotos = canEditProfile || (isOwnProfile && profile.user_type === 'SINGLE' && orbitRole === 'SINGLE');
   
   // Structure sponsors as an array to support multiple sponsors in the future
   // Currently, the schema only supports one sponsor, but this structure makes it easy to extend
@@ -229,7 +232,7 @@ const ProfileClient: React.FC<ProfileClientProps> = ({
             userId={profile.id}
             photos={profile.photos}
             userType={profile.user_type}
-            canEdit={canEditProfile}
+            canEdit={canEditPhotos}
             profileName={profile.name}
             name={profile.name}
             age={age}
