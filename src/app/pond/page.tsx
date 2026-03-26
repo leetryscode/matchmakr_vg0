@@ -12,8 +12,6 @@ import DashboardFooterSpacer from '@/components/dashboard/DashboardFooterSpacer'
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import RequireStandaloneGate from '@/components/pwa/RequireStandaloneGate';
-import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
 import PairingsSection from '@/components/profile/PairingsSection';
 import IntroductionSignalSection from '@/components/profile/IntroductionSignalSection';
 import { getPondCacheKey } from '@/lib/pond-cache';
@@ -766,13 +764,9 @@ export default function PondPage() {
         window.scrollTo(0, 0);
     };
 
+    const isTeaserMode = sponsoredSingles.length === 0;
+
     return (
-        <RequireStandaloneGate
-            enabled={REQUIRE_STANDALONE_ENABLED}
-            title="Install Orbit to use Discover"
-            body="Discover is available in app mode only. Install Orbit to keep browsing."
-            showBackButton={true}
-        >
         <div className="min-h-screen bg-transparent text-orbit-text px-0 md:px-4">
             <div className="max-w-none md:max-w-6xl md:mx-auto">
                 {/* Sticky Banner — orbit-surface-strong for hierarchy */}
@@ -884,9 +878,9 @@ export default function PondPage() {
                                 const sponsorName = profile.sponsor_name || 'Sponsor';
                                 const sponsorPhotoUrl = profile.sponsor_photo_url;
                                 const hasEndorsement = profile.matchmakr_endorsement && profile.matchmakr_endorsement.trim().length > 0;
-                                return (
-                                    <Link href={`/profile/${profile.id}`} key={profile.id} className="block relative">
-                                        <div className="md:rounded-2xl overflow-hidden orbit-surface shadow-card">
+                                const cardInner = (
+                                    <>
+                                        <div className="md:rounded-2xl overflow-hidden orbit-surface shadow-card" style={isTeaserMode ? { filter: 'blur(8px)' } : undefined}>
                                             {/* A) Hero — Pond-specific: large photo, Name/Age overlay, optional occupation */}
                                             <div className="relative w-full aspect-[4/5] md:aspect-[1/1]">
                                                 {profile.profile_pic_url ? (
@@ -1010,6 +1004,15 @@ export default function PondPage() {
                                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-7 flex justify-center pointer-events-none">
                                             <div className="w-2.5 h-2.5 rounded-full bg-orbit-border/70" />
                                         </div>
+                                    </>
+                                );
+                                return isTeaserMode ? (
+                                    <div key={profile.id} className="block relative" style={{ pointerEvents: 'none', userSelect: 'none' }}>
+                                        {cardInner}
+                                    </div>
+                                ) : (
+                                    <Link href={`/profile/${profile.id}`} key={profile.id} className="block relative">
+                                        {cardInner}
                                     </Link>
                                 );
                             })}
@@ -1040,6 +1043,26 @@ export default function PondPage() {
                 {/* Footer spacer with brand mark */}
                 <DashboardFooterSpacer />
             </div>
+            {/* Teaser overlay — shown when sponsor has no singles */}
+            {isTeaserMode && profiles.length > 0 && (
+                <div className="fixed inset-0 z-30 pointer-events-none flex items-center justify-center" style={{ top: '56px', bottom: '64px' }}>
+                    <div className="pointer-events-auto mx-6 max-w-sm w-full rounded-2xl px-6 py-8 flex flex-col items-center gap-4 text-center shadow-xl" style={{ background: 'color-mix(in srgb, var(--color-orbit-canvas, #0e1220) 92%, transparent)' }}>
+                        <p className="text-orbit-text font-semibold text-base">
+                            Sponsor a single to unlock introductions
+                        </p>
+                        <p className="text-orbit-muted text-sm leading-relaxed">
+                            Every single on Orbit is here because someone who knows them took the time to vouch for them. That&apos;s what makes this different. Only sponsors with singles can browse — it&apos;s how we keep that trust real.
+                        </p>
+                        <button
+                            className="orbit-ring rounded-cta min-h-[44px] px-6 py-2.5 bg-orbit-gold text-orbit-canvas hover:bg-orbit-goldDark font-semibold shadow-cta-entry transition-colors duration-200"
+                            onClick={() => setShowInviteSingleModal(true)}
+                        >
+                            Invite your first single
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Select Single Modal */}
             <SelectSingleModal
                 open={showSelectSingleModal}
@@ -1161,6 +1184,5 @@ export default function PondPage() {
                 </div>
             )}
         </div>
-        </RequireStandaloneGate>
     );
 }

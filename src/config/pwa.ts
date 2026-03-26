@@ -1,9 +1,8 @@
 /**
  * PWA Configuration
- * 
- * Controls whether certain features require standalone (app) mode.
- * Set NEXT_PUBLIC_REQUIRE_STANDALONE=false in .env.local to disable during development.
+ *
+ * The standalone gate has been removed — all features are accessible in both
+ * browser and installed PWA mode. The InstallBar remains as a non-blocking prompt.
  */
-export const REQUIRE_STANDALONE_ENABLED = 
-  process.env.NEXT_PUBLIC_REQUIRE_STANDALONE !== 'false';
+export const REQUIRE_STANDALONE_ENABLED = false;
 

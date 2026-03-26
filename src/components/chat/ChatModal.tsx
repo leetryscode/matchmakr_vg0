@@ -2,9 +2,6 @@
 import React, { useState, useEffect, useRef, useId } from 'react';
 import ReactDOM from 'react-dom';
 import { useChatModal } from '@/contexts/ChatModalContext';
-import { isStandaloneMode } from '@/utils/pwa';
-import RequireStandaloneGate from '../pwa/RequireStandaloneGate';
-import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
 import GroupedMessageList from './GroupedMessageList';
 import { SCROLL_PIN_THRESHOLD_PX } from '@/constants/chat';
 import { useKeyboardScrollFix } from '@/hooks/useKeyboardScrollFix';
@@ -581,12 +578,6 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   if (!open) return null;
 
   return ReactDOM.createPortal(
-    <RequireStandaloneGate
-      enabled={REQUIRE_STANDALONE_ENABLED}
-      title="Install Orbit to access Chat"
-      body="Chat is available in app mode only. Install Orbit for full access."
-      showBackButton={false}
-    >
     <div className="fixed inset-0 bg-orbit-canvas/80 flex sm:items-center sm:justify-center items-stretch justify-end z-[9999] overscroll-none">
       <div 
         className="bg-orbit-surface3 w-full sm:w-[600px] sm:rounded-2xl p-0 shadow-xl h-[100dvh] flex flex-col text-center relative overflow-hidden"
@@ -813,8 +804,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
           </>
         )}
       </div>
-    </div>
-    </RequireStandaloneGate>,
+    </div>,
     document.body
   );
 };

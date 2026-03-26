@@ -5,8 +5,6 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import GroupedMessageList from '@/components/chat/GroupedMessageList';
-import RequireStandaloneGate from '@/components/pwa/RequireStandaloneGate';
-import { REQUIRE_STANDALONE_ENABLED } from '@/config/pwa';
 import { SCROLL_PIN_THRESHOLD_PX } from '@/constants/chat';
 import { useKeyboardScrollFix } from '@/hooks/useKeyboardScrollFix';
 import { useRealtimeMessages } from '@/contexts/RealtimeMessagesContext';
@@ -359,12 +357,6 @@ export default function ChatPage() {
   };
 
   return (
-    <RequireStandaloneGate
-      enabled={REQUIRE_STANDALONE_ENABLED}
-      title="Install Orbit to access Chat"
-      body="Chat is available in app mode only. Install Orbit for full access."
-      showBackButton={true}
-    >
     <div
       className="h-[100dvh] flex flex-col overflow-hidden p-0 sm:p-2 bg-orbit-surface3 overscroll-none"
       style={{ paddingBottom: 'calc(var(--bottom-nav-h,0px) + env(safe-area-inset-bottom))' }}
@@ -572,6 +564,5 @@ export default function ChatPage() {
         </div>
       )}
     </div>
-    </RequireStandaloneGate>
   );
 } 

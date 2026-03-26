@@ -81,13 +81,62 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Only sponsors can access Pond.' }, { status: 403 });
     }
 
-    // Require selected_single_id for filtered Pond; return empty list if missing
+    // No selected_single_id: return teaser profiles (blurred on frontend) for sponsors with no singles
     if (!selectedSingleId) {
+      const offset = (page - 1) * limit;
+      const { data: teaserProfiles, error: teaserError } = await admin
+        .from('profiles')
+        .select('id, name, photos, sponsored_by_id, occupation, matchmakr_endorsement, birth_date, birth_year, introduction_signal, pairings_signal')
+        .eq('user_type', 'SINGLE')
+        .not('sponsored_by_id', 'is', null)
+        .range(offset, offset + limit - 1);
+
+      if (teaserError) {
+        console.error('Pond API teaser profiles error:', teaserError);
+        return NextResponse.json({ success: false, error: 'Failed to load teaser profiles.' }, { status: 500 });
+      }
+
+      const teaserIds = (teaserProfiles || []).map((p: any) => p.id);
+      const teaserInterestsMap = new Map<string, { id: number; name: string }[]>();
+      if (teaserIds.length > 0) {
+        const { data: profileInterests } = await admin
+          .from('profile_interests')
+          .select('profile_id, interest_id, interests(id, name)')
+          .in('profile_id', teaserIds);
+        for (const row of profileInterests || []) {
+          const pi = row as any;
+          const interest = Array.isArray(pi.interests) ? pi.interests[0] : pi.interests;
+          if (interest) {
+            const list = teaserInterestsMap.get(pi.profile_id) || [];
+            list.push({ id: interest.id, name: interest.name });
+            teaserInterestsMap.set(pi.profile_id, list);
+          }
+        }
+      }
+
+      const teaserSponsorIds = Array.from(new Set((teaserProfiles || []).map((p: any) => p.sponsored_by_id).filter(Boolean)));
+      const teaserSponsorMap = new Map<string, { name: string; photo_url: string | null }>();
+      if (teaserSponsorIds.length > 0) {
+        const { data: sponsors } = await admin.from('profiles').select('id, name, photos').in('id', teaserSponsorIds);
+        for (const s of sponsors || []) {
+          teaserSponsorMap.set(s.id, { name: s.name || 'Sponsor', photo_url: s.photos?.[0] || null });
+        }
+      }
+
+      const teaserTransformed = (teaserProfiles || []).map((profile: any) => ({
+        ...profile,
+        profile_pic_url: profile.photos?.[0] || null,
+        interests: teaserInterestsMap.get(profile.id) || [],
+        sponsor_name: teaserSponsorMap.get(profile.sponsored_by_id)?.name || null,
+        sponsor_photo_url: teaserSponsorMap.get(profile.sponsored_by_id)?.photo_url || null,
+      }));
+
       return NextResponse.json({
         success: true,
-        profiles: [],
-        hasMore: false,
-        total: 0,
+        profiles: teaserTransformed,
+        hasMore: teaserTransformed.length === limit,
+        total: teaserTransformed.length,
+        teaserMode: true,
       });
     }
     if (!UUID_PATTERN.test(selectedSingleId)) {
