@@ -36,7 +36,7 @@ function PondBubble({ href }: { href: string }) {
     return (
         <Link
             href={href}
-            className="flex flex-col items-center justify-center focus:outline-none rounded-card-lg orbit-surface-strong shadow-card overflow-hidden"
+            className="flex flex-col items-center justify-center focus:outline-none rounded-card-lg orbit-surface-strong shadow-card overflow-hidden text-orbit-gold"
             aria-label="Discover"
             title="Discover"
             style={{ height: `${BOTTOM_NAV_HEIGHT_PX}px`, width: '74px', gap: '4px' }}
@@ -72,11 +72,17 @@ function PondBubble({ href }: { href: string }) {
                         x2="50"
                         y2="0"
                     >
-                        <stop offset="0%"   stopColor="#C9A84C" />
-                        <stop offset="40%"  stopColor="#C9A84C" />
+                        {/*
+                         * SVG gradient stops cannot read CSS custom properties directly.
+                         * currentColor inherits text-orbit-gold from the parent Link element,
+                         * giving us theme-aware base gold. The bright flash (#FFFDE8) is
+                         * theme-neutral by design.
+                         */}
+                        <stop offset="0%"   stopColor="currentColor" />
+                        <stop offset="40%"  stopColor="currentColor" />
                         <stop offset="50%"  stopColor="#FFFDE8" />
-                        <stop offset="60%"  stopColor="#C9A84C" />
-                        <stop offset="100%" stopColor="#C9A84C" />
+                        <stop offset="60%"  stopColor="currentColor" />
+                        <stop offset="100%" stopColor="currentColor" />
                         {!prefersReducedMotion && (
                             <>
                                 <animate
@@ -97,10 +103,10 @@ function PondBubble({ href }: { href: string }) {
                         )}
                     </linearGradient>
 
-                    {/* Radial gradient for the soft gold glow halo */}
+                    {/* Radial gradient for the soft gold glow halo — currentColor inherits text-orbit-gold */}
                     <radialGradient id="pond-glow-grad" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stopColor="#C9A84C" stopOpacity="0.4" />
-                        <stop offset="100%" stopColor="#C9A84C" stopOpacity="0"   />
+                        <stop offset="0%"   stopColor="currentColor" stopOpacity="0.4" />
+                        <stop offset="100%" stopColor="currentColor" stopOpacity="0"   />
                     </radialGradient>
 
                     {/* Glow pulse CSS animation — @media guard handles prefers-reduced-motion */}
@@ -126,14 +132,6 @@ function PondBubble({ href }: { href: string }) {
                     opacity="0.25"
                 />
 
-                {/* Very faint outer boundary ring (0.3px, 30% opacity) */}
-                <circle
-                    cx="25" cy="21" r="25"
-                    stroke="#C9A84C"
-                    strokeWidth="0.4"
-                    strokeOpacity="0.3"
-                    fill="none"
-                />
 
                 {/*
                  * Two interlocking rings — the Orbit brand mark.
@@ -153,8 +151,8 @@ function PondBubble({ href }: { href: string }) {
                 />
             </svg>
 
-            {/* Gold "Discover" label — matches nav item label convention */}
-            <span className="type-meta" style={{ color: '#C9A84C', lineHeight: '1' }}>
+            {/* Gold "Discover" label — uses theme gold variable */}
+            <span className="type-meta text-orbit-gold" style={{ lineHeight: '1' }}>
                 Discover
             </span>
         </Link>
@@ -202,10 +200,10 @@ function NavItemLink({ href, icon, label, isActive = false }: NavItemLinkProps) 
             aria-label={label}
             title={label}
         >
-            <div className={`flex items-center justify-center transition-colors ${isActive ? 'text-orbit-text' : 'text-orbit-text2 hover:text-orbit-text'}`} style={{ width: '22px', height: '22px' }}>
+            <div className={`flex items-center justify-center transition-colors duration-150 ${isActive ? 'text-orbit-gold' : 'text-orbit-muted hover:text-orbit-text2'}`} style={{ width: '22px', height: '22px' }}>
                 {icon}
             </div>
-            <span className={`type-meta mt-1 truncate max-w-full ${isActive ? 'text-orbit-text' : 'text-orbit-text2'}`}>{label}</span>
+            <span className={`type-meta mt-1 truncate max-w-full transition-colors duration-150 ${isActive ? 'text-orbit-gold' : 'text-orbit-muted'}`}>{label}</span>
         </Link>
     );
 }
