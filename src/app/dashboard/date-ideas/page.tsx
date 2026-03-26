@@ -25,6 +25,7 @@ export default function DateIdeasPage() {
   const [count, setCount] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const fetchData = useCallback(async () => {
     const supabase = createClient();
@@ -67,6 +68,7 @@ export default function DateIdeasPage() {
     if (!venueName.trim()) return;
 
     setIsSubmitting(true);
+    setErrorMessage('');
     const supabase = createClient();
 
     const { error } = await supabase.from('date_idea_suggestions').insert({
@@ -80,7 +82,7 @@ export default function DateIdeasPage() {
     setIsSubmitting(false);
 
     if (error) {
-      setToast({ message: 'Something went wrong. Please try again.', type: 'error' });
+      setErrorMessage('Something went wrong. Please try again.');
     } else {
       setVenueName('');
       setReason('');
@@ -263,6 +265,9 @@ export default function DateIdeasPage() {
                   >
                     {isSubmitting ? 'Saving...' : 'Share your recommendation'}
                   </button>
+                  {errorMessage && (
+                    <p className="text-red-400 text-sm text-center">{errorMessage}</p>
+                  )}
                 </form>
 
                 {/* Social proof counter */}
