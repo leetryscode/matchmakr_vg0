@@ -152,13 +152,15 @@ async function MatchMakrDashboardContent() {
     const { data: pendingSponsorSingles } = pendingSponsorSingleIds.length > 0
         ? await supabase
             .from('profiles')
-            .select('id, name')
+            .select('id, name, photos')
             .in('id', pendingSponsorSingleIds)
         : { data: [] };
 
     const pendingSponsorSingleNameMap: Record<string, string> = {};
-    (pendingSponsorSingles ?? []).forEach((s: { id: string; name: string | null }) => {
+    const pendingSponsorSinglePhotoMap: Record<string, string | null> = {};
+    (pendingSponsorSingles ?? []).forEach((s: { id: string; name: string | null; photos: string[] | null }) => {
         pendingSponsorSingleNameMap[s.id] = s.name || 'Someone';
+        pendingSponsorSinglePhotoMap[s.id] = s.photos && s.photos.length > 0 ? s.photos[0] : null;
     });
 
     // Fetch approved match counts for all sponsored singles (efficient two-query approach)
@@ -348,8 +350,8 @@ async function MatchMakrDashboardContent() {
                 />
             </div>
             
-            {/* Welcome card — shown only when sponsor has no managed singles */}
-            {processedSponsoredSingles.length === 0 && (
+            {/* Welcome card — shown only when sponsor has no managed singles and no pending sponsorship requests */}
+            {processedSponsoredSingles.length === 0 && (pendingSponsorRequests ?? []).length === 0 && (
                 <div className="mt-6">
                     <SponsorWelcomeCard
                     userId={user.id}
@@ -362,16 +364,17 @@ async function MatchMakrDashboardContent() {
 
             {/* Consistent vertical rhythm between sections */}
             <div className="flex flex-col">
-                {/* Notifications */}
-                <section className="mt-10 first:mt-0">
-                    <NotificationsSection userId={user.id} hideNudgeInviteSingle={processedSponsoredSingles.length === 0} />
-                </section>
-
-                {/* Sponsorship requests (singles who invited this sponsor) */}
+                {/* Sponsorship requests (singles who invited this sponsor) — highest priority action */}
                 <SponsorshipRequestsSection
                     requests={pendingSponsorRequests ?? []}
                     singleNameMap={pendingSponsorSingleNameMap}
+                    singlePhotoMap={pendingSponsorSinglePhotoMap}
                 />
+
+                {/* Notifications */}
+                <section className="mt-10 first:mt-0">
+                    <NotificationsSection userId={user.id} hideNudgeInviteSingle={processedSponsoredSingles.length === 0} hideSponsorshipRequestNotifications={(pendingSponsorRequests ?? []).length > 0} />
+                </section>
 
                 {/* Sponsor chat */}
                 <section className="mt-10">

@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import GlassCard from '@/components/ui/GlassCard';
-import SectionHeader from '@/components/ui/SectionHeader';
+import AnimatedGoldBorder from '@/components/ui/AnimatedGoldBorder';
 
 export interface PendingSponsorshipRequest {
   id: string;
@@ -17,11 +18,13 @@ export interface PendingSponsorshipRequest {
 interface SponsorshipRequestsSectionProps {
   requests: PendingSponsorshipRequest[];
   singleNameMap: Record<string, string>;
+  singlePhotoMap: Record<string, string | null>;
 }
 
 export default function SponsorshipRequestsSection({
   requests,
   singleNameMap,
+  singlePhotoMap,
 }: SponsorshipRequestsSectionProps) {
   const router = useRouter();
   const supabase = getSupabaseClient();
@@ -63,35 +66,50 @@ export default function SponsorshipRequestsSection({
   if (localRequests.length === 0) return null;
 
   return (
-    <section className="mt-10">
-      <SectionHeader title="Sponsorship requests" />
-      <p className="type-meta text-orbit-muted mb-4">
-        Singles who invited you to be their sponsor. Accept to add them to your orbit.
-      </p>
+    <section className="mt-10 first:mt-0">
       <div className="flex flex-col gap-3">
-        {localRequests.map((req) => (
-          <GlassCard key={req.id} className="p-4">
-            <p className="type-body text-orbit-text mb-4">
-              {singleNameMap[req.single_id] || 'Someone'} wants you to be their sponsor
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => handleAccept(req.id)}
-                disabled={actionLoading === req.id}
-                className="rounded-cta px-4 py-2 min-h-[40px] bg-action-primary text-orbit-canvas font-semibold shadow-cta-entry hover:bg-action-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {actionLoading === req.id ? 'Accepting...' : 'Accept'}
-              </button>
-              <button
-                onClick={() => handleDecline(req.id)}
-                disabled={actionLoading === req.id}
-                className="orbit-btn-secondary px-4 py-2 min-h-[40px] rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Decline
-              </button>
-            </div>
-          </GlassCard>
-        ))}
+        {localRequests.map((req) => {
+          const name = singleNameMap[req.single_id] || 'Someone';
+          const photo = singlePhotoMap[req.single_id] ?? null;
+          return (
+            <AnimatedGoldBorder key={req.id}>
+              <GlassCard className="p-5 border-transparent">
+                <div className="flex items-center gap-3 mb-5">
+                  {photo && (
+                    <div className="relative w-11 h-11 rounded-full overflow-hidden flex-shrink-0">
+                      <Image
+                        src={photo}
+                        alt={name}
+                        fill
+                        sizes="44px"
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                  <p className="type-section" style={{ fontWeight: 500 }}>
+                    {name} wants you to be their sponsor
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleAccept(req.id)}
+                    disabled={actionLoading === req.id}
+                    className="rounded-cta px-5 py-2 min-h-[40px] bg-orbit-gold text-orbit-canvas font-semibold shadow-cta-entry hover:bg-orbit-goldDark disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  >
+                    {actionLoading === req.id ? 'Accepting...' : 'Accept'}
+                  </button>
+                  <button
+                    onClick={() => handleDecline(req.id)}
+                    disabled={actionLoading === req.id}
+                    className="px-4 py-2 min-h-[40px] rounded-lg font-semibold bg-transparent text-orbit-muted border border-orbit-border hover:text-orbit-text hover:border-orbit-border/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  >
+                    Decline
+                  </button>
+                </div>
+              </GlassCard>
+            </AnimatedGoldBorder>
+          );
+        })}
       </div>
     </section>
   );
