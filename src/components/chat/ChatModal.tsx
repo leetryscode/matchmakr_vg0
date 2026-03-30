@@ -121,7 +121,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   }, [open]);
 
   // Handle keyboard open/close via VisualViewport (shared hook)
-  useKeyboardScrollFix(open, isInputFocusedRef, () => scrollToBottomIfPinned('keyboard-resize'));
+  useKeyboardScrollFix(open, chatContainerRef, () => scrollToBottomIfPinned('keyboard-resize'));
 
   // Fetch chat history and context
   useEffect(() => {

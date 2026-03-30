@@ -61,7 +61,7 @@ export default function SingleChatPage() {
   };
 
   // Scroll to bottom if pinned — used by keyboard fix hook
-  useKeyboardScrollFix(true, isInputFocusedRef, () => {
+  useKeyboardScrollFix(true, chatContainerRef, () => {
     if (isNearBottomNow()) requestAnimationFrame(() => requestAnimationFrame(() => scrollToBottom()));
   });
 
