@@ -920,7 +920,6 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         onSuccess={() => setToast({ message: 'Invite sent.', type: 'success' })}
       />
       
-      {/* Chat Modal and other logic remain unchanged */}
       {/* Single-to-Single Chat Modal */}
       {openChat && selectedSingle && (
         <ChatModal
@@ -938,21 +937,6 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         />
       )}
 
-      {/* Chat Modal for Sponsor */}
-      {openChat && !selectedSingle && (
-        <ChatModal
-          open={openChat}
-          onClose={() => setOpenChat(false)}
-          currentUserId={userId}
-          currentUserName={userName}
-          currentUserProfilePic={userProfilePic}
-          otherUserId={sponsor.id}
-          otherUserName={sponsor.name || ''}
-          otherUserProfilePic={sponsor.profile_pic_url}
-          aboutSingle={{ id: userId, name: userName, photo: userPhotos && userPhotos.length > 0 ? userPhotos[0] : null }}
-          clickedSingle={{ id: sponsor.id, name: sponsor.name || '', photo: sponsor.profile_pic_url }}
-        />
-      )}
       {/* End Sponsorship Modal */}
       <EndSponsorshipModal
         isOpen={showEndSponsorshipModal}

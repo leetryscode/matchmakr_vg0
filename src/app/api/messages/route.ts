@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 export async function POST(req: NextRequest) {
   const supabase = createClient();
   const body = await req.json();
-  const { sender_id, recipient_id, content, about_single_id, clicked_single_id, conversation_id } = body;
+  const { sender_id, recipient_id, content, about_single_id, clicked_single_id, conversation_id, client_message_id } = body;
 
   // Check authentication
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -146,6 +146,9 @@ export async function POST(req: NextRequest) {
   }
   if (conversationId) {
     messageData.conversation_id = conversationId;
+  }
+  if (client_message_id) {
+    messageData.client_message_id = client_message_id;
   }
   const { error: insertError } = await supabase
     .from('messages')

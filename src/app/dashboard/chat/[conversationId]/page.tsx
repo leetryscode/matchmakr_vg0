@@ -51,14 +51,10 @@ export default function ChatPage() {
       setChatMessages(prev => {
         let idx = -1;
         for (let i = prev.length - 1; i >= 0; i--) {
-          if (
-            prev[i].optimistic &&
-            prev[i].content === newMessage.content &&
-            prev[i].sender_id === newMessage.sender_id
-          ) {
-            idx = i;
-            break;
-          }
+          if (!prev[i].optimistic) continue;
+          const matchById = newMessage.client_message_id && prev[i].client_message_id === newMessage.client_message_id;
+          const matchByContent = !newMessage.client_message_id && prev[i].content === newMessage.content && prev[i].sender_id === newMessage.sender_id;
+          if (matchById || matchByContent) { idx = i; break; }
         }
         if (idx === -1) return [...prev, newMessage];
         const copy = prev.slice();
@@ -166,16 +162,21 @@ export default function ChatPage() {
     }
   }, [chatLoading, chatMessages.length]);
 
-  // B) New messages — only scroll if user is near bottom *now*
+  // B) New messages — scroll if near bottom, or show indicator if not
   useEffect(() => {
     if (!didInitialScrollRef.current || chatMessages.length === 0) return;
-    if (!isNearBottomNow()) return;
-
-    requestAnimationFrame(() => {
+    if (isNearBottomNow()) {
       requestAnimationFrame(() => {
-        scrollToBottom();
+        requestAnimationFrame(() => {
+          scrollToBottom();
+        });
       });
-    });
+    } else {
+      const lastMsg = chatMessages[chatMessages.length - 1];
+      if (lastMsg && lastMsg.sender_id !== currentUserId && !lastMsg.optimistic) {
+        setNewMessageCount(prev => prev + 1);
+      }
+    }
   }, [chatMessages.length]);
 
   // Handle scroll events to determine if we should auto-scroll
@@ -187,6 +188,7 @@ export default function ChatPage() {
       const near = isNearBottomNow();
       shouldAutoScrollRef.current = near;
       setShowScrollToBottom(!near);
+      if (near) setNewMessageCount(0);
     };
 
     container.addEventListener('scroll', handleScroll);
@@ -195,6 +197,7 @@ export default function ChatPage() {
 
 
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [newMessageCount, setNewMessageCount] = useState(0);
 
   // Fetch match status when chat context is available
   useEffect(() => {
@@ -314,8 +317,10 @@ export default function ChatPage() {
     }
 
     // Add optimistic message
+    const clientMsgId = crypto.randomUUID();
     const optimisticMessage = {
       id: `temp-${Date.now()}`,
+      client_message_id: clientMsgId,
       content: messageContent,
       sender_id: currentUserId,
       conversation_id: chatContext.conversation_id,
@@ -327,6 +332,7 @@ export default function ChatPage() {
     // Explicit intent: after sending, user wants to be at the bottom
     shouldAutoScrollRef.current = true;
     setShowScrollToBottom(false);
+    setNewMessageCount(0);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         scrollToBottom();
@@ -344,6 +350,7 @@ export default function ChatPage() {
           conversation_id: chatContext.conversation_id,
           about_single_id: chatContext.currentUserSingle?.id,
           clicked_single_id: chatContext.otherUserSingle?.id,
+          client_message_id: clientMsgId,
         }),
       });
       // Signal to the global provider: start 3-second fallback timer
@@ -489,20 +496,28 @@ export default function ChatPage() {
             <div ref={bottomRef} className="h-px" />
           </div>
 
-          {/* Scroll to bottom button */}
+          {/* Scroll to bottom button + new message indicator */}
           {showScrollToBottom && (
             <button
               onClick={() => {
                 scrollToBottom('smooth');
                 shouldAutoScrollRef.current = true;
                 setShowScrollToBottom(false);
+                setNewMessageCount(0);
               }}
-              className="absolute bottom-4 right-4 bg-orbit-gold text-orbit-text rounded-full p-3 shadow-lg hover:opacity-90 transition-opacity duration-200 z-10"
+              className="absolute bottom-4 right-4 flex flex-col items-end gap-1 z-10"
               title="Scroll to bottom"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7 10L12 15L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              {newMessageCount > 0 && (
+                <span className="bg-orbit-gold text-orbit-canvas text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
+                  New message
+                </span>
+              )}
+              <span className="bg-orbit-surface3 text-orbit-gold rounded-full p-2 shadow-lg hover:opacity-90 transition-opacity duration-200 flex items-center justify-center border border-orbit-border/50">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 10L12 15L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
             </button>
           )}
       </div>

@@ -43,6 +43,8 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   const prevMsgCount = useRef<number>(0);
   const loadingTimeout = useRef<NodeJS.Timeout | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [newMessageCount, setNewMessageCount] = useState(0);
   const [matchStatus, setMatchStatus] = useState<'none' | 'pending' | 'matched' | 'can-approve'>('none');
   const [matchLoading, setMatchLoading] = useState(false);
   const [matchError, setMatchError] = useState<string | null>(null);
@@ -70,7 +72,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     const container = chatContainerRef.current;
     if (!container) return;
     const distanceFromBottom = container.scrollHeight - (container.scrollTop + container.clientHeight);
-    isPinnedRef.current = distanceFromBottom < SCROLL_PIN_THRESHOLD_PX;
+    const pinned = distanceFromBottom < SCROLL_PIN_THRESHOLD_PX;
+    isPinnedRef.current = pinned;
+    setShowScrollToBottom(!pinned);
+    if (pinned) setNewMessageCount(0);
   };
 
   // Scroll to bottom only if user is pinned to bottom (recomputes pinned at scroll time)
@@ -174,9 +179,12 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     };
   }, [open, currentUserId, otherUserId, isSingleToSingle, aboutSingle?.id, clickedSingle?.id]);
 
-  // On modal open, scroll to bottom and set pinned state
+  // On modal open, scroll to bottom and set pinned state; reset msg count on close
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      prevMsgCount.current = 0;
+      return;
+    }
     isPinnedRef.current = true;
     requestAnimationFrame(() => {
       const sentinel = bottomRef.current;
@@ -186,11 +194,31 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     });
   }, [open]);
 
-  // On new messages, only scroll if pinned
+  // On new messages: scroll if pinned, else show indicator for genuine incoming messages.
+  // Uses prevMsgCount to distinguish initial load (prevLen=0) from a real new arrival.
   useEffect(() => {
-    if (!open || chatLoading) return;
-    scrollToBottomIfPinned('new-message');
-  }, [chatMessages, open, chatLoading]);
+    if (!open) return;
+
+    const currentLen = chatMessages.length;
+    const prevLen = prevMsgCount.current;
+    prevMsgCount.current = currentLen;
+
+    // Initial population (0 → N): let the "On modal open" RAF handle scroll, no indicator.
+    if (prevLen === 0) return;
+
+    // No net new messages (e.g. optimistic replace didn't change length).
+    if (currentLen <= prevLen) return;
+
+    if (isPinnedNow()) {
+      scrollToBottomIfPinned('new-message');
+      setNewMessageCount(0);
+    } else {
+      const lastMsg = chatMessages[currentLen - 1];
+      if (lastMsg && lastMsg.sender_id !== currentUserId && !lastMsg.optimistic) {
+        setNewMessageCount(prev => prev + 1);
+      }
+    }
+  }, [chatMessages.length, open]);
 
   // Register with global realtime provider for incoming messages
   useEffect(() => {
@@ -207,14 +235,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
       setChatMessages(prev => {
         let idx = -1;
         for (let i = prev.length - 1; i >= 0; i--) {
-          if (
-            prev[i].optimistic &&
-            prev[i].content === newMessage.content &&
-            prev[i].sender_id === newMessage.sender_id
-          ) {
-            idx = i;
-            break;
-          }
+          if (!prev[i].optimistic) continue;
+          const matchById = newMessage.client_message_id && prev[i].client_message_id === newMessage.client_message_id;
+          const matchByContent = !newMessage.client_message_id && prev[i].content === newMessage.content && prev[i].sender_id === newMessage.sender_id;
+          if (matchById || matchByContent) { idx = i; break; }
         }
         if (idx === -1) return [...prev, newMessage];
         const copy = prev.slice();
@@ -293,7 +317,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   };
 
   // Core send — used by handleSendMessage and handleRetryFailed
-  const sendMessageContent = async (content: string, optimisticId: string) => {
+  const sendMessageContent = async (content: string, optimisticId: string, clientMsgId?: string) => {
     const conversationId = chatContext?.conversation_id;
     const key = isSingleToSingle
       ? getDirectKey(currentUserId, otherUserId)
@@ -307,6 +331,9 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     if (!isSingleToSingle && aboutSingle.id && clickedSingle.id) {
       messageData.about_single_id = aboutSingle.id;
       messageData.clicked_single_id = clickedSingle.id;
+    }
+    if (clientMsgId) {
+      messageData.client_message_id = clientMsgId;
     }
     try {
       const res = await fetch('/api/messages', {
@@ -328,9 +355,11 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
   // Send message
   const handleSendMessage = async () => {
     if (!currentUserId || !otherUserId || !messageText.trim()) return;
+    const clientMsgId = crypto.randomUUID();
     const optimisticId = `optimistic-${Date.now()}`;
     const optimisticMsg = {
       id: optimisticId,
+      client_message_id: clientMsgId,
       sender_id: currentUserId,
       recipient_id: otherUserId,
       content: messageText.trim(),
@@ -347,13 +376,15 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
 
     // Treat sending as explicit intent to be at bottom; scroll after paint
     isPinnedRef.current = true;
+    setShowScrollToBottom(false);
+    setNewMessageCount(0);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         bottomRef.current?.scrollIntoView({ block: 'end' });
       });
     });
 
-    await sendMessageContent(optimisticMsg.content, optimisticId);
+    await sendMessageContent(optimisticMsg.content, optimisticId, clientMsgId);
     setSending(false);
   };
 
@@ -364,7 +395,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
     setChatMessages(prev => prev.map(m => m.failed ? { ...m, failed: false } : m));
     setSending(true);
     for (const msg of failed) {
-      await sendMessageContent(msg.content, msg.id);
+      await sendMessageContent(msg.content, msg.id, msg.client_message_id);
     }
     setSending(false);
   };
@@ -678,7 +709,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
           )}
         </div>
         {/* Chat History Section */}
-        <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain bg-orbit-canvas px-6 py-4 text-left" onClick={() => textareaRef.current?.blur()}>
+        <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain bg-orbit-canvas px-6 py-4 text-left relative" onClick={() => textareaRef.current?.blur()}>
           <div className="flex flex-col">
             {/* Scroll-away intro panel for single-to-single chats */}
             {isSingleToSingle && canChat && (
@@ -743,6 +774,31 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
             {/* Bottom sentinel for scroll detection */}
             <div ref={bottomRef} className="h-px" />
           </div>
+
+          {/* Scroll to bottom button + new message indicator */}
+          {showScrollToBottom && (
+            <button
+              onClick={() => {
+                isPinnedRef.current = true;
+                bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                setShowScrollToBottom(false);
+                setNewMessageCount(0);
+              }}
+              className="absolute bottom-4 right-4 flex flex-col items-end gap-1 z-10"
+              title="Scroll to bottom"
+            >
+              {newMessageCount > 0 && (
+                <span className="bg-orbit-gold text-orbit-canvas text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
+                  New message
+                </span>
+              )}
+              <span className="bg-orbit-surface3 text-orbit-gold rounded-full p-2 shadow-lg hover:opacity-90 transition-opacity duration-200 flex items-center justify-center border border-orbit-border/50">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 10L12 15L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+            </button>
+          )}
         </div>
         {/* Input Section */}
         <div className="flex-shrink-0 z-10 bg-orbit-surface3 border-t border-orbit-border/50 px-6 pt-6 flex items-center gap-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
