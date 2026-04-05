@@ -275,7 +275,7 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
         return;
       }
 
-      // Single↔single direct message — update the matching introduced single's preview
+      // Single↔single direct message — update the matching introduced single's preview and unread count
       setSingleChats((prev) =>
         prev.map((row) => {
           if (!row.otherSingle) return row;
@@ -283,7 +283,12 @@ const SingleDashboardClient: React.FC<SingleDashboardClientProps> = ({
             row.otherSingle.id === msg.sender_id ||
             row.otherSingle.id === msg.recipient_id;
           if (!isMatch) return row;
-          return { ...row, lastMessage: { content: msg.content, created_at: msg.created_at } };
+          const isIncoming = msg.sender_id === row.otherSingle.id && msg.recipient_id === userId;
+          return {
+            ...row,
+            lastMessage: { content: msg.content, created_at: msg.created_at },
+            unreadCount: isIncoming ? (row.unreadCount || 0) + 1 : row.unreadCount,
+          };
         })
       );
     });

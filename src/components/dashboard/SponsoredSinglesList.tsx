@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import SectionHeader from '@/components/ui/SectionHeader';
+import { useRealtimeMessages } from '@/contexts/RealtimeMessagesContext';
 
 interface SponsoredSingle {
     id: string;
@@ -27,6 +28,7 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
     const pathname = usePathname();
     const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
     const [latestMessages, setLatestMessages] = useState<Record<string, { content: string; created_at: string }>>({});
+    const { onDirectMessage } = useRealtimeMessages();
 
     const fetchUnreadCounts = async () => {
         if (!sponsoredSingles) return;
@@ -82,6 +84,21 @@ function SponsoredSinglesList({ sponsoredSingles, singleChats, userId, userName,
             fetchLatestMessages();
         }
     }, [pathname, userId, sponsoredSingles]);
+
+    // Increment unread count in real-time when a single sends a message while sponsor is on the dashboard
+    useEffect(() => {
+        if (!sponsoredSingles) return;
+        const singleIds = new Set(sponsoredSingles.map((s) => s.id));
+        const unsubscribe = onDirectMessage((msg) => {
+            if (msg.recipient_id !== userId) return;
+            if (!singleIds.has(msg.sender_id)) return;
+            setUnreadCounts((prev) => ({
+                ...prev,
+                [msg.sender_id]: (prev[msg.sender_id] || 0) + 1,
+            }));
+        });
+        return unsubscribe;
+    }, [onDirectMessage, sponsoredSingles, userId]);
 
     if (!sponsoredSingles || sponsoredSingles.length === 0) return null;
 
