@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server'
 import { normalizeToOrbitRole } from '@/types/orbit'
 
 export async function GET(request: Request) {
+  console.log('Auth callback hit. Full URL:', request.url)
+  console.log('Search params:', Object.fromEntries(new URL(request.url).searchParams))
+
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   // if "next" is in param, use it as the redirect URL
