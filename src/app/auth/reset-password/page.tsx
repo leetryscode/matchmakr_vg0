@@ -17,35 +17,30 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
+    let resolved = false;
 
-    const tryShowForm = () => {
+    const showFormNow = () => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timeoutId);
       setShowForm(true);
     };
 
-    // Check immediately if the URL has a recovery hash and a session already exists
-    const isRecoveryUrl = window.location.hash.includes('type=recovery');
-    if (isRecoveryUrl) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          tryShowForm();
-        }
-      });
-    }
-
-    // Fallback: listen for the PASSWORD_RECOVERY event
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        clearTimeout(timeoutId);
-        tryShowForm();
-      }
+    // Primary: check for an existing session immediately.
+    // With PKCE flow the token is exchanged before this page loads,
+    // so any user arriving here from the email link will already have a session.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) showFormNow();
     });
 
-    // If neither path shows the form within 5s, show the expired message
+    // Secondary: catch PASSWORD_RECOVERY in case the session isn't ready on mount yet
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') showFormNow();
+    });
+
+    // After 5 seconds with no session or event, treat the link as expired
     timeoutId = setTimeout(() => {
-      setShowForm((current) => {
-        if (!current) setExpired(true);
-        return current;
-      });
+      if (!resolved) setExpired(true);
     }, 5000);
 
     return () => {

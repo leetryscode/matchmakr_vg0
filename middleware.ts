@@ -73,7 +73,8 @@ export async function middleware(req: NextRequest) {
         req.nextUrl.pathname === '/' ||
         req.nextUrl.pathname === '/terms' ||
         req.nextUrl.pathname === '/privacy' ||
-        req.nextUrl.pathname.startsWith('/api/')
+        req.nextUrl.pathname.startsWith('/api/') ||
+        req.nextUrl.pathname.startsWith('/auth/')
       ) {
         return res;
       }
