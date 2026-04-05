@@ -16,7 +16,6 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>;
     let resolved = false;
 
     const showFormNow = () => {
@@ -26,21 +25,26 @@ export default function ResetPasswordPage() {
       setShowForm(true);
     };
 
-    // Primary: check for an existing session immediately.
-    // With PKCE flow the token is exchanged before this page loads,
-    // so any user arriving here from the email link will already have a session.
+    // Register the listener FIRST so we don't miss the event that fires
+    // when the Supabase browser client processes the hash fragment on init.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+        showFormNow();
+      }
+    });
+
+    // Fallback: if the hash was already processed before the listener registered,
+    // getSession() will return the live session.
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) showFormNow();
     });
 
-    // Secondary: catch PASSWORD_RECOVERY in case the session isn't ready on mount yet
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') showFormNow();
-    });
-
     // After 5 seconds with no session or event, treat the link as expired
-    timeoutId = setTimeout(() => {
-      if (!resolved) setExpired(true);
+    const timeoutId = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        setExpired(true);
+      }
     }, 5000);
 
     return () => {
