@@ -740,6 +740,29 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, currentUserId, cur
                 </div>
               </div>
             )}
+            {/* Loading skeleton */}
+            {chatLoading && (
+              <>
+                <div className="flex justify-start mb-3">
+                  <div className="h-10 w-48 bg-orbit-surface3 rounded-2xl animate-pulse" />
+                </div>
+                <div className="flex justify-end mb-3">
+                  <div className="h-10 w-36 bg-orbit-surface3 rounded-2xl animate-pulse" />
+                </div>
+                <div className="flex justify-start mb-3">
+                  <div className="h-10 w-56 bg-orbit-surface3 rounded-2xl animate-pulse" />
+                </div>
+              </>
+            )}
+            {/* Empty conversation state — sponsor-to-sponsor only */}
+            {!chatLoading && chatMessages.length === 0 && !isSingleToSingle && chatContext && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <p className="text-orbit-muted text-sm text-center px-8 leading-relaxed">
+                  Start a conversation with{' '}
+                  <span className="text-orbit-text2">{otherUserName}</span>
+                </p>
+              </div>
+            )}
             {chatMessages.length > 0 && (
               <GroupedMessageList
                 messages={chatMessages}

@@ -471,6 +471,20 @@ export default function ChatPage() {
       {/* Scrollable chat area */}
       <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 py-4 text-left bg-orbit-canvas relative" onClick={() => textareaRef.current?.blur()}>
           <div className="flex flex-col">
+            {/* Loading skeleton */}
+            {chatLoading && (
+              <div className="flex flex-col gap-3 py-4 animate-pulse" aria-hidden="true">
+                <div className="flex justify-start">
+                  <div className="h-9 w-44 rounded-2xl rounded-tl-sm bg-orbit-surface3 opacity-60" />
+                </div>
+                <div className="flex justify-end">
+                  <div className="h-9 w-32 rounded-2xl rounded-tr-sm bg-orbit-surface3 opacity-60" />
+                </div>
+                <div className="flex justify-start">
+                  <div className="h-9 w-52 rounded-2xl rounded-tl-sm bg-orbit-surface3 opacity-60" />
+                </div>
+              </div>
+            )}
             {chatMessages.length > 0 && (
               <GroupedMessageList
                 messages={chatMessages}
@@ -495,6 +509,16 @@ export default function ChatPage() {
             )}
             <div ref={bottomRef} className="h-px" />
           </div>
+
+          {/* Empty conversation state */}
+          {!chatLoading && chatMessages.length === 0 && chatContext && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <p className="text-orbit-muted text-sm text-center px-8 leading-relaxed">
+                Say hello to{' '}
+                <span className="text-orbit-text2">{getOtherMatchmakrName()}</span>
+              </p>
+            </div>
+          )}
 
           {/* Scroll to bottom button + new message indicator */}
           {showScrollToBottom && (
