@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { getDashboardHref } from '@/utils/routes';
-import { backgroundColor } from '@/config/theme';
 
 const MIN_SPLASH_MS = 400;
 const AUTH_SETTLE_MS = 800;
@@ -69,19 +68,90 @@ async function waitForAuthSettle(
 
 function DashboardBootSplash() {
   return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center"
-      style={{ backgroundColor }}
-    >
-      <div className="flex flex-col items-center gap-8">
-        <h1 className="font-light tracking-[0.2em] uppercase text-orbit-text text-2xl sm:text-3xl">
-          Orbit
-        </h1>
-        <div
-          className="h-8 w-8 animate-spin rounded-full border-2 border-orbit-border/50 border-t-orbit-text"
-          aria-hidden
-        />
+    <div style={{ position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0B1426', zIndex: 9999 }}>
+      <style>{`
+        @keyframes orbitRingLeft {
+          0% { transform: translateX(-70px); opacity: 0; }
+          60% { opacity: 0.7; }
+          100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes orbitRingRight {
+          0% { transform: translateX(70px); opacity: 0; }
+          60% { opacity: 0.7; }
+          100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes orbitBreathe {
+          0%, 100% { opacity: 0.75; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.03); }
+        }
+        @keyframes orbitFadeInTagline {
+          0% { opacity: 0; transform: translateY(6px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes orbitTaglinePulse {
+          0%, 100% { opacity: 0.55; }
+          50% { opacity: 1; }
+        }
+        .orbit-loading-wrap {
+          position: relative;
+          width: 80px;
+          height: 80px;
+          margin-bottom: 80px;
+          animation: orbitBreathe 2.8s ease-in-out 2s infinite;
+        }
+        .orbit-loading-tagline {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 12px;
+          font-weight: 300;
+          letter-spacing: 3px;
+          color: #C9A96E;
+          opacity: 0;
+          animation: orbitFadeInTagline 1s ease-out 2.2s forwards, orbitTaglinePulse 3.5s ease-in-out 3.2s infinite;
+        }
+      `}</style>
+      <div className="orbit-loading-wrap">
+        <svg viewBox="0 0 200 200" width="100%" height="100%" style={{ overflow: 'visible' }}>
+          <defs>
+            <linearGradient id="ringGradL" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#D4B87A" />
+              <stop offset="35%" stopColor="#C9A96E" />
+              <stop offset="70%" stopColor="#A8894E" />
+              <stop offset="100%" stopColor="#8A6F3E" />
+            </linearGradient>
+            <linearGradient id="ringGradR" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#D4B87A" />
+              <stop offset="35%" stopColor="#C9A96E" />
+              <stop offset="70%" stopColor="#A8894E" />
+              <stop offset="100%" stopColor="#8A6F3E" />
+            </linearGradient>
+            <linearGradient id="ringHighL" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#E8D5A0" stopOpacity="0.6" />
+              <stop offset="50%" stopColor="#C9A96E" stopOpacity="0" />
+              <stop offset="100%" stopColor="#8A6F3E" stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="ringHighR" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#E8D5A0" stopOpacity="0.6" />
+              <stop offset="50%" stopColor="#C9A96E" stopOpacity="0" />
+              <stop offset="100%" stopColor="#8A6F3E" stopOpacity="0" />
+            </linearGradient>
+            <clipPath id="clipRight">
+              <rect x="75" y="0" width="125" height="200" />
+            </clipPath>
+            <clipPath id="clipLeft">
+              <rect x="0" y="0" width="125" height="200" />
+            </clipPath>
+          </defs>
+          {/* Left ring back portion (behind right ring) */}
+          <circle cx="82" cy="100" r="62" fill="none" stroke="url(#ringGradL)" strokeWidth="5" clipPath="url(#clipRight)" opacity="0" style={{ animation: 'orbitRingLeft 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' }} />
+          {/* Right ring full */}
+          <circle cx="118" cy="100" r="62" fill="none" stroke="url(#ringGradR)" strokeWidth="5" opacity="0" style={{ animation: 'orbitRingRight 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' }} />
+          <circle cx="118" cy="100" r="62" fill="none" stroke="url(#ringHighR)" strokeWidth="6" opacity="0" style={{ animation: 'orbitRingRight 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' }} />
+          {/* Left ring front portion (over right ring) */}
+          <circle cx="82" cy="100" r="62" fill="none" stroke="url(#ringGradL)" strokeWidth="5" clipPath="url(#clipLeft)" opacity="0" style={{ animation: 'orbitRingLeft 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' }} />
+          <circle cx="82" cy="100" r="62" fill="none" stroke="url(#ringHighL)" strokeWidth="6" clipPath="url(#clipLeft)" opacity="0" style={{ animation: 'orbitRingLeft 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' }} />
+        </svg>
       </div>
+      <div className="orbit-loading-tagline">BE THE REASON</div>
     </div>
   );
 }
