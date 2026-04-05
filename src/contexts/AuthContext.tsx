@@ -178,8 +178,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const currentPath = typeof window !== 'undefined' ? window.location.pathname : pathname || '/';
           
           // Valid pages that should NOT trigger redirects
-          const isValidPage = 
+          const isValidPage =
             currentPath === '/pond' ||
+            currentPath === '/auth/reset-password' ||
             currentPath.startsWith('/profile/') ||
             currentPath.match(/^\/dashboard\/(matchmakr|single|vendor|settings|chat|invite)/);
           
@@ -243,7 +244,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const isAuthRoute =
         target === '/' ||
         target === '/login' ||
-        target.startsWith('/auth/');
+        (target.startsWith('/auth/') && target !== '/auth/reset-password');
 
       if (user && isAuthRoute) {
         const role = orbitRoleRef.current?.toLowerCase() ?? 'matchmakr';
