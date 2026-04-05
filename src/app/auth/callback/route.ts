@@ -12,6 +12,12 @@ export async function GET(request: Request) {
     const supabase = createClient()
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error && data.user) {
+      // Check if this is a password recovery flow
+      const type = searchParams.get('type')
+      if (type === 'recovery') {
+        return NextResponse.redirect(`${origin}/auth/reset-password`)
+      }
+
       // Get the user's profile to determine their user type
       const { data: profile } = await supabase
         .from('profiles')
