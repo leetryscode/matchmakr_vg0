@@ -8,6 +8,7 @@ export default function ResetPasswordPage() {
   const supabase = createClient();
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
+  const [expired, setExpired] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -15,13 +16,42 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const tryShowForm = () => {
+      setShowForm(true);
+    };
+
+    // Check immediately if the URL has a recovery hash and a session already exists
+    const isRecoveryUrl = window.location.hash.includes('type=recovery');
+    if (isRecoveryUrl) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          tryShowForm();
+        }
+      });
+    }
+
+    // Fallback: listen for the PASSWORD_RECOVERY event
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
-        setShowForm(true);
+        clearTimeout(timeoutId);
+        tryShowForm();
       }
     });
 
-    return () => subscription.unsubscribe();
+    // If neither path shows the form within 5s, show the expired message
+    timeoutId = setTimeout(() => {
+      setShowForm((current) => {
+        if (!current) setExpired(true);
+        return current;
+      });
+    }, 5000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const handleReset = async (e: React.FormEvent) => {
@@ -80,13 +110,23 @@ export default function ResetPasswordPage() {
                 Password updated. Redirecting you now&hellip;
               </p>
             </div>
+          ) : expired ? (
+            <div className="flex flex-col gap-3">
+              <p className="text-orbit-warning font-light text-sm">
+                This link may have expired.
+              </p>
+              <p className="text-orbit-muted font-light text-sm">
+                Please{' '}
+                <a href="/login" className="text-orbit-gold hover:text-orbit-text transition-colors">
+                  request a new reset link
+                </a>
+                .
+              </p>
+            </div>
           ) : !showForm ? (
             <div className="flex flex-col gap-3">
               <p className="text-orbit-muted font-light text-sm">
                 Waiting for password recovery link&hellip;
-              </p>
-              <p className="text-orbit-muted font-light text-xs">
-                If this page isn&apos;t showing a form, try clicking the link in your email again.
               </p>
             </div>
           ) : (
