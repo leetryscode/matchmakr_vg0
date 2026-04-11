@@ -21,7 +21,13 @@ export const viewport: Viewport = {
  */
 export const metadata: Metadata = {
   title: 'Orbit',
-  description: 'A matchmaking platform that connects singles through Sponsors',
+  description: "You don't need an app. You have people.",
+  openGraph: {
+    description: "You don't need an app. You have people.",
+  },
+  twitter: {
+    description: "You don't need an app. You have people.",
+  },
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [

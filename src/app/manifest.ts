@@ -24,7 +24,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Orbit',
     short_name: 'Orbit',
-    description: 'A matchmaking platform that connects singles through Sponsors',
+    description: "You don't need an app. You have people.",
     start_url: '/dashboard',
     // Broad scope allows all routes to render within PWA container (MVP choice)
     // This ensures app-native experience across all pages (Pond, profile, etc.)
